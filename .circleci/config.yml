@@ -1,0 +1,40 @@
+# Python CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-python/ for more details
+#
+version: 2.1
+
+jobs:
+  test:
+    docker:
+      - image: quay.io/fenicsproject/stable:latest
+
+    steps:
+      - checkout
+
+      - run:
+          name: install dependencies
+          command: |
+            python3 -m pip install --upgrade pip
+            python3 -m pip install h5py --no-binary=h5py
+            python3 -m pip install ".[dev]"
+
+      - restore_cache:
+          keys:
+            - v2-dolfin-jit-cache
+
+      # run tests!
+      - run:
+          name: run tests
+          command: |
+            cd tissue/em && python3 -m pytest tests -v --cov=.
+
+      - save_cache:
+          key: v2-dolfin-jit-cache
+          paths:
+            - ~/.cache/instant
+            - ~/.cache/dijitso
+
+      - store_artifacts:
+          path: htmlcov
+          destination: htmlcov
