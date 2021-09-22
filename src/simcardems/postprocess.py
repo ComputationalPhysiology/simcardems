@@ -2,6 +2,7 @@ import warnings
 
 import dolfin
 import h5py
+import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -333,3 +334,30 @@ def load_data(file, mesh, bnd, time_points):
                     data_temp = v_space(eval("bnd." + data_node))
                     data[data_node][nestedkey][i] = data_temp
     return data
+
+
+class Analysis:
+    def plot_peaks(outdir, data, threshold):
+        # Find peaks for assessment steady state
+        from scipy.signal import find_peaks
+
+        peak_indices = find_peaks(data, height=threshold)
+
+        for i, idx in enumerate(peak_indices[0]):
+            if i == 0:
+                x = [idx]
+                y = [data[idx]]
+            else:
+                x.append(idx)
+                y.append(data[idx])
+
+        # Calculate difference between consecutive list elements
+        change_y = [(s - q) / q * 100 for q, s in zip(y, y[1:])]
+
+        fig, ax = plt.subplots()
+        ax.plot(change_y)
+        ax.set_title("Compare peak values")
+        ax.grid()
+        ax.set_xlabel("Numer of beats")
+        ax.set_ylabel("% change from previous beat")
+        fig.savefig(outdir + "/compare-peak-values.png", dpi=300)

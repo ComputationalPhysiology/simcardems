@@ -77,7 +77,7 @@ def vs_functions_to_dict(vs_functions):
     )
 
 
-class ORdmm_Land_em_coupling(CardiacCellModel):
+class ORdmm_Land(CardiacCellModel):
     def __init__(self, params=None, init_conditions=None):
         """
         Create cardiac cell model

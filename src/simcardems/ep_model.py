@@ -4,7 +4,7 @@ from pathlib import Path
 import cbcbeat
 import dolfin
 
-from .ORdmm_Land_em_coupling_strong import ORdmm_Land_em_coupling as CellModel
+from .ORdmm_Land import ORdmm_Land as CellModel
 from .save_load_functions import load_initial_condions_from_h5
 
 

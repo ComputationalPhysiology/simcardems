@@ -3,19 +3,20 @@ from pathlib import Path
 
 import cbcbeat
 import dolfin
-import em_model
-import ep_model
 import matplotlib.pyplot as plt
-import mechanics_model
 import numpy as np
 import pulse
-import save_load_functions as io
-import utils
-from datacollector import DataCollector
-from datacollector import DataLoader
-from postprocess import Analysis
-from postprocess import Boundary
+from simcardems import DataCollector
+from simcardems import DataLoader
+from simcardems import em_model
+from simcardems import ep_model
+from simcardems import mechanics_model
+from simcardems import save_load_functions as io
+from simcardems import utils
+from simcardems.postprocess import Analysis
+from simcardems.postprocess import Boundary
 from tqdm import tqdm
+
 
 here = Path(__file__).parent.absolute()
 
@@ -54,7 +55,7 @@ def get_parser():
     parser.add_argument(
         "-IC",
         "--cell_init_file",
-        default="init_5000beats_varlmbda.json",
+        default="",
         type=str,
         help="If reset_state=True, define filename of initial conditions (json or h5 file)",
     )
@@ -313,11 +314,11 @@ if __name__ == "__main__":
     parser = get_parser()
     args = vars(parser.parse_args())
 
-    cell_init_file = None
-    if args["reset_state"]:
+    cell_init_file = args["cell_init_file"] or None
+    if args["reset_state"] and cell_init_file:
         cell_init_file = here.parent.joinpath(
             "initial_conditions",
-        ).joinpath(args["cell_init_file"])
+        ).joinpath(cell_init_file)
 
     main(
         args["outdir"],
