@@ -1,8 +1,8 @@
 GNU GENERAL PUBLIC LICENSE
                       Version 3, 29 June 2007
 
-    Package to compute features of traces from action potential models
-    Copyright (C) 2021  Henrik Finsberg
+    Simula Cardiac electromechanics solver
+    Copyright (C) 2021  Simula Research Laboratory
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
