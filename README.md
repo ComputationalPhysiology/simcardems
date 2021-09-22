@@ -13,7 +13,7 @@ TODO: Write about installing FEnICS and h5py with parallel support
 
 ## Developers
 
-Use editable install and install the development requirements 
+Use editable install and install the development requirements
 ```
 python -m pip install -e ".[dev]"
 ```

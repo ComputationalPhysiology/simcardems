@@ -23,7 +23,11 @@ jobs:
           keys:
             - v2-dolfin-jit-cache
 
-      # run tests!
+      - run:
+          name: run pre-commit hooks
+          command: |
+            pre-commit run --all-files --show-diff-on-failure
+
       - run:
           name: run tests
           command: |

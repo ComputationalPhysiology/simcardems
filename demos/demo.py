@@ -1,43 +1,77 @@
+import argparse
 from pathlib import Path
 
-from datacollector import DataCollector, DataLoader
-from postprocess import Boundary, Analysis
-import numpy as np
-import dolfin
 import cbcbeat
-import pulse
-import matplotlib.pyplot as plt
-from tqdm import tqdm
-
-import save_load_functions as io
-import ep_model
-import mechanics_model
+import dolfin
 import em_model
+import ep_model
+import matplotlib.pyplot as plt
+import mechanics_model
+import numpy as np
+import pulse
+import save_load_functions as io
 import utils
+from datacollector import DataCollector
+from datacollector import DataLoader
+from postprocess import Analysis
+from postprocess import Boundary
+from tqdm import tqdm
 
 here = Path(__file__).parent.absolute()
 
-# Take parameters provided with function call (SAGA) or use default
-import argparse
-parser = argparse.ArgumentParser()
-parser.add_argument("-o", "--outdir", default="results/result1", type=str, \
-    help='define output directory')
-parser.add_argument("--dt", default=0.02, type=float, \
-    help='define delta t')
-parser.add_argument("-T", "--endtime", default=2000, type=int, \
-    help='define the endtime of simulation')
-parser.add_argument("--bnd_cond", default="dirichlet", type=str, \
-    choices=['dirichlet', 'rigid'], help='choose boundary conditions')
-parser.add_argument("--reset_state", default=True, type=bool, \
-    choices=[True, False], help='define if state should be loaded (True) or newly created (False)')
-parser.add_argument("-IC", "--cell_init_file", default="init_5000beats_varlmbda.json", type=str, \
-    help='If reset_state=True, define filename of initial conditions (json or h5 file)')
-parser.add_argument("--add_release", type=bool, default=False, \
-    choices=[True, False], help='define if sudden release should be added')
-parser.add_argument("--T_release", type=int, default=150, \
-    help='define time to apply sudden release')
-args = parser.parse_args()
-input_args = vars(args)
+
+def get_parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-o",
+        "--outdir",
+        default="results/result1",
+        type=str,
+        help="define output directory",
+    )
+    parser.add_argument("--dt", default=0.02, type=float, help="define delta t")
+    parser.add_argument(
+        "-T",
+        "--endtime",
+        default=2000,
+        type=int,
+        help="define the endtime of simulation",
+    )
+    parser.add_argument(
+        "--bnd_cond",
+        default="dirichlet",
+        type=str,
+        choices=["dirichlet", "rigid"],
+        help="choose boundary conditions",
+    )
+    parser.add_argument(
+        "--reset_state",
+        default=True,
+        type=bool,
+        choices=[True, False],
+        help="define if state should be loaded (True) or newly created (False)",
+    )
+    parser.add_argument(
+        "-IC",
+        "--cell_init_file",
+        default="init_5000beats_varlmbda.json",
+        type=str,
+        help="If reset_state=True, define filename of initial conditions (json or h5 file)",
+    )
+    parser.add_argument(
+        "--add_release",
+        type=bool,
+        default=False,
+        choices=[True, False],
+        help="define if sudden release should be added",
+    )
+    parser.add_argument(
+        "--T_release",
+        type=int,
+        default=150,
+        help="define time to apply sudden release",
+    )
+    return parser
 
 
 dolfin.parameters["form_compiler"]["cpp_optimize"] = True
@@ -49,6 +83,7 @@ dolfin.parameters["form_compiler"]["representation"] = "uflacs"
 # Disable warnings
 dolfin.set_log_level(40)
 
+
 def compute_norm(x, x_prev):
     x_norm = x.vector().norm("l2")
     e = x.vector() - x_prev.vector()
@@ -56,6 +91,7 @@ def compute_norm(x, x_prev):
     if x_norm > 0:
         norm /= x_norm
     return norm
+
 
 def main(
     outdir="results",
@@ -74,7 +110,7 @@ def main(
 
     if add_release and bnd_cond != "dirichlet":
         raise RuntimeError(
-            "Release can only be added while using dirichlet boundary conditions."
+            "Release can only be added while using dirichlet boundary conditions.",
         )
 
     state_path = Path(outdir).joinpath("state.h5")
@@ -84,7 +120,9 @@ def main(
         if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
             print("Load previously saved state")
         with dolfin.Timer("[demo] Load previously saved state"):
-            coupling, solver, mech_heart, bnd_right_x, mesh, t0 = io.load_state(state_path)
+            coupling, solver, mech_heart, bnd_right_x, mesh, t0 = io.load_state(
+                state_path,
+            )
     else:
         if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
             print("Create a new state")
@@ -96,7 +134,10 @@ def main(
 
         # Set-up solver and time it
         solver = ep_model.setup_solver(
-            mesh=mesh, dt=dt, coupling=coupling, cell_init_file=cell_init_file
+            mesh=mesh,
+            dt=dt,
+            coupling=coupling,
+            cell_init_file=cell_init_file,
         )
 
         coupling.register_ep_model(solver)
@@ -137,8 +178,6 @@ def main(
         collector.register(name, f)
 
     time_stepper = cbcbeat.utils.TimeStepper((t0, T), dt, annotate=False)
-    release_added = False
-
     save_it = int(1 / dt)  # Save every millisecond
 
     pbar = tqdm(time_stepper, total=round((T - t0) / dt))
@@ -163,9 +202,9 @@ def main(
         pbar.set_postfix(
             {
                 "XS_norm + XW_norm (solve mechanics if >=0.1)": "{:.2f}".format(
-                    XS_norm + XW_norm
-                )
-            }
+                    XS_norm + XW_norm,
+                ),
+            },
         )
         if XS_norm + XW_norm >= 0.1:
 
@@ -179,7 +218,6 @@ def main(
             if add_release and t0 >= T_release:
                 print("Release")
                 pulse.iterate.iterate(mech_heart, bnd_right_x, -0.02 * Lx)
-                release_added = True
 
             # Update previous
             mech_heart.material.active.update_prev()
@@ -233,7 +271,7 @@ def postprocess(outdir):
                 func = loader.get(name, t)
                 dof_coords = func.function_space().tabulate_dof_coordinates()
                 dof = np.argmin(
-                    np.linalg.norm(dof_coords - np.array(bnd.center), axis=1)
+                    np.linalg.norm(dof_coords - np.array(bnd.center), axis=1),
                 )
                 if np.isclose(dof_coords[dof], np.array(bnd.center)).all():
                     # If we have a dof at the center - evaluation at dof (cheaper)
@@ -261,31 +299,38 @@ def postprocess(outdir):
         axi.legend()
         axi.set_xlim([0, 5000])
     ax[1, 0].set_xlabel("Time [ms]")
-    ax[1, 1].set_xlabel("Time [ms]")    
-    ax[0, 0].set_ylim([min(0.9, min(values["lmbda"][1:])), max(1.1, max(values["lmbda"][1:]))])
+    ax[1, 1].set_xlabel("Time [ms]")
+    ax[0, 0].set_ylim(
+        [min(0.9, min(values["lmbda"][1:])), max(1.1, max(values["lmbda"][1:]))],
+    )
 
-    #plt.show()
+    # plt.show()
     fig.savefig(outdir + ".png", dpi=300)
 
 
 if __name__ == "__main__":
 
-    cell_init_file = "No_init_file"
-    if args.reset_state == True:
-        cell_init_file = cell_init_file = here.parent.joinpath("initial_conditions").joinpath(input_args["cell_init_file"])
+    parser = get_parser()
+    args = vars(parser.parse_args())
+
+    cell_init_file = None
+    if args["reset_state"]:
+        cell_init_file = here.parent.joinpath(
+            "initial_conditions",
+        ).joinpath(args["cell_init_file"])
 
     main(
-        input_args["outdir"],
-        T=input_args["endtime"],
-        T_release=input_args["T_release"],
-        bnd_cond=input_args["bnd_cond"],
-        add_release=input_args["add_release"],
+        args["outdir"],
+        T=args["endtime"],
+        T_release=args["T_release"],
+        bnd_cond=args["bnd_cond"],
+        add_release=args["add_release"],
         cell_init_file=cell_init_file,
-        reset_state=input_args["reset_state"],
+        reset_state=args["reset_state"],
     )
     time_table = dolfin.timings(dolfin.TimingClear.keep, [dolfin.TimingType.user])
     print("time table = ", time_table.str(True))
-    with open(input_args["outdir"] + "_timings.log", "w+") as out:
+    with open(args["outdir"] + "_timings.log", "w+") as out:
         out.write(time_table.str(True))
 
-    postprocess(input_args["outdir"])
+    postprocess(args["outdir"])

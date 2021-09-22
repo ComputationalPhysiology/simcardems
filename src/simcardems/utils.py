@@ -1,5 +1,6 @@
-import dolfin
 from pathlib import Path
+
+import dolfin
 import numpy as np
 import ufl
 

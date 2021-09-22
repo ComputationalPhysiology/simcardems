@@ -1,7 +1,9 @@
-import dolfin
-import cbcbeat
-from pathlib import Path
 import json
+from pathlib import Path
+
+import cbcbeat
+import dolfin
+
 from .ORdmm_Land_em_coupling_strong import ORdmm_Land_em_coupling as CellModel
 from .save_load_functions import load_initial_condions_from_h5
 
@@ -112,7 +114,10 @@ def setup_ep_model(cellmodel, mesh):
 
 
 def setup_splitting_solver_parameters(
-    dt, theta=0.5, preconditioner="sor", scheme="GRL1"
+    dt,
+    theta=0.5,
+    preconditioner="sor",
+    scheme="GRL1",
 ):
     ps = cbcbeat.SplittingSolver.default_parameters()
     ps["pde_solver"] = "monodomain"
@@ -147,7 +152,10 @@ def setup_solver(
 ):
 
     ps = setup_splitting_solver_parameters(
-        theta=theta, preconditioner=preconditioner, dt=dt, scheme=scheme
+        theta=theta,
+        preconditioner=preconditioner,
+        dt=dt,
+        scheme=scheme,
     )
 
     cell_params_ = CellModel.default_parameters()

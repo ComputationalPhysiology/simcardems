@@ -1,6 +1,6 @@
-import ufl
 import dolfin
 import pulse
+import ufl
 from pulse.material import active_stress
 
 
@@ -118,7 +118,10 @@ class LandModel(pulse.ActiveModel):
 
         if diff == 0:
             return active_stress.Wactive_transversally(
-                Ta=self.Ta(F), C=C, f0=self.f0, eta=self.eta
+                Ta=self.Ta(F),
+                C=C,
+                f0=self.f0,
+                eta=self.eta,
             )
         return self.Ta(F)
 
@@ -156,12 +159,17 @@ class RigidMotionProblem(MechanicsProblem):
         J = pulse.Jacobian(F)
         dx = self.geometry.dx
 
-        internal_energy = self.material.strain_energy(
-            F
-        ) + self.material.compressibility(p, J)
+        internal_energy = (
+            self.material.strain_energy(
+                F,
+            )
+            + self.material.compressibility(p, J)
+        )
 
         self._virtual_work = dolfin.derivative(
-            internal_energy * dx, self.state, self.state_test
+            internal_energy * dx,
+            self.state,
+            self.state_test,
         )
 
         self._virtual_work += dolfin.derivative(
@@ -175,16 +183,22 @@ class RigidMotionProblem(MechanicsProblem):
         )
 
         self._jacobian = dolfin.derivative(
-            self._virtual_work, self.state, dolfin.TrialFunction(self.state_space)
+            self._virtual_work,
+            self.state,
+            dolfin.TrialFunction(self.state_space),
         )
         self._init_solver()
 
     def _init_solver(self):
         self._problem = pulse.NonlinearProblem(
-            J=self._jacobian, F=self._virtual_work, bcs=[]
+            J=self._jacobian,
+            F=self._virtual_work,
+            bcs=[],
         )
         self.solver = pulse.NonlinearSolver(
-            self._problem, self.state, parameters=self.solver_parameters
+            self._problem,
+            self.state,
+            parameters=self.solver_parameters,
         )
 
     def rigid_motion_term(mesh, u, r):
@@ -276,12 +290,16 @@ def setup_mechanics_model(mesh, coupling, dt, bnd_cond, cell_params, Lx):
     bcs = []
     if bnd_cond == "dirichlet":
         bcs, marker_functions = setup_diriclet_bc(
-            mesh=mesh, Lx=Lx, bnd_right_x=bnd_right_x
+            mesh=mesh,
+            Lx=Lx,
+            bnd_right_x=bnd_right_x,
         )
 
     # Create the geometry
     geometry = pulse.Geometry(
-        mesh=mesh, microstructure=microstructure, marker_functions=marker_functions
+        mesh=mesh,
+        microstructure=microstructure,
+        marker_functions=marker_functions,
     )
 
     # Create the material
@@ -316,7 +334,12 @@ def setup_mechanics_model(mesh, coupling, dt, bnd_cond, cell_params, Lx):
     if bnd_cond == "rigid":
         Problem = RigidMotionProblem
 
-    problem = Problem(geometry, material, bcs, solver_parameters={"linear_solver": "mumps"})
+    problem = Problem(
+        geometry,
+        material,
+        bcs,
+        solver_parameters={"linear_solver": "mumps"},
+    )
     problem.solve()
 
     return problem, bnd_right_x

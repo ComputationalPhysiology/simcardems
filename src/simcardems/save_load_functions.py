@@ -1,20 +1,21 @@
+import contextlib
 import os
 import warnings
-import dolfin
-from pathlib import Path
-import contextlib
 from collections import namedtuple
+from pathlib import Path
 
-
-# This import is needed for the eval statement
-from dolfin import VectorElement, FiniteElement, tetrahedron, MixedElement  # noqa: F401
+import dolfin
+from dolfin import FiniteElement  # noqa: F401
+from dolfin import MixedElement  # noqa: F401
+from dolfin import tetrahedron  # noqa: F401
+from dolfin import VectorElement  # noqa: F401
 
 from . import utils
 
 EMState = namedtuple(
-    "EMState", ["coupling", "solver", "mech_heart", "bnd_right_x", "mesh", "t0"]
+    "EMState",
+    ["coupling", "solver", "mech_heart", "bnd_right_x", "mesh", "t0"],
 )
-
 
 
 @contextlib.contextmanager
@@ -113,7 +114,7 @@ def save_state(
         h5file.write(solver.vs_, "/ep/vs")
         h5file.write(mech_heart.state, "mechanics/state")
 
-    bnd_cond_dict = dict([("dirichlet",0), ("rigid",1)])
+    bnd_cond_dict = dict([("dirichlet", 0), ("rigid", 1)])
 
     dict_to_h5(solver.ode_solver._model.parameters(), path, "ep/cell_params")
     dict_to_h5(
@@ -182,7 +183,7 @@ def load_state(path):
 
     coupling.register_ep_model(solver)
 
-    bnd_cond_dict = dict([(0,"dirichlet"), (1,"rigid")])
+    bnd_cond_dict = dict([(0, "dirichlet"), (1, "rigid")])
 
     mech_heart, bnd_right_x = mechanics_model.setup_mechanics_model(
         mesh=mesh,
@@ -242,7 +243,8 @@ def save_cell_params_to_h5(h5_filename, cell_params, params_list):
         for i, p in enumerate(params_list):
             h5_file.write(cell_params[p], "/function/param%d" % i)
             with dolfin.XDMFFile(
-                mesh.mpi_comm(), h5_base + "_saved/param_%d.xdmf" % i
+                mesh.mpi_comm(),
+                h5_base + "_saved/param_%d.xdmf" % i,
             ) as xdmf:
                 xdmf.write(cell_params[p])
 
@@ -262,7 +264,8 @@ def load_cell_params_from_h5(h5_filename, V, cell_params, params_list):
                 print("Cannot load param[" + p + "]")
         cell_params[p] = param_f
         with dolfin.XDMFFile(
-            mesh.mpi_comm(), h5_base + "_loaded/param_%d.xdmf" % i
+            mesh.mpi_comm(),
+            h5_base + "_loaded/param_%d.xdmf" % i,
         ) as xdmf:
             xdmf.write(param_f)
     h5_file.close()
@@ -286,13 +289,15 @@ def save_state_variables_to_h5(h5_filename, cell_inits, vs, run_id, compare=Fals
         vs_assigner.assign(vs_f, utils.sub_function(vs, i))
         h5_file.write(vs_f, "/function/state%d" % i)
         with dolfin.XDMFFile(
-            mesh.mpi_comm(), h5_base + "_saved/state_%d.xdmf" % i
+            mesh.mpi_comm(),
+            h5_base + "_saved/state_%d.xdmf" % i,
         ) as xdmf:
             xdmf.write(vs_f)
 
         if compare:
             with dolfin.XDMFFile(
-                mesh.mpi_comm(), h5_base + "_diff/state" + k + ".xdmf"
+                mesh.mpi_comm(),
+                h5_base + "_diff/state" + k + ".xdmf",
             ) as xdmf:
                 vs_f_err = dolfin.project(vs_f - vs_f_, vs_f.function_space())
                 vs_f_err.rename("s%d_d" % i, "state_" + k + "_diff")
@@ -307,7 +312,7 @@ def save_state_variables_to_h5(h5_filename, cell_inits, vs, run_id, compare=Fals
             if run_id <= 1:  # Clear file if this is the first run
                 L2err_file.truncate(0)
             L2err_file.write(
-                "%g %g\n" % (run_id, dolfin.norm(vs_f.vector() - vs_f_.vector()))
+                "%g %g\n" % (run_id, dolfin.norm(vs_f.vector() - vs_f_.vector())),
             )
             L2err_file.close()
     h5_file.close()

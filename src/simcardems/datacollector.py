@@ -1,12 +1,14 @@
-from typing import List
 from pathlib import Path
+from typing import Dict
+from typing import List
 
 import dolfin
+from dolfin import FiniteElement  # noqa: F401
+from dolfin import tetrahedron  # noqa: F401
+from dolfin import VectorElement  # noqa: F401
 
-# This import is needed for the eval statement
-from dolfin import VectorElement, FiniteElement, tetrahedron  # noqa: F401
-from .save_load_functions import h5pyfile
 from . import utils
+from .save_load_functions import h5pyfile
 
 
 class DataCollector:
@@ -21,18 +23,19 @@ class DataCollector:
             with dolfin.HDF5File(self.comm, self.results_file, "w") as h5file:
                 h5file.write(mesh, "/mesh")
 
-        self._xdmffiles = {}
-        self._functions = {}
+        self._xdmffiles: Dict[str, dolfin.XDMFFile] = {}
+        self._functions: Dict[str, dolfin.Function] = {}
 
     @property
     def results_file(self):
         return self._results_file.as_posix()
 
-    def register(self, name: str, f):
+    def register(self, name: str, f: dolfin.Function) -> None:
         if name in self.names:
             print(f"Warning: {name} is allready registered - overwriting")
         self._xdmffiles[name] = dolfin.XDMFFile(
-            self.comm, self.outdir.joinpath(f"{name}.xdmf").as_posix()
+            self.comm,
+            self.outdir.joinpath(f"{name}.xdmf").as_posix(),
         )
         self._functions[name] = f
 
@@ -89,7 +92,9 @@ class DataLoader:
 
             self.mesh = dolfin.Mesh()
             self._h5file = dolfin.HDF5File(
-                self.mesh.mpi_comm(), self._h5name.as_posix(), "r"
+                self.mesh.mpi_comm(),
+                self._h5name.as_posix(),
+                "r",
             )
 
             self._create_functions()
