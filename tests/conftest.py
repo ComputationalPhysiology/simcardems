@@ -9,7 +9,7 @@ _here = Path(__file__).absolute().parent
 
 @pytest.fixture(scope="session")
 def mesh():
-    return dolfin.UnitCubeMesh(2, 2, 2)
+    return dolfin.UnitCubeMesh(1, 1, 1)
 
 
 @pytest.fixture
