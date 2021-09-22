@@ -31,7 +31,7 @@ jobs:
       - run:
           name: run tests
           command: |
-            cd tissue/em && python3 -m pytest tests -v --cov=.
+            python3 -m pytest tests -v --cov=.
 
       - save_cache:
           key: v2-dolfin-jit-cache
