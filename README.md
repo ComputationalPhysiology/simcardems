@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/ComputationalPhysiology/simcardems/tree/master.svg?style=svg)](https://circleci.com/gh/ComputationalPhysiology/simcardems/tree/master)
+
 # Simula ElectroMechancis solver
 
 Based on [`pulse`](https://github.com/ComputationalPhysiology/pulse) and [`cbcbeat`](https://github.com/ComputationalPhysiology/cbcbeat)
