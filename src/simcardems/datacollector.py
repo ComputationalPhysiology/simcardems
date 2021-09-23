@@ -57,6 +57,7 @@ class DataCollector:
 
 class DataLoader:
     def __init__(self, h5name) -> None:
+        self._h5file = None
         self._h5name = Path(h5name)
         if not self._h5name.is_file():
             raise FileNotFoundError(f"File {h5name} does not exist")
@@ -90,17 +91,18 @@ class DataLoader:
                 for name in self.names
             }
 
-            self.mesh = dolfin.Mesh()
-            self._h5file = dolfin.HDF5File(
-                self.mesh.mpi_comm(),
-                self._h5name.as_posix(),
-                "r",
-            )
+        self.mesh = dolfin.Mesh()
+        self._h5file = dolfin.HDF5File(
+            self.mesh.mpi_comm(),
+            self._h5name.as_posix(),
+            "r",
+        )
 
-            self._create_functions()
+        self._create_functions()
 
     def __del__(self):
-        self._h5file.close()
+        if self._h5file is not None:
+            self._h5file.close()
 
     def _create_functions(self):
         self._h5file.read(self.mesh, "/mesh", False)
