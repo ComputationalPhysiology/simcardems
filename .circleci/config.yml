@@ -16,7 +16,7 @@ jobs:
           name: install dependencies
           command: |
             python3 -m pip install --upgrade pip
-	    python3 -m pip install pytest-timeout
+            python3 -m pip install pytest-timeout
             python3 -m pip install h5py --no-binary=h5py
             python3 -m pip install ".[dev]"
 
