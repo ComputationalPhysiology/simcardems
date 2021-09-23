@@ -1,6 +1,6 @@
 [![CircleCI](https://circleci.com/gh/ComputationalPhysiology/simcardems/tree/master.svg?style=svg&circle-token=2f9721e750a2e303633335ee76b8f67c8912b493)](https://circleci.com/gh/ComputationalPhysiology/simcardems/tree/master)
 
-# Simula Cardiac Electro-Mechancis Solver
+# Simula Cardiac Electro-Mechanics Solver
 
 `simcardems` is a FEniCS-based cardiac electro-mechancis solver and is developed as a part of the [SimCardio Test project](https://www.simcardiotest.eu/wordpress/). The solver depdens on [`pulse`](https://github.com/ComputationalPhysiology/pulse) and [`cbcbeat`](https://github.com/ComputationalPhysiology/cbcbeat).
 
