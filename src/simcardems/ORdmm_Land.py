@@ -12,6 +12,8 @@ from cbcbeat.cellmodels import CardiacCellModel
 from dolfin import as_vector
 from dolfin import Constant
 
+from . import utils
+
 
 def Max(a, b):
     return (a + b + abs(a - b)) / Constant(2)
@@ -21,60 +23,11 @@ def Min(a, b):
     return (a + b - abs(a - b)) / Constant(2)
 
 
-def vs_functions_to_dict(vs_functions):
-    return OrderedDict(
-        [
-            ("v", vs_functions.sub(0)),
-            ("CaMKt", vs_functions.sub(1)),
-            ("m", vs_functions.sub(2)),
-            ("hf", vs_functions.sub(3)),
-            ("hs", vs_functions.sub(4)),
-            ("j", vs_functions.sub(5)),
-            ("hsp", vs_functions.sub(6)),
-            ("jp", vs_functions.sub(7)),
-            ("mL", vs_functions.sub(8)),
-            ("hL", vs_functions.sub(9)),
-            ("hLp", vs_functions.sub(10)),
-            ("a", vs_functions.sub(11)),
-            ("iF", vs_functions.sub(12)),
-            ("iS", vs_functions.sub(13)),
-            ("ap", vs_functions.sub(14)),
-            ("iFp", vs_functions.sub(15)),
-            ("iSp", vs_functions.sub(16)),
-            ("d", vs_functions.sub(17)),
-            ("ff", vs_functions.sub(18)),
-            ("fs", vs_functions.sub(19)),
-            ("fcaf", vs_functions.sub(20)),
-            ("fcas", vs_functions.sub(21)),
-            ("jca", vs_functions.sub(22)),
-            ("ffp", vs_functions.sub(23)),
-            ("fcafp", vs_functions.sub(24)),
-            ("nca", vs_functions.sub(25)),
-            ("xrf", vs_functions.sub(26)),
-            ("xrs", vs_functions.sub(27)),
-            ("xs1", vs_functions.sub(28)),
-            ("xs2", vs_functions.sub(29)),
-            ("xk1", vs_functions.sub(30)),
-            ("Jrelnp", vs_functions.sub(31)),
-            ("Jrelp", vs_functions.sub(32)),
-            ("nai", vs_functions.sub(33)),
-            ("nass", vs_functions.sub(34)),
-            ("ki", vs_functions.sub(35)),
-            ("kss", vs_functions.sub(36)),
-            ("cass", vs_functions.sub(37)),
-            ("cansr", vs_functions.sub(38)),
-            ("cajsr", vs_functions.sub(39)),
-            ("XS", vs_functions.sub(40)),
-            ("XW", vs_functions.sub(41)),
-            ("CaTrpn", vs_functions.sub(42)),
-            ("TmB", vs_functions.sub(43)),
-            ("Cd", vs_functions.sub(44)),
-            ("cai", vs_functions.sub(45)),
-            ("lmbda", vs_functions.sub(46)),
-            ("Zetas", vs_functions.sub(47)),
-            ("Zetaw", vs_functions.sub(48)),
-        ],
-    )
+def vs_functions_to_dict(vs):
+    state_names = ORdmm_Land.default_initial_conditions().keys()
+    return {
+        name: utils.sub_function(vs, index) for index, name in enumerate(state_names)
+    }
 
 
 class ORdmm_Land(CardiacCellModel):

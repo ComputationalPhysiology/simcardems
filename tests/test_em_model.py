@@ -2,6 +2,7 @@ import pytest
 import simcardems
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("bnd_cond", ["dirichlet", "rigid"])
 def test_em_model(mesh, coupling, ep_solver, cell_params, bnd_cond):
 

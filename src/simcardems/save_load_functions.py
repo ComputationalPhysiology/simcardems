@@ -10,7 +10,11 @@ from dolfin import MixedElement  # noqa: F401
 from dolfin import tetrahedron  # noqa: F401
 from dolfin import VectorElement  # noqa: F401
 
+from . import em_model
+from . import ep_model
+from . import mechanics_model
 from . import utils
+from .ORdmm_Land import vs_functions_to_dict
 
 EMState = namedtuple(
     "EMState",
@@ -36,7 +40,10 @@ def h5pyfile(h5name, filemode="r"):
 
 def dict_to_h5(data, h5name, h5group):
     with h5pyfile(h5name, "a") as h5file:
-        group = h5file.create_group(h5group)
+        if h5group == "":
+            group = h5file
+        else:
+            group = h5file.create_group(h5group)
         for k, v in data.items():
             group.create_dataset(k, data=v)
 
@@ -90,7 +97,6 @@ def group_in_file(h5_filename, h5group):
 
 def save_state(
     path,
-    coupling,
     solver,
     mech_heart,
     dt=0.02,
@@ -106,12 +112,14 @@ def save_state(
     if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
         print(f"Save state to {path}")
 
-    with dolfin.HDF5File(coupling.mesh.mpi_comm(), path.as_posix(), "w") as h5file:
-        h5file.write(coupling.mesh, "/mesh")
-        for name in ["lmbda", "Zetas", "Zetaw"]:
-            h5file.write(getattr(coupling, name), f"/em/{name}")
+    mesh = mech_heart.geometry.mesh
+    with dolfin.HDF5File(mesh.mpi_comm(), path.as_posix(), "w") as h5file:
 
-        h5file.write(solver.vs_, "/ep/vs")
+        h5file.write(mech_heart.material.active.Zetas_prev_prev, "/em/Zetas_prev")
+        h5file.write(mech_heart.material.active.Zetaw_prev_prev, "/em/Zetaw_prev")
+
+        h5file.write(mesh, "/mesh")
+        h5file.write(solver.vs, "/ep/vs")
         h5file.write(mech_heart.state, "mechanics/state")
 
     bnd_cond_dict = dict([("dirichlet", 0), ("rigid", 1)])
@@ -136,11 +144,6 @@ def load_state(path):
     if not path.is_file():
         raise FileNotFoundError(f"File {path} does not exist")
 
-    import ep_model
-    import mechanics_model
-    import em_model
-    from ORdmm_Land_em_coupling_strong import vs_functions_to_dict
-
     with h5pyfile(path) as h5file:
         state_params = h5_to_dict(h5file["state_params"])
         cell_params = h5_to_dict(h5file["ep"]["cell_params"])
@@ -151,28 +154,37 @@ def load_state(path):
     with dolfin.HDF5File(mesh.mpi_comm(), path.as_posix(), "r") as h5file:
         h5file.read(mesh, "/mesh", False)
 
-    V = dolfin.FunctionSpace(mesh, "CG", 1)
-    lmbda = dolfin.Function(V, name="lambda")
-    Zetas = dolfin.Function(V, name="Zetas")
-    Zetaw = dolfin.Function(V, name="Zetaw")
-
     VS = dolfin.FunctionSpace(mesh, eval(vs_signature))
     vs = dolfin.Function(VS)
 
     W = dolfin.FunctionSpace(mesh, eval(mech_signature))
     mech_state = dolfin.Function(W)
 
+    V = dolfin.FunctionSpace(mesh, "CG", 1)
+    Zetas_prev = dolfin.Function(V, name="Zetas_prev")
+    Zetaw_prev = dolfin.Function(V, name="Zetaw_prev")
     with dolfin.HDF5File(mesh.mpi_comm(), path.as_posix(), "r") as h5file:
-        h5file.read(lmbda, "/em/lmbda")
-        h5file.read(Zetas, "/em/Zetas")
-        h5file.read(Zetaw, "/em/Zetaw")
         h5file.read(vs, "/ep/vs")
         h5file.read(mech_state, "/mechanics/state")
-
+        h5file.read(Zetas_prev, "/em/Zetas_prev")
+        h5file.read(Zetaw_prev, "/em/Zetaw_prev")
     cell_inits = vs_functions_to_dict(vs)
-    coupling = em_model.EMCoupling(mesh, lmbda=lmbda, Zetas=Zetas, Zetaw=Zetaw)
 
-    # Set-up solver and time it
+    lmbda = dolfin.Function(V, name="lambda")
+    Zetas = dolfin.Function(V, name="Zetas")
+    Zetaw = dolfin.Function(V, name="Zetaw")
+
+    dolfin.assign(lmbda, cell_inits["lmbda"])
+    dolfin.assign(Zetas, cell_inits["Zetas"])
+    dolfin.assign(Zetaw, cell_inits["Zetaw"])
+
+    coupling = em_model.EMCoupling(
+        mesh,
+        lmbda=lmbda,
+        Zetas=Zetas_prev,
+        Zetaw=Zetaw_prev,
+    )
+
     solver = ep_model.setup_solver(
         mesh,
         state_params["dt"],
@@ -180,7 +192,6 @@ def load_state(path):
         cell_params=cell_params,
         cell_inits=cell_inits,
     )
-
     coupling.register_ep_model(solver)
 
     bnd_cond_dict = dict([(0, "dirichlet"), (1, "rigid")])
@@ -195,6 +206,7 @@ def load_state(path):
     )
 
     mech_heart.state.assign(mech_state)
+
     return EMState(
         coupling=coupling,
         solver=solver,
@@ -211,8 +223,6 @@ def load_initial_condions_from_h5(path):
         raise FileNotFoundError(f"File {path} does not exist")
     if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
         print(f"Loading initial conditions from {path}")
-
-    from ORdmm_Land_em_coupling_strong import vs_functions_to_dict
 
     with h5pyfile(path) as h5file:
         vs_signature = h5file["ep"]["vs"].attrs["signature"].decode()

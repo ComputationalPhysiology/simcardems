@@ -5,7 +5,6 @@ import cbcbeat
 import dolfin
 
 from .ORdmm_Land import ORdmm_Land as CellModel
-from .save_load_functions import load_initial_condions_from_h5
 
 
 def define_conductivity_tensor(chi, C_m):
@@ -169,6 +168,8 @@ def setup_solver(
                 d = json.load(fid)
             cell_inits_.update(d)
         else:
+            from .save_load_functions import load_initial_condions_from_h5
+
             assert Path(cell_init_file).suffix == ".h5", "Expecting .h5 format"
             cell_inits = load_initial_condions_from_h5(cell_init_file)
 

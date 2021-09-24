@@ -19,7 +19,7 @@ class LandModel(pulse.ActiveModel):
         s0=None,
         n0=None,
         eta=0,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(f0=f0, s0=s0, n0=n0)
         self._eta = eta
@@ -34,8 +34,13 @@ class LandModel(pulse.ActiveModel):
 
         self.Zetas = Zetas
         self.Zetaw = Zetaw
+
         self.Zetas_prev = dolfin.Function(self.Zetas.function_space())
+        self.Zetas_prev_prev = dolfin.Function(self.Zetas.function_space())
+
         self.Zetaw_prev = dolfin.Function(self.Zetaw.function_space())
+        self.Zetaw_prev_prev = dolfin.Function(self.Zetaw.function_space())
+
         self.Ta_current = dolfin.Function(function_space, name="Ta")
         self.lmbda_prev = dolfin.Function(function_space)
         self.lmbda_current = dolfin.Function(function_space)
@@ -45,6 +50,9 @@ class LandModel(pulse.ActiveModel):
     def update_prev(self):
         self.XS_prev.vector()[:] = self.XS.vector()
         self.XW_prev.vector()[:] = self.XW.vector()
+
+        self.Zetas_prev_prev.vector()[:] = self.Zetas_prev.vector()
+        self.Zetaw_prev_prev.vector()[:] = self.Zetaw_prev.vector()
         self.Zetas_prev.vector()[:] = self.Zetas.vector()
         self.Zetaw_prev.vector()[:] = self.Zetaw.vector()
         self.lmbda_prev.vector()[:] = self.lmbda_current.vector()
@@ -104,8 +112,9 @@ class LandModel(pulse.ActiveModel):
 
         Ta = h_lambda * (Tref / rs) * (self.XS * (Zetas + 1) + self.XW * Zetaw)
 
-        # Assign the current values so that we can retrive them for postprocessing
+        # Assign the current value of Ta so that we can retrive them for postprocessing
         self.Ta_current.assign(dolfin.project(Ta, self.function_space))
+        # Assign these in order to update the EM coupling
         self.lmbda_current.assign(dolfin.project(lmbda, self.function_space))
         self.Zetas.assign(dolfin.project(Zetas, self.function_space))
         self.Zetaw.assign(dolfin.project(Zetaw, self.function_space))
@@ -280,7 +289,14 @@ def setup_diriclet_bc(mesh, Lx, bnd_right_x):
     return bcs, marker_functions
 
 
-def setup_mechanics_model(mesh, coupling, dt, bnd_cond, cell_params, Lx):
+def setup_mechanics_model(
+    mesh,
+    coupling,
+    dt,
+    bnd_cond,
+    cell_params,
+    Lx,
+):
     """Setup mechanics model with dirichlet boundary conditions or rigid motion."""
 
     microstructure = setup_microstructure(mesh)
