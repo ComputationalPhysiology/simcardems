@@ -193,6 +193,7 @@ def load_state(path):
         cell_inits=cell_inits,
     )
     coupling.register_ep_model(solver)
+    coupling.update_mechanics()
 
     bnd_cond_dict = dict([(0, "dirichlet"), (1, "rigid")])
 

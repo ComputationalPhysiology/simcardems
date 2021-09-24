@@ -23,7 +23,7 @@ class EMCoupling:
 
     def register_ep_model(self, solver):
         self._ep_solver = solver
-        self.vs = solver.solution_fields()[1]
+        self.vs = solver.solution_fields()[0]
         self.XS, self.XS_assigner = utils.setup_assigner(self.vs, 40)
         self.XW, self.XW_assigner = utils.setup_assigner(self.vs, 41)
 
