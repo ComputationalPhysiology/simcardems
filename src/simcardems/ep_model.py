@@ -150,6 +150,7 @@ def setup_solver(
     cell_init_file=None,
 ):
 
+    print(__name__)
     ps = setup_splitting_solver_parameters(
         theta=theta,
         preconditioner=preconditioner,
@@ -185,6 +186,7 @@ def setup_solver(
     # Set-up cardiac model
     ep_heart = setup_ep_model(cellmodel, mesh)
     timer = dolfin.Timer("SplittingSolver: setup")
+
     solver = cbcbeat.SplittingSolver(ep_heart, ps)
     timer.stop()
     # Extract the solution fields and set the initial conditions

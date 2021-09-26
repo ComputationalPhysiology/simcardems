@@ -192,9 +192,8 @@ def load_state(path):
         cell_params=cell_params,
         cell_inits=cell_inits,
     )
-    coupling.register_ep_model(solver)
-    coupling.update_mechanics()
 
+    coupling.register_ep_model(solver)
     bnd_cond_dict = dict([(0, "dirichlet"), (1, "rigid")])
 
     mech_heart, bnd_right_x = mechanics_model.setup_mechanics_model(

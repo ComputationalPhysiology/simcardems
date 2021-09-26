@@ -1,4 +1,5 @@
 from pathlib import Path
+from unittest import mock
 
 import dolfin
 import pytest
@@ -31,9 +32,32 @@ def cell_params():
     ],
 )
 def ep_solver(request, mesh, coupling):
-    return simcardems.ep_model.setup_solver(
-        mesh=mesh,
-        dt=0.01,
-        coupling=coupling,
-        cell_init_file=request.param,
-    )
+
+    params = dolfin.Parameters("CardiacODESolver")
+    params.add("scheme", "BackwardEuler")
+    states = simcardems.ORdmm_Land.ORdmm_Land.default_initial_conditions()
+    modelparams = simcardems.ORdmm_Land.ORdmm_Land.default_parameters()
+    VS = dolfin.VectorFunctionSpace(mesh, "CG", 1, dim=len(states))
+    vs = dolfin.Function(VS)
+    vs.assign(dolfin.Constant(list(states.values())))
+    vs_ = vs.copy()
+
+    config = {
+        "default_parameters.return_value": params,
+        "__name__": "CardiacODESolver",
+    }
+
+    with mock.patch(
+        "simcardems.ep_model.cbcbeat.splittingsolver.CardiacODESolver", **config
+    ) as m:
+        instance = m.return_value
+        instance.solution_fields.return_value = (vs_, vs)
+        instance._model.parameters.return_value = modelparams
+        solver = simcardems.ep_model.setup_solver(
+            mesh=mesh,
+            dt=0.01,
+            coupling=coupling,
+            cell_init_file=request.param,
+            scheme="ForwardEuler",
+        )
+    yield solver

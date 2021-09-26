@@ -99,6 +99,10 @@ def main(
     reset_state=True,
     cell_init_file=None,
 ):
+    from pyinstrument import Profiler
+
+    profiler = Profiler()
+    profiler.start()
 
     if add_release and bnd_cond != "dirichlet":
         raise RuntimeError(
@@ -172,6 +176,12 @@ def main(
     time_stepper = cbcbeat.utils.TimeStepper((t0, T), dt, annotate=False)
     save_it = int(1 / dt)  # Save every millisecond
 
+    # code you want to profile
+
+    profiler.stop()
+
+    profiler.print()
+    exit()
     pbar = tqdm(time_stepper, total=round((T - t0) / dt))
     for (i, (t0, t1)) in enumerate(pbar):
 
