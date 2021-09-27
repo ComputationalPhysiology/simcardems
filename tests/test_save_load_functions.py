@@ -1,4 +1,3 @@
-from pathlib import Path
 from unittest import mock
 
 import numpy as np
@@ -7,10 +6,15 @@ import simcardems
 from simcardems import save_load_functions as slf
 
 
-def tests_h5pyfile():
-    dummyfile = Path("tmp_h5pyfile.h5")
-    if dummyfile.is_file():
-        dummyfile.unlink()
+@pytest.fixture
+def dummyfile():
+    path = "tmp_h5pyfile.h5"
+    simcardems.utils.remove_file(path)
+    yield path
+    simcardems.utils.remove_file(path)
+
+
+def tests_h5pyfile(dummyfile):
 
     h5group = "test"
     data1 = [1, 2, 3, 4]
@@ -32,8 +36,6 @@ def tests_h5pyfile():
         assert "data2" in h5file[h5group]
         assert np.isclose(h5file[h5group]["data2"][:], data2).all()
 
-    dummyfile.unlink()
-
 
 @pytest.mark.parametrize(
     "data",
@@ -45,11 +47,7 @@ def tests_h5pyfile():
         {"a": 1.0, "b": 2, "c": "three", "d": [1, 2]},
     ),
 )
-def test_dict_to_h5(data):
-
-    dummyfile = Path("tmp_h5pyfile.h5")
-    if dummyfile.is_file():
-        dummyfile.unlink()
+def test_dict_to_h5(data, dummyfile):
 
     h5group = "testgroup"
     slf.dict_to_h5(data, dummyfile, h5group)
@@ -59,12 +57,17 @@ def test_dict_to_h5(data):
 
     assert loaded_data == data
 
-    dummyfile.unlink()
-
 
 @pytest.mark.slow
 @mock.patch("simcardems.mechanics_model.pulse.mechanicsproblem.MechanicsProblem.solve")
-def test_save_and_load_state(solve_mock, mesh, coupling, ep_solver, cell_params):
+def test_save_and_load_state(
+    solve_mock,
+    dummyfile,
+    mesh,
+    coupling,
+    ep_solver,
+    cell_params,
+):
 
     solve_mock.return_value = (1, True)  # (niter, nconv)
     coupling.register_ep_model(ep_solver)
@@ -93,10 +96,8 @@ def test_save_and_load_state(solve_mock, mesh, coupling, ep_solver, cell_params)
     coupling.XW.vector()[:] = 1.0
     mech_heart.state.vector()[:] = 1.0
 
-    state_path = Path("tmp_state.h5")
-
     slf.save_state(
-        state_path,
+        dummyfile,
         solver=ep_solver,
         mech_heart=mech_heart,
         dt=dt,
@@ -111,7 +112,7 @@ def test_save_and_load_state(solve_mock, mesh, coupling, ep_solver, cell_params)
         m.return_value = ep_solver
 
         coupling_, ep_solver_, mech_heart_, bnd_right_x, mesh_, t0_ = slf.load_state(
-            state_path,
+            dummyfile,
         )
 
     assert t0_ == t0
@@ -119,11 +120,8 @@ def test_save_and_load_state(solve_mock, mesh, coupling, ep_solver, cell_params)
     assert simcardems.utils.compute_norm(ep_solver.vs_, ep_solver_.vs_) < 1e-12
     assert simcardems.utils.compute_norm(mech_heart.state, mech_heart_.state) < 1e-12
     assert simcardems.utils.compute_norm(coupling.vs, coupling_.vs) < 1e-12
-    # TODO: Make sure we can get these lines to also pass
     assert simcardems.utils.compute_norm(coupling.XS, coupling_.XS) < 1e-12
     assert simcardems.utils.compute_norm(coupling.XW, coupling_.XW) < 1e-12
     assert simcardems.utils.compute_norm(coupling.lmbda, coupling_.lmbda) < 1e-12
     assert simcardems.utils.compute_norm(coupling.Zetas, coupling_.Zetas) < 1e-12
     assert simcardems.utils.compute_norm(coupling.Zetaw, coupling_.Zetaw) < 1e-12
-
-    state_path.unlink()
