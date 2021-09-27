@@ -298,7 +298,6 @@ def setup_mechanics_model(
     Lx,
 ):
     """Setup mechanics model with dirichlet boundary conditions or rigid motion."""
-
     microstructure = setup_microstructure(mesh)
 
     bnd_right_x = dolfin.Constant(0.0)
@@ -310,14 +309,12 @@ def setup_mechanics_model(
             Lx=Lx,
             bnd_right_x=bnd_right_x,
         )
-
     # Create the geometry
     geometry = pulse.Geometry(
         mesh=mesh,
         microstructure=microstructure,
         marker_functions=marker_functions,
     )
-
     # Create the material
     material_parameters = pulse.Guccione.default_parameters()
     material_parameters["CC"] = 2.0
@@ -325,7 +322,6 @@ def setup_mechanics_model(
     material_parameters["bfs"] = 4.0
     material_parameters["bt"] = 2.0
     V = dolfin.FunctionSpace(mesh, "CG", 1)
-
     active_model = LandModel(
         f0=microstructure.f0,
         s0=microstructure.s0,
@@ -340,16 +336,13 @@ def setup_mechanics_model(
         dt=dt,
         function_space=V,
     )
-
     material = pulse.Guccione(
         params=material_parameters,
         active_model=active_model,
     )
-
     Problem = MechanicsProblem
     if bnd_cond == "rigid":
         Problem = RigidMotionProblem
-
     problem = Problem(
         geometry,
         material,
@@ -357,5 +350,4 @@ def setup_mechanics_model(
         solver_parameters={"linear_solver": "mumps"},
     )
     problem.solve()
-
     return problem, bnd_right_x

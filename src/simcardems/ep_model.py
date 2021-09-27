@@ -149,8 +149,6 @@ def setup_solver(
     cell_inits=None,
     cell_init_file=None,
 ):
-
-    print(__name__)
     ps = setup_splitting_solver_parameters(
         theta=theta,
         preconditioner=preconditioner,
@@ -188,6 +186,7 @@ def setup_solver(
     timer = dolfin.Timer("SplittingSolver: setup")
 
     solver = cbcbeat.SplittingSolver(ep_heart, ps)
+
     timer.stop()
     # Extract the solution fields and set the initial conditions
     (vs_, vs, vur) = solver.solution_fields()

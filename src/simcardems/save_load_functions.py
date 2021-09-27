@@ -184,7 +184,6 @@ def load_state(path):
         Zetas=Zetas_prev,
         Zetaw=Zetaw_prev,
     )
-
     solver = ep_model.setup_solver(
         mesh,
         state_params["dt"],
@@ -192,7 +191,6 @@ def load_state(path):
         cell_params=cell_params,
         cell_inits=cell_inits,
     )
-
     coupling.register_ep_model(solver)
     bnd_cond_dict = dict([(0, "dirichlet"), (1, "rigid")])
 
@@ -204,7 +202,6 @@ def load_state(path):
         cell_params=solver.ode_solver._model.parameters(),
         Lx=state_params["Lx"],
     )
-
     mech_heart.state.assign(mech_state)
 
     return EMState(

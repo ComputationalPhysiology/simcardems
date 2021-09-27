@@ -32,7 +32,6 @@ def cell_params():
     ],
 )
 def ep_solver(request, mesh, coupling):
-
     params = dolfin.Parameters("CardiacODESolver")
     params.add("scheme", "BackwardEuler")
     states = simcardems.ORdmm_Land.ORdmm_Land.default_initial_conditions()

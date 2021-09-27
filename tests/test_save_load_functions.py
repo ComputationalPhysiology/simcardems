@@ -63,8 +63,10 @@ def test_dict_to_h5(data):
 
 
 @pytest.mark.slow
-def test_save_and_load_state(mesh, coupling, ep_solver, cell_params):
+@mock.patch("simcardems.mechanics_model.pulse.mechanicsproblem.MechanicsProblem.solve")
+def test_save_and_load_state(solve_mock, mesh, coupling, ep_solver, cell_params):
 
+    solve_mock.return_value = (1, True)  # (niter, nconv)
     coupling.register_ep_model(ep_solver)
 
     dt = 0.01
@@ -73,6 +75,7 @@ def test_save_and_load_state(mesh, coupling, ep_solver, cell_params):
     Lz = 1
 
     bnd_cond = "dirichlet"
+
     mech_heart, bnd_right_x = simcardems.mechanics_model.setup_mechanics_model(
         mesh=mesh,
         coupling=coupling,
@@ -82,16 +85,13 @@ def test_save_and_load_state(mesh, coupling, ep_solver, cell_params):
         Lx=1,
     )
 
-    nsteps = 10
-    for i in range(nsteps):
-        t0 = i * dt
-        t1 = (i + 1) * dt
-        ep_solver.step((t0, t1))
-        coupling.update_mechanics()
-        mech_heart.solve()
-        mech_heart.material.active.update_prev()
-        coupling.update_ep()
-        ep_solver.vs_.assign(ep_solver.vs)
+    # Save some non-zero values
+    t0 = 1.0
+    ep_solver.vs.vector()[:] = 1.0
+    ep_solver.vs_.vector()[:] = 1.0
+    coupling.XS.vector()[:] = 1.0
+    coupling.XW.vector()[:] = 1.0
+    mech_heart.state.vector()[:] = 1.0
 
     state_path = Path("tmp_state.h5")
 
@@ -120,8 +120,8 @@ def test_save_and_load_state(mesh, coupling, ep_solver, cell_params):
     assert simcardems.utils.compute_norm(mech_heart.state, mech_heart_.state) < 1e-12
     assert simcardems.utils.compute_norm(coupling.vs, coupling_.vs) < 1e-12
     # TODO: Make sure we can get these lines to also pass
-    # assert simcardems.utils.compute_norm(coupling.XS, coupling_.XS) < 1e-12
-    # assert simcardems.utils.compute_norm(coupling.XW, coupling_.XW) < 1e-12
+    assert simcardems.utils.compute_norm(coupling.XS, coupling_.XS) < 1e-12
+    assert simcardems.utils.compute_norm(coupling.XW, coupling_.XW) < 1e-12
     assert simcardems.utils.compute_norm(coupling.lmbda, coupling_.lmbda) < 1e-12
     assert simcardems.utils.compute_norm(coupling.Zetas, coupling_.Zetas) < 1e-12
     assert simcardems.utils.compute_norm(coupling.Zetaw, coupling_.Zetaw) < 1e-12
