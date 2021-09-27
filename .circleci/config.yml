@@ -39,8 +39,7 @@ jobs:
           paths:
             - ~/.cache/instant
             - ~/.cache/dijitso
-            - ~/.instant
-            - ~/.dijitso
+            - ~/.cache/pip
 
       - store_artifacts:
           path: htmlcov
