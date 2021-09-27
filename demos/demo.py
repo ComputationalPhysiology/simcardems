@@ -85,15 +85,6 @@ dolfin.parameters["form_compiler"]["representation"] = "uflacs"
 dolfin.set_log_level(40)
 
 
-def compute_norm(x, x_prev):
-    x_norm = x.vector().norm("l2")
-    e = x.vector() - x_prev.vector()
-    norm = e.norm("l2")
-    if x_norm > 0:
-        norm /= x_norm
-    return norm
-
-
 def main(
     outdir="results",
     add_release=True,
@@ -197,8 +188,8 @@ def main(
             coupling.update_mechanics()
 
         with dolfin.Timer("[demo] Compute norm"):
-            XS_norm = compute_norm(coupling.XS, pre_XS)
-        XW_norm = compute_norm(coupling.XW, pre_XW)
+            XS_norm = utils.compute_norm(coupling.XS, pre_XS)
+        XW_norm = utils.compute_norm(coupling.XW, pre_XW)
 
         pbar.set_postfix(
             {
@@ -240,7 +231,6 @@ def main(
     with dolfin.Timer("[demo] Save state"):
         io.save_state(
             state_path,
-            coupling=coupling,
             solver=solver,
             mech_heart=mech_heart,
             dt=dt,

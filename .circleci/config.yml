@@ -21,7 +21,7 @@ jobs:
 
       - restore_cache:
           keys:
-            - v2-dolfin-jit-cache
+            - dolfin-jit-cache-pip
 
       - run:
           name: run pre-commit hooks
@@ -35,10 +35,11 @@ jobs:
             python3 -m pytest
 
       - save_cache:
-          key: v2-dolfin-jit-cache
+          key: dolfin-jit-cache-pip
           paths:
             - ~/.cache/instant
             - ~/.cache/dijitso
+            - ~/.cache/pip
 
       - store_artifacts:
           path: htmlcov
