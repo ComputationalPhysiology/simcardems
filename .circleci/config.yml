@@ -17,7 +17,7 @@ jobs:
           command: |
             python3 -m pip install --upgrade pip
             python3 -m pip install h5py --no-binary=h5py
-            python3 -m pip install ".[dev]"
+            python3 -m pip install -e ".[dev]"
 
       - restore_cache:
           keys:
