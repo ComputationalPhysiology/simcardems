@@ -2,7 +2,7 @@
 
 # Simula Cardiac Electro-Mechanics Solver
 
-`simcardems` is a FEniCS-based cardiac electro-mechancis solver and is developed as a part of the [SimCardio Test project](https://www.simcardiotest.eu/wordpress/). The solver depdens on [`pulse`](https://github.com/ComputationalPhysiology/pulse) and [`cbcbeat`](https://github.com/ComputationalPhysiology/cbcbeat).
+`simcardems` is a FEniCS-based cardiac electro-mechanics solver and is developed as a part of the [SimCardio Test project](https://www.simcardiotest.eu/wordpress/). The solver depdens on [`pulse`](https://github.com/ComputationalPhysiology/pulse) and [`cbcbeat`](https://github.com/ComputationalPhysiology/cbcbeat).
 
 
 ## Installation
@@ -22,7 +22,7 @@ python -m pip install .
 
 ### Development installation
 
-Devlopers shou use editable install and install the development requirements using the following command
+Developers should use editable install and install the development requirements using the following command
 ```
 python -m pip install -e ".[dev]"
 ```
@@ -34,12 +34,12 @@ Note that linters and formatters will run in the CI system.
 
 
 ## Getting started
-Checkout the demos in the [demos](demos) folders.
+Checkout the demos in the [demos](demos) folder.
 
 
 ## Automated test
 
-Test are provided in the folder [tests](tests). You can run the test with pytest
+Tests are provided in the folder [tests](tests). You can run the tests with pytest
 
 ```
 python3 -m pytest tests -vv
