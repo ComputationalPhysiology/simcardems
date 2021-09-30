@@ -27,10 +27,6 @@ jobs:
           python3 -m pip install h5py --no-binary=h5py
           python3 -m pip install -e ".[dev]"
 
-      - name: Run pre-commit hooks
-        run: |
-          pre-commit run --all-files --show-diff-on-failure
-
       - name: Test with pytest
         run: |
           python3 -m pytest
