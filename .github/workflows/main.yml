@@ -12,15 +12,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Cache pip and dolfin cache
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cache/instant
-            ~/.cache/dijitso
-            ~/.cache/pip
-          key: pip-dolfin-cache
-
       - name: Install dependencies
         run: |
           python3 -m pip install --upgrade pip
@@ -29,11 +20,11 @@ jobs:
 
       - name: Run flake8
         run: |
-          python3 -m flake8
+          python3 -m flake8 src tests
 
       - name: Run black
         run: |
-          python3 -m black --check
+          python3 -m black --check src tests
 
       - name: Test with pytest
         run: |
