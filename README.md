@@ -1,4 +1,4 @@
-[![CircleCI](https://circleci.com/gh/ComputationalPhysiology/simcardems/tree/master.svg?style=svg&circle-token=2f9721e750a2e303633335ee76b8f67c8912b493)](https://circleci.com/gh/ComputationalPhysiology/simcardems/tree/master)
+[![CI](https://github.com/ComputationalPhysiology/simcardems/actions/workflows/main.yml/badge.svg)](https://github.com/ComputationalPhysiology/simcardems/actions/workflows/main.yml)
 
 # Simula Cardiac Electro-Mechanics Solver
 
