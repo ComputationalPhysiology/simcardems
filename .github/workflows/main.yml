@@ -11,7 +11,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/checkout@v2
 
       - name: Cache pip and dolfin cache
         uses: actions/cache@v2
@@ -20,6 +19,7 @@ jobs:
             ~/.cache/instant
             ~/.cache/dijitso
             ~/.cache/pip
+          key: pip-dolfin-cache
 
       - name: Install dependencies
         run: |
