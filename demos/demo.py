@@ -9,7 +9,7 @@ here = Path(__file__).parent.absolute()
 parser = get_parser()
 args = vars(parser.parse_args())
 
-cell_init_file = args["cell_init_file"] or None
+cell_init_file = args["cell_init_file"]
 if args["reset_state"] and cell_init_file:
     cell_init_file = here.parent.joinpath(
         "initial_conditions",
@@ -17,7 +17,7 @@ if args["reset_state"] and cell_init_file:
 
 main(
     args["outdir"],
-    T=args["endtime"],
+    T=args["T"],
     T_release=args["T_release"],
     bnd_cond=args["bnd_cond"],
     add_release=args["add_release"],
