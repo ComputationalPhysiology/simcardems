@@ -1,9 +1,12 @@
 import warnings
+from pathlib import Path
 
 import dolfin
 import h5py
 import matplotlib.pyplot as plt
 import numpy as np
+
+from .datacollector import DataLoader
 
 
 def center_func(fmin, fmax):
@@ -361,3 +364,60 @@ class Analysis:
         ax.set_xlabel("Numer of beats")
         ax.set_ylabel("% change from previous beat")
         fig.savefig(outdir + "/compare-peak-values.png", dpi=300)
+
+
+def plot_state_traces(results_file):
+
+    fig, ax = plt.subplots(2, 2, figsize=(10, 8), sharex=True)
+    for add_release in [True, False]:
+        results_file = Path(results_file)
+        if not results_file.is_file():
+            continue
+
+        outdir = results_file.parent
+
+        loader = DataLoader(results_file)
+        bnd = Boundary(loader.mesh)
+
+        names = ["lmbda", "Ta", "V", "Ca"]
+
+        values = {name: np.zeros(len(loader.time_stamps)) for name in names}
+
+        for i, t in enumerate(loader.time_stamps):
+            for name, val in values.items():
+                func = loader.get(name, t)
+                dof_coords = func.function_space().tabulate_dof_coordinates()
+                dof = np.argmin(
+                    np.linalg.norm(dof_coords - np.array(bnd.center), axis=1),
+                )
+                if np.isclose(dof_coords[dof], np.array(bnd.center)).all():
+                    # If we have a dof at the center - evaluation at dof (cheaper)
+                    val[i] = func.vector().get_local()[dof]
+                else:
+                    # Otherwise, evaluation at center coordinates
+                    val[i] = func(bnd.center)
+
+        times = np.array(loader.time_stamps, dtype=float)
+
+        if times[-1] > 4000:
+            Analysis.plot_peaks(outdir, values["Ca"], 0.0002)
+
+        ax[0, 0].plot(times[1:], values["lmbda"][1:], label=f"release: {add_release}")
+        ax[0, 1].plot(times[1:], values["Ta"][1:], label=f"release: {add_release}")
+        ax[1, 0].plot(times, values["V"], label=f"release: {add_release}")
+        ax[1, 1].plot(times[1:], values["Ca"][1:], label=f"release: {add_release}")
+
+    ax[0, 0].set_title(r"$\lambda$")
+    ax[0, 1].set_title("Ta")
+    ax[1, 0].set_title("V")
+    ax[1, 1].set_title("Ca")
+    for axi in ax.flatten():
+        axi.grid()
+        axi.legend()
+        axi.set_xlim([0, 5000])
+    ax[1, 0].set_xlabel("Time [ms]")
+    ax[1, 1].set_xlabel("Time [ms]")
+    ax[0, 0].set_ylim(
+        [min(0.9, min(values["lmbda"][1:])), max(1.1, max(values["lmbda"][1:]))],
+    )
+    fig.savefig(outdir + ".png", dpi=300)

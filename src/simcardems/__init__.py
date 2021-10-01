@@ -1,3 +1,4 @@
+from . import cli
 from . import datacollector
 from . import em_model
 from . import ep_model
@@ -22,6 +23,7 @@ __all__ = [
     "postprocess",
     "save_load_functions",
     "utils",
+    "cli",
     "LandModel",
     "MechanicsProblem",
     "RigidMotionProblem",

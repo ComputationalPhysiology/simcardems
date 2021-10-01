@@ -161,7 +161,7 @@ def setup_solver(
         cell_params_.update(cell_params)
 
     cell_inits_ = CellModel.default_initial_conditions()
-    if cell_init_file is not None:
+    if cell_init_file != "":
         if Path(cell_init_file).suffix == ".json":
             with open(cell_init_file, "r") as fid:
                 d = json.load(fid)
