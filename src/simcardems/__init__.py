@@ -1,3 +1,5 @@
+import logging as _logging
+
 from . import cli
 from . import datacollector
 from . import em_model
@@ -13,6 +15,10 @@ from .em_model import EMCoupling
 from .mechanics_model import LandModel
 from .mechanics_model import MechanicsProblem
 from .mechanics_model import RigidMotionProblem
+
+for module in ["matplotlib", "h5py"]:
+    _logger = _logging.getLogger(module)
+    _logger.setLevel(_logging.WARNING)
 
 __all__ = [
     "datacollector",

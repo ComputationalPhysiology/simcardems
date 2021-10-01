@@ -339,31 +339,30 @@ def load_data(file, mesh, bnd, time_points):
     return data
 
 
-class Analysis:
-    def plot_peaks(outdir, data, threshold):
-        # Find peaks for assessment steady state
-        from scipy.signal import find_peaks
+def plot_peaks(fname, data, threshold):
+    # Find peaks for assessment steady state
+    from scipy.signal import find_peaks
 
-        peak_indices = find_peaks(data, height=threshold)
+    peak_indices = find_peaks(data, height=threshold)
 
-        for i, idx in enumerate(peak_indices[0]):
-            if i == 0:
-                x = [idx]
-                y = [data[idx]]
-            else:
-                x.append(idx)
-                y.append(data[idx])
+    for i, idx in enumerate(peak_indices[0]):
+        if i == 0:
+            x = [idx]
+            y = [data[idx]]
+        else:
+            x.append(idx)
+            y.append(data[idx])
 
-        # Calculate difference between consecutive list elements
-        change_y = [(s - q) / q * 100 for q, s in zip(y, y[1:])]
+    # Calculate difference between consecutive list elements
+    change_y = [(s - q) / q * 100 for q, s in zip(y, y[1:])]
 
-        fig, ax = plt.subplots()
-        ax.plot(change_y)
-        ax.set_title("Compare peak values")
-        ax.grid()
-        ax.set_xlabel("Numer of beats")
-        ax.set_ylabel("% change from previous beat")
-        fig.savefig(outdir + "/compare-peak-values.png", dpi=300)
+    fig, ax = plt.subplots()
+    ax.plot(change_y)
+    ax.set_title("Compare peak values")
+    ax.grid()
+    ax.set_xlabel("Numer of beats")
+    ax.set_ylabel("% change from previous beat")
+    fig.savefig(fname, dpi=300)
 
 
 def plot_state_traces(results_file):
@@ -400,7 +399,11 @@ def plot_state_traces(results_file):
         times = np.array(loader.time_stamps, dtype=float)
 
         if times[-1] > 4000:
-            Analysis.plot_peaks(outdir, values["Ca"], 0.0002)
+            plot_peaks(
+                outdir.joinpath("/compare-peak-values.png"),
+                values["Ca"],
+                0.0002,
+            )
 
         ax[0, 0].plot(times[1:], values["lmbda"][1:], label=f"release: {add_release}")
         ax[0, 1].plot(times[1:], values["Ta"][1:], label=f"release: {add_release}")
@@ -420,4 +423,4 @@ def plot_state_traces(results_file):
     ax[0, 0].set_ylim(
         [min(0.9, min(values["lmbda"][1:])), max(1.1, max(values["lmbda"][1:]))],
     )
-    fig.savefig(outdir + ".png", dpi=300)
+    fig.savefig(outdir.joinpath("state_traces.png"), dpi=300)

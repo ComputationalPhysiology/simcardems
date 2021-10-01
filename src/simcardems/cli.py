@@ -28,8 +28,20 @@ def get_parser():
     parser.add_argument(
         "-T",
         default=2000,
-        type=int,
+        type=float,
         help="define the endtime of simulation",
+    )
+    parser.add_argument(
+        "-dt",
+        default=0.02,
+        type=float,
+        help="Time step for EP solver",
+    )
+    parser.add_argument(
+        "-dx",
+        default=0.2,
+        type=float,
+        help="Spatial discretization",
     )
     parser.add_argument(
         "--bnd_cond",
@@ -63,12 +75,13 @@ def get_parser():
         default=150,
         help="define time to apply sudden release",
     )
+    parser.add_argument("--from-json", type=str, default="", help="Path to json file")
     return parser
 
 
 def main(
     outdir="results",
-    add_release=True,
+    add_release=False,
     T=200,
     T_release=100,
     dx=0.2,
