@@ -147,7 +147,7 @@ def setup_solver(
     preconditioner="sor",
     cell_params=None,
     cell_inits=None,
-    cell_init_file=None,
+    cell_init_file="",
 ):
     ps = setup_splitting_solver_parameters(
         theta=theta,
