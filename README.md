@@ -34,8 +34,15 @@ Note that linters and formatters will run in the CI system.
 
 
 ## Getting started
-Checkout the demos in the [demos](demos) folder.
-
+Once installed, you can run a simulation using the command
+```
+python3 -m simcardems
+```
+Type
+```
+python3 -m simcardems --help
+```
+to see all options.
 
 ## Automated test
 
