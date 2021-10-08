@@ -25,7 +25,7 @@ def cell_params():
 
 @pytest.fixture(
     params=[
-        None,
+        "",
         _here.parent.joinpath("demos")
         .joinpath("initial_conditions")
         .joinpath("init_5000beats.json"),

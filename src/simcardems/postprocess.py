@@ -1,9 +1,12 @@
 import warnings
+from pathlib import Path
 
 import dolfin
 import h5py
 import matplotlib.pyplot as plt
 import numpy as np
+
+from .datacollector import DataLoader
 
 
 def center_func(fmin, fmax):
@@ -336,28 +339,88 @@ def load_data(file, mesh, bnd, time_points):
     return data
 
 
-class Analysis:
-    def plot_peaks(outdir, data, threshold):
-        # Find peaks for assessment steady state
-        from scipy.signal import find_peaks
+def plot_peaks(fname, data, threshold):
+    # Find peaks for assessment steady state
+    from scipy.signal import find_peaks
 
-        peak_indices = find_peaks(data, height=threshold)
+    peak_indices = find_peaks(data, height=threshold)
 
-        for i, idx in enumerate(peak_indices[0]):
-            if i == 0:
-                x = [idx]
-                y = [data[idx]]
-            else:
-                x.append(idx)
-                y.append(data[idx])
+    for i, idx in enumerate(peak_indices[0]):
+        if i == 0:
+            x = [idx]
+            y = [data[idx]]
+        else:
+            x.append(idx)
+            y.append(data[idx])
 
-        # Calculate difference between consecutive list elements
-        change_y = [(s - q) / q * 100 for q, s in zip(y, y[1:])]
+    # Calculate difference between consecutive list elements
+    change_y = [(s - q) / q * 100 for q, s in zip(y, y[1:])]
 
-        fig, ax = plt.subplots()
-        ax.plot(change_y)
-        ax.set_title("Compare peak values")
-        ax.grid()
-        ax.set_xlabel("Numer of beats")
-        ax.set_ylabel("% change from previous beat")
-        fig.savefig(outdir + "/compare-peak-values.png", dpi=300)
+    fig, ax = plt.subplots()
+    ax.plot(change_y)
+    ax.set_title("Compare peak values")
+    ax.grid()
+    ax.set_xlabel("Numer of beats")
+    ax.set_ylabel("% change from previous beat")
+    fig.savefig(fname, dpi=300)
+
+
+def plot_state_traces(results_file):
+
+    fig, ax = plt.subplots(2, 2, figsize=(10, 8), sharex=True)
+    for add_release in [True, False]:
+        results_file = Path(results_file)
+        if not results_file.is_file():
+            continue
+
+        outdir = results_file.parent
+
+        loader = DataLoader(results_file)
+        bnd = Boundary(loader.mesh)
+
+        names = ["lmbda", "Ta", "V", "Ca"]
+
+        values = {name: np.zeros(len(loader.time_stamps)) for name in names}
+
+        for i, t in enumerate(loader.time_stamps):
+            for name, val in values.items():
+                func = loader.get(name, t)
+                dof_coords = func.function_space().tabulate_dof_coordinates()
+                dof = np.argmin(
+                    np.linalg.norm(dof_coords - np.array(bnd.center), axis=1),
+                )
+                if np.isclose(dof_coords[dof], np.array(bnd.center)).all():
+                    # If we have a dof at the center - evaluation at dof (cheaper)
+                    val[i] = func.vector().get_local()[dof]
+                else:
+                    # Otherwise, evaluation at center coordinates
+                    val[i] = func(bnd.center)
+
+        times = np.array(loader.time_stamps, dtype=float)
+
+        if times[-1] > 4000:
+            plot_peaks(
+                outdir.joinpath("/compare-peak-values.png"),
+                values["Ca"],
+                0.0002,
+            )
+
+        ax[0, 0].plot(times[1:], values["lmbda"][1:], label=f"release: {add_release}")
+        ax[0, 1].plot(times[1:], values["Ta"][1:], label=f"release: {add_release}")
+        ax[1, 0].plot(times, values["V"], label=f"release: {add_release}")
+        ax[1, 1].plot(times[1:], values["Ca"][1:], label=f"release: {add_release}")
+
+    ax[0, 0].set_title(r"$\lambda$")
+    ax[0, 1].set_title("Ta")
+    ax[1, 0].set_title("V")
+    ax[1, 1].set_title("Ca")
+    for axi in ax.flatten():
+        axi.grid()
+        axi.legend()
+        axi.set_xlim([0, 5000])
+    ax[1, 0].set_xlabel("Time [ms]")
+    ax[1, 1].set_xlabel("Time [ms]")
+    ax[0, 0].set_ylim(
+        [min(0.9, min(values["lmbda"][1:])), max(1.1, max(values["lmbda"][1:]))],
+    )
+    fig.savefig(outdir.joinpath("state_traces.png"), dpi=300)
