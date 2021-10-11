@@ -1,0 +1,9 @@
+htmlcov
+tests
+.coverage
+.git
+.github
+.gitignore
+.mypy_cache
+.pre-commit-config.yaml
+.pytest_cache

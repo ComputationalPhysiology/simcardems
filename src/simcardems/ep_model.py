@@ -5,7 +5,6 @@ import cbcbeat
 import dolfin
 
 from .ORdmm_Land import ORdmm_Land as CellModel
-from .save_load_functions import load_initial_condions_from_h5
 
 
 def define_conductivity_tensor(chi, C_m):
@@ -148,9 +147,8 @@ def setup_solver(
     preconditioner="sor",
     cell_params=None,
     cell_inits=None,
-    cell_init_file=None,
+    cell_init_file="",
 ):
-
     ps = setup_splitting_solver_parameters(
         theta=theta,
         preconditioner=preconditioner,
@@ -163,12 +161,14 @@ def setup_solver(
         cell_params_.update(cell_params)
 
     cell_inits_ = CellModel.default_initial_conditions()
-    if cell_init_file is not None:
+    if cell_init_file != "":
         if Path(cell_init_file).suffix == ".json":
             with open(cell_init_file, "r") as fid:
                 d = json.load(fid)
             cell_inits_.update(d)
         else:
+            from .save_load_functions import load_initial_condions_from_h5
+
             assert Path(cell_init_file).suffix == ".h5", "Expecting .h5 format"
             cell_inits = load_initial_condions_from_h5(cell_init_file)
 
@@ -184,7 +184,9 @@ def setup_solver(
     # Set-up cardiac model
     ep_heart = setup_ep_model(cellmodel, mesh)
     timer = dolfin.Timer("SplittingSolver: setup")
+
     solver = cbcbeat.SplittingSolver(ep_heart, ps)
+
     timer.stop()
     # Extract the solution fields and set the initial conditions
     (vs_, vs, vur) = solver.solution_fields()

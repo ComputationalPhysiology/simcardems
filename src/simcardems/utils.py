@@ -5,6 +5,15 @@ import numpy as np
 import ufl
 
 
+def compute_norm(x, x_prev):
+    x_norm = x.vector().norm("l2")
+    e = x.vector() - x_prev.vector()
+    norm = e.norm("l2")
+    if x_norm > 0:
+        norm /= x_norm
+    return norm
+
+
 def remove_file(path):
     path = Path(path)
     if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
