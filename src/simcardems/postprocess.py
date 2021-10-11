@@ -261,7 +261,7 @@ def load_times(filename):
     # Find time points
     time_points = None
 
-    if h5py.h5.get_config().mpi:
+    if h5py.h5.get_config().mpi and dolfin.MPI.size(dolfin.MPI.comm_world) > 1:
         h5file = h5py.File(filename, "r", driver="mpio", comm=MPI.COMM_WORLD)
     else:
         if dolfin.MPI.size(dolfin.MPI.comm_world) > 1:

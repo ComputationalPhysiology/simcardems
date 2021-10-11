@@ -23,7 +23,7 @@ def h5pyfile(h5name, filemode="r"):
     import h5py
     from mpi4py import MPI
 
-    if h5py.h5.get_config().mpi:
+    if h5py.h5.get_config().mpi and dolfin.MPI.size(dolfin.MPI.comm_world) > 1:
         h5file = h5py.File(h5name, filemode, driver="mpio", comm=MPI.COMM_WORLD)
     else:
         if dolfin.MPI.size(dolfin.MPI.comm_world) > 1:
