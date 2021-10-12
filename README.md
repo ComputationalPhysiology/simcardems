@@ -69,9 +69,9 @@ You can also specify a json file containing all the settings, e.g a file called 
     "dx": 0.2
 }
 ```
-and then run the simulation using the `--from-json` flag
+and then run the simulation using the `--from_json` flag
 ```
-python3 -m simcardems --from-json=args.json
+python3 -m simcardems --from_json=args.json
 ```
 
 ### Run using docker

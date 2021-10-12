@@ -75,7 +75,13 @@ def get_parser():
         default=150,
         help="define time to apply sudden release",
     )
-    parser.add_argument("--from-json", type=str, default="", help="Path to json file")
+    parser.add_argument(
+        "--from_json", 
+        type=str, 
+        default="", 
+        help="Path to json file"
+    )
+    
     return parser
 
 
@@ -92,6 +98,7 @@ def main(
     Lz=0.3,
     reset_state=True,
     cell_init_file="",
+    from_json="",
 ):
 
     dolfin.parameters["form_compiler"]["cpp_optimize"] = True
