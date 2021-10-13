@@ -1,5 +1,7 @@
 import dolfin
 import pulse
+from pulse.geometry import MarkerFunctions
+from pulse.mechanicsproblem import NeumannBC
 import ufl
 from pulse.material import active_stress
 
@@ -268,11 +270,11 @@ def setup_diriclet_bc(mesh, Lx, bnd_right_x):
                 dolfin.Constant((0.0, 0.0, 0.0)),  # should be kept fixed
                 left,  # in this region
             ),
-            # dolfin.DirichletBC(
+            #dolfin.DirichletBC(
             #    W.sub(0).sub(0),  # First component of u, i.e u_x
             #    bnd_right_x,  # should be kept fixed
             #    right,  # in this region
-            # ),
+            #),
             dolfin.DirichletBC(
                 W.sub(0).sub(1),  # Second component of u, i.e u_y
                 dolfin.Constant(0.0),  # should be kept fixed
@@ -285,7 +287,12 @@ def setup_diriclet_bc(mesh, Lx, bnd_right_x):
             ),
         ]
 
-    bcs = pulse.BoundaryConditions(dirichlet=(dirichlet_bc,))
+    neumann_bc = [pulse.NeumannBC(traction=dolfin.Constant(-1.0), marker=right_marker)]
+
+    base_spring = 20.0 #kPa/cm^2
+    robin_bc = [pulse.RobinBC(value=dolfin.Constant(base_spring), marker=right_marker)]
+    bcs = pulse.BoundaryConditions(dirichlet=(dirichlet_bc,), neumann=neumann_bc, robin=robin_bc) 
+    
     return bcs, marker_functions
 
 
