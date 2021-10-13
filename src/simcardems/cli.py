@@ -74,12 +74,7 @@ def get_parser():
         default=150,
         help="define time to apply sudden release",
     )
-    parser.add_argument(
-        "--from_json",
-        type=str,
-        default="",
-        help="Path to json file"
-    )
+    parser.add_argument("--from_json", type=str, default="", help="Path to json file")
     return parser
 
 
