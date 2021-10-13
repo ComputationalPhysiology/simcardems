@@ -24,7 +24,6 @@ def get_parser():
         type=str,
         help="define output directory",
     )
-    parser.add_argument("--dt", default=0.02, type=float, help="define delta t")
     parser.add_argument(
         "-T",
         default=2000,
@@ -81,7 +80,6 @@ def get_parser():
         default="", 
         help="Path to json file"
     )
-    
     return parser
 
 
