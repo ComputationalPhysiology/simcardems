@@ -148,7 +148,7 @@ def main():
 
             if add_release and t0 >= T_release:
                 print("Release")
-                pulse.iterate.iterate(mech_heart, bnd_right_x, -0.02 * Lx)
+                pulse.iterate.iterate(mech_heart, pre_stretch, -0.02 * Lx)
 
             # Update previous
             mech_heart.material.active.update_prev()
