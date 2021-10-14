@@ -1,9 +1,9 @@
+import typing
+
 import dolfin
 import pulse
-from pulse.geometry import MarkerFunctions
-from pulse.mechanicsproblem import NeumannBC
 import ufl
-from pulse.material import active_stress
+from mpi4py import MPI
 
 
 class LandModel(pulse.ActiveModel):
@@ -128,7 +128,7 @@ class LandModel(pulse.ActiveModel):
         C = F.T * F
 
         if diff == 0:
-            return active_stress.Wactive_transversally(
+            return pulse.material.active_stress.Wactive_transversally(
                 Ta=self.Ta(F),
                 C=C,
                 f0=self.f0,
@@ -244,11 +244,78 @@ def setup_microstructure(mesh):
     return pulse.Microstructure(f0=f0, s0=s0, n0=n0)
 
 
-def setup_diriclet_bc(mesh, Lx, bnd_right_x):
+def float_to_constant(x: typing.Union[dolfin.Constant, float]) -> dolfin.Constant:
+    """Convert float to a dolfin constant.
+    If value is allready a constant, do nothing.
+
+    Parameters
+    ----------
+    x : typing.Union[dolfin.Constant, float]
+        The value to be converted
+
+    Returns
+    -------
+    dolfin.Constant
+        The same value, wrapped in a constant
+    """
+    if isinstance(x, float):
+        return dolfin.Constant(x)
+    return x
+
+
+def setup_diriclet_bc(
+    mesh: dolfin.Mesh,
+    pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
+    traction: typing.Union[dolfin.Constant, float] = None,
+    spring: typing.Union[dolfin.Constant, float] = None,
+    fix_right_plane: bool = True,
+) -> typing.Tuple[pulse.BoundaryConditions, pulse.MarkerFunctions]:
+    """Completely fix the left side of the mesh (i.e the side with the
+    lowest x-values) and apply some boundary condition to the right side.
+
+
+    Parameters
+    ----------
+    mesh : dolfin.Mesh
+        A cube or box-shaped mesh
+    pre_stretch : typing.Union[dolfin.Constant, float], optional
+        Value representing the amount of pre stretch, by default None
+    traction : typing.Union[dolfin.Constant, float], optional
+        Value representing the amount of traction, by default None
+    spring : typing.Union[dolfin.Constant, float], optional
+        Value representing the stiffness of the string, by default None
+    fix_right_plane : bool, optional
+        Fix the right plane so that it is not able to move in any direction
+        except the x-direction, by default True
+
+    Returns
+    -------
+    typing.Tuple[pulse.BoundaryConditions, pulse.MarkerFunctions]
+        The boundary conditions and markers for the mesh
+
+    Notes
+    -----
+    If `pre_stretch` if different from None, a pre stretch will be applied
+    to the right side, through a Dirichlet boundary condition.
+
+    If `traction` is different from None then an external force is applied
+    to the right size, through a Neumann boundary condition.
+    A positive value means that the force is compressing while a
+    negative value means that it is stretching
+
+    If `spring` is different from None then the amount of force that needs
+    to be applied to displace the right boundary increases with the amount
+    of displacement. The value of `spring` represents the stiffness of the
+    spring.
+
+    """
+
+    # Get the value of the greatest x-coordinate
+    Lx = mesh.mpi_comm().allreduce(mesh.coordinates().max(0)[0], op=MPI.MAX)
+
     # Define domain to apply dirichlet boundary conditions
     left = dolfin.CompiledSubDomain("near(x[0], 0) && on_boundary")
     right = dolfin.CompiledSubDomain("near(x[0], Lx) && on_boundary", Lx=Lx)
-    # bottom = dolfin.CompiledSubDomain("near(x[1], 0) && on_boundary")
 
     boundary_markers = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim() - 1)
     boundary_markers.set_all(0)
@@ -257,42 +324,67 @@ def setup_diriclet_bc(mesh, Lx, bnd_right_x):
     left.mark(boundary_markers, left_marker)
     right_marker = 2
     right.mark(boundary_markers, right_marker)
-    # bottom_marker = 3
-    # bottom.mark(boundary_markers, bottom_marker)
 
     marker_functions = pulse.MarkerFunctions(ffun=boundary_markers)
 
     def dirichlet_bc(W):
         # W here refers to the state space
-        return [
+
+        # BC with fixing left size
+        bcs = [
             dolfin.DirichletBC(
-                W.sub(0),  # First component of u, i.e u_x
-                dolfin.Constant((0.0, 0.0, 0.0)),  # should be kept fixed
-                left,  # in this region
-            ),
-            #dolfin.DirichletBC(
-            #    W.sub(0).sub(0),  # First component of u, i.e u_x
-            #    bnd_right_x,  # should be kept fixed
-            #    right,  # in this region
-            #),
-            dolfin.DirichletBC(
-                W.sub(0).sub(1),  # Second component of u, i.e u_y
-                dolfin.Constant(0.0),  # should be kept fixed
-                right,  # in this region
-            ),
-            dolfin.DirichletBC(
-                W.sub(0).sub(2),  # Third component of u, i.e u_z
-                dolfin.Constant(0.0),  # should be kept fixed
-                right,  # in this region
+                W.sub(0),
+                dolfin.Constant((0.0, 0.0, 0.0)),
+                left,
             ),
         ]
 
-    neumann_bc = [pulse.NeumannBC(traction=dolfin.Constant(-1.0), marker=right_marker)]
+        if fix_right_plane:
+            bcs.extend(
+                [
+                    dolfin.DirichletBC(
+                        W.sub(0).sub(1),  # Second component of u, i.e u_y
+                        dolfin.Constant(0.0),  # should be kept fixed
+                        right,  # in this region
+                    ),
+                    dolfin.DirichletBC(
+                        W.sub(0).sub(2),  # Third component of u, i.e u_z
+                        dolfin.Constant(0.0),  # should be kept fixed
+                        right,  # in this region
+                    ),
+                ],
+            )
 
-    base_spring = 20.0 #kPa/cm^2
-    robin_bc = [pulse.RobinBC(value=dolfin.Constant(base_spring), marker=right_marker)]
-    bcs = pulse.BoundaryConditions(dirichlet=(dirichlet_bc,), neumann=neumann_bc, robin=robin_bc) 
-    
+        if pre_stretch is not None:
+            bcs.append(
+                dolfin.DirichletBC(
+                    W.sub(0).sub(0),
+                    float_to_constant(pre_stretch),
+                    right,
+                ),
+            )
+        return bcs
+
+    neumann_bc = []
+    if traction is not None:
+        neumann_bc.append(
+            pulse.NeumannBC(
+                traction=float_to_constant(traction),
+                marker=right_marker,
+            ),
+        )
+
+    robin_bc = []
+    if spring is not None:
+        robin_bc.append(
+            pulse.RobinBC(value=float_to_constant(spring), marker=right_marker),
+        )
+    bcs = pulse.BoundaryConditions(
+        dirichlet=(dirichlet_bc,),
+        neumann=neumann_bc,
+        robin=robin_bc,
+    )
+
     return bcs, marker_functions
 
 
@@ -302,19 +394,23 @@ def setup_mechanics_model(
     dt,
     bnd_cond,
     cell_params,
-    Lx,
+    pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
+    traction: typing.Union[dolfin.Constant, float] = None,
+    spring: typing.Union[dolfin.Constant, float] = None,
+    fix_right_plane: bool = False,
 ):
     """Setup mechanics model with dirichlet boundary conditions or rigid motion."""
     microstructure = setup_microstructure(mesh)
 
-    bnd_right_x = dolfin.Constant(0.0)
     marker_functions = None
-    bcs = []
+    bcs = None
     if bnd_cond == "dirichlet":
         bcs, marker_functions = setup_diriclet_bc(
             mesh=mesh,
-            Lx=Lx,
-            bnd_right_x=bnd_right_x,
+            pre_stretch=pre_stretch,
+            traction=traction,
+            spring=spring,
+            fix_right_plane=fix_right_plane,
         )
     # Create the geometry
     geometry = pulse.Geometry(
@@ -357,4 +453,4 @@ def setup_mechanics_model(
         solver_parameters={"linear_solver": "mumps"},
     )
     problem.solve()
-    return problem, bnd_right_x
+    return problem

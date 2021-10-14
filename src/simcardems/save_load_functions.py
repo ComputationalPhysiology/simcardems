@@ -18,7 +18,7 @@ from .ORdmm_Land import vs_functions_to_dict
 
 EMState = namedtuple(
     "EMState",
-    ["coupling", "solver", "mech_heart", "bnd_right_x", "mesh", "t0"],
+    ["coupling", "solver", "mech_heart", "mesh", "t0"],
 )
 
 
@@ -194,13 +194,12 @@ def load_state(path):
     coupling.register_ep_model(solver)
     bnd_cond_dict = dict([(0, "dirichlet"), (1, "rigid")])
 
-    mech_heart, bnd_right_x = mechanics_model.setup_mechanics_model(
+    mech_heart = mechanics_model.setup_mechanics_model(
         mesh=mesh,
         coupling=coupling,
         dt=state_params["dt"],
         bnd_cond=bnd_cond_dict[state_params["bnd_cond"]],
         cell_params=solver.ode_solver._model.parameters(),
-        Lx=state_params["Lx"],
     )
     mech_heart.state.assign(mech_state)
 
@@ -208,7 +207,6 @@ def load_state(path):
         coupling=coupling,
         solver=solver,
         mech_heart=mech_heart,
-        bnd_right_x=bnd_right_x,
         mesh=mesh,
         t0=state_params["t0"],
     )
