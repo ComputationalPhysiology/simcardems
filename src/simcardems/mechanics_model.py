@@ -244,12 +244,31 @@ def setup_microstructure(mesh):
     return pulse.Microstructure(f0=f0, s0=s0, n0=n0)
 
 
+def float_to_constant(x: typing.Union[dolfin.Constant, float]) -> dolfin.Constant:
+    """Convert float to a dolfin constant.
+    If value is allready a constant, do nothing.
+
+    Parameters
+    ----------
+    x : typing.Union[dolfin.Constant, float]
+        The value to be converted
+
+    Returns
+    -------
+    dolfin.Constant
+        The same value, wrapped in a constant
+    """
+    if isinstance(x, float):
+        return dolfin.Constant(x)
+    return x
+
+
 def setup_diriclet_bc(
     mesh: dolfin.Mesh,
-    pre_stretch: typing.Optional[float] = None,
-    traction: typing.Optional[float] = None,
-    spring: typing.Optional[float] = None,
-    fix_right_plane: bool = False,
+    pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
+    traction: typing.Union[dolfin.Constant, float] = None,
+    spring: typing.Union[dolfin.Constant, float] = None,
+    fix_right_plane: bool = True,
 ) -> typing.Tuple[pulse.BoundaryConditions, pulse.MarkerFunctions]:
     """Completely fix the left side of the mesh (i.e the side with the
     lowest x-values) and apply some boundary condition to the right side.
@@ -259,15 +278,15 @@ def setup_diriclet_bc(
     ----------
     mesh : dolfin.Mesh
         A cube or box-shaped mesh
-    pre_stretch : typing.Optional[float], optional
+    pre_stretch : typing.Union[dolfin.Constant, float], optional
         Value representing the amount of pre stretch, by default None
-    traction : typing.Optional[float], optional
+    traction : typing.Union[dolfin.Constant, float], optional
         Value representing the amount of traction, by default None
-    spring : typing.Optional[float], optional
+    spring : typing.Union[dolfin.Constant, float], optional
         Value representing the stiffness of the string, by default None
     fix_right_plane : bool, optional
         Fix the right plane so that it is not able to move in any direction
-        except the x-direction, by default False
+        except the x-direction, by default True
 
     Returns
     -------
@@ -339,9 +358,9 @@ def setup_diriclet_bc(
         if pre_stretch is not None:
             bcs.append(
                 dolfin.DirichletBC(
-                    W.sub(0).sub(0),  # First component of u, i.e u_x
-                    dolfin.Constant(pre_stretch),  # should be kept fixed
-                    right,  # in this region
+                    W.sub(0).sub(0),
+                    float_to_constant(pre_stretch),
+                    right,
                 ),
             )
         return bcs
@@ -349,13 +368,16 @@ def setup_diriclet_bc(
     neumann_bc = []
     if traction is not None:
         neumann_bc.append(
-            pulse.NeumannBC(traction=dolfin.Constant(traction), marker=right_marker),
+            pulse.NeumannBC(
+                traction=float_to_constant(traction),
+                marker=right_marker,
+            ),
         )
 
     robin_bc = []
     if spring is not None:
         robin_bc.append(
-            pulse.RobinBC(value=dolfin.Constant(spring), marker=right_marker),
+            pulse.RobinBC(value=float_to_constant(spring), marker=right_marker),
         )
     bcs = pulse.BoundaryConditions(
         dirichlet=(dirichlet_bc,),
@@ -372,16 +394,23 @@ def setup_mechanics_model(
     dt,
     bnd_cond,
     cell_params,
-    Lx,
+    pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
+    traction: typing.Union[dolfin.Constant, float] = None,
+    spring: typing.Union[dolfin.Constant, float] = None,
+    fix_right_plane: bool = False,
 ):
     """Setup mechanics model with dirichlet boundary conditions or rigid motion."""
     microstructure = setup_microstructure(mesh)
 
     marker_functions = None
-    bcs = []
+    bcs = None
     if bnd_cond == "dirichlet":
         bcs, marker_functions = setup_diriclet_bc(
             mesh=mesh,
+            pre_stretch=pre_stretch,
+            traction=traction,
+            spring=spring,
+            fix_right_plane=fix_right_plane,
         )
     # Create the geometry
     geometry = pulse.Geometry(

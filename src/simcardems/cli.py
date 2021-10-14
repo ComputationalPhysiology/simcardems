@@ -1,9 +1,9 @@
 import argparse
+import typing
 from pathlib import Path
 
 import cbcbeat
 import dolfin
-import pulse
 from tqdm import tqdm
 
 from . import em_model
@@ -62,24 +62,7 @@ def get_parser():
         type=str,
         help="If reset_state=True, define filename of initial conditions (json or h5 file)",
     )
-    parser.add_argument(
-        "--add_release",
-        type=bool,
-        default=False,
-        help="define if sudden release should be added",
-    )
-    parser.add_argument(
-        "--T_release",
-        type=int,
-        default=150,
-        help="define time to apply sudden release",
-    )
-    parser.add_argument(
-        "--from_json",
-        type=str,
-        default="",
-        help="Path to json file"
-    )
+    parser.add_argument("--from_json", type=str, default="", help="Path to json file")
     return parser
 
 
@@ -87,7 +70,6 @@ def main(
     outdir="results",
     add_release=False,
     T=200,
-    T_release=100,
     dx=0.2,
     dt=0.02,
     bnd_cond="dirichlet",
@@ -97,6 +79,10 @@ def main(
     reset_state=True,
     cell_init_file="",
     from_json="",
+    pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
+    traction: typing.Union[dolfin.Constant, float] = None,
+    spring: typing.Union[dolfin.Constant, float] = None,
+    fix_right_plane: bool = True,
 ):
 
     dolfin.parameters["form_compiler"]["cpp_optimize"] = True
@@ -143,13 +129,16 @@ def main(
         coupling.register_ep_model(solver)
 
         with dolfin.Timer("[demo] Setup Mech solver"):
-            mech_heart, bnd_right_x = mechanics_model.setup_mechanics_model(
+            mech_heart = mechanics_model.setup_mechanics_model(
                 mesh=mesh,
                 coupling=coupling,
                 dt=dt,
                 bnd_cond=bnd_cond,
                 cell_params=solver.ode_solver._model.parameters(),
-                Lx=Lx,
+                pre_stretch=pre_stretch,
+                traction=traction,
+                spring=spring,
+                fix_right_plane=fix_right_plane,
             )
         t0 = 0
 
@@ -210,10 +199,6 @@ def main(
             # Solve the Mechanics model
             with dolfin.Timer("[demo] Solve mechanics"):
                 mech_heart.solve()
-
-            if add_release and t0 >= T_release:
-                print("Release")
-                pulse.iterate.iterate(mech_heart, bnd_right_x, -0.02 * Lx)
 
             # Update previous
             mech_heart.material.active.update_prev()
