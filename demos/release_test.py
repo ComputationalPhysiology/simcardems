@@ -1,89 +1,37 @@
-import argparse
-import typing
 from pathlib import Path
 
 import cbcbeat
 import dolfin
+import pulse
+from simcardems import em_model
+from simcardems import ep_model
+from simcardems import mechanics_model
+from simcardems import save_load_functions as io
+from simcardems import utils
+from simcardems.datacollector import DataCollector
+from simcardems.postprocess import plot_state_traces
 from tqdm import tqdm
 
-from . import em_model
-from . import ep_model
-from . import mechanics_model
-from . import save_load_functions as io
-from . import utils
-from .datacollector import DataCollector
-from .postprocess import plot_state_traces
+here = Path(__file__).parent.absolute()
 
 
-def get_parser():
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-o",
-        "--outdir",
-        default="results",
-        type=str,
-        help="define output directory",
-    )
-    parser.add_argument(
-        "-T",
-        default=2000,
-        type=float,
-        help="define the endtime of simulation",
-    )
-    parser.add_argument(
-        "-dt",
-        default=0.02,
-        type=float,
-        help="Time step for EP solver",
-    )
-    parser.add_argument(
-        "-dx",
-        default=0.2,
-        type=float,
-        help="Spatial discretization",
-    )
-    parser.add_argument(
-        "--bnd_cond",
-        default="dirichlet",
-        type=str,
-        choices=["dirichlet", "rigid"],
-        help="choose boundary conditions",
-    )
-    parser.add_argument(
-        "--reset_state",
-        default=True,
-        type=bool,
-        help="define if state should be loaded (True) or newly created (False)",
-    )
-    parser.add_argument(
-        "-IC",
-        "--cell_init_file",
-        default="",
-        type=str,
-        help="If reset_state=True, define filename of initial conditions (json or h5 file)",
-    )
-    parser.add_argument("--from_json", type=str, default="", help="Path to json file")
-    return parser
+def main():
 
+    outdir = "results_release"
+    add_release = True
+    T = 200
+    T_release = 100
+    dx = 0.2
+    dt = 0.02
+    bnd_cond = "dirichlet"
+    Lx = 2.0
+    Ly = 0.7
+    Lz = 0.3
+    reset_state = True
 
-def main(
-    outdir="results",
-    add_release=False,
-    T=200,
-    dx=0.2,
-    dt=0.02,
-    bnd_cond="dirichlet",
-    Lx=2.0,
-    Ly=0.7,
-    Lz=0.3,
-    reset_state=True,
-    cell_init_file="",
-    from_json="",
-    pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
-    traction: typing.Union[dolfin.Constant, float] = None,
-    spring: typing.Union[dolfin.Constant, float] = None,
-    fix_right_plane: bool = True,
-):
+    cell_init_file = here.joinpath(
+        "initial_conditions",
+    ).joinpath("init_5000beats_varlmbda.json")
 
     dolfin.parameters["form_compiler"]["cpp_optimize"] = True
     flags = ["-O3", "-ffast-math", "-march=native"]
@@ -129,16 +77,14 @@ def main(
         coupling.register_ep_model(solver)
 
         with dolfin.Timer("[demo] Setup Mech solver"):
+            pre_stretch = dolfin.Constant(0.1)
             mech_heart = mechanics_model.setup_mechanics_model(
                 mesh=mesh,
                 coupling=coupling,
                 dt=dt,
                 bnd_cond=bnd_cond,
-                cell_params=solver.ode_solver._model.parameters(),
                 pre_stretch=pre_stretch,
-                traction=traction,
-                spring=spring,
-                fix_right_plane=fix_right_plane,
+                cell_params=solver.ode_solver._model.parameters(),
             )
         t0 = 0
 
@@ -200,6 +146,10 @@ def main(
             with dolfin.Timer("[demo] Solve mechanics"):
                 mech_heart.solve()
 
+            if add_release and t0 >= T_release:
+                print("Release")
+                pulse.iterate.iterate(mech_heart, pre_stretch, -0.02 * Lx)
+
             # Update previous
             mech_heart.material.active.update_prev()
             with dolfin.Timer("[demo] Update EP"):
@@ -231,3 +181,12 @@ def main(
         )
 
     plot_state_traces(collector.results_file)
+
+    time_table = dolfin.timings(dolfin.TimingClear.keep, [dolfin.TimingType.user])
+    print("time table = ", time_table.str(True))
+    with open(outdir + "_timings.log", "w+") as out:
+        out.write(time_table.str(True))
+
+
+if __name__ == "__main__":
+    main()

@@ -79,13 +79,12 @@ def test_save_and_load_state(
 
     bnd_cond = "dirichlet"
 
-    mech_heart, bnd_right_x = simcardems.mechanics_model.setup_mechanics_model(
+    mech_heart = simcardems.mechanics_model.setup_mechanics_model(
         mesh=mesh,
         coupling=coupling,
         dt=0.01,
         bnd_cond=bnd_cond,
         cell_params=cell_params,
-        Lx=1,
     )
 
     # Save some non-zero values
@@ -111,7 +110,7 @@ def test_save_and_load_state(
     with mock.patch("simcardems.ep_model.cbcbeat.SplittingSolver") as m:
         m.return_value = ep_solver
 
-        coupling_, ep_solver_, mech_heart_, bnd_right_x, mesh_, t0_ = slf.load_state(
+        coupling_, ep_solver_, mech_heart_, mesh_, t0_ = slf.load_state(
             dummyfile,
         )
 
