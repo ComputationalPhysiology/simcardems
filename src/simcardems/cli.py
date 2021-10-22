@@ -1,8 +1,9 @@
-import argparse
+import json
 import typing
 from pathlib import Path
 
 import cbcbeat
+import click
 import dolfin
 from tqdm import tqdm
 
@@ -15,70 +16,100 @@ from .datacollector import DataCollector
 from .postprocess import plot_state_traces
 
 
-def get_parser():
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-o",
-        "--outdir",
-        default="results",
-        type=str,
-        help="define output directory",
-    )
-    parser.add_argument(
-        "-T",
-        default=2000,
-        type=float,
-        help="define the endtime of simulation",
-    )
-    parser.add_argument(
-        "-dt",
-        default=0.02,
-        type=float,
-        help="Time step for EP solver",
-    )
-    parser.add_argument(
-        "-dx",
-        default=0.2,
-        type=float,
-        help="Spatial discretization",
-    )
-    parser.add_argument(
-        "--bnd_cond",
-        default="dirichlet",
-        type=str,
-        choices=["dirichlet", "rigid"],
-        help="choose boundary conditions",
-    )
-    parser.add_argument(
-        "--reset_state",
-        default=True,
-        type=bool,
-        help="define if state should be loaded (True) or newly created (False)",
-    )
-    parser.add_argument(
-        "-IC",
-        "--cell_init_file",
-        default="",
-        type=str,
-        help="If reset_state=True, define filename of initial conditions (json or h5 file)",
-    )
-    parser.add_argument("--from_json", type=str, default="", help="Path to json file")
-    return parser
+def check_json_path(path):
+    if not path.is_file():
+        raise FileNotFoundError(f"Cannot find file {path}")
+    if not path.suffix == ".json":
+        raise ValueError("Invalid file type {path.suffix}, expected .json")
 
 
+def load_json(ctx, param, value):
+    if not value or ctx.resilient_parsing:
+        return
+    json_file = click.prompt("Path and name of json file", type=str)
+    path = Path(json_file)
+    check_json_path(path)
+    with open(path, "r") as f:
+        kwargs = json.load(f)
+        print(kwargs)
+    # use some click option to set values from a dictionary
+
+
+def save_cli_dict(ctx, param, value):
+    # Save click to a variable to print and save
+    info = ctx.to_info_dict()
+    with open("output_dict2.json", "w") as write_file:
+        json.dump(info, write_file)
+    # or use for-loop to save all param-value pairs
+    for key in info["command"]["params"]:
+        print(key["name"])
+
+
+# Create click group to apply to 2 functions: save_dict and main.
+@click.command()
+@click.option(
+    "-o",
+    "--outdir",
+    default="results/bla",
+    type=str,
+    help="Define output directory",
+)
+@click.option("--dt", default=0.02, type=float, help="define delta t")
+@click.option(
+    "-T",
+    "T",
+    default=2000,
+    type=float,
+    help="define the endtime of simulation",
+)
+@click.option("-dx", default=0.2, type=float, help="Spatial discretization")
+@click.option(
+    "--bnd_cond",
+    default="dirichlet",
+    type=str,
+    help="choose boundary conditions",
+)
+@click.option(
+    "--reset_state",
+    is_flag=True,
+    default=True,
+    help="define if state should be loaded (True) or newly created (False)",
+)
+@click.option(
+    "-IC",
+    "--cell_init_file",
+    default="",
+    type=str,
+    help="If reset_state=True, define filename of initial conditions (json or h5 file)",
+)
+# Consider using type=click.Path(exists=True),
+@click.option(
+    "--hpc",
+    is_flag=True,
+    default=False,
+    help="Indicate if simulations runs on hpc",
+)
+@click.option(
+    "--from_json",
+    is_flag=True,
+    callback=load_json,
+    expose_value=False,
+    is_eager=True,
+    help="Path to json file",
+)
+@click.option("--save_cli_dict", callback=save_cli_dict, expose_value=False)
 def main(
-    outdir="results",
-    add_release=False,
-    T=200,
-    dx=0.2,
-    dt=0.02,
-    bnd_cond="dirichlet",
+    outdir,
+    T,
+    dx,
+    dt,
+    bnd_cond,
+    reset_state,
+    cell_init_file,
+    hpc,
     Lx=2.0,
     Ly=0.7,
     Lz=0.3,
-    reset_state=True,
-    cell_init_file="",
-    from_json="",
     pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
     traction: typing.Union[dolfin.Constant, float] = None,
     spring: typing.Union[dolfin.Constant, float] = None,
@@ -93,11 +124,6 @@ def main(
 
     # Disable warnings
     dolfin.set_log_level(40)
-
-    if add_release and bnd_cond != "dirichlet":
-        raise RuntimeError(
-            "Release can only be added while using dirichlet boundary conditions.",
-        )
 
     state_path = Path(outdir).joinpath("state.h5")
 
