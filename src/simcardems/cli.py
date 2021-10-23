@@ -157,12 +157,6 @@ def main(
     with open(outdir.joinpath("parameters.json"), "w") as f:
         json.dump(info_dict, f)
 
-    dolfin.parameters["form_compiler"]["cpp_optimize"] = True
-    flags = ["-O3", "-ffast-math", "-march=native"]
-    dolfin.parameters["form_compiler"]["cpp_optimize_flags"] = " ".join(flags)
-    dolfin.parameters["form_compiler"]["quadrature_degree"] = 3
-    dolfin.parameters["form_compiler"]["representation"] = "uflacs"
-
     # Disable warnings
     dolfin.set_log_level(40)
 
