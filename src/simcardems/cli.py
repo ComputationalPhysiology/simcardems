@@ -7,7 +7,7 @@ from pathlib import Path
 import cbcbeat
 import click
 import dolfin
-from tqdm import tqdm  # noqa:F401
+from tqdm import tqdm
 
 from . import em_model
 from . import ep_model
@@ -16,6 +16,7 @@ from . import postprocess as post
 from . import save_load_functions as io
 from . import utils
 from .datacollector import DataCollector
+from .version import __version__
 
 logger = logging.getLogger(__name__)
 
@@ -34,11 +35,11 @@ class _tqdm:
 
 
 @click.group()
+@click.version_option(__version__)
 def cli():
     pass
 
 
-# Create click group to apply to 2 functions: save_dict and main.
 @click.command("run")
 @click.option(
     "-o",
@@ -124,7 +125,7 @@ def run(
     )
 
 
-@click.command()
+@click.command("run-json")
 @click.argument("path", required=True, type=click.Path(exists=True))
 def run_json(path):
     with open(path, "r") as json_file:

@@ -17,6 +17,7 @@ from .em_model import EMCoupling
 from .mechanics_model import LandModel
 from .mechanics_model import MechanicsProblem
 from .mechanics_model import RigidMotionProblem
+from .version import __version__
 
 for module in ["matplotlib", "h5py"]:
     _logger = _logging.getLogger(module)
@@ -28,6 +29,7 @@ flags = ["-O3", "-ffast-math", "-march=native"]
 _dolfin.parameters["form_compiler"]["cpp_optimize_flags"] = " ".join(flags)
 _dolfin.parameters["form_compiler"]["quadrature_degree"] = 3
 _dolfin.parameters["form_compiler"]["representation"] = "uflacs"
+
 
 __all__ = [
     "datacollector",
@@ -45,4 +47,5 @@ __all__ = [
     "EMCoupling",
     "DataCollector",
     "DataLoader",
+    "__version__",
 ]
