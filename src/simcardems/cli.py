@@ -1,120 +1,161 @@
 import json
+import logging
+import os
 import typing
 from pathlib import Path
 
 import cbcbeat
 import click
 import dolfin
-from tqdm import tqdm
+from tqdm import tqdm  # noqa:F401
 
 from . import em_model
 from . import ep_model
 from . import mechanics_model
+from . import postprocess as post
 from . import save_load_functions as io
 from . import utils
 from .datacollector import DataCollector
-from .postprocess import plot_state_traces
+
+logger = logging.getLogger(__name__)
+
+PathLike = typing.Union[os.PathLike, str]
 
 
-def check_json_path(path):
-    if not path.is_file():
-        raise FileNotFoundError(f"Cannot find file {path}")
-    if not path.suffix == ".json":
-        raise ValueError("Invalid file type {path.suffix}, expected .json")
+class _tqdm:
+    def __init__(self, iterable, *args, **kwargs):
+        self._iterable = iterable
+
+    def set_postfix(self, msg):
+        logger.info(msg)
+
+    def __iter__(self):
+        return iter(self._iterable)
 
 
-def load_json(ctx, param, value):
-    if not value or ctx.resilient_parsing:
-        return
-    json_file = click.prompt("Path and name of json file", type=str)
-    path = Path(json_file)
-    check_json_path(path)
-    with open(path, "r") as f:
-        kwargs = json.load(f)
-        print(kwargs)
-    # use some click option to set values from a dictionary
-
-
-def save_cli_dict(ctx, param, value):
-    # Save click to a variable to print and save
-    info = ctx.to_info_dict()
-    with open("output_dict2.json", "w") as write_file:
-        json.dump(info, write_file)
-    # or use for-loop to save all param-value pairs
-    for key in info["command"]["params"]:
-        print(key["name"])
+@click.group()
+def cli():
+    pass
 
 
 # Create click group to apply to 2 functions: save_dict and main.
-@click.command()
+@click.command("run")
 @click.option(
     "-o",
     "--outdir",
-    default="results/bla",
-    type=str,
-    help="Define output directory",
+    default="results",
+    type=click.Path(writable=True, resolve_path=True),
+    help="Output directory",
 )
-@click.option("--dt", default=0.02, type=float, help="define delta t")
+@click.option("--dt", default=0.02, type=float, help="Time step")
 @click.option(
     "-T",
+    "--end-time",
     "T",
     default=2000,
     type=float,
-    help="define the endtime of simulation",
+    help="Endtime of simulation",
 )
 @click.option("-dx", default=0.2, type=float, help="Spatial discretization")
+@click.option("-lx", default=2.0, type=float, help="Size of mesh in x-direction")
+@click.option("-ly", default=0.7, type=float, help="Size of mesh in y-direction")
+@click.option("-lz", default=0.3, type=float, help="Size of mesh in z-direction")
 @click.option(
     "--bnd_cond",
-    default="dirichlet",
-    type=str,
-    help="choose boundary conditions",
+    default=mechanics_model.BoudaryConditions.dirichlet,
+    type=click.Choice(mechanics_model.BoudaryConditions._member_names_),
+    help="Boundary conditions for the mechanics problem",
 )
 @click.option(
-    "--reset_state",
+    "--load_state",
     is_flag=True,
-    default=True,
-    help="define if state should be loaded (True) or newly created (False)",
+    default=False,
+    help="If load existing state if exists, otherwise create a new state",
 )
 @click.option(
     "-IC",
     "--cell_init_file",
     default="",
     type=str,
-    help="If reset_state=True, define filename of initial conditions (json or h5 file)",
+    help=(
+        "Path to file containing initial conditions (json or h5 file). "
+        "If none is provided then the default initial conditions will be used"
+    ),
 )
-# Consider using type=click.Path(exists=True),
 @click.option(
     "--hpc",
     is_flag=True,
     default=False,
-    help="Indicate if simulations runs on hpc",
+    help="Indicate if simulations runs on hpc. This turns off the progress bar.",
 )
-@click.option(
-    "--from_json",
-    is_flag=True,
-    callback=load_json,
-    expose_value=False,
-    is_eager=True,
-    help="Path to json file",
-)
-@click.option("--save_cli_dict", callback=save_cli_dict, expose_value=False)
-def main(
-    outdir,
-    T,
-    dx,
-    dt,
-    bnd_cond,
-    reset_state,
-    cell_init_file,
-    hpc,
-    Lx=2.0,
-    Ly=0.7,
-    Lz=0.3,
+def run(
+    outdir: PathLike,
+    T: float,
+    dx: float,
+    dt: float,
+    bnd_cond: mechanics_model.BoudaryConditions,
+    load_state: bool,
+    cell_init_file: PathLike,
+    hpc: bool,
+    lx: float,
+    ly: float,
+    lz: float,
     pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
     traction: typing.Union[dolfin.Constant, float] = None,
     spring: typing.Union[dolfin.Constant, float] = None,
     fix_right_plane: bool = True,
 ):
+    main(
+        outdir=outdir,
+        T=T,
+        dx=dx,
+        dt=dt,
+        bnd_cond=bnd_cond,
+        load_state=load_state,
+        cell_init_file=cell_init_file,
+        hpc=hpc,
+        lx=lx,
+        ly=ly,
+        lz=lz,
+        pre_stretch=pre_stretch,
+        traction=traction,
+        spring=spring,
+        fix_right_plane=fix_right_plane,
+    )
+
+
+@click.command()
+@click.argument("path", required=True, type=click.Path(exists=True))
+def run_json(path):
+    with open(path, "r") as json_file:
+        data = json.load(json_file)
+
+    main(**data)
+
+
+def main(
+    outdir: PathLike = "results",
+    T: float = 1000,
+    dx: float = 0.2,
+    dt: float = 0.02,
+    bnd_cond: mechanics_model.BoudaryConditions = mechanics_model.BoudaryConditions.dirichlet,
+    load_state: bool = True,
+    cell_init_file: PathLike = "",
+    hpc: bool = False,
+    lx: float = 2.0,
+    ly: float = 0.7,
+    lz: float = 0.3,
+    pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
+    traction: typing.Union[dolfin.Constant, float] = None,
+    spring: typing.Union[dolfin.Constant, float] = None,
+    fix_right_plane: bool = True,
+):
+    # Get all arguments and dump them to a json file
+    info_dict = locals()
+    outdir = Path(outdir)
+    outdir.mkdir(exist_ok=True)
+    with open(outdir.joinpath("parameters.json"), "w") as f:
+        json.dump(info_dict, f)
 
     dolfin.parameters["form_compiler"]["cpp_optimize"] = True
     flags = ["-O3", "-ffast-math", "-march=native"]
@@ -125,9 +166,9 @@ def main(
     # Disable warnings
     dolfin.set_log_level(40)
 
-    state_path = Path(outdir).joinpath("state.h5")
+    state_path = outdir.joinpath("state.h5")
 
-    if not reset_state and state_path.is_file():
+    if load_state and state_path.is_file():
         # Load state
         if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
             print("Load previously saved state")
@@ -140,7 +181,7 @@ def main(
             print("Create a new state")
         # Create a new state
         with dolfin.Timer("[demo] Create mesh"):
-            mesh = utils.create_boxmesh(Lx=Lx, Ly=Ly, Lz=Lz, dx=dx)
+            mesh = utils.create_boxmesh(Lx=lx, Ly=ly, Lz=lz, dx=dx)
 
         coupling = em_model.EMCoupling(mesh)
 
@@ -182,7 +223,7 @@ def main(
     u, u_assigner = utils.setup_assigner(mech_heart.state, u_subspace_index)
     u_assigner.assign(u, mech_heart.state.sub(u_subspace_index))
 
-    collector = DataCollector(outdir, mesh, reset_state=reset_state)
+    collector = DataCollector(outdir, mesh, reset_state=not load_state)
     for name, f in [
         ("u", u),
         ("V", v),
@@ -195,7 +236,11 @@ def main(
     time_stepper = cbcbeat.utils.TimeStepper((t0, T), dt, annotate=False)
     save_it = int(1 / dt)  # Save every millisecond
 
-    pbar = tqdm(time_stepper, total=round((T - t0) / dt))
+    if hpc:
+        # Turn off progressbar
+        pbar = _tqdm(time_stepper, total=round((T - t0) / dt))
+    else:
+        pbar = tqdm(time_stepper, total=round((T - t0) / dt))
     for (i, (t0, t1)) in enumerate(pbar):
 
         # Solve EP model
@@ -250,10 +295,27 @@ def main(
             mech_heart=mech_heart,
             dt=dt,
             bnd_cond=bnd_cond,
-            Lx=Lx,
-            Ly=Ly,
-            Lz=Lz,
+            Lx=lx,
+            Ly=ly,
+            Lz=lz,
             t0=t0,
         )
 
-    plot_state_traces(collector.results_file)
+
+@click.command()
+@click.argument("folder", required=True, type=click.Path(exists=True))
+@click.option(
+    "--plot-state-traces",
+    is_flag=True,
+    default=True,
+    help="Plot state traces",
+)
+def postprocess(folder, plot_state_traces):
+    folder = Path(folder)
+    if plot_state_traces:
+        post.plot_state_traces(folder.joinpath("results.h5"))
+
+
+cli.add_command(run)
+cli.add_command(run_json)
+cli.add_command(postprocess)
