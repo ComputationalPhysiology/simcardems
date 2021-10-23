@@ -1,9 +1,15 @@
 import typing
+from enum import Enum
 
 import dolfin
 import pulse
 import ufl
 from mpi4py import MPI
+
+
+class BoudaryConditions(str, Enum):
+    dirichlet = "dirichlet"
+    rigid = "rigid"
 
 
 class LandModel(pulse.ActiveModel):
@@ -392,7 +398,7 @@ def setup_mechanics_model(
     mesh,
     coupling,
     dt,
-    bnd_cond,
+    bnd_cond: BoudaryConditions,
     cell_params,
     pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
     traction: typing.Union[dolfin.Constant, float] = None,
@@ -404,7 +410,7 @@ def setup_mechanics_model(
 
     marker_functions = None
     bcs = None
-    if bnd_cond == "dirichlet":
+    if bnd_cond == BoudaryConditions.dirichlet:
         bcs, marker_functions = setup_diriclet_bc(
             mesh=mesh,
             pre_stretch=pre_stretch,
@@ -444,7 +450,7 @@ def setup_mechanics_model(
         active_model=active_model,
     )
     Problem = MechanicsProblem
-    if bnd_cond == "rigid":
+    if bnd_cond == BoudaryConditions.rigid:
         Problem = RigidMotionProblem
     problem = Problem(
         geometry,
