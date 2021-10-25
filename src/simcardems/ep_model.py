@@ -196,6 +196,8 @@ def setup_solver(
     total_dofs = vs.function_space().dim()
     # pde_dofs = V.dim()
     if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
+        print("Mesh elements: ", mesh.num_entities(mesh.topology().dim()))
+        print("Mesh vertices: ", mesh.num_entities(0))
         print("Total degrees of freedom: ", total_dofs)
         # print("PDE degrees of freedom: ", pde_dofs)
 
