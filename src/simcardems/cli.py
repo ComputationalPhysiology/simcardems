@@ -250,13 +250,14 @@ def main(
             XS_norm = utils.compute_norm(coupling.XS, pre_XS)
         XW_norm = utils.compute_norm(coupling.XW, pre_XW)
 
-        pbar.set_postfix(
-            {
-                "XS_norm + XW_norm (solve mechanics if >=0.1)": "{:.2f}".format(
-                    XS_norm + XW_norm,
-                ),
-            },
-        )
+        if not hpc:
+            pbar.set_postfix(
+                {
+                    "XS_norm + XW_norm (solve mechanics if >=0.1)": "{:.2f}".format(
+                        XS_norm + XW_norm,
+                    ),
+                },
+            )
         if XS_norm + XW_norm >= 0.1:
 
             preXS_assigner.assign(pre_XS, utils.sub_function(vs, 40))
