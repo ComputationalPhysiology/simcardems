@@ -23,6 +23,26 @@ logger = logging.getLogger(__name__)
 PathLike = typing.Union[os.PathLike, str]
 
 
+class _Defaults:
+    outdir: PathLike = "results"
+    T: float = 1000
+    dx: float = 0.2
+    dt: float = 0.02
+    bnd_cond: mechanics_model.BoudaryConditions = (
+        mechanics_model.BoudaryConditions.dirichlet
+    )
+    load_state: bool = True
+    cell_init_file: PathLike = ""
+    hpc: bool = False
+    lx: float = 2.0
+    ly: float = 0.7
+    lz: float = 0.3
+    pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None
+    traction: typing.Union[dolfin.Constant, float] = None
+    spring: typing.Union[dolfin.Constant, float] = None
+    fix_right_plane: bool = True
+
+
 class _tqdm:
     def __init__(self, iterable, *args, **kwargs):
         self._iterable = iterable
@@ -44,39 +64,54 @@ def cli():
 @click.option(
     "-o",
     "--outdir",
-    default="results",
+    default=_Defaults.outdir,
     type=click.Path(writable=True, resolve_path=True),
     help="Output directory",
 )
-@click.option("--dt", default=0.02, type=float, help="Time step")
+@click.option("--dt", default=_Defaults.dt, type=float, help="Time step")
 @click.option(
     "-T",
     "--end-time",
     "T",
-    default=2000,
+    default=_Defaults.T,
     type=float,
     help="Endtime of simulation",
 )
-@click.option("-dx", default=0.2, type=float, help="Spatial discretization")
-@click.option("-lx", default=2.0, type=float, help="Size of mesh in x-direction")
-@click.option("-ly", default=0.7, type=float, help="Size of mesh in y-direction")
-@click.option("-lz", default=0.3, type=float, help="Size of mesh in z-direction")
+@click.option("-dx", default=_Defaults.dx, type=float, help="Spatial discretization")
+@click.option(
+    "-lx",
+    default=_Defaults.lx,
+    type=float,
+    help="Size of mesh in x-direction",
+)
+@click.option(
+    "-ly",
+    default=_Defaults.ly,
+    type=float,
+    help="Size of mesh in y-direction",
+)
+@click.option(
+    "-lz",
+    default=_Defaults.lz,
+    type=float,
+    help="Size of mesh in z-direction",
+)
 @click.option(
     "--bnd_cond",
-    default=mechanics_model.BoudaryConditions.dirichlet,
+    default=_Defaults.bnd_cond,
     type=click.Choice(mechanics_model.BoudaryConditions._member_names_),
     help="Boundary conditions for the mechanics problem",
 )
 @click.option(
     "--load_state",
     is_flag=True,
-    default=False,
+    default=_Defaults.load_state,
     help="If load existing state if exists, otherwise create a new state",
 )
 @click.option(
     "-IC",
     "--cell_init_file",
-    default="",
+    default=_Defaults.cell_init_file,
     type=str,
     help=(
         "Path to file containing initial conditions (json or h5 file). "
@@ -86,7 +121,7 @@ def cli():
 @click.option(
     "--hpc",
     is_flag=True,
-    default=False,
+    default=_Defaults.hpc,
     help="Indicate if simulations runs on hpc. This turns off the progress bar.",
 )
 def run(
@@ -101,10 +136,6 @@ def run(
     lx: float,
     ly: float,
     lz: float,
-    pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
-    traction: typing.Union[dolfin.Constant, float] = None,
-    spring: typing.Union[dolfin.Constant, float] = None,
-    fix_right_plane: bool = True,
 ):
     main(
         outdir=outdir,
@@ -118,10 +149,6 @@ def run(
         lx=lx,
         ly=ly,
         lz=lz,
-        pre_stretch=pre_stretch,
-        traction=traction,
-        spring=spring,
-        fix_right_plane=fix_right_plane,
     )
 
 
@@ -135,17 +162,17 @@ def run_json(path):
 
 
 def main(
-    outdir: PathLike = "results",
-    T: float = 1000,
-    dx: float = 0.2,
-    dt: float = 0.02,
-    bnd_cond: mechanics_model.BoudaryConditions = mechanics_model.BoudaryConditions.dirichlet,
-    load_state: bool = True,
-    cell_init_file: PathLike = "",
-    hpc: bool = False,
-    lx: float = 2.0,
-    ly: float = 0.7,
-    lz: float = 0.3,
+    outdir: PathLike = _Defaults.outdir,
+    T: float = _Defaults.T,
+    dx: float = _Defaults.dx,
+    dt: float = _Defaults.dt,
+    bnd_cond: mechanics_model.BoudaryConditions = _Defaults.bnd_cond,
+    load_state: bool = _Defaults.load_state,
+    cell_init_file: PathLike = _Defaults.cell_init_file,
+    hpc: bool = _Defaults.hpc,
+    lx: float = _Defaults.lx,
+    ly: float = _Defaults.ly,
+    lz: float = _Defaults.lz,
     pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
     traction: typing.Union[dolfin.Constant, float] = None,
     spring: typing.Union[dolfin.Constant, float] = None,
