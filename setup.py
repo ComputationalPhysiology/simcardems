@@ -1,7 +1,16 @@
 #!/usr/bin/env python
 """The setup script."""
+from pathlib import Path
+
 from setuptools import setup
 
-setup(
-    version="2021.0.0",
-)
+_here = Path(__file__).parent
+
+with open(
+    _here.joinpath("src").joinpath("simcardems").joinpath("version.py"),
+    "r",
+) as f:
+    version = f.read().split('"')[1]
+
+
+setup(version=version)

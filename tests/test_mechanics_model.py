@@ -10,8 +10,8 @@ import simcardems
     [
         (None, None, None, True, (0, 0, 0)),
         (None, None, None, False, (0, 0, 0)),
-        (None, -10.0, None, True, (0.212186242, 0, 0)),
-        (None, -10.0, None, False, (0.18900565, 0.00853144, 0.00853144)),
+        (None, -10.0, None, True, (0.212255133, 0, 0)),
+        (None, -10.0, None, False, (0.18904154, 0.00844048, 0.00844048)),
         (0.1, None, None, True, (0.1, 0, 0)),
         (0.1, None, None, False, (0.1, 0.00167563, 0.00167563)),
         (None, None, 100, False, (0, 0, 0)),
@@ -53,21 +53,21 @@ def test_boundary_conditions(
 
     U, P = problem.state.split(deepcopy=True)
 
-    print(U(1.0, 0.5, 0.5), expected_u)
+    print(U(1.0, 0.5, 0.5))
     assert np.isclose(U(1.0, 0.5, 0.5), expected_u, atol=1e-5).all()
 
 
 @pytest.mark.parametrize(
     "pre_stretch, traction, spring, fix_right_plane, expected_u",
     [
-        (None, None, None, True, (-0.128002224, 0, 0)),
-        (None, None, None, False, (-0.13286223, -0.00570515, -0.00570515)),
+        (None, None, None, True, (-0.127991400, 0, 0)),
+        (None, None, None, False, (-0.13287112, -0.00569607, -0.00569607)),
         (None, -10.0, None, True, (0.0, 0, 0)),
         (None, -10.0, None, False, (0.0, 0.0, 0.0)),
         (0.1, None, None, True, (0.1, 0, 0)),
-        (0.1, None, None, False, (0.1, 0.00109652, 0.00109652)),
-        (None, None, 100, True, (-0.0565726184, 0, 0)),
-        (None, None, 100, False, (-0.05786943, -0.00019543, -0.00019543)),
+        (0.1, None, None, False, (0.1, 0.00109546, 0.00109546)),
+        (None, None, 100, True, (-0.0560217556, 0, 0)),
+        (None, None, 100, False, (-0.05774309, -0.00017687, -0.00017687)),
     ],
 )
 def test_boundary_conditions_activation(
@@ -109,7 +109,7 @@ def test_boundary_conditions_activation(
 
     U, P = problem.state.split(deepcopy=True)
 
-    assert np.isclose(U(1.0, 0.5, 0.5), expected_u, atol=1e-5).all()
+    assert np.isclose(U(1.0, 0.5, 0.5), expected_u, rtol=1e-5).all()
 
 
 if __name__ == "__main__":
