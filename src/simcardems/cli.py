@@ -1,107 +1,196 @@
-import argparse
+import json
+import logging
+import os
 import typing
 from pathlib import Path
 
 import cbcbeat
+import click
 import dolfin
 from tqdm import tqdm
 
 from . import em_model
 from . import ep_model
 from . import mechanics_model
+from . import postprocess as post
 from . import save_load_functions as io
 from . import utils
 from .datacollector import DataCollector
-from .postprocess import plot_state_traces
+from .version import __version__
+
+logger = logging.getLogger(__name__)
+
+PathLike = typing.Union[os.PathLike, str]
 
 
-def get_parser():
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-o",
-        "--outdir",
-        default="results",
-        type=str,
-        help="define output directory",
+class _Defaults:
+    outdir: PathLike = "results"
+    T: float = 1000
+    dx: float = 0.2
+    dt: float = 0.02
+    bnd_cond: mechanics_model.BoudaryConditions = (
+        mechanics_model.BoudaryConditions.dirichlet
     )
-    parser.add_argument(
-        "-T",
-        default=2000,
-        type=float,
-        help="define the endtime of simulation",
+    load_state: bool = False
+    cell_init_file: PathLike = ""
+    hpc: bool = False
+    lx: float = 2.0
+    ly: float = 0.7
+    lz: float = 0.3
+    pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None
+    traction: typing.Union[dolfin.Constant, float] = None
+    spring: typing.Union[dolfin.Constant, float] = None
+    fix_right_plane: bool = True
+
+
+class _tqdm:
+    def __init__(self, iterable, *args, **kwargs):
+        self._iterable = iterable
+
+    def set_postfix(self, msg):
+        pass
+
+    def __iter__(self):
+        return iter(self._iterable)
+
+
+@click.group()
+@click.version_option(__version__)
+def cli():
+    pass
+
+
+@click.command("run")
+@click.option(
+    "-o",
+    "--outdir",
+    default=_Defaults.outdir,
+    type=click.Path(writable=True, resolve_path=True),
+    help="Output directory",
+)
+@click.option("--dt", default=_Defaults.dt, type=float, help="Time step")
+@click.option(
+    "-T",
+    "--end-time",
+    "T",
+    default=_Defaults.T,
+    type=float,
+    help="Endtime of simulation",
+)
+@click.option("-dx", default=_Defaults.dx, type=float, help="Spatial discretization")
+@click.option(
+    "-lx",
+    default=_Defaults.lx,
+    type=float,
+    help="Size of mesh in x-direction",
+)
+@click.option(
+    "-ly",
+    default=_Defaults.ly,
+    type=float,
+    help="Size of mesh in y-direction",
+)
+@click.option(
+    "-lz",
+    default=_Defaults.lz,
+    type=float,
+    help="Size of mesh in z-direction",
+)
+@click.option(
+    "--bnd_cond",
+    default=_Defaults.bnd_cond,
+    type=click.Choice(mechanics_model.BoudaryConditions._member_names_),
+    help="Boundary conditions for the mechanics problem",
+)
+@click.option(
+    "--load_state",
+    is_flag=True,
+    default=_Defaults.load_state,
+    help="If load existing state if exists, otherwise create a new state",
+)
+@click.option(
+    "-IC",
+    "--cell_init_file",
+    default=_Defaults.cell_init_file,
+    type=str,
+    help=(
+        "Path to file containing initial conditions (json or h5 file). "
+        "If none is provided then the default initial conditions will be used"
+    ),
+)
+@click.option(
+    "--hpc",
+    is_flag=True,
+    default=_Defaults.hpc,
+    help="Indicate if simulations runs on hpc. This turns off the progress bar.",
+)
+def run(
+    outdir: PathLike,
+    T: float,
+    dx: float,
+    dt: float,
+    bnd_cond: mechanics_model.BoudaryConditions,
+    load_state: bool,
+    cell_init_file: PathLike,
+    hpc: bool,
+    lx: float,
+    ly: float,
+    lz: float,
+):
+    main(
+        outdir=outdir,
+        T=T,
+        dx=dx,
+        dt=dt,
+        bnd_cond=bnd_cond,
+        load_state=load_state,
+        cell_init_file=cell_init_file,
+        hpc=hpc,
+        lx=lx,
+        ly=ly,
+        lz=lz,
     )
-    parser.add_argument(
-        "-dt",
-        default=0.02,
-        type=float,
-        help="Time step for EP solver",
-    )
-    parser.add_argument(
-        "-dx",
-        default=0.2,
-        type=float,
-        help="Spatial discretization",
-    )
-    parser.add_argument(
-        "--bnd_cond",
-        default="dirichlet",
-        type=str,
-        choices=["dirichlet", "rigid"],
-        help="choose boundary conditions",
-    )
-    parser.add_argument(
-        "--reset_state",
-        default=True,
-        type=bool,
-        help="define if state should be loaded (True) or newly created (False)",
-    )
-    parser.add_argument(
-        "-IC",
-        "--cell_init_file",
-        default="",
-        type=str,
-        help="If reset_state=True, define filename of initial conditions (json or h5 file)",
-    )
-    parser.add_argument("--from_json", type=str, default="", help="Path to json file")
-    return parser
+
+
+@click.command("run-json")
+@click.argument("path", required=True, type=click.Path(exists=True))
+def run_json(path):
+    with open(path, "r") as json_file:
+        data = json.load(json_file)
+
+    main(**data)
 
 
 def main(
-    outdir="results",
-    add_release=False,
-    T=200,
-    dx=0.2,
-    dt=0.02,
-    bnd_cond="dirichlet",
-    Lx=2.0,
-    Ly=0.7,
-    Lz=0.3,
-    reset_state=True,
-    cell_init_file="",
-    from_json="",
+    outdir: PathLike = _Defaults.outdir,
+    T: float = _Defaults.T,
+    dx: float = _Defaults.dx,
+    dt: float = _Defaults.dt,
+    bnd_cond: mechanics_model.BoudaryConditions = _Defaults.bnd_cond,
+    load_state: bool = _Defaults.load_state,
+    cell_init_file: PathLike = _Defaults.cell_init_file,
+    hpc: bool = _Defaults.hpc,
+    lx: float = _Defaults.lx,
+    ly: float = _Defaults.ly,
+    lz: float = _Defaults.lz,
     pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
     traction: typing.Union[dolfin.Constant, float] = None,
     spring: typing.Union[dolfin.Constant, float] = None,
     fix_right_plane: bool = True,
 ):
-
-    dolfin.parameters["form_compiler"]["cpp_optimize"] = True
-    flags = ["-O3", "-ffast-math", "-march=native"]
-    dolfin.parameters["form_compiler"]["cpp_optimize_flags"] = " ".join(flags)
-    dolfin.parameters["form_compiler"]["quadrature_degree"] = 3
-    dolfin.parameters["form_compiler"]["representation"] = "uflacs"
+    # Get all arguments and dump them to a json file
+    info_dict = locals()
+    outdir = Path(outdir)
+    outdir.mkdir(exist_ok=True)
+    with open(outdir.joinpath("parameters.json"), "w") as f:
+        json.dump(info_dict, f)
 
     # Disable warnings
     dolfin.set_log_level(40)
 
-    if add_release and bnd_cond != "dirichlet":
-        raise RuntimeError(
-            "Release can only be added while using dirichlet boundary conditions.",
-        )
+    state_path = outdir.joinpath("state.h5")
 
-    state_path = Path(outdir).joinpath("state.h5")
-
-    if not reset_state and state_path.is_file():
+    if load_state and state_path.is_file():
         # Load state
         if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
             print("Load previously saved state")
@@ -114,7 +203,7 @@ def main(
             print("Create a new state")
         # Create a new state
         with dolfin.Timer("[demo] Create mesh"):
-            mesh = utils.create_boxmesh(Lx=Lx, Ly=Ly, Lz=Lz, dx=dx)
+            mesh = utils.create_boxmesh(Lx=lx, Ly=ly, Lz=lz, dx=dx)
 
         coupling = em_model.EMCoupling(mesh)
 
@@ -156,7 +245,7 @@ def main(
     u, u_assigner = utils.setup_assigner(mech_heart.state, u_subspace_index)
     u_assigner.assign(u, mech_heart.state.sub(u_subspace_index))
 
-    collector = DataCollector(outdir, mesh, reset_state=reset_state)
+    collector = DataCollector(outdir, mesh, reset_state=not load_state)
     for name, f in [
         ("u", u),
         ("V", v),
@@ -169,7 +258,11 @@ def main(
     time_stepper = cbcbeat.utils.TimeStepper((t0, T), dt, annotate=False)
     save_it = int(1 / dt)  # Save every millisecond
 
-    pbar = tqdm(time_stepper, total=round((T - t0) / dt))
+    if hpc:
+        # Turn off progressbar
+        pbar = _tqdm(time_stepper, total=round((T - t0) / dt))
+    else:
+        pbar = tqdm(time_stepper, total=round((T - t0) / dt))
     for (i, (t0, t1)) in enumerate(pbar):
 
         # Solve EP model
@@ -224,10 +317,27 @@ def main(
             mech_heart=mech_heart,
             dt=dt,
             bnd_cond=bnd_cond,
-            Lx=Lx,
-            Ly=Ly,
-            Lz=Lz,
+            Lx=lx,
+            Ly=ly,
+            Lz=lz,
             t0=t0,
         )
 
-    plot_state_traces(collector.results_file)
+
+@click.command()
+@click.argument("folder", required=True, type=click.Path(exists=True))
+@click.option(
+    "--plot-state-traces",
+    is_flag=True,
+    default=True,
+    help="Plot state traces",
+)
+def postprocess(folder, plot_state_traces):
+    folder = Path(folder)
+    if plot_state_traces:
+        post.plot_state_traces(folder.joinpath("results.h5"))
+
+
+cli.add_command(run)
+cli.add_command(run_json)
+cli.add_command(postprocess)

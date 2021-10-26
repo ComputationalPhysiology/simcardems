@@ -6,5 +6,3 @@ RUN python3 -m pip install --upgrade pip && \
 COPY . /app
 WORKDIR /app
 RUN python3 -m pip install "."
-
-ENTRYPOINT ["python3", "-m", "simcardems"]

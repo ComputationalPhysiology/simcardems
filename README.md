@@ -50,14 +50,50 @@ python3 -m simcardems
 ```
 Type
 ```
-python3 -m simcardems --help
+$ python3 -m simcardems --help
+Usage: python -m simcardems [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --version  Show the version and exit.
+  --help     Show this message and exit.
+
+Commands:
+  postprocess
+  run
+  run-json
+```
+to see all commands.
+Run run a simulation using command line arguments you can use the `run` command. You can execute
+```
+$ python -m simcardems run --help
+Usage: python -m simcardems run [OPTIONS]
+
+Options:
+  -o, --outdir PATH             Output directory
+  --dt FLOAT                    Time step
+  -T, --end-time FLOAT          Endtime of simulation
+  -dx FLOAT                     Spatial discretization
+  -lx FLOAT                     Size of mesh in x-direction
+  -ly FLOAT                     Size of mesh in y-direction
+  -lz FLOAT                     Size of mesh in z-direction
+  --bnd_cond [dirichlet|rigid]  Boundary conditions for the
+                                mechanics problem
+  --load_state                  If load existing state if exists,
+                                otherwise create a new state
+  -IC, --cell_init_file TEXT    Path to file containing initial
+                                conditions (json or h5 file). If
+                                none is provided then the default
+                                initial conditions will be used
+  --hpc                         Indicate if simulations runs on
+                                hpc. This turns off the progress
+                                bar.
+  --help                        Show this message and exit.
 ```
 to see all options.
 For example if you want to run a simulations with `T=1000`, then use
 ```
-python3 -m simcardems -T=1000
+python3 -m simcardems run -T=1000
 ```
-
 You can also specify a json file containing all the settings, e.g a file called `args.json` with the following content
 
 ```json
@@ -69,47 +105,62 @@ You can also specify a json file containing all the settings, e.g a file called 
     "dx": 0.2
 }
 ```
-and then run the simulation using the `--from_json` flag
+and then run the simulation `run-json` command
 ```
-python3 -m simcardems --from_json=args.json
+python3 -m simcardems run-json rgs.json
 ```
 
 ### Run using docker
 
-If you are using docker and you used the instructions for creating a docker image described above, you can run the container as follows
+If you are using docker and first need to follow the instructions for creating a docker image described above.
+
+#### Creating the container
+You can create the container as follows
 
 ```
-docker run --name simcardems -v "$(pwd)":/app -it simcardems
+docker run --name simcardems -v "$(pwd)":/app -dit simcardems
 ```
-And you can also provide arguments to this script in a similar fashion as described above, e.g
-```
-docker run --name simcardems -v "$(pwd)":/app -it simcardems --help
-```
-and
-```
-docker run --name simcardems -v "$(pwd)":/app -it simcardems -T=1000
-```
-Note that this will create a docker container called `simcardems`
+This will create a a new container (aka a virtual machine) that you can use to execute the scripts.
+Note that after executing the `docker run` command, the container will be created and it will run in the background (daemon-mode).
 
-To delete the container you can either pass the flag `--rm` with the docker run command or execute the command
+#### Execute command line scripts
 
+You can now execute the command line script using the command
 ```
-docker rm simcardems
+docker exec -it simcardems python3 -m simcardems
 ```
-Note that `simcardems` uses FEniCS which is partly written in C++,  which will use quite a lot of time the first time it runs to compile all the forms, these forms will be saved in a cache which will make the runtime much faster the second time you run it. Therefore it is a good idea to not delete the container every time you run it, but rather reuse it, so that you get the benefit of the cache.
+For example
+```
+ docker exec -it simcardems python3 -m simcardems run --help
+```
+or
+```
+ docker exec -it simcardems python3 -m simcardems run -T 1000
+```
 
-To execute an existing container you first need to make sure it is running
+#### Stopping the container
+
+When you are done using the script, you should stop the container so that it doesn't take up resources on your computer. You can do this using the command
+```
+docker stop simcardems
+```
+
+#### Starting the container again
+
+To start the container again you can execute the command
 ```
 docker start simcardems
 ```
-Next you can execute the container using the following command
+You can now do ahead the [execute the command line scripts](#execute-command-line-scripts) again.
+
+#### Deleting the container
+
+If you don't want to use the container anymore, of your need to rebuild the image because there has been updates to the `simcardems` package, you can delete the container using the command
 ```
-docker exec simcardems python3 -m simcardems
+docker rm simcardems
 ```
-And as before you can also provide command line arguments, e.g
-```
-docker exec simcardems python3 -m simcardems --help
-```
+Note that in order to use the container again, you need to first [create the container](#creating-the-container).
+
 
 
 ## Automated test
