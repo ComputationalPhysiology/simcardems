@@ -31,7 +31,7 @@ class _Defaults:
     bnd_cond: mechanics_model.BoudaryConditions = (
         mechanics_model.BoudaryConditions.dirichlet
     )
-    load_state: bool = True
+    load_state: bool = False
     cell_init_file: PathLike = ""
     hpc: bool = False
     lx: float = 2.0
