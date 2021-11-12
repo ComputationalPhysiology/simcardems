@@ -37,6 +37,7 @@ class _Defaults:
     lx: float = 2.0
     ly: float = 0.7
     lz: float = 0.3
+    save_freq: int = 1
     pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None
     traction: typing.Union[dolfin.Constant, float] = None
     spring: typing.Union[dolfin.Constant, float] = None
@@ -76,6 +77,12 @@ def cli():
     default=_Defaults.T,
     type=float,
     help="Endtime of simulation",
+)
+@click.option(
+    "--save_freq",
+    default=_Defaults.save_freq,
+    type=int,
+    help="Set frequency of saving results to file",
 )
 @click.option("-dx", default=_Defaults.dx, type=float, help="Spatial discretization")
 @click.option(
@@ -136,6 +143,7 @@ def run(
     lx: float,
     ly: float,
     lz: float,
+    save_freq: int,
 ):
     main(
         outdir=outdir,
@@ -149,6 +157,7 @@ def run(
         lx=lx,
         ly=ly,
         lz=lz,
+        save_freq=save_freq,
     )
 
 
@@ -173,6 +182,7 @@ def main(
     lx: float = _Defaults.lx,
     ly: float = _Defaults.ly,
     lz: float = _Defaults.lz,
+    save_freq: int = _Defaults.save_freq,
     pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
     traction: typing.Union[dolfin.Constant, float] = None,
     spring: typing.Union[dolfin.Constant, float] = None,
@@ -256,7 +266,7 @@ def main(
         collector.register(name, f)
 
     time_stepper = cbcbeat.utils.TimeStepper((t0, T), dt, annotate=False)
-    save_it = int(1 / dt)  # Save every millisecond
+    save_it = int(save_freq / dt)
 
     if hpc:
         # Turn off progressbar
@@ -300,7 +310,7 @@ def main(
 
         with dolfin.Timer("[demo] Update vs"):
             solver.vs_.assign(solver.vs)
-        # Store every 2 millisecond
+        # Store every 'save_freq' ms
         if i % save_it == 0:
             with dolfin.Timer("[demo] Assign u,v and Ca for storage"):
                 # Assign u, v and Ca for postprocessing
