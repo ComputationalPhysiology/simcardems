@@ -195,7 +195,7 @@ def main(
         if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
             print("Load previously saved state")
         with dolfin.Timer("[demo] Load previously saved state"):
-            coupling, solver, mech_heart, bnd_right_x, mesh, t0 = io.load_state(
+            coupling, solver, mech_heart, mesh, t0 = io.load_state(
                 state_path,
             )
     else:
