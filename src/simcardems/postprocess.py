@@ -417,7 +417,8 @@ def plot_state_traces(results_file):
     for axi in ax.flatten():
         axi.grid()
         axi.legend()
-        axi.set_xlim([0, 5000])
+        if False:
+            axi.set_xlim([0, 5000])
     ax[1, 0].set_xlabel("Time [ms]")
     ax[1, 1].set_xlabel("Time [ms]")
     ax[0, 0].set_ylim(
