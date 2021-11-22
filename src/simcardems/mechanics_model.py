@@ -134,7 +134,7 @@ class LandModel(pulse.ActiveModel):
         C = F.T * F
 
         if diff == 0:
-            return pulse.material.active_stress.Wactive_transversally(
+            return pulse.material.active_model.Wactive_transversally(
                 Ta=self.Ta(F),
                 C=C,
                 f0=self.f0,
