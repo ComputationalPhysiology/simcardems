@@ -42,6 +42,7 @@ class _Defaults:
     traction: typing.Union[dolfin.Constant, float] = None
     spring: typing.Union[dolfin.Constant, float] = None
     fix_right_plane: bool = True
+    loglevel = logging.INFO
 
 
 class _tqdm:
@@ -126,6 +127,12 @@ def cli():
     ),
 )
 @click.option(
+    "--loglevel",
+    default=_Defaults.loglevel,
+    type=int,
+    help="How much printing. DEBUG: 10, INFO:20 (default), WARNING: 30",
+)
+@click.option(
     "--hpc",
     is_flag=True,
     default=_Defaults.hpc,
@@ -144,6 +151,7 @@ def run(
     ly: float,
     lz: float,
     save_freq: int,
+    loglevel: int,
 ):
     main(
         outdir=outdir,
@@ -158,6 +166,7 @@ def run(
         ly=ly,
         lz=lz,
         save_freq=save_freq,
+        loglevel=loglevel,
     )
 
 
@@ -187,7 +196,9 @@ def main(
     traction: typing.Union[dolfin.Constant, float] = None,
     spring: typing.Union[dolfin.Constant, float] = None,
     fix_right_plane: bool = True,
+    loglevel: int = _Defaults.loglevel,
 ):
+
     # Get all arguments and dump them to a json file
     info_dict = locals()
     outdir = Path(outdir)
@@ -196,21 +207,24 @@ def main(
         json.dump(info_dict, f)
 
     # Disable warnings
-    dolfin.set_log_level(40)
+    from . import set_log_level
+
+    set_log_level(loglevel)
+    dolfin.set_log_level(loglevel + 10)  # TODO: Make it possible to set this?
 
     state_path = outdir.joinpath("state.h5")
 
     if load_state and state_path.is_file():
         # Load state
         if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
-            print("Load previously saved state")
+            logger.info("Load previously saved state")
         with dolfin.Timer("[demo] Load previously saved state"):
             coupling, solver, mech_heart, mesh, t0 = io.load_state(
                 state_path,
             )
     else:
         if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
-            print("Create a new state")
+            logger.info("Create a new state")
         # Create a new state
         with dolfin.Timer("[demo] Create mesh"):
             mesh = utils.create_boxmesh(Lx=lx, Ly=ly, Lz=lz, dx=dx)
@@ -242,7 +256,7 @@ def main(
         t0 = 0
 
     if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
-        print(f"Starting at t0={t0}")
+        logger.info(f"Starting at t0={t0}")
 
     vs = solver.solution_fields()[1]
     v, v_assigner = utils.setup_assigner(vs, 0)

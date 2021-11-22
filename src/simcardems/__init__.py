@@ -1,5 +1,6 @@
 import logging as _logging
 
+import daiquiri as _daiquiri
 import dolfin as _dolfin
 
 from . import cli
@@ -19,7 +20,27 @@ from .mechanics_model import MechanicsProblem
 from .mechanics_model import RigidMotionProblem
 from .version import __version__
 
-for module in ["matplotlib", "h5py"]:
+
+def set_log_level(level):
+    from daiquiri import set_default_log_levels
+
+    loggers = [
+        "simcardems.cli.logger",
+        "simcardems.datacollector.logger",
+        "simcardems.ep_model.logger",
+        "simcardems.em_model.logger",
+        "simcardems.mechanics_model.logger",
+        "simcardems.ORdmm_Land.logger",
+        "simcardems.postprocess.logger",
+        "simcardems.save_load_functions.logger",
+        "simcardems.utils.logger",
+    ]
+    set_default_log_levels((logger, level) for logger in loggers)
+
+
+_daiquiri.setup(level=_logging.INFO)
+
+for module in ["matplotlib", "h5py", "FFC", "UFL"]:
     _logger = _logging.getLogger(module)
     _logger.setLevel(_logging.WARNING)
 

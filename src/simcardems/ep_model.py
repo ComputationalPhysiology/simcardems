@@ -1,10 +1,13 @@
 import json
+import logging
 from pathlib import Path
 
 import cbcbeat
 import dolfin
 
 from .ORdmm_Land import ORdmm_Land as CellModel
+
+logger = logging.getLogger(__name__)
 
 
 def define_conductivity_tensor(chi, C_m):
@@ -196,9 +199,9 @@ def setup_solver(
     total_dofs = vs.function_space().dim()
     # pde_dofs = V.dim()
     if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
-        print("Mesh elements: ", mesh.num_entities(mesh.topology().dim()))
-        print("Mesh vertices: ", mesh.num_entities(0))
-        print("Total degrees of freedom: ", total_dofs)
-        # print("PDE degrees of freedom: ", pde_dofs)
+        logger.info(f"Mesh elements: {mesh.num_entities(mesh.topology().dim())}")
+        logger.info(f"Mesh vertices: {mesh.num_entities(0)}")
+        logger.info(f"Total degrees of freedom: {total_dofs}")
+        # logger.info("PDE degrees of freedom: ", pde_dofs)
 
     return solver

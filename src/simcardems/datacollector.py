@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from typing import Dict
 from typing import List
@@ -9,6 +10,8 @@ from dolfin import VectorElement  # noqa: F401
 
 from . import utils
 from .save_load_functions import h5pyfile
+
+logger = logging.getLogger(__name__)
 
 
 class DataCollector:
@@ -32,7 +35,7 @@ class DataCollector:
 
     def register(self, name: str, f: dolfin.Function) -> None:
         if name in self.names:
-            print(f"Warning: {name} is allready registered - overwriting")
+            logger.info(f"Warning: {name} is allready registered - overwriting")
         self._xdmffiles[name] = dolfin.XDMFFile(
             self.comm,
             self.outdir.joinpath(f"{name}.xdmf").as_posix(),
