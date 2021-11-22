@@ -1,3 +1,4 @@
+import logging
 import typing
 from enum import Enum
 
@@ -5,6 +6,8 @@ import dolfin
 import pulse
 import ufl
 from mpi4py import MPI
+
+logger = logging.getLogger(__name__)
 
 
 class BoudaryConditions(str, Enum):
@@ -233,6 +236,7 @@ class RigidMotionProblem(MechanicsProblem):
 
 
 def setup_microstructure(mesh):
+    logger.debug("Set up microstructure")
     V_f = dolfin.VectorFunctionSpace(mesh, "DG", 1)
     f0 = dolfin.interpolate(
         dolfin.Expression(("1.0", "0.0", "0.0"), degree=1, cell=mesh.ufl_cell()),
@@ -315,7 +319,7 @@ def setup_diriclet_bc(
     spring.
 
     """
-
+    logger.debug("Setup diriclet bc")
     # Get the value of the greatest x-coordinate
     Lx = mesh.mpi_comm().allreduce(mesh.coordinates().max(0)[0], op=MPI.MAX)
 
@@ -406,6 +410,7 @@ def setup_mechanics_model(
     fix_right_plane: bool = False,
 ):
     """Setup mechanics model with dirichlet boundary conditions or rigid motion."""
+    logger.info("Set up mechanics model")
     microstructure = setup_microstructure(mesh)
 
     marker_functions = None
@@ -452,11 +457,13 @@ def setup_mechanics_model(
     Problem = MechanicsProblem
     if bnd_cond == BoudaryConditions.rigid:
         Problem = RigidMotionProblem
+
+    verbose = logger.level < logging.INFO
     problem = Problem(
         geometry,
         material,
         bcs,
-        solver_parameters={"linear_solver": "mumps"},
+        solver_parameters={"linear_solver": "mumps", "verbose": verbose},
     )
     problem.solve()
     return problem

@@ -1,3 +1,4 @@
+import logging
 import warnings
 from pathlib import Path
 
@@ -7,6 +8,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from .datacollector import DataLoader
+
+logger = logging.getLogger(__name__)
 
 
 def center_func(fmin, fmax):
@@ -315,7 +318,7 @@ def load_data(file, mesh, bnd, time_points):
     with dolfin.HDF5File(mesh.mpi_comm(), file, "r") as h5file:
         for data_node in data.keys():
             if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
-                print("analyzing: ", data_node)
+                logger.info("analyzing: ", data_node)
 
             # Assign the variables to be stored in the dictionary
             data[data_node] = {
@@ -328,7 +331,7 @@ def load_data(file, mesh, bnd, time_points):
             # Loop over all variables to be stored
             for nestedkey in data[data_node]:
                 if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
-                    print("analyzing: ", nestedkey)
+                    logger.info("analyzing: ", nestedkey)
                 for i, t in enumerate(time_points):
                     h5file.read(
                         v_space,
