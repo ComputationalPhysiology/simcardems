@@ -425,11 +425,19 @@ def setup_mechanics_model(
         marker_functions=marker_functions,
     )
     # Create the material
-    material_parameters = pulse.Guccione.default_parameters()
-    material_parameters["CC"] = 2.0
-    material_parameters["bf"] = 8.0
-    material_parameters["bfs"] = 4.0
-    material_parameters["bt"] = 2.0
+    # material_parameters = pulse.HolzapfelOgden.default_parameters()
+    # Use parameters from Biaxial test in Holzapfel 2019 (Table 1).
+    material_parameters = dict(
+        a=2.28,
+        a_f=1.686,
+        b=9.726,
+        b_f=15.779,
+        a_s=0.0,
+        b_s=0.0,
+        a_fs=0.0,
+        b_fs=0.0,
+    )
+
     V = dolfin.FunctionSpace(mesh, "CG", 1)
     active_model = LandModel(
         f0=microstructure.f0,
@@ -444,6 +452,10 @@ def setup_mechanics_model(
         XW=coupling.XW,
         dt=dt,
         function_space=V,
+    )
+    material = pulse.HolzapfelOgden(
+        active_model=active_model,
+        parameters=material_parameters,
     )
     material = pulse.Guccione(
         params=material_parameters,
