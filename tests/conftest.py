@@ -15,7 +15,7 @@ def mesh():
 
 @pytest.fixture
 def coupling(mesh):
-    return simcardems.EMCoupling(mesh)
+    return simcardems.EMCoupling(mesh, mesh)
 
 
 @pytest.fixture

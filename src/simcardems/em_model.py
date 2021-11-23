@@ -41,6 +41,7 @@ class EMCoupling:
         self.vs = solver.solution_fields()[0]
         self.XS_ep, self.XS_ep_assigner = utils.setup_assigner(self.vs, 40)
         self.XW_ep, self.XW_ep_assigner = utils.setup_assigner(self.vs, 41)
+        self.interpolate_mechanics()
         logger.debug("Done registering EP model")
 
     def update_mechanics(self):

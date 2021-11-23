@@ -43,7 +43,7 @@ class _Defaults:
     spring: typing.Union[dolfin.Constant, float] = None
     fix_right_plane: bool = True
     loglevel = logging.INFO
-    num_refinements: int = 4
+    num_refinements: int = 1
 
 
 class _tqdm:
@@ -82,7 +82,7 @@ def cli():
 )
 @click.option(
     "-n",
-    "--num-refinements",
+    "--num_refinements",
     default=_Defaults.num_refinements,
     type=int,
     help="Number of refinements of for the mesh using in the EP model",

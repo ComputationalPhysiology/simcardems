@@ -91,8 +91,8 @@ def test_save_and_load_state(
     t0 = 1.0
     ep_solver.vs.vector()[:] = 1.0
     ep_solver.vs_.vector()[:] = 1.0
-    coupling.XS.vector()[:] = 1.0
-    coupling.XW.vector()[:] = 1.0
+    coupling.XS_mech.vector()[:] = 1.0
+    coupling.XW_mech.vector()[:] = 1.0
     mech_heart.state.vector()[:] = 1.0
 
     slf.save_state(
@@ -110,17 +110,23 @@ def test_save_and_load_state(
     with mock.patch("simcardems.ep_model.cbcbeat.SplittingSolver") as m:
         m.return_value = ep_solver
 
-        coupling_, ep_solver_, mech_heart_, mesh_, t0_ = slf.load_state(
+        coupling_, ep_solver_, mech_heart_, t0_ = slf.load_state(
             dummyfile,
         )
 
     assert t0_ == t0
-    assert (mesh.coordinates() == mesh_.coordinates()).all()
+    assert (mesh.coordinates() == coupling_.mech_mesh.coordinates()).all()
     assert simcardems.utils.compute_norm(ep_solver.vs_, ep_solver_.vs_) < 1e-12
     assert simcardems.utils.compute_norm(mech_heart.state, mech_heart_.state) < 1e-12
     assert simcardems.utils.compute_norm(coupling.vs, coupling_.vs) < 1e-12
-    assert simcardems.utils.compute_norm(coupling.XS, coupling_.XS) < 1e-12
-    assert simcardems.utils.compute_norm(coupling.XW, coupling_.XW) < 1e-12
-    assert simcardems.utils.compute_norm(coupling.lmbda, coupling_.lmbda) < 1e-12
-    assert simcardems.utils.compute_norm(coupling.Zetas, coupling_.Zetas) < 1e-12
-    assert simcardems.utils.compute_norm(coupling.Zetaw, coupling_.Zetaw) < 1e-12
+    assert simcardems.utils.compute_norm(coupling.XS_mech, coupling_.XS_mech) < 1e-12
+    assert simcardems.utils.compute_norm(coupling.XW_mech, coupling_.XW_mech) < 1e-12
+    assert (
+        simcardems.utils.compute_norm(coupling.lmbda_mech, coupling_.lmbda_mech) < 1e-12
+    )
+    assert (
+        simcardems.utils.compute_norm(coupling.Zetas_mech, coupling_.Zetas_mech) < 1e-12
+    )
+    assert (
+        simcardems.utils.compute_norm(coupling.Zetaw_mech, coupling_.Zetaw_mech) < 1e-12
+    )

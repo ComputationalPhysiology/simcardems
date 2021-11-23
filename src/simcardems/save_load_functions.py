@@ -116,7 +116,7 @@ def save_state(
     ep_mesh = solver.VS.mesh()
     logger.debug("Save using dolfin.HDF5File")
     with dolfin.HDF5File(ep_mesh.mpi_comm(), path.as_posix(), "w") as h5file:
-        h5file.write(mech_heart.material.active.lmbda_prev_prev, "/em/lmbda_prev")
+        h5file.write(mech_heart.material.active.lmbda_prev, "/em/lmbda_prev")
         h5file.write(mech_heart.material.active.Zetas_prev_prev, "/em/Zetas_prev")
         h5file.write(mech_heart.material.active.Zetaw_prev_prev, "/em/Zetaw_prev")
 
