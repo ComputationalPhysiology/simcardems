@@ -178,9 +178,9 @@ def setup_solver(
     if cell_inits is not None:
         cell_inits_.update(cell_inits)
 
-    cell_inits_["lmbda"] = coupling.lmbda
-    cell_inits_["Zetas"] = coupling.Zetas
-    cell_inits_["Zetaw"] = coupling.Zetaw
+    cell_inits_["lmbda"] = coupling.lmbda_ep
+    cell_inits_["Zetas"] = coupling.Zetas_ep
+    cell_inits_["Zetaw"] = coupling.Zetaw_ep
 
     cellmodel = CellModel(init_conditions=cell_inits, params=cell_params)
 

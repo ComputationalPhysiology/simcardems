@@ -27,7 +27,7 @@ class _Defaults:
     outdir: PathLike = "results"
     T: float = 1000
     dx: float = 0.2
-    dt: float = 0.02
+    dt: float = 0.05
     bnd_cond: mechanics_model.BoudaryConditions = (
         mechanics_model.BoudaryConditions.dirichlet
     )
@@ -43,6 +43,7 @@ class _Defaults:
     spring: typing.Union[dolfin.Constant, float] = None
     fix_right_plane: bool = True
     loglevel = logging.INFO
+    num_refinements: int = 4
 
 
 class _tqdm:
@@ -78,6 +79,13 @@ def cli():
     default=_Defaults.T,
     type=float,
     help="Endtime of simulation",
+)
+@click.option(
+    "-n",
+    "--num-refinements",
+    default=_Defaults.num_refinements,
+    type=int,
+    help="Number of refinements of for the mesh using in the EP model",
 )
 @click.option(
     "--save_freq",
@@ -152,6 +160,7 @@ def run(
     lz: float,
     save_freq: int,
     loglevel: int,
+    num_refinements: int,
 ):
     main(
         outdir=outdir,
@@ -167,6 +176,7 @@ def run(
         lz=lz,
         save_freq=save_freq,
         loglevel=loglevel,
+        num_refinements=num_refinements,
     )
 
 
@@ -177,6 +187,19 @@ def run_json(path):
         data = json.load(json_file)
 
     main(**data)
+
+
+def refine_mesh(
+    mesh: dolfin.Mesh,
+    num_refinements: int,
+    redistribute: bool = False,
+) -> dolfin.Mesh:
+
+    for i in range(num_refinements):
+        print("Performing refinement", i + 1)
+        mesh = dolfin.refine(mesh, redistribute=redistribute)
+
+    return mesh
 
 
 def main(
@@ -197,6 +220,7 @@ def main(
     spring: typing.Union[dolfin.Constant, float] = None,
     fix_right_plane: bool = True,
     loglevel: int = _Defaults.loglevel,
+    num_refinements: int = _Defaults.num_refinements,
 ):
 
     # Get all arguments and dump them to a json file
@@ -227,13 +251,15 @@ def main(
             logger.info("Create a new state")
         # Create a new state
         with dolfin.Timer("[demo] Create mesh"):
-            mesh = utils.create_boxmesh(Lx=lx, Ly=ly, Lz=lz, dx=dx)
+            mech_mesh = utils.create_boxmesh(Lx=lx, Ly=ly, Lz=lz, dx=dx)
 
-        coupling = em_model.EMCoupling(mesh)
+        ep_mesh = refine_mesh(mech_mesh, num_refinements=num_refinements)
+
+        coupling = em_model.EMCoupling(mech_mesh, ep_mesh)
 
         # Set-up solver and time it
         solver = ep_model.setup_solver(
-            mesh=mesh,
+            mesh=ep_mesh,
             dt=dt,
             coupling=coupling,
             cell_init_file=cell_init_file,
@@ -243,7 +269,7 @@ def main(
 
         with dolfin.Timer("[demo] Setup Mech solver"):
             mech_heart = mechanics_model.setup_mechanics_model(
-                mesh=mesh,
+                mesh=mech_mesh,
                 coupling=coupling,
                 dt=dt,
                 bnd_cond=bnd_cond,
@@ -298,8 +324,8 @@ def main(
             coupling.update_mechanics()
 
         with dolfin.Timer("[demo] Compute norm"):
-            XS_norm = utils.compute_norm(coupling.XS, pre_XS)
-        XW_norm = utils.compute_norm(coupling.XW, pre_XW)
+            XS_norm = utils.compute_norm(coupling.XS_ep, pre_XS)
+        XW_norm = utils.compute_norm(coupling.XW_ep, pre_XW)
 
         pbar.set_postfix(
             {
@@ -313,10 +339,13 @@ def main(
             preXS_assigner.assign(pre_XS, utils.sub_function(vs, 40))
             preXW_assigner.assign(pre_XW, utils.sub_function(vs, 41))
 
+            coupling.interpolate_mechanics()
+
             # Solve the Mechanics model
             with dolfin.Timer("[demo] Solve mechanics"):
                 mech_heart.solve()
 
+            coupling.interpolate_ep()
             # Update previous
             mech_heart.material.active.update_prev()
             with dolfin.Timer("[demo] Update EP"):
@@ -334,18 +363,18 @@ def main(
             with dolfin.Timer("[demo] Store solutions"):
                 collector.store(t0)
 
-    with dolfin.Timer("[demo] Save state"):
-        io.save_state(
-            state_path,
-            solver=solver,
-            mech_heart=mech_heart,
-            dt=dt,
-            bnd_cond=bnd_cond,
-            Lx=lx,
-            Ly=ly,
-            Lz=lz,
-            t0=t0,
-        )
+    # with dolfin.Timer("[demo] Save state"):
+    #     io.save_state(
+    #         state_path,
+    #         solver=solver,
+    #         mech_heart=mech_heart,
+    #         dt=dt,
+    #         bnd_cond=bnd_cond,
+    #         Lx=lx,
+    #         Ly=ly,
+    #         Lz=lz,
+    #         t0=t0,
+    #     )
 
 
 @click.command()
