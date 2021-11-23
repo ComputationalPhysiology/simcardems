@@ -110,8 +110,7 @@ def save_state(
     path = Path(path)
     utils.remove_file(path)
 
-    if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
-        logger.info(f"Save state to {path}")
+    logger.info(f"Save state to {path}")
 
     mesh = mech_heart.geometry.mesh
     with dolfin.HDF5File(mesh.mpi_comm(), path.as_posix(), "w") as h5file:
@@ -217,8 +216,7 @@ def load_initial_condions_from_h5(path):
     path = Path(path)
     if not path.is_file():
         raise FileNotFoundError(f"File {path} does not exist")
-    if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
-        logger.info(f"Loading initial conditions from {path}")
+    logger.info(f"Loading initial conditions from {path}")
 
     with h5pyfile(path) as h5file:
         vs_signature = h5file["ep"]["vs"].attrs["signature"].decode()
@@ -237,8 +235,7 @@ def load_initial_condions_from_h5(path):
 
 
 def save_cell_params_to_h5(h5_filename, cell_params, params_list):
-    if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
-        logger.info(f"Saving cell params to : {h5_filename}")
+    logger.info(f"Saving cell params to : {h5_filename}")
     h5_filename = Path(h5_filename)
     mesh = cell_params[params_list[0]].function_space().mesh()
 
@@ -256,8 +253,7 @@ def save_cell_params_to_h5(h5_filename, cell_params, params_list):
 
 
 def load_cell_params_from_h5(h5_filename, V, cell_params, params_list):
-    if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
-        logger.info(f"Loading cell params from : {h5_filename}")
+    logger.info(f"Loading cell params from : {h5_filename}")
     mesh = dolfin.Mesh()
     h5_file = dolfin.HDF5File(mesh.mpi_comm(), h5_filename, "r")
     h5_base = os.path.splitext(h5_filename)[0]
@@ -266,8 +262,7 @@ def load_cell_params_from_h5(h5_filename, V, cell_params, params_list):
         if h5_file.has_dataset("/function/param%d/vector_0"):
             h5_file.read(param_f, "/function/param%d/vector_0" % i)
         else:
-            if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
-                logger.info(f"Cannot load param[{p}]")
+            logger.info(f"Cannot load param[{p}]")
         cell_params[p] = param_f
         with dolfin.XDMFFile(
             mesh.mpi_comm(),
@@ -278,8 +273,7 @@ def load_cell_params_from_h5(h5_filename, V, cell_params, params_list):
 
 
 def save_state_variables_to_h5(h5_filename, cell_inits, vs, run_id, compare=False):
-    if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
-        logger.info(f"Saving state variables to : {h5_filename}")
+    logger.info(f"Saving state variables to : {h5_filename}")
     mesh = vs.function_space().sub(0).mesh()
     h5_file = dolfin.HDF5File(mesh.mpi_comm(), h5_filename, "w")
     h5_base = os.path.splitext(h5_filename)[0]
@@ -326,8 +320,7 @@ def save_state_variables_to_h5(h5_filename, cell_inits, vs, run_id, compare=Fals
 
 def save_state_variables_to_xml(filename, cell_inits, vs, run_id):
     file_base = os.path.splitext(filename)[0]
-    if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
-        logger.info(f"Saving state variables to : {file_base}")
+    logger.info(f"Saving state variables to : {file_base}")
     mesh = vs.function_space().sub(0).mesh()
 
     dolfin.File(file_base + "/mesh.xml") << mesh
@@ -343,8 +336,7 @@ def save_state_variables_to_xml(filename, cell_inits, vs, run_id):
 
 def save_cell_params_to_xml(filename, cell_params, params_list):
     file_base = os.path.splitext(filename)[0]
-    if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
-        logger.info(f"Saving cell params to : {file_base}")
+    logger.info(f"Saving cell params to : {file_base}")
 
     for i, p in enumerate(params_list):
         dolfin.File(file_base + "/param%d.xml" % i) << cell_params[p]

@@ -240,15 +240,13 @@ def main(
 
     if load_state and state_path.is_file():
         # Load state
-        if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
-            logger.info("Load previously saved state")
+        logger.info("Load previously saved state")
         with dolfin.Timer("[demo] Load previously saved state"):
             coupling, solver, mech_heart, mesh, t0 = io.load_state(
                 state_path,
             )
     else:
-        if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
-            logger.info("Create a new state")
+        logger.info("Create a new state")
         # Create a new state
         with dolfin.Timer("[demo] Create mesh"):
             mech_mesh = utils.create_boxmesh(Lx=lx, Ly=ly, Lz=lz, dx=dx)
@@ -281,8 +279,7 @@ def main(
             )
         t0 = 0
 
-    if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
-        logger.info(f"Starting at t0={t0}")
+    logger.info(f"Starting at t0={t0}")
 
     vs = solver.solution_fields()[1]
     v, v_assigner = utils.setup_assigner(vs, 0)
