@@ -457,10 +457,7 @@ def setup_mechanics_model(
         active_model=active_model,
         parameters=material_parameters,
     )
-    material = pulse.Guccione(
-        params=material_parameters,
-        active_model=active_model,
-    )
+
     Problem = MechanicsProblem
     if bnd_cond == BoudaryConditions.rigid:
         Problem = RigidMotionProblem
