@@ -242,7 +242,7 @@ def main(
         # Load state
         logger.info("Load previously saved state")
         with dolfin.Timer("[demo] Load previously saved state"):
-            coupling, solver, mech_heart, mesh, t0 = io.load_state(
+            coupling, solver, mech_heart, t0 = io.load_state(
                 state_path,
             )
     else:
@@ -292,7 +292,12 @@ def main(
     u, u_assigner = utils.setup_assigner(mech_heart.state, u_subspace_index)
     u_assigner.assign(u, mech_heart.state.sub(u_subspace_index))
 
-    collector = DataCollector(outdir, mech_mesh, ep_mesh, reset_state=not load_state)
+    collector = DataCollector(
+        outdir,
+        coupling.mech_mesh,
+        coupling.ep_mesh,
+        reset_state=not load_state,
+    )
     for name, f in [
         ("u", u),
         ("V", v),
@@ -362,18 +367,18 @@ def main(
             with dolfin.Timer("[demo] Store solutions"):
                 collector.store(t0)
 
-    # with dolfin.Timer("[demo] Save state"):
-    #     io.save_state(
-    #         state_path,
-    #         solver=solver,
-    #         mech_heart=mech_heart,
-    #         dt=dt,
-    #         bnd_cond=bnd_cond,
-    #         Lx=lx,
-    #         Ly=ly,
-    #         Lz=lz,
-    #         t0=t0,
-    #     )
+    with dolfin.Timer("[demo] Save state"):
+        io.save_state(
+            state_path,
+            solver=solver,
+            mech_heart=mech_heart,
+            dt=dt,
+            bnd_cond=bnd_cond,
+            Lx=lx,
+            Ly=ly,
+            Lz=lz,
+            t0=t0,
+        )
 
 
 @click.command()

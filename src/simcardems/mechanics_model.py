@@ -55,6 +55,7 @@ class LandModel(pulse.ActiveModel):
         self.Zetaw_prev_prev = dolfin.Function(self.Zetaw.function_space())
 
         self.Ta_current = dolfin.Function(function_space, name="Ta")
+        self.lmbda_prev_prev = dolfin.Function(function_space)
         self.lmbda_prev = dolfin.Function(function_space)
         self.lmbda_current = dolfin.Function(function_space)
         self.lmbda_current = lmbda
@@ -66,6 +67,7 @@ class LandModel(pulse.ActiveModel):
 
         self.Zetas_prev_prev.vector()[:] = self.Zetas_prev.vector()
         self.Zetaw_prev_prev.vector()[:] = self.Zetaw_prev.vector()
+        self.lmbda_prev_prev.vector()[:] = self.lmbda_prev.vector()
         self.Zetas_prev.vector()[:] = self.Zetas.vector()
         self.Zetaw_prev.vector()[:] = self.Zetaw.vector()
         self.lmbda_prev.vector()[:] = self.lmbda_current.vector()

@@ -19,7 +19,7 @@ from .ORdmm_Land import vs_functions_to_dict
 logger = utils.getLogger(__name__)
 EMState = namedtuple(
     "EMState",
-    ["coupling", "solver", "mech_heart", "mesh", "t0"],
+    ["coupling", "solver", "mech_heart", "t0"],
 )
 
 
@@ -112,18 +112,21 @@ def save_state(
 
     logger.info(f"Save state to {path}")
 
-    mesh = mech_heart.geometry.mesh
-    with dolfin.HDF5File(mesh.mpi_comm(), path.as_posix(), "w") as h5file:
-
+    mech_mesh = mech_heart.geometry.mesh
+    ep_mesh = solver.VS.mesh()
+    logger.debug("Save using dolfin.HDF5File")
+    with dolfin.HDF5File(ep_mesh.mpi_comm(), path.as_posix(), "w") as h5file:
+        h5file.write(mech_heart.material.active.lmbda_prev_prev, "/em/lmbda_prev")
         h5file.write(mech_heart.material.active.Zetas_prev_prev, "/em/Zetas_prev")
         h5file.write(mech_heart.material.active.Zetaw_prev_prev, "/em/Zetaw_prev")
 
-        h5file.write(mesh, "/mesh")
+        h5file.write(ep_mesh, "/ep/mesh")
         h5file.write(solver.vs, "/ep/vs")
-        h5file.write(mech_heart.state, "mechanics/state")
+        h5file.write(mech_mesh, "/mechanics/mesh")
+        h5file.write(mech_heart.state, "/mechanics/state")
 
     bnd_cond_dict = dict([("dirichlet", 0), ("rigid", 1)])
-
+    logger.debug("Save using h5py")
     dict_to_h5(solver.ode_solver._model.parameters(), path, "ep/cell_params")
     dict_to_h5(
         dict(
@@ -140,52 +143,53 @@ def save_state(
 
 
 def load_state(path):
+    logger.debug(f"Load state from path {path}")
     path = Path(path)
     if not path.is_file():
         raise FileNotFoundError(f"File {path} does not exist")
 
+    logger.debug("Open file with h5py")
     with h5pyfile(path) as h5file:
         state_params = h5_to_dict(h5file["state_params"])
         cell_params = h5_to_dict(h5file["ep"]["cell_params"])
         vs_signature = h5file["ep"]["vs"].attrs["signature"].decode()
         mech_signature = h5file["mechanics"]["state"].attrs["signature"].decode()
 
-    mesh = dolfin.Mesh()
-    with dolfin.HDF5File(mesh.mpi_comm(), path.as_posix(), "r") as h5file:
-        h5file.read(mesh, "/mesh", False)
+    logger.debug("Load mesh")
+    mech_mesh = dolfin.Mesh()
+    ep_mesh = dolfin.Mesh()
+    with dolfin.HDF5File(ep_mesh.mpi_comm(), path.as_posix(), "r") as h5file:
+        h5file.read(ep_mesh, "/ep/mesh", False)
+        h5file.read(mech_mesh, "/mechanics/mesh", False)
 
-    VS = dolfin.FunctionSpace(mesh, eval(vs_signature))
+    VS = dolfin.FunctionSpace(ep_mesh, eval(vs_signature))
     vs = dolfin.Function(VS)
 
-    W = dolfin.FunctionSpace(mesh, eval(mech_signature))
+    W = dolfin.FunctionSpace(mech_mesh, eval(mech_signature))
     mech_state = dolfin.Function(W)
 
-    V = dolfin.FunctionSpace(mesh, "CG", 1)
-    Zetas_prev = dolfin.Function(V, name="Zetas_prev")
-    Zetaw_prev = dolfin.Function(V, name="Zetaw_prev")
-    with dolfin.HDF5File(mesh.mpi_comm(), path.as_posix(), "r") as h5file:
+    V = dolfin.FunctionSpace(mech_mesh, "CG", 1)
+    lmbda_prev = dolfin.Function(V, name="lambda")
+    Zetas_prev = dolfin.Function(V, name="Zetas")
+    Zetaw_prev = dolfin.Function(V, name="Zetaw")
+    logger.debug("Load functions")
+    with dolfin.HDF5File(ep_mesh.mpi_comm(), path.as_posix(), "r") as h5file:
         h5file.read(vs, "/ep/vs")
         h5file.read(mech_state, "/mechanics/state")
+        h5file.read(lmbda_prev, "/em/lmbda_prev")
         h5file.read(Zetas_prev, "/em/Zetas_prev")
         h5file.read(Zetaw_prev, "/em/Zetaw_prev")
     cell_inits = vs_functions_to_dict(vs)
 
-    lmbda = dolfin.Function(V, name="lambda")
-    Zetas = dolfin.Function(V, name="Zetas")
-    Zetaw = dolfin.Function(V, name="Zetaw")
-
-    dolfin.assign(lmbda, cell_inits["lmbda"])
-    dolfin.assign(Zetas, cell_inits["Zetas"])
-    dolfin.assign(Zetaw, cell_inits["Zetaw"])
-
     coupling = em_model.EMCoupling(
-        mesh,
-        lmbda=lmbda,
-        Zetas=Zetas_prev,
-        Zetaw=Zetaw_prev,
+        mech_mesh=mech_mesh,
+        ep_mesh=ep_mesh,
+        lmbda_mech=lmbda_prev,
+        Zetas_mech=Zetas_prev,
+        Zetaw_mech=Zetaw_prev,
     )
     solver = ep_model.setup_solver(
-        mesh,
+        ep_mesh,
         state_params["dt"],
         coupling,
         cell_params=cell_params,
@@ -195,7 +199,7 @@ def load_state(path):
     bnd_cond_dict = dict([(0, "dirichlet"), (1, "rigid")])
 
     mech_heart = mechanics_model.setup_mechanics_model(
-        mesh=mesh,
+        mesh=mech_mesh,
         coupling=coupling,
         dt=state_params["dt"],
         bnd_cond=bnd_cond_dict[state_params["bnd_cond"]],
@@ -207,7 +211,6 @@ def load_state(path):
         coupling=coupling,
         solver=solver,
         mech_heart=mech_heart,
-        mesh=mesh,
         t0=state_params["t0"],
     )
 
