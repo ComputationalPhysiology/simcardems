@@ -1,10 +1,8 @@
-import logging
-
 import dolfin
 
 from . import utils
 
-logger = logging.getLogger(__name__)
+logger = utils.getLogger(__name__)
 
 
 class EMCoupling:

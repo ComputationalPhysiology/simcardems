@@ -1,5 +1,4 @@
 import contextlib
-import logging
 import os
 import warnings
 from collections import namedtuple
@@ -17,7 +16,7 @@ from . import mechanics_model
 from . import utils
 from .ORdmm_Land import vs_functions_to_dict
 
-logger = logging.getLogger(__name__)
+logger = utils.getLogger(__name__)
 EMState = namedtuple(
     "EMState",
     ["coupling", "solver", "mech_heart", "mesh", "t0"],

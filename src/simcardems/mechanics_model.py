@@ -7,7 +7,9 @@ import pulse
 import ufl
 from mpi4py import MPI
 
-logger = logging.getLogger(__name__)
+from . import utils
+
+logger = utils.getLogger(__name__)
 
 
 class BoudaryConditions(str, Enum):
@@ -411,6 +413,7 @@ def setup_mechanics_model(
 ):
     """Setup mechanics model with dirichlet boundary conditions or rigid motion."""
     logger.info("Set up mechanics model")
+
     microstructure = setup_microstructure(mesh)
 
     marker_functions = None
@@ -466,4 +469,11 @@ def setup_mechanics_model(
         solver_parameters={"linear_solver": "mumps", "verbose": verbose},
     )
     problem.solve()
+
+    total_dofs = problem.state.function_space().dim()
+    logger.info("Mechanics model")
+    logger.info(f"Mesh elements: {mesh.num_entities(mesh.topology().dim())}")
+    logger.info(f"Mesh vertices: {mesh.num_entities(0)}")
+    logger.info(f"Total degrees of freedom: {total_dofs}")
+
     return problem

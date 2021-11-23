@@ -18,7 +18,8 @@ from . import utils
 from .datacollector import DataCollector
 from .version import __version__
 
-logger = logging.getLogger(__name__)
+
+logger = utils.getLogger(__name__)
 
 PathLike = typing.Union[os.PathLike, str]
 

@@ -5,7 +5,28 @@ import dolfin
 import numpy as np
 import ufl
 
-logger = logging.getLogger(__name__)
+
+class MPIFilt(logging.Filter):
+    def filter(self, record):
+
+        if dolfin.MPI.rank(dolfin.MPI.comm) == 0:
+            return 1
+        else:
+            return 0
+
+
+mpi_filt = MPIFilt()
+
+
+def getLogger(name):
+    import daiquiri
+
+    logger = daiquiri.getLogger(name)
+    logger.logger.addFilter(mpi_filt)
+    return logger
+
+
+logger = getLogger(__name__)
 
 
 def compute_norm(x, x_prev):

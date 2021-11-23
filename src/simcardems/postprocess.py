@@ -1,4 +1,3 @@
-import logging
 import warnings
 from pathlib import Path
 
@@ -7,9 +6,10 @@ import h5py
 import matplotlib.pyplot as plt
 import numpy as np
 
+from . import utils
 from .datacollector import DataLoader
 
-logger = logging.getLogger(__name__)
+logger = utils.getLogger(__name__)
 
 
 def center_func(fmin, fmax):

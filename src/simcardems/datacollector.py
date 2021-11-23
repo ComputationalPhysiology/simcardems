@@ -1,4 +1,3 @@
-import logging
 from pathlib import Path
 from typing import Dict
 from typing import List
@@ -11,7 +10,7 @@ from dolfin import VectorElement  # noqa: F401
 from . import utils
 from .save_load_functions import h5pyfile
 
-logger = logging.getLogger(__name__)
+logger = utils.getLogger(__name__)
 
 
 class DataCollector:
