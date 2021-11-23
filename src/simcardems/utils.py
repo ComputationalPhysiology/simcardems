@@ -9,7 +9,7 @@ import ufl
 class MPIFilt(logging.Filter):
     def filter(self, record):
 
-        if dolfin.MPI.rank(dolfin.MPI.comm) == 0:
+        if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
             return 1
         else:
             return 0

@@ -18,7 +18,6 @@ from . import utils
 from .datacollector import DataCollector
 from .version import __version__
 
-
 logger = utils.getLogger(__name__)
 
 PathLike = typing.Union[os.PathLike, str]
@@ -296,12 +295,12 @@ def main(
     u, u_assigner = utils.setup_assigner(mech_heart.state, u_subspace_index)
     u_assigner.assign(u, mech_heart.state.sub(u_subspace_index))
 
-    collector = DataCollector(outdir, mesh, reset_state=not load_state)
+    collector = DataCollector(outdir, mech_mesh, ep_mesh, reset_state=not load_state)
     for name, f in [
         ("u", u),
         ("V", v),
         ("Ca", Ca),
-        ("lmbda", coupling.lmbda),
+        ("lmbda", coupling.lmbda_mech),
         ("Ta", mech_heart.material.active.Ta_current),
     ]:
         collector.register(name, f)
@@ -315,6 +314,8 @@ def main(
     else:
         pbar = tqdm(time_stepper, total=round((T - t0) / dt))
     for (i, (t0, t1)) in enumerate(pbar):
+
+        logger.debug(f"Solve EP model at step {i} from {t0} to {t1}")
 
         # Solve EP model
         with dolfin.Timer("[demo] Solve EP model"):

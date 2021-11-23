@@ -14,16 +14,17 @@ logger = utils.getLogger(__name__)
 
 
 class DataCollector:
-    def __init__(self, outdir, mesh, reset_state=True) -> None:
+    def __init__(self, outdir, mech_mesh, ep_mesh, reset_state=True) -> None:
         self.outdir = Path(outdir)
         self._results_file = self.outdir.joinpath("results.h5")
-        self.comm = mesh.mpi_comm()
+        self.comm = ep_mesh.mpi_comm()  # FIXME: Is this important?
 
         if reset_state:
             utils.remove_file(self._results_file)
         if not self._results_file.is_file():
             with dolfin.HDF5File(self.comm, self.results_file, "w") as h5file:
-                h5file.write(mesh, "/mesh")
+                h5file.write(mech_mesh, "/mech_mesh")
+                h5file.write(ep_mesh, "/ep_mesh")
 
         self._xdmffiles: Dict[str, dolfin.XDMFFile] = {}
         self._functions: Dict[str, dolfin.Function] = {}

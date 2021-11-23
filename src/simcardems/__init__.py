@@ -2,6 +2,7 @@ import logging as _logging
 
 import daiquiri as _daiquiri
 import dolfin as _dolfin
+import pulse as _pulse
 
 from . import cli
 from . import datacollector
@@ -35,10 +36,12 @@ def set_log_level(level):
         "simcardems.save_load_functions.logger",
         "simcardems.utils.logger",
     ]
+    _pulse.set_log_level(level)
+    _daiquiri.setup(level=level)
     set_default_log_levels((logger, level) for logger in loggers)
 
 
-_daiquiri.setup(level=_logging.INFO)
+set_log_level(_logging.INFO)
 
 for module in ["matplotlib", "h5py", "FFC", "UFL"]:
     _logger = _logging.getLogger(module)

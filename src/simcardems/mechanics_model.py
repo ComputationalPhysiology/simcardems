@@ -461,7 +461,7 @@ def setup_mechanics_model(
     if bnd_cond == BoudaryConditions.rigid:
         Problem = RigidMotionProblem
 
-    verbose = logger.level < logging.INFO
+    verbose = logger.getEffectiveLevel() < logging.INFO
     problem = Problem(
         geometry,
         material,

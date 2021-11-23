@@ -38,25 +38,35 @@ class EMCoupling:
         self.Zetaw_ep.assign(Zetaw)
 
     def register_ep_model(self, solver):
+        logger.debug("Registering EP model")
         self._ep_solver = solver
         self.vs = solver.solution_fields()[0]
         self.XS_ep, self.XS_ep_assigner = utils.setup_assigner(self.vs, 40)
         self.XW_ep, self.XW_ep_assigner = utils.setup_assigner(self.vs, 41)
+        logger.debug("Done registering EP model")
 
     def update_mechanics(self):
+        logger.debug("Update mechanics")
         self.XS_ep_assigner.assign(self.XS_ep, utils.sub_function(self.vs, 40))
         self.XW_ep_assigner.assign(self.XW_ep, utils.sub_function(self.vs, 41))
+        logger.debug("Done udating mechanics")
 
     def interpolate_mechanics(self):
+        logger.debug("Interpolate mechanics")
         self.XS_mech = dolfin.interpolate(self.XS_ep, self.V_mech)
         self.XW_mech = dolfin.interpolate(self.XW_ep, self.V_mech)
+        logger.debug("Done interpolating mechanics")
 
     def update_ep(self):
+        logger.debug("Update EP")
         dolfin.assign(utils.sub_function(self._ep_solver.vs, 46), self.lmbda_ep)
         dolfin.assign(utils.sub_function(self._ep_solver.vs, 47), self.Zetas_ep)
         dolfin.assign(utils.sub_function(self._ep_solver.vs, 48), self.Zetaw_ep)
+        logger.debug("Done updating EP")
 
     def interpolate_ep(self):
+        logger.debug("Interpolate EP")
         self.lmbda_ep = dolfin.interpolate(self.lmbda_mech, self.V_ep)
         self.Zetas_ep = dolfin.interpolate(self.Zetas_mech, self.V_ep)
         self.Zetaw_ep = dolfin.interpolate(self.Zetaw_mech, self.V_ep)
+        logger.debug("Done interpolating EP")
