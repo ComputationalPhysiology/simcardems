@@ -298,7 +298,7 @@ def main(
         coupling.ep_mesh,
         reset_state=not load_state,
     )
-    for name, group, f in [
+    for group, name, f in [
         ("mechanics", "u", u),
         ("ep", "V", v),
         ("ep", "Ca", Ca),

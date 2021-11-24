@@ -126,16 +126,16 @@ class DataLoader:
                 group: {
                     name: h5file[group][name][self.time_stamps[0]]
                     .attrs["signature"]
-                    .decode(),
+                    .decode()
+                    for name in names
                 }
                 for group, names in self.names.items()
-                for name in names
             }
 
-        self._ep_mesh = dolfin.Mesh()
-        self._mech_mesh = dolfin.Mesh()
+        self.ep_mesh = dolfin.Mesh()
+        self.mech_mesh = dolfin.Mesh()
         self._h5file = dolfin.HDF5File(
-            self._ep_mesh.mpi_comm(),
+            self.ep_mesh.mpi_comm(),
             self._h5name.as_posix(),
             "r",
         )
@@ -147,19 +147,22 @@ class DataLoader:
             self._h5file.close()
 
     def _create_functions(self):
-        self._h5file.read(self._ep_mesh, "/ep/mesh", False)
-        self._h5file.read(self._mech_mesh, "/mechanics/mesh", False)
+        self._h5file.read(self.ep_mesh, "/ep/mesh", False)
+        self._h5file.read(self.mech_mesh, "/mechanics/mesh", False)
 
         self._function_spaces = {}
-        for group, singature_dict in self._signatures.items():
-            mesh = self._ep_mesh if group == "ep" else self._mech_mesh
 
-            self._function_spaces = {
-                group: {
-                    signature: dolfin.FunctionSpace(mesh, eval(signature))
-                    for signature in set(singature_dict.values())
+        for group, singature_dict in self._signatures.items():
+            mesh = self.ep_mesh if group == "ep" else self.mech_mesh
+
+            self._function_spaces.update(
+                {
+                    group: {
+                        signature: dolfin.FunctionSpace(mesh, eval(signature))
+                        for signature in set(singature_dict.values())
+                    },
                 },
-            }
+            )
 
         self._functions = {
             group: {
