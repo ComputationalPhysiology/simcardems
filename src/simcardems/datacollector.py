@@ -99,11 +99,10 @@ class DataLoader:
                 group: [name for name in h5file[group].keys() if name != "mesh"]
                 for group in ["ep", "mechanics"]
             }
-            if len(self.names) == 0:
+            if len(self.names["ep"]) + len(self.names["mechanics"]) == 0:
                 raise ValueError("No functions found in results file")
 
             # Get time stamps
-
             all_time_stamps = {
                 "{group}:{name}": sorted(
                     list(h5file[group][name].keys()),

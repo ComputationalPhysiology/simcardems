@@ -39,7 +39,7 @@ def test_DataCollector_create_file_with_mesh(mesh):
     assert Path(collector.results_file).is_file()
     with h5py.File(collector.results_file, "r") as h5file:
         assert "ep/mesh" in h5file
-        assert "mech/mesh" in h5file
+        assert "mechanics/mesh" in h5file
     shutil.rmtree(outdir)
 
 
