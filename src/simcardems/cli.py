@@ -298,14 +298,14 @@ def main(
         coupling.ep_mesh,
         reset_state=not load_state,
     )
-    for name, f in [
-        ("u", u),
-        ("V", v),
-        ("Ca", Ca),
-        ("lmbda", coupling.lmbda_mech),
-        ("Ta", mech_heart.material.active.Ta_current),
+    for name, group, f in [
+        ("mechanics", "u", u),
+        ("ep", "V", v),
+        ("ep", "Ca", Ca),
+        ("mechanics", "lmbda", coupling.lmbda_mech),
+        ("mechanics", "Ta", mech_heart.material.active.Ta_current),
     ]:
-        collector.register(name, f)
+        collector.register(group, name, f)
 
     time_stepper = cbcbeat.utils.TimeStepper((t0, T), dt, annotate=False)
     save_it = int(save_freq / dt)

@@ -2,6 +2,7 @@ import shutil
 from pathlib import Path
 from unittest import mock
 
+import dolfin
 import h5py
 import pytest
 import simcardems
@@ -37,17 +38,44 @@ def test_DataCollector_create_file_with_mesh(mesh):
     collector = simcardems.DataCollector(outdir, mesh, mesh)
     assert Path(collector.results_file).is_file()
     with h5py.File(collector.results_file, "r") as h5file:
-        assert "ep_mesh" in h5file
-        assert "mech_mesh" in h5file
+        assert "ep/mesh" in h5file
+        assert "mech/mesh" in h5file
     shutil.rmtree(outdir)
 
 
-def test_DataCollector_register():
-    pass
+def test_DataCollector_register(mesh):
+    V = dolfin.FunctionSpace(mesh, "CG", 1)
+    f = dolfin.Function(V)
+    outdir = Path("testdir")
+    simcardems.set_log_level(10)
+    collector = simcardems.DataCollector(outdir, mech_mesh=mesh, ep_mesh=mesh)
+    collector.register("ep", "func", f)
+    assert "func" in collector.names["ep"]
+
+    with pytest.raises(ValueError) as ex:
+        simcardems.DataLoader(collector.results_file)
+    assert str(ex.value) == "No functions found in results file"
+    shutil.rmtree(outdir)
 
 
-def test_DataCollector_store():
-    pass
+def test_DataCollector_store(mesh):
+    V = dolfin.FunctionSpace(mesh, "CG", 1)
+    f = dolfin.Function(V)
+    f.vector()[:] = 42
+    outdir = Path("testdir")
+    simcardems.set_log_level(10)
+    collector = simcardems.DataCollector(outdir, mech_mesh=mesh, ep_mesh=mesh)
+    collector.register("ep", "func", f)
+    assert "func" in collector.names["ep"]
+
+    collector.store(0)
+    loader = simcardems.DataLoader(collector.results_file)
+    assert loader.time_stamps == ["0.00"]
+    g1 = loader.get("ep", "func", "0.00")
+    g2 = loader.get("ep", "func", 0)
+    assert all(g1.vector().get_local() == f.vector().get_local())
+    assert all(g2.vector().get_local() == f.vector().get_local())
+    shutil.rmtree(outdir)
 
 
 def test_DataLoader_load_empty_files_raises_ValueError(mesh):
