@@ -58,21 +58,22 @@ def test_DataCollector_register(mesh):
     shutil.rmtree(outdir)
 
 
-def test_DataCollector_store(mesh):
+@pytest.mark.parametrize("group", ["ep", "mechanics"])
+def test_DataCollector_store(group, mesh):
     V = dolfin.FunctionSpace(mesh, "CG", 1)
     f = dolfin.Function(V)
     f.vector()[:] = 42
     outdir = Path("testdir")
     simcardems.set_log_level(10)
     collector = simcardems.DataCollector(outdir, mech_mesh=mesh, ep_mesh=mesh)
-    collector.register("ep", "func", f)
-    assert "func" in collector.names["ep"]
+    collector.register(group, "func", f)
+    assert "func" in collector.names[group]
 
     collector.store(0)
     loader = simcardems.DataLoader(collector.results_file)
     assert loader.time_stamps == ["0.00"]
-    g1 = loader.get("ep", "func", "0.00")
-    g2 = loader.get("ep", "func", 0)
+    g1 = loader.get(group, "func", "0.00")
+    g2 = loader.get(group, "func", 0)
     assert all(g1.vector().get_local() == f.vector().get_local())
     assert all(g2.vector().get_local() == f.vector().get_local())
     shutil.rmtree(outdir)

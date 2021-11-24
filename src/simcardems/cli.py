@@ -196,7 +196,7 @@ def refine_mesh(
 ) -> dolfin.Mesh:
 
     for i in range(num_refinements):
-        print("Performing refinement", i + 1)
+        logger.info(f"Performing refinement {i+1}")
         mesh = dolfin.refine(mesh, redistribute=redistribute)
 
     return mesh
