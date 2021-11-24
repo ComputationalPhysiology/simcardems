@@ -398,7 +398,7 @@ def plot_state_traces(results_file):
                     values[group][name][i] = func.vector().get_local()[dof]
                 else:
                     # Otherwise, evaluation at center coordinates
-                    values[group][name][i] = func(bnd.center)
+                    values[group][name][i] = func(bnd[group].center)
 
     times = np.array(loader.time_stamps, dtype=float)
 
