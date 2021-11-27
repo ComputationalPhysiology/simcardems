@@ -404,7 +404,7 @@ def plot_state_traces(results_file):
 
     if times[-1] > 4000:
         plot_peaks(
-            outdir.joinpath("/compare-peak-values.png"),
+            outdir.joinpath("compare-peak-values.png"),
             values["ep"]["Ca"],
             0.0002,
         )
