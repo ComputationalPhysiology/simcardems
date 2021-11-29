@@ -178,6 +178,34 @@ class ORdmm_Land(CardiacCellModel):
                 ("scale_drug_IpCa", 1.0),
                 ("scale_drug_Isacns", 1.0),
                 ("scale_drug_Isack", 1.0),
+                # Population factors
+                ("scale_popu_GNa", 1.0),
+                ("scale_popu_GCaL", 1.0),
+                ("scale_popu_Gto", 1.0),
+                ("scale_popu_GNaL", 1.0),
+                ("scale_popu_GKr", 1.0),
+                ("scale_popu_GKs", 1.0),
+                ("scale_popu_GK1", 1.0),
+                ("scale_popu_GbK", 1.0),
+                ("scale_popu_KNCX", 1.0),
+                ("scale_popu_KNaK", 1.0),
+                ("scale_popu_GbNa", 1.0),
+                ("scale_popu_GbCa", 1.0),
+                ("scale_popu_KpCa", 1.0),
+                ("scale_popu_KRyR", 1.0),
+                ("scale_popu_KSERCA", 1.0),
+                ("scale_popu_Kleak", 1.0),
+                ("scale_popu_nTm", 1.0),
+                ("scale_popu_CaT50ref", 1.0),
+                ("scale_popu_Tref", 1.0),
+                ("scale_popu_kuw", 1.0),
+                ("scale_popu_kws", 1.0),
+                ("scale_popu_kTRPN", 1.0),
+                ("scale_popu_nTRPN", 1.0),
+                ("scale_popu_ku", 1.0),
+                ("scale_popu_TRPN50", 1.0),
+                ("scale_popu_rw", 1.0),
+                ("scale_popu_rs", 1.0),
             ],
         )
         return params
@@ -374,6 +402,34 @@ class ORdmm_Land(CardiacCellModel):
         scale_drug_IpCa = self._parameters["scale_drug_IpCa"]
         scale_drug_Isacns = self._parameters["scale_drug_Isacns"]
         scale_drug_Isack = self._parameters["scale_drug_Isack"]
+        # Population factors
+        # scale_popu_GNa = self._parameters["scale_popu_GNa"]
+        # scale_popu_GCaL = self._parameters["scale_popu_GCaL"]
+        # scale_popu_Gto = self._parameters["scale_popu_Gto"]
+        # scale_popu_GNaL = self._parameters["scale_popu_GNaL"]
+        # scale_popu_GKr = self._parameters["scale_popu_GKr"]
+        # scale_popu_GKs = self._parameters["scale_popu_GKs"]
+        # scale_popu_GK1 = self._parameters["scale_popu_GK1"]
+        # scale_popu_GbK = self._parameters["scale_popu_GbK"]
+        # scale_popu_KNCX = self._parameters["scale_popu_KNCX"]
+        # scale_popu_KNaK = self._parameters["scale_popu_KNaK"]
+        # scale_popu_GbNa = self._parameters["scale_popu_GbNa"]
+        # scale_popu_GbCa = self._parameters["scale_popu_GbCa"]
+        # scale_popu_KpCa = self._parameters["scale_popu_KpCa"]
+        # scale_popu_KRyR = self._parameters["scale_popu_KRyR"]
+        # scale_popu_KSERCA = self._parameters["scale_popu_KSERCA"]
+        # scale_popu_Kleak = self._parameters["scale_popu_Kleak"]
+        # scale_popu_nTm = self._parameters["scale_popu_nTm"]
+        # scale_popu_CaT50ref = self._parameters["scale_popu_CaT50ref"]
+        # scale_popu_Tref = self._parameters["scale_popu_Tref"]
+        # scale_popu_kuw = self._parameters["scale_popu_kuw"]
+        # scale_popu_kws = self._parameters["scale_popu_kws"]
+        # scale_popu_kTRPN = self._parameters["scale_popu_kTRPN"]
+        # scale_popu_nTRPN = self._parameters["scale_popu_nTRPN"]
+        # scale_popu_ku = self._parameters["scale_popu_ku"]
+        # scale_popu_TRPN50 = self._parameters["scale_popu_TRPN50"]
+        # scale_popu_rw = self._parameters["scale_popu_rw"]
+        # scale_popu_rs = self._parameters["scale_popu_rs"]
 
         # Init return args
         current = [ufl.zero()] * 1
@@ -884,6 +940,35 @@ class ORdmm_Land(CardiacCellModel):
         scale_drug_IpCa = self._parameters["scale_drug_IpCa"]
         scale_drug_Isacns = self._parameters["scale_drug_Isacns"]
         scale_drug_Isack = self._parameters["scale_drug_Isack"]
+
+        # Population factors
+        # scale_popu_GNa = self._parameters["scale_popu_GNa"]
+        # scale_popu_GCaL = self._parameters["scale_popu_GCaL"]
+        # scale_popu_Gto = self._parameters["scale_popu_Gto"]
+        # scale_popu_GNaL = self._parameters["scale_popu_GNaL"]
+        # scale_popu_GKr = self._parameters["scale_popu_GKr"]
+        # scale_popu_GKs = self._parameters["scale_popu_GKs"]
+        # scale_popu_GK1 = self._parameters["scale_popu_GK1"]
+        # scale_popu_GbK = self._parameters["scale_popu_GbK"]
+        # scale_popu_KNCX = self._parameters["scale_popu_KNCX"]
+        # scale_popu_KNaK = self._parameters["scale_popu_KNaK"]
+        # scale_popu_GbNa = self._parameters["scale_popu_GbNa"]
+        # scale_popu_GbCa = self._parameters["scale_popu_GbCa"]
+        # scale_popu_KpCa = self._parameters["scale_popu_KpCa"]
+        # scale_popu_KRyR = self._parameters["scale_popu_KRyR"]
+        # scale_popu_KSERCA = self._parameters["scale_popu_KSERCA"]
+        # scale_popu_Kleak = self._parameters["scale_popu_Kleak"]
+        # scale_popu_nTm = self._parameters["scale_popu_nTm"]
+        # scale_popu_CaT50ref = self._parameters["scale_popu_CaT50ref"]
+        # scale_popu_Tref = self._parameters["scale_popu_Tref"]
+        # scale_popu_kuw = self._parameters["scale_popu_kuw"]
+        # scale_popu_kws = self._parameters["scale_popu_kws"]
+        # scale_popu_kTRPN = self._parameters["scale_popu_kTRPN"]
+        # scale_popu_nTRPN = self._parameters["scale_popu_nTRPN"]
+        # scale_popu_ku = self._parameters["scale_popu_ku"]
+        # scale_popu_TRPN50 = self._parameters["scale_popu_TRPN50"]
+        # scale_popu_rw = self._parameters["scale_popu_rw"]
+        # scale_popu_rs = self._parameters["scale_popu_rs"]
 
         # Init return args
         F_expressions = [dolfin.Constant(0.0)] * 48

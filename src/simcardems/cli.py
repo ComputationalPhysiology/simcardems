@@ -45,6 +45,8 @@ class _Defaults:
     loglevel = logging.INFO
     num_refinements: int = 1
     set_material: str = ""
+    drug_factors_file: str = ""
+    popu_factors_file: str = ""
 
 
 class _tqdm:
@@ -155,9 +157,15 @@ def cli():
 )
 @click.option(
     "--drug_factors_file",
-    default="",
+    default=_Defaults.drug_factors_file,
     type=str,
     help="Set drugs scaling factors (json file)",
+)
+@click.option(
+    "--popu_factors_file",
+    default=_Defaults.popu_factors_file,
+    type=str,
+    help="Set population scaling factors (json file)",
 )
 def run(
     outdir: PathLike,
@@ -176,6 +184,7 @@ def run(
     num_refinements: int,
     set_material: str,
     drug_factors_file: str,
+    popu_factors_file: str,
 ):
     main(
         outdir=outdir,
@@ -194,6 +203,7 @@ def run(
         num_refinements=num_refinements,
         set_material=set_material,
         drug_factors_file=drug_factors_file,
+        popu_factors_file=popu_factors_file,
     )
 
 
@@ -240,6 +250,7 @@ def main(
     num_refinements: int = _Defaults.num_refinements,
     set_material: str = _Defaults.set_material,
     drug_factors_file: str = "",
+    popu_factors_file: str = "",
 ):
 
     # Get all arguments and dump them to a json file
@@ -281,6 +292,7 @@ def main(
             coupling=coupling,
             cell_init_file=cell_init_file,
             drug_factors_file=drug_factors_file,
+            popu_factors_file=popu_factors_file,
         )
 
         coupling.register_ep_model(solver)

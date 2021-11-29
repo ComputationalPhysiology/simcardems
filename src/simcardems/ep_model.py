@@ -152,6 +152,7 @@ def setup_solver(
     cell_inits=None,
     cell_init_file="",
     drug_factors_file="",
+    popu_factors_file="",
 ):
     ps = setup_splitting_solver_parameters(
         theta=theta,
@@ -166,6 +167,10 @@ def setup_solver(
     # Adding optional drug factors to parameters (if drug_factors_file exists)
     if drug_factors_file != "" and Path(drug_factors_file).suffix == ".json":
         with open(drug_factors_file, "r") as fid:
+            d = json.load(fid)
+        cell_params_.update(d)
+    if popu_factors_file != "" and Path(popu_factors_file).suffix == ".json":
+        with open(popu_factors_file, "r") as fid:
             d = json.load(fid)
         cell_params_.update(d)
 
