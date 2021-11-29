@@ -44,6 +44,7 @@ class _Defaults:
     fix_right_plane: bool = True
     loglevel = logging.INFO
     num_refinements: int = 1
+    set_material: str = ""
 
 
 class _tqdm:
@@ -92,6 +93,12 @@ def cli():
     default=_Defaults.save_freq,
     type=int,
     help="Set frequency of saving results to file",
+)
+@click.option(
+    "--set_material",
+    default=_Defaults.set_material,
+    type=str,
+    help="Choose material properties for mechanics model (default is HolzapfelOgden, option is Guccione",
 )
 @click.option("-dx", default=_Defaults.dx, type=float, help="Spatial discretization")
 @click.option(
@@ -161,6 +168,7 @@ def run(
     save_freq: int,
     loglevel: int,
     num_refinements: int,
+    set_material: str,
 ):
     main(
         outdir=outdir,
@@ -177,6 +185,7 @@ def run(
         save_freq=save_freq,
         loglevel=loglevel,
         num_refinements=num_refinements,
+        set_material=set_material,
     )
 
 
@@ -221,6 +230,7 @@ def main(
     fix_right_plane: bool = True,
     loglevel: int = _Defaults.loglevel,
     num_refinements: int = _Defaults.num_refinements,
+    set_material: str = _Defaults.set_material,
 ):
 
     # Get all arguments and dump them to a json file
@@ -276,6 +286,7 @@ def main(
                 traction=traction,
                 spring=spring,
                 fix_right_plane=fix_right_plane,
+                set_material=set_material,
             )
         t0 = 0
 
