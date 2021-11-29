@@ -164,6 +164,20 @@ class ORdmm_Land(CardiacCellModel):
                 ("kmcsqn", 0.8),
                 ("kmtrpn", 0.0005),
                 ("trpnmax", 0.07),
+                # Drug factors
+                ("scale_drug_INa", 1.0),
+                ("scale_drug_INaL", 1.0),
+                ("scale_drug_Ito", 1.0),
+                ("scale_drug_ICaL", 1.0),
+                ("scale_drug_IKr", 1.0),
+                ("scale_drug_IKs", 1.0),
+                ("scale_drug_IK1", 1.0),
+                ("scale_drug_IKb", 1.0),
+                ("scale_drug_INab", 1.0),
+                ("scale_drug_ICab", 1.0),
+                ("scale_drug_IpCa", 1.0),
+                ("scale_drug_Isacns", 1.0),
+                ("scale_drug_Isack", 1.0),
             ],
         )
         return params
@@ -346,6 +360,20 @@ class ORdmm_Land(CardiacCellModel):
         PNab = self._parameters["PNab"]
         PCab = self._parameters["PCab"]
         GpCa = self._parameters["GpCa"]
+        # Drug factor
+        scale_drug_INa = self._parameters["scale_drug_INa"]
+        scale_drug_INaL = self._parameters["scale_drug_INaL"]
+        scale_drug_Ito = self._parameters["scale_drug_Ito"]
+        scale_drug_ICaL = self._parameters["scale_drug_ICaL"]
+        scale_drug_IKr = self._parameters["scale_drug_IKr"]
+        scale_drug_IKs = self._parameters["scale_drug_IKs"]
+        scale_drug_IK1 = self._parameters["scale_drug_IK1"]
+        scale_drug_IKb = self._parameters["scale_drug_IKb"]
+        scale_drug_INab = self._parameters["scale_drug_INab"]
+        scale_drug_ICab = self._parameters["scale_drug_ICab"]
+        scale_drug_IpCa = self._parameters["scale_drug_IpCa"]
+        scale_drug_Isacns = self._parameters["scale_drug_Isacns"]
+        scale_drug_Isack = self._parameters["scale_drug_Isack"]
 
         # Init return args
         current = [ufl.zero()] * 1
@@ -368,13 +396,14 @@ class ORdmm_Land(CardiacCellModel):
         fINap = 1.0 / (1.0 + KmCaMK / CaMKa)
         INa = (
             GNa
+            * scale_drug_INa
             * ufl.elem_pow(m, 3.0)
             * (-ENa + v)
             * ((1.0 - fINap) * h * j + fINap * hp * jp)
         )
 
         # Expressions for the INaL component
-        GNaL = 0.0075 * scale_INaL
+        GNaL = 0.0075 * scale_INaL * scale_drug_INaL
         fINaLp = 1.0 / (1.0 + KmCaMK / CaMKa)
         INaL = (-ENa + v) * ((1.0 - fINaLp) * hL + fINaLp * hLp) * GNaL * mL
 
@@ -384,7 +413,9 @@ class ORdmm_Land(CardiacCellModel):
         i = AiF * iF + AiS * iS
         ip = AiF * iFp + AiS * iSp
         fItop = 1.0 / (1.0 + KmCaMK / CaMKa)
-        Ito = Gto * (-EK + v) * ((1.0 - fItop) * a * i + ap * fItop * ip)
+        Ito = (
+            Gto * scale_drug_Ito * (-EK + v) * ((1.0 - fItop) * a * i + ap * fItop * ip)
+        )
 
         # Expressions for the ICaL ICaNa ICaK component
         Afs = 1.0 - Aff
@@ -412,7 +443,7 @@ class ORdmm_Land(CardiacCellModel):
             * vffrt
             / (-1.0 + ufl.exp(1.0 * vfrt))
         )
-        PCa = 0.0001 * scale_ICaL
+        PCa = 0.0001 * scale_ICaL * scale_drug_ICaL
         PCap = 1.1 * PCa
         PCaNa = 0.00125 * PCa
         PCaK = 0.0003574 * PCa
@@ -443,19 +474,19 @@ class ORdmm_Land(CardiacCellModel):
             (1.0 + 2.0820090840784555 * ufl.exp(0.013333333333333334 * v))
             * (1.0 + 0.7165313105737893 * ufl.exp(0.03333333333333333 * v))
         )
-        GKr = 0.046 * scale_IKr
+        GKr = 0.046 * scale_IKr * scale_drug_IKr
         IKr = 0.4303314829119352 * ufl.sqrt(ko) * (-EK + v) * GKr * rkr * xr
 
         # Expressions for the IKs component
         KsCa = 1.0 + 0.6 / (1.0 + 6.481821026062645e-07 * ufl.elem_pow(1.0 / cai, 1.4))
-        GKs = 0.0034 * scale_IKs
+        GKs = 0.0034 * scale_IKs * scale_drug_IKs
         IKs = (-EKs + v) * GKs * KsCa * xs1 * xs2
         rk1 = 1.0 / (
             1.0
             + 69220.6322106767
             * ufl.exp(0.10534077741493732 * v - 0.27388602127883704 * ko)
         )
-        GK1 = 0.1908 * scale_IK1
+        GK1 = 0.1908 * scale_IK1 * scale_drug_IK1
         IK1 = ufl.sqrt(ko) * (-EK + v) * GK1 * rk1 * xk1
 
         # Expressions for the INaCa_i component
@@ -595,28 +626,35 @@ class ORdmm_Land(CardiacCellModel):
 
         # Expressions for the IKb component
         xkb = 1.0 / (1.0 + 2.202363450949239 * ufl.exp(-0.05452562704471101 * v))
-        IKb = GKb * (-EK + v) * xkb
+        IKb = GKb * scale_drug_IKb * (-EK + v) * xkb
 
         # Expressions for the INab component
-        INab = PNab * (-nao + ufl.exp(vfrt) * nai) * vffrt / (-1.0 + ufl.exp(vfrt))
+        INab = (
+            PNab
+            * scale_drug_INab
+            * (-nao + ufl.exp(vfrt) * nai)
+            * vffrt
+            / (-1.0 + ufl.exp(vfrt))
+        )
 
         # Expressions for the ICab component
         ICab = (
             4.0
             * PCab
+            * scale_drug_ICab
             * (-0.341 * cao + cai * ufl.exp(2.0 * vfrt))
             * vffrt
             / (-1.0 + ufl.exp(2.0 * vfrt))
         )
 
         # Expressions for the IpCa component
-        IpCa = GpCa * cai / (0.0005 + cai)
+        IpCa = GpCa * scale_drug_IpCa * cai / (0.0005 + cai)
 
         # Expressions for the Isac (Pueyo)--> ns + k component
-        Gsac_ns = 0.006
+        Gsac_ns = 0.006 * scale_drug_Isacns
         Esac_ns = -10
         lambda_max = 1.1
-        Gsac_k = 0.2882 * 800 / 210  # Pueyo endo
+        Gsac_k = (0.2882 * 800 / 210) * scale_drug_Isack  # Pueyo endo
 
         Isac_P_ns = ufl.conditional(
             ufl.lt(lmbda, 1.0),
@@ -832,6 +870,21 @@ class ORdmm_Land(CardiacCellModel):
         # Zetas = self._parameters["Zetas"]
         # Zetaw = self._parameters["Zetaw"]
 
+        # Drug factor
+        scale_drug_INa = self._parameters["scale_drug_INa"]
+        scale_drug_INaL = self._parameters["scale_drug_INaL"]
+        scale_drug_Ito = self._parameters["scale_drug_Ito"]
+        scale_drug_ICaL = self._parameters["scale_drug_ICaL"]
+        scale_drug_IKr = self._parameters["scale_drug_IKr"]
+        scale_drug_IKs = self._parameters["scale_drug_IKs"]
+        scale_drug_IK1 = self._parameters["scale_drug_IK1"]
+        scale_drug_IKb = self._parameters["scale_drug_IKb"]
+        scale_drug_INab = self._parameters["scale_drug_INab"]
+        scale_drug_ICab = self._parameters["scale_drug_ICab"]
+        scale_drug_IpCa = self._parameters["scale_drug_IpCa"]
+        scale_drug_Isacns = self._parameters["scale_drug_Isacns"]
+        scale_drug_Isack = self._parameters["scale_drug_Isack"]
+
         # Init return args
         F_expressions = [dolfin.Constant(0.0)] * 48
 
@@ -891,6 +944,7 @@ class ORdmm_Land(CardiacCellModel):
         fINap = 1.0 / (1.0 + KmCaMK / CaMKa)
         INa = (
             GNa
+            * scale_drug_INa
             * ufl.elem_pow(m, 3.0)
             * (-ENa + v)
             * ((1.0 - fINap) * h * j + fINap * hp * jp)
@@ -905,7 +959,7 @@ class ORdmm_Land(CardiacCellModel):
         hLssp = 1.0 / (1.0 + 275969.2903869871 * ufl.exp(0.13354700854700854 * v))
         thLp = 3.0 * thL
         F_expressions[9] = (-hLp + hLssp) / thLp
-        GNaL = 0.0075 * scale_INaL
+        GNaL = 0.0075 * scale_INaL * scale_drug_INaL
         fINaLp = 1.0 / (1.0 + KmCaMK / CaMKa)
         INaL = (-ENa + v) * ((1.0 - fINaLp) * hL + fINaLp * hLp) * GNaL * mL
 
@@ -943,7 +997,9 @@ class ORdmm_Land(CardiacCellModel):
         F_expressions[15] = (-iSp + iss) / tiSp
         ip = AiF * iFp + AiS * iSp
         fItop = 1.0 / (1.0 + KmCaMK / CaMKa)
-        Ito = Gto * (-EK + v) * ((1.0 - fItop) * a * i + ap * fItop * ip)
+        Ito = (
+            Gto * scale_drug_Ito * (-EK + v) * ((1.0 - fItop) * a * i + ap * fItop * ip)
+        )
 
         # Expressions for the ICaL ICaNa ICaK component
         dss = 1.0 / (1.0 + 0.39398514226669484 * ufl.exp(-0.23640661938534277 * v))
@@ -1007,7 +1063,7 @@ class ORdmm_Land(CardiacCellModel):
             * vffrt
             / (-1.0 + ufl.exp(1.0 * vfrt))
         )
-        PCa = 0.0001 * scale_ICaL
+        PCa = 0.0001 * scale_ICaL * scale_drug_ICaL
         PCap = 1.1 * PCa
         PCaNa = 0.00125 * PCa
         PCaK = 0.0003574 * PCa
@@ -1049,7 +1105,7 @@ class ORdmm_Land(CardiacCellModel):
             (1.0 + 2.0820090840784555 * ufl.exp(0.013333333333333334 * v))
             * (1.0 + 0.7165313105737893 * ufl.exp(0.03333333333333333 * v))
         )
-        GKr = 0.046 * scale_IKr
+        GKr = 0.046 * scale_IKr * scale_drug_IKr
         IKr = 0.4303314829119352 * ufl.sqrt(ko) * (-EK + v) * GKr * rkr * xr
 
         # Expressions for the IKs component
@@ -1066,7 +1122,7 @@ class ORdmm_Land(CardiacCellModel):
         )
         F_expressions[28] = (-xs2 + xs2ss) / txs2
         KsCa = 1.0 + 0.6 / (1.0 + 6.481821026062645e-07 * ufl.elem_pow(1.0 / cai, 1.4))
-        GKs = 0.0034 * scale_IKs
+        GKs = 0.0034 * scale_IKs * scale_drug_IKs
         IKs = (-EKs + v) * GKs * KsCa * xs1 * xs2
         xk1ss = 1.0 / (
             1.0 + ufl.exp((-144.59 - v - 2.5538 * ko) / (3.8115 + 1.5692 * ko))
@@ -1081,7 +1137,7 @@ class ORdmm_Land(CardiacCellModel):
             + 69220.6322106767
             * ufl.exp(0.10534077741493732 * v - 0.27388602127883704 * ko)
         )
-        GK1 = 0.1908 * scale_IK1
+        GK1 = 0.1908 * scale_IK1 * scale_drug_IK1
         IK1 = ufl.sqrt(ko) * (-EK + v) * GK1 * rk1 * xk1
 
         # Expressions for the INaCa_i component
@@ -1221,28 +1277,35 @@ class ORdmm_Land(CardiacCellModel):
 
         # Expressions for the IKb component
         xkb = 1.0 / (1.0 + 2.202363450949239 * ufl.exp(-0.05452562704471101 * v))
-        IKb = GKb * (-EK + v) * xkb
+        IKb = GKb * scale_drug_IKb * (-EK + v) * xkb
 
         # Expressions for the INab component
-        INab = PNab * (-nao + ufl.exp(vfrt) * nai) * vffrt / (-1.0 + ufl.exp(vfrt))
+        INab = (
+            PNab
+            * scale_drug_INab
+            * (-nao + ufl.exp(vfrt) * nai)
+            * vffrt
+            / (-1.0 + ufl.exp(vfrt))
+        )
 
         # Expressions for the ICab component
         ICab = (
             4.0
             * PCab
+            * scale_drug_ICab
             * (-0.341 * cao + cai * ufl.exp(2.0 * vfrt))
             * vffrt
             / (-1.0 + ufl.exp(2.0 * vfrt))
         )
 
         # Expressions for the IpCa component
-        IpCa = GpCa * cai / (0.0005 + cai)
+        IpCa = GpCa * scale_drug_IpCa * cai / (0.0005 + cai)
 
         # Expressions for the Isac (Pueyo)--> ns + k component
-        Gsac_ns = 0.006
+        Gsac_ns = 0.006 * scale_drug_Isacns
         Esac_ns = -10
         lambda_max = 1.1
-        Gsac_k = 0.2882 * 800 / 210  # Pueyo endo
+        Gsac_k = (0.2882 * 800 / 210) * scale_drug_Isack  # Pueyo endo
         Isac_P_ns = ufl.conditional(
             ufl.lt(lmbda, 1.0),
             0,

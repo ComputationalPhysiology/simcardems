@@ -151,6 +151,7 @@ def setup_solver(
     cell_params=None,
     cell_inits=None,
     cell_init_file="",
+    drug_factors_file="",
 ):
     ps = setup_splitting_solver_parameters(
         theta=theta,
@@ -162,6 +163,11 @@ def setup_solver(
     cell_params_ = CellModel.default_parameters()
     if cell_params is not None:
         cell_params_.update(cell_params)
+    # Adding optional drug factors to parameters (if drug_factors_file exists)
+    if drug_factors_file != "" and Path(drug_factors_file).suffix == ".json":
+        with open(drug_factors_file, "r") as fid:
+            d = json.load(fid)
+        cell_params_.update(d)
 
     cell_inits_ = CellModel.default_initial_conditions()
     if cell_init_file != "":
@@ -182,7 +188,7 @@ def setup_solver(
     cell_inits_["Zetas"] = coupling.Zetas_ep
     cell_inits_["Zetaw"] = coupling.Zetaw_ep
 
-    cellmodel = CellModel(init_conditions=cell_inits, params=cell_params)
+    cellmodel = CellModel(init_conditions=cell_inits_, params=cell_params_)
 
     # Set-up cardiac model
     ep_heart = setup_ep_model(cellmodel, mesh)

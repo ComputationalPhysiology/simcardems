@@ -153,6 +153,12 @@ def cli():
     default=_Defaults.hpc,
     help="Indicate if simulations runs on hpc. This turns off the progress bar.",
 )
+@click.option(
+    "--drug_factors_file",
+    default="",
+    type=str,
+    help="Set drugs scaling factors (json file)",
+)
 def run(
     outdir: PathLike,
     T: float,
@@ -169,6 +175,7 @@ def run(
     loglevel: int,
     num_refinements: int,
     set_material: str,
+    drug_factors_file: str,
 ):
     main(
         outdir=outdir,
@@ -186,6 +193,7 @@ def run(
         loglevel=loglevel,
         num_refinements=num_refinements,
         set_material=set_material,
+        drug_factors_file=drug_factors_file,
     )
 
 
@@ -231,6 +239,7 @@ def main(
     loglevel: int = _Defaults.loglevel,
     num_refinements: int = _Defaults.num_refinements,
     set_material: str = _Defaults.set_material,
+    drug_factors_file: str = "",
 ):
 
     # Get all arguments and dump them to a json file
@@ -271,6 +280,7 @@ def main(
             dt=dt,
             coupling=coupling,
             cell_init_file=cell_init_file,
+            drug_factors_file=drug_factors_file,
         )
 
         coupling.register_ep_model(solver)
