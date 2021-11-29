@@ -18,7 +18,7 @@ from . import utils
 from .datacollector import DataCollector
 from .version import __version__
 
-logger = logging.getLogger(__name__)
+logger = utils.getLogger(__name__)
 
 PathLike = typing.Union[os.PathLike, str]
 
@@ -27,7 +27,7 @@ class _Defaults:
     outdir: PathLike = "results"
     T: float = 1000
     dx: float = 0.2
-    dt: float = 0.02
+    dt: float = 0.05
     bnd_cond: mechanics_model.BoudaryConditions = (
         mechanics_model.BoudaryConditions.dirichlet
     )
@@ -42,6 +42,8 @@ class _Defaults:
     traction: typing.Union[dolfin.Constant, float] = None
     spring: typing.Union[dolfin.Constant, float] = None
     fix_right_plane: bool = True
+    loglevel = logging.INFO
+    num_refinements: int = 1
 
 
 class _tqdm:
@@ -77,6 +79,13 @@ def cli():
     default=_Defaults.T,
     type=float,
     help="Endtime of simulation",
+)
+@click.option(
+    "-n",
+    "--num_refinements",
+    default=_Defaults.num_refinements,
+    type=int,
+    help="Number of refinements of for the mesh using in the EP model",
 )
 @click.option(
     "--save_freq",
@@ -126,6 +135,12 @@ def cli():
     ),
 )
 @click.option(
+    "--loglevel",
+    default=_Defaults.loglevel,
+    type=int,
+    help="How much printing. DEBUG: 10, INFO:20 (default), WARNING: 30",
+)
+@click.option(
     "--hpc",
     is_flag=True,
     default=_Defaults.hpc,
@@ -144,6 +159,8 @@ def run(
     ly: float,
     lz: float,
     save_freq: int,
+    loglevel: int,
+    num_refinements: int,
 ):
     main(
         outdir=outdir,
@@ -158,6 +175,8 @@ def run(
         ly=ly,
         lz=lz,
         save_freq=save_freq,
+        loglevel=loglevel,
+        num_refinements=num_refinements,
     )
 
 
@@ -168,6 +187,19 @@ def run_json(path):
         data = json.load(json_file)
 
     main(**data)
+
+
+def refine_mesh(
+    mesh: dolfin.Mesh,
+    num_refinements: int,
+    redistribute: bool = False,
+) -> dolfin.Mesh:
+
+    for i in range(num_refinements):
+        logger.info(f"Performing refinement {i+1}")
+        mesh = dolfin.refine(mesh, redistribute=redistribute)
+
+    return mesh
 
 
 def main(
@@ -187,7 +219,10 @@ def main(
     traction: typing.Union[dolfin.Constant, float] = None,
     spring: typing.Union[dolfin.Constant, float] = None,
     fix_right_plane: bool = True,
+    loglevel: int = _Defaults.loglevel,
+    num_refinements: int = _Defaults.num_refinements,
 ):
+
     # Get all arguments and dump them to a json file
     info_dict = locals()
     outdir = Path(outdir)
@@ -196,30 +231,33 @@ def main(
         json.dump(info_dict, f)
 
     # Disable warnings
-    dolfin.set_log_level(40)
+    from . import set_log_level
+
+    set_log_level(loglevel)
+    dolfin.set_log_level(loglevel + 10)  # TODO: Make it possible to set this?
 
     state_path = outdir.joinpath("state.h5")
 
     if load_state and state_path.is_file():
         # Load state
-        if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
-            print("Load previously saved state")
+        logger.info("Load previously saved state")
         with dolfin.Timer("[demo] Load previously saved state"):
-            coupling, solver, mech_heart, mesh, t0 = io.load_state(
+            coupling, solver, mech_heart, t0 = io.load_state(
                 state_path,
             )
     else:
-        if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
-            print("Create a new state")
+        logger.info("Create a new state")
         # Create a new state
         with dolfin.Timer("[demo] Create mesh"):
-            mesh = utils.create_boxmesh(Lx=lx, Ly=ly, Lz=lz, dx=dx)
+            mech_mesh = utils.create_boxmesh(Lx=lx, Ly=ly, Lz=lz, dx=dx)
 
-        coupling = em_model.EMCoupling(mesh)
+        ep_mesh = refine_mesh(mech_mesh, num_refinements=num_refinements)
+
+        coupling = em_model.EMCoupling(mech_mesh, ep_mesh)
 
         # Set-up solver and time it
         solver = ep_model.setup_solver(
-            mesh=mesh,
+            mesh=ep_mesh,
             dt=dt,
             coupling=coupling,
             cell_init_file=cell_init_file,
@@ -229,7 +267,7 @@ def main(
 
         with dolfin.Timer("[demo] Setup Mech solver"):
             mech_heart = mechanics_model.setup_mechanics_model(
-                mesh=mesh,
+                mesh=mech_mesh,
                 coupling=coupling,
                 dt=dt,
                 bnd_cond=bnd_cond,
@@ -241,8 +279,7 @@ def main(
             )
         t0 = 0
 
-    if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
-        print(f"Starting at t0={t0}")
+    logger.info(f"Starting at t0={t0}")
 
     vs = solver.solution_fields()[1]
     v, v_assigner = utils.setup_assigner(vs, 0)
@@ -255,15 +292,20 @@ def main(
     u, u_assigner = utils.setup_assigner(mech_heart.state, u_subspace_index)
     u_assigner.assign(u, mech_heart.state.sub(u_subspace_index))
 
-    collector = DataCollector(outdir, mesh, reset_state=not load_state)
-    for name, f in [
-        ("u", u),
-        ("V", v),
-        ("Ca", Ca),
-        ("lmbda", coupling.lmbda),
-        ("Ta", mech_heart.material.active.Ta_current),
+    collector = DataCollector(
+        outdir,
+        coupling.mech_mesh,
+        coupling.ep_mesh,
+        reset_state=not load_state,
+    )
+    for group, name, f in [
+        ("mechanics", "u", u),
+        ("ep", "V", v),
+        ("ep", "Ca", Ca),
+        ("mechanics", "lmbda", coupling.lmbda_mech),
+        ("mechanics", "Ta", mech_heart.material.active.Ta_current),
     ]:
-        collector.register(name, f)
+        collector.register(group, name, f)
 
     time_stepper = cbcbeat.utils.TimeStepper((t0, T), dt, annotate=False)
     save_it = int(save_freq / dt)
@@ -275,6 +317,8 @@ def main(
         pbar = tqdm(time_stepper, total=round((T - t0) / dt))
     for (i, (t0, t1)) in enumerate(pbar):
 
+        logger.debug(f"Solve EP model at step {i} from {t0} to {t1}")
+
         # Solve EP model
         with dolfin.Timer("[demo] Solve EP model"):
             solver.step((t0, t1))
@@ -284,8 +328,8 @@ def main(
             coupling.update_mechanics()
 
         with dolfin.Timer("[demo] Compute norm"):
-            XS_norm = utils.compute_norm(coupling.XS, pre_XS)
-        XW_norm = utils.compute_norm(coupling.XW, pre_XW)
+            XS_norm = utils.compute_norm(coupling.XS_ep, pre_XS)
+        XW_norm = utils.compute_norm(coupling.XW_ep, pre_XW)
 
         pbar.set_postfix(
             {
@@ -299,10 +343,13 @@ def main(
             preXS_assigner.assign(pre_XS, utils.sub_function(vs, 40))
             preXW_assigner.assign(pre_XW, utils.sub_function(vs, 41))
 
+            coupling.interpolate_mechanics()
+
             # Solve the Mechanics model
             with dolfin.Timer("[demo] Solve mechanics"):
                 mech_heart.solve()
 
+            coupling.interpolate_ep()
             # Update previous
             mech_heart.material.active.update_prev()
             with dolfin.Timer("[demo] Update EP"):

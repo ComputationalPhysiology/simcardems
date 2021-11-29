@@ -1,3 +1,4 @@
+import logging
 import typing
 from enum import Enum
 
@@ -5,6 +6,10 @@ import dolfin
 import pulse
 import ufl
 from mpi4py import MPI
+
+from . import utils
+
+logger = utils.getLogger(__name__)
 
 
 class BoudaryConditions(str, Enum):
@@ -134,7 +139,7 @@ class LandModel(pulse.ActiveModel):
         C = F.T * F
 
         if diff == 0:
-            return pulse.material.active_stress.Wactive_transversally(
+            return pulse.material.active_model.Wactive_transversally(
                 Ta=self.Ta(F),
                 C=C,
                 f0=self.f0,
@@ -233,6 +238,7 @@ class RigidMotionProblem(MechanicsProblem):
 
 
 def setup_microstructure(mesh):
+    logger.debug("Set up microstructure")
     V_f = dolfin.VectorFunctionSpace(mesh, "DG", 1)
     f0 = dolfin.interpolate(
         dolfin.Expression(("1.0", "0.0", "0.0"), degree=1, cell=mesh.ufl_cell()),
@@ -315,7 +321,7 @@ def setup_diriclet_bc(
     spring.
 
     """
-
+    logger.debug("Setup diriclet bc")
     # Get the value of the greatest x-coordinate
     Lx = mesh.mpi_comm().allreduce(mesh.coordinates().max(0)[0], op=MPI.MAX)
 
@@ -406,6 +412,8 @@ def setup_mechanics_model(
     fix_right_plane: bool = False,
 ):
     """Setup mechanics model with dirichlet boundary conditions or rigid motion."""
+    logger.info("Set up mechanics model")
+
     microstructure = setup_microstructure(mesh)
 
     marker_functions = None
@@ -436,12 +444,12 @@ def setup_mechanics_model(
         s0=microstructure.s0,
         n0=microstructure.n0,
         eta=0,
-        lmbda=coupling.lmbda,
-        Zetas=coupling.Zetas,
-        Zetaw=coupling.Zetaw,
+        lmbda=coupling.lmbda_mech,
+        Zetas=coupling.Zetas_mech,
+        Zetaw=coupling.Zetaw_mech,
         parameters=cell_params,
-        XS=coupling.XS,
-        XW=coupling.XW,
+        XS=coupling.XS_mech,
+        XW=coupling.XW_mech,
         dt=dt,
         function_space=V,
     )
@@ -452,11 +460,21 @@ def setup_mechanics_model(
     Problem = MechanicsProblem
     if bnd_cond == BoudaryConditions.rigid:
         Problem = RigidMotionProblem
+
+    verbose = logger.getEffectiveLevel() < logging.INFO
     problem = Problem(
         geometry,
         material,
         bcs,
-        solver_parameters={"linear_solver": "mumps"},
+        solver_parameters={"linear_solver": "mumps", "verbose": verbose},
     )
+
     problem.solve()
+
+    total_dofs = problem.state.function_space().dim()
+    logger.info("Mechanics model")
+    logger.info(f"Mesh elements: {mesh.num_entities(mesh.topology().dim())}")
+    logger.info(f"Mesh vertices: {mesh.num_entities(0)}")
+    logger.info(f"Total degrees of freedom: {total_dofs}")
+
     return problem

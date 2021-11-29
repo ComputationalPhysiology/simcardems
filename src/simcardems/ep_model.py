@@ -4,7 +4,10 @@ from pathlib import Path
 import cbcbeat
 import dolfin
 
+from . import utils
 from .ORdmm_Land import ORdmm_Land as CellModel
+
+logger = utils.getLogger(__name__)
 
 
 def define_conductivity_tensor(chi, C_m):
@@ -175,9 +178,9 @@ def setup_solver(
     if cell_inits is not None:
         cell_inits_.update(cell_inits)
 
-    cell_inits_["lmbda"] = coupling.lmbda
-    cell_inits_["Zetas"] = coupling.Zetas
-    cell_inits_["Zetaw"] = coupling.Zetaw
+    cell_inits_["lmbda"] = coupling.lmbda_ep
+    cell_inits_["Zetas"] = coupling.Zetas_ep
+    cell_inits_["Zetaw"] = coupling.Zetaw_ep
 
     cellmodel = CellModel(init_conditions=cell_inits, params=cell_params)
 
@@ -195,10 +198,10 @@ def setup_solver(
     # Output some degrees of freedom
     total_dofs = vs.function_space().dim()
     # pde_dofs = V.dim()
-    if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
-        print("Mesh elements: ", mesh.num_entities(mesh.topology().dim()))
-        print("Mesh vertices: ", mesh.num_entities(0))
-        print("Total degrees of freedom: ", total_dofs)
-        # print("PDE degrees of freedom: ", pde_dofs)
+    logger.info("EP model")
+    logger.info(f"Mesh elements: {mesh.num_entities(mesh.topology().dim())}")
+    logger.info(f"Mesh vertices: {mesh.num_entities(0)}")
+    logger.info(f"Total degrees of freedom: {total_dofs}")
+    # logger.info("PDE degrees of freedom: ", pde_dofs)
 
     return solver
