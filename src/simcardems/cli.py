@@ -42,6 +42,7 @@ class _Defaults:
     traction: typing.Union[dolfin.Constant, float] = None
     spring: typing.Union[dolfin.Constant, float] = None
     fix_right_plane: bool = True
+    set_material: str = ""
 
 
 class _tqdm:
@@ -83,6 +84,12 @@ def cli():
     default=_Defaults.save_freq,
     type=int,
     help="Set frequency of saving results to file",
+)
+@click.option(
+    "--set_material",
+    default=_Defaults.set_material,
+    type=str,
+    help="Choose material properties for mechanics model (default is HolzapfelOgden, option is Guccione",
 )
 @click.option("-dx", default=_Defaults.dx, type=float, help="Spatial discretization")
 @click.option(
@@ -144,6 +151,7 @@ def run(
     ly: float,
     lz: float,
     save_freq: int,
+    set_material: str,
 ):
     main(
         outdir=outdir,
@@ -158,6 +166,7 @@ def run(
         ly=ly,
         lz=lz,
         save_freq=save_freq,
+        set_material=set_material,
     )
 
 
@@ -187,6 +196,7 @@ def main(
     traction: typing.Union[dolfin.Constant, float] = None,
     spring: typing.Union[dolfin.Constant, float] = None,
     fix_right_plane: bool = True,
+    set_material: str = _Defaults.set_material,
 ):
     # Get all arguments and dump them to a json file
     info_dict = locals()
@@ -238,6 +248,7 @@ def main(
                 traction=traction,
                 spring=spring,
                 fix_right_plane=fix_right_plane,
+                set_material=set_material,
             )
         t0 = 0
 

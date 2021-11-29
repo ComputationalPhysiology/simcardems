@@ -404,6 +404,7 @@ def setup_mechanics_model(
     traction: typing.Union[dolfin.Constant, float] = None,
     spring: typing.Union[dolfin.Constant, float] = None,
     fix_right_plane: bool = False,
+    set_material: str = "",
 ):
     """Setup mechanics model with dirichlet boundary conditions or rigid motion."""
     microstructure = setup_microstructure(mesh)
@@ -457,6 +458,18 @@ def setup_mechanics_model(
         active_model=active_model,
         parameters=material_parameters,
     )
+
+    if set_material == "Guccione":
+        material_parameters = pulse.Guccione.default_parameters()
+        material_parameters["CC"] = 2.0
+        material_parameters["bf"] = 8.0
+        material_parameters["bfs"] = 4.0
+        material_parameters["bt"] = 2.0
+
+        material = pulse.Guccione(
+            params=material_parameters,
+            active_model=active_model,
+        )
 
     Problem = MechanicsProblem
     if bnd_cond == BoudaryConditions.rigid:
