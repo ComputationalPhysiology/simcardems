@@ -12,6 +12,18 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Cache
+        id: cache-primes
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/instant
+            ~/.cache/dijitso
+            ~/.cache/pip
+          key: cache_v1
+          restore-keys: |
+            cache_v1
+
       - name: Install dependencies
         run: |
           python3 -m pip install --upgrade pip

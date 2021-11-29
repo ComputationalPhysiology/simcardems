@@ -6,7 +6,10 @@ import h5py
 import matplotlib.pyplot as plt
 import numpy as np
 
+from . import utils
 from .datacollector import DataLoader
+
+logger = utils.getLogger(__name__)
 
 
 def center_func(fmin, fmax):
@@ -314,8 +317,7 @@ def load_data(file, mesh, bnd, time_points):
 
     with dolfin.HDF5File(mesh.mpi_comm(), file, "r") as h5file:
         for data_node in data.keys():
-            if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
-                print("analyzing: ", data_node)
+            logger.info("analyzing: ", data_node)
 
             # Assign the variables to be stored in the dictionary
             data[data_node] = {
@@ -327,8 +329,7 @@ def load_data(file, mesh, bnd, time_points):
 
             # Loop over all variables to be stored
             for nestedkey in data[data_node]:
-                if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
-                    print("analyzing: ", nestedkey)
+                logger.info("analyzing: ", nestedkey)
                 for i, t in enumerate(time_points):
                     h5file.read(
                         v_space,
@@ -368,47 +369,50 @@ def plot_peaks(fname, data, threshold):
 def plot_state_traces(results_file):
 
     fig, ax = plt.subplots(2, 2, figsize=(10, 8), sharex=True)
-    for add_release in [True, False]:
-        results_file = Path(results_file)
-        if not results_file.is_file():
-            continue
+    results_file = Path(results_file)
+    if not results_file.is_file():
+        raise FileNotFoundError(f"File {results_file} does not exist")
 
-        outdir = results_file.parent
+    outdir = results_file.parent
 
-        loader = DataLoader(results_file)
-        bnd = Boundary(loader.mesh)
+    loader = DataLoader(results_file)
+    bnd = {"ep": Boundary(loader.ep_mesh), "mechanics": Boundary(loader.mech_mesh)}
 
-        names = ["lmbda", "Ta", "V", "Ca"]
+    all_names = {"mechanics": ["lmbda", "Ta"], "ep": ["V", "Ca"]}
 
-        values = {name: np.zeros(len(loader.time_stamps)) for name in names}
+    values = {
+        group: {name: np.zeros(len(loader.time_stamps)) for name in names}
+        for group, names in all_names.items()
+    }
 
-        for i, t in enumerate(loader.time_stamps):
-            for name, val in values.items():
-                func = loader.get(name, t)
+    for i, t in enumerate(loader.time_stamps):
+        for group, names in all_names.items():
+            for name in names:
+                func = loader.get(group, name, t)
                 dof_coords = func.function_space().tabulate_dof_coordinates()
                 dof = np.argmin(
-                    np.linalg.norm(dof_coords - np.array(bnd.center), axis=1),
+                    np.linalg.norm(dof_coords - np.array(bnd[group].center), axis=1),
                 )
-                if np.isclose(dof_coords[dof], np.array(bnd.center)).all():
+                if np.isclose(dof_coords[dof], np.array(bnd[group].center)).all():
                     # If we have a dof at the center - evaluation at dof (cheaper)
-                    val[i] = func.vector().get_local()[dof]
+                    values[group][name][i] = func.vector().get_local()[dof]
                 else:
                     # Otherwise, evaluation at center coordinates
-                    val[i] = func(bnd.center)
+                    values[group][name][i] = func(bnd[group].center)
 
-        times = np.array(loader.time_stamps, dtype=float)
+    times = np.array(loader.time_stamps, dtype=float)
 
-        if times[-1] > 4000:
-            plot_peaks(
-                outdir.joinpath("/compare-peak-values.png"),
-                values["Ca"],
-                0.0002,
-            )
+    if times[-1] > 4000:
+        plot_peaks(
+            outdir.joinpath("compare-peak-values.png"),
+            values["ep"]["Ca"],
+            0.0002,
+        )
 
-        ax[0, 0].plot(times[1:], values["lmbda"][1:], label=f"release: {add_release}")
-        ax[0, 1].plot(times[1:], values["Ta"][1:], label=f"release: {add_release}")
-        ax[1, 0].plot(times, values["V"], label=f"release: {add_release}")
-        ax[1, 1].plot(times[1:], values["Ca"][1:], label=f"release: {add_release}")
+    ax[0, 0].plot(times[1:], values["mechanics"]["lmbda"][1:])
+    ax[0, 1].plot(times[1:], values["mechanics"]["Ta"][1:])
+    ax[1, 0].plot(times, values["ep"]["V"])
+    ax[1, 1].plot(times[1:], values["ep"]["Ca"][1:])
 
     ax[0, 0].set_title(r"$\lambda$")
     ax[0, 1].set_title("Ta")
@@ -416,12 +420,14 @@ def plot_state_traces(results_file):
     ax[1, 1].set_title("Ca")
     for axi in ax.flatten():
         axi.grid()
-        axi.legend()
         if False:
             axi.set_xlim([0, 5000])
     ax[1, 0].set_xlabel("Time [ms]")
     ax[1, 1].set_xlabel("Time [ms]")
     ax[0, 0].set_ylim(
-        [min(0.9, min(values["lmbda"][1:])), max(1.1, max(values["lmbda"][1:]))],
+        [
+            min(0.9, min(values["mechanics"]["lmbda"][1:])),
+            max(1.1, max(values["mechanics"]["lmbda"][1:])),
+        ],
     )
     fig.savefig(outdir.joinpath("state_traces.png"), dpi=300)

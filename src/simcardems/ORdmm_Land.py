@@ -14,6 +14,8 @@ from dolfin import Constant
 
 from . import utils
 
+logger = utils.getLogger(__name__)
+
 
 def Max(a, b):
     return (a + b + abs(a - b)) / Constant(2)

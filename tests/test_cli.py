@@ -6,7 +6,7 @@ from click.testing import CliRunner
 from simcardems.cli import run
 from simcardems.cli import run_json
 
-mesh_args = ["-lx", 1, "-ly", 1, "-lz", 1, "-dx", 1]
+mesh_args = ["-lx", 1, "-ly", 1, "-lz", 1, "-dx", 1, "--num_refinements", 1]
 
 
 def test_run():
