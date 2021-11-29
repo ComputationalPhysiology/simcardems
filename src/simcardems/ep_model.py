@@ -182,7 +182,7 @@ def setup_solver(
     cell_inits_["Zetas"] = coupling.Zetas_ep
     cell_inits_["Zetaw"] = coupling.Zetaw_ep
 
-    cellmodel = CellModel(init_conditions=cell_inits, params=cell_params)
+    cellmodel = CellModel(init_conditions=cell_inits_, params=cell_params_)
 
     # Set-up cardiac model
     ep_heart = setup_ep_model(cellmodel, mesh)
