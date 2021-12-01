@@ -274,6 +274,8 @@ def main(
         with dolfin.Timer("[demo] Load previously saved state"):
             coupling, solver, mech_heart, t0 = io.load_state(
                 state_path,
+                drug_factors_file,
+                popu_factors_file,
             )
     else:
         logger.info("Create a new state")
