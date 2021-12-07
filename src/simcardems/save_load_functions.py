@@ -161,8 +161,8 @@ def load_state(path, drug_factors_file="", popu_factors_file=""):
     mech_mesh = dolfin.Mesh()
     ep_mesh = dolfin.Mesh()
     with dolfin.HDF5File(ep_mesh.mpi_comm(), path.as_posix(), "r") as h5file:
-        h5file.read(ep_mesh, "/ep/mesh", False)
-        h5file.read(mech_mesh, "/mechanics/mesh", False)
+        h5file.read(ep_mesh, "/ep/mesh", True)
+        h5file.read(mech_mesh, "/mechanics/mesh", True)
 
     VS = dolfin.FunctionSpace(ep_mesh, eval(vs_signature))
     vs = dolfin.Function(VS)

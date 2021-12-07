@@ -146,8 +146,8 @@ class DataLoader:
             self._h5file.close()
 
     def _create_functions(self):
-        self._h5file.read(self.ep_mesh, "/ep/mesh", False)
-        self._h5file.read(self.mech_mesh, "/mechanics/mesh", False)
+        self._h5file.read(self.ep_mesh, "/ep/mesh", True)
+        self._h5file.read(self.mech_mesh, "/mechanics/mesh", True)
 
         self._function_spaces = {}
 
