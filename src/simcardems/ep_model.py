@@ -63,7 +63,7 @@ def setup_ep_model(cellmodel, mesh):
     factor = 1.0 / (chi * C_m)  # NB: cbcbeat convention
     amplitude = factor * A * (1.0 / cm2mm) ** 3  # mV/ms
     PCL = 1000  # Pacing cycle length [ms]
-    stimulus_times = list(range(0, 20000, PCL))  # Stimulus applied at each
+    stimulus_times = list(range(0, 200000, PCL))  # Stimulus applied at each
     # stimulus_times = [0,20,40] # Stimulus applied at t=0, t=20 and t=40ms
     s = "0.0"
     for t in reversed(stimulus_times):
