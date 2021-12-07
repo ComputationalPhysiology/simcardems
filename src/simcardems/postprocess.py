@@ -339,7 +339,7 @@ def load_data(file, mesh, bnd, time_points):
                     data[data_node][nestedkey][i] = data_temp
     return data
 
-
+'''
 def plot_peaks(fname, data, threshold):
     # Find peaks for assessment steady state
     from scipy.signal import find_peaks
@@ -364,7 +364,7 @@ def plot_peaks(fname, data, threshold):
     ax.set_xlabel("Numer of beats")
     ax.set_ylabel("% change from previous beat")
     fig.savefig(fname, dpi=300)
-
+'''
 
 def plot_state_traces(results_file):
 
@@ -402,12 +402,12 @@ def plot_state_traces(results_file):
 
     times = np.array(loader.time_stamps, dtype=float)
 
-    if times[-1] > 4000:
-        plot_peaks(
-            outdir.joinpath("compare-peak-values.png"),
-            values["ep"]["Ca"],
-            0.0002,
-        )
+    ##if times[-1] > 4000 and False:
+    ##     plot_peaks(
+    ##        outdir.joinpath("compare-peak-values.png"),
+    ##        values["ep"]["Ca"],
+    ##        0.0002,
+    ##    )
 
     ax[0, 0].plot(times[1:], values["mechanics"]["lmbda"][1:])
     ax[0, 1].plot(times[1:], values["mechanics"]["Ta"][1:])
@@ -431,3 +431,75 @@ def plot_state_traces(results_file):
         ],
     )
     fig.savefig(outdir.joinpath("state_traces.png"), dpi=300)
+
+def plot_from_dict(dict, outdir):
+    fig, ax = plt.subplots(2, 2, figsize=(10, 8), sharex=True)
+    for PoMm in range(72,130):
+        ax[0, 0].plot(dict[f"m{PoMm}"]["time"], dict[f"m{PoMm}"]["lmbda"])
+        ax[0, 1].plot(dict[f"m{PoMm}"]["time"], dict[f"m{PoMm}"]["Ta"])
+        ax[1, 0].plot(dict[f"m{PoMm}"]["time"], dict[f"m{PoMm}"]["V"])
+        ax[1, 1].plot(dict[f"m{PoMm}"]["time"], dict[f"m{PoMm}"]["Ca"])
+
+    ax[0, 0].set_title(r"$\lambda$")
+    ax[0, 1].set_title("Ta")
+    ax[1, 0].set_title("V")
+    ax[1, 1].set_title("Ca")
+    for axi in ax.flatten():
+        axi.grid()
+        if True:
+            axi.set_xlim([158000, 160000])
+    ax[1, 0].set_xlabel("Time [ms]")
+    ax[1, 1].set_xlabel("Time [ms]")
+    fig.savefig(outdir.joinpath("traces_center.png"), dpi=300)
+
+def save_popu_json(population_folder):
+    population_folder = Path(population_folder)
+    ##For loop on range(1,popu_size)
+    dict = {}
+    for PoMm in range(72,130):
+        print(f"Analyzing model {PoMm}")
+        results_file = population_folder.joinpath(f"m{PoMm}/results.h5")
+
+        if not results_file.is_file():
+            raise FileNotFoundError(f"File {results_file} does not exist")
+
+        loader = DataLoader(results_file)
+        dict[f"m{PoMm}"] =  {"time": np.zeros(len(loader.time_stamps)),
+                        "V": np.zeros(len(loader.time_stamps)),
+                        "Ca": np.zeros(len(loader.time_stamps)),
+                        "Ta": np.zeros(len(loader.time_stamps)),
+                        "lmbda": np.zeros(len(loader.time_stamps)),
+                        }
+
+        times = np.array(loader.time_stamps, dtype=float)
+        ## Save times to dictionary
+        dict[f"m{PoMm}"]["time"] = times
+
+        bnd = {"ep": Boundary(loader.ep_mesh), "mechanics": Boundary(loader.mech_mesh)}
+
+        all_names = {"mechanics": ["lmbda", "Ta"], "ep": ["V", "Ca"]}
+
+        ## Fill arrays with data from file
+        for i, t in enumerate(loader.time_stamps):
+            for group, names in all_names.items():
+                for name in names:
+                    func = loader.get(group, name, t)
+                    dof_coords = func.function_space().tabulate_dof_coordinates()
+                    dof = np.argmin(
+                        np.linalg.norm(dof_coords - np.array(bnd[group].center), axis=1),
+                    )
+                    if np.isclose(dof_coords[dof], np.array(bnd[group].center)).all():
+                        # If we have a dof at the center - evaluation at dof (cheaper)
+                        dict[f"m{PoMm}"][name][i] = func.vector().get_local()[dof]
+
+                    else:
+                        # Otherwise, evaluation at center coordinates
+                        dict[f"m{PoMm}"][name][i] = func(bnd[group].center)
+        
+
+    #Save entire dict to json file in outdir(=population_folder)
+    #with open(population_folder.joinpath("output_center.json"), "w") as f:
+    #    json.dump(dict, f)
+
+    print("Start plotting")
+    plot_from_dict(dict, population_folder)

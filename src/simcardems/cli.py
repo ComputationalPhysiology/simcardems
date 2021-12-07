@@ -416,19 +416,26 @@ def main(
         )
 
 
-@click.command()
+@click.command("postprocess")
 @click.argument("folder", required=True, type=click.Path(exists=True))
 @click.option(
     "--plot-state-traces",
     is_flag=True,
-    default=True,
+    default=False,
     help="Plot state traces",
 )
-def postprocess(folder, plot_state_traces):
+@click.option(
+    "--population",
+    is_flag=True,
+    default=False,
+    help="Plot population",
+)
+def postprocess(folder, plot_state_traces, population):
     folder = Path(folder)
     if plot_state_traces:
         post.plot_state_traces(folder.joinpath("results.h5"))
-
+    if population:
+        post.save_popu_json(folder)
 
 cli.add_command(run)
 cli.add_command(run_json)
