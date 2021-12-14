@@ -430,12 +430,15 @@ def main(
     default=False,
     help="Plot population",
 )
-def postprocess(folder, plot_state_traces, population):
+@click.option("--num_models", default=5, help="Number of models to be analyzed")
+def postprocess(folder, num_models, plot_state_traces, population):
     folder = Path(folder)
     if plot_state_traces:
         post.plot_state_traces(folder.joinpath("results.h5"))
     if population:
-        post.save_popu_json(folder)
+        print("Execute postprocess for population")
+        post.save_popu_json(folder, num_models)
+
 
 cli.add_command(run)
 cli.add_command(run_json)

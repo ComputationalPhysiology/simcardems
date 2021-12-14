@@ -65,6 +65,7 @@ class EMCoupling:
 
     def interpolate_ep(self):
         logger.debug("Interpolate EP")
+        dolfin.parameters["allow_extrapolation"] = False
         self.lmbda_ep.assign(dolfin.interpolate(self.lmbda_mech, self.V_ep))
         self.Zetas_ep.assign(dolfin.interpolate(self.Zetas_mech, self.V_ep))
         self.Zetaw_ep.assign(dolfin.interpolate(self.Zetaw_mech, self.V_ep))

@@ -1,11 +1,11 @@
 {
-    "scale_popu_GNa":1.0,
+    "scale_popu_GNa":10.0,
     "scale_popu_GCaL":1.0,
     "scale_popu_Gto":1.0,
     "scale_popu_GNaL":1.0,
-    "scale_popu_GKr":1.0,
+    "scale_popu_GKr":10.0,
     "scale_popu_GKs":1.0,
-    "scale_popu_GK1":1.0,
+    "scale_popu_GK1":10.0,
     "scale_popu_GbK":1.0,
     "scale_popu_KNCX":1.0,
     "scale_popu_KNaK":1.0,
@@ -22,7 +22,7 @@
     "scale_popu_kws":1.0,
     "scale_popu_kTRPN":1.0,
     "scale_popu_nTRPN":1.0,
-    "scale_popu_ku":1.0,
+    "scale_popu_ku":10.0,
     "scale_popu_TRPN50":1.0,
     "scale_popu_rw":1.0,
     "scale_popu_rs":1.0
