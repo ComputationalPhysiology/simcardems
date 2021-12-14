@@ -369,6 +369,12 @@ def find_decaytime(y, x, a):
     return s.tau(a / 100)
 
 
+def stats(y):
+    ave = sum(y) / len(y)
+    SD = (sum([((x - ave) ** 2) for x in y]) / len(y)) ** 0.5
+    return ave, SD
+
+
 def analyze_from_dict(dict, outdir, num_models):
     biomarker_dict = {}
     fig, ax = plt.subplots()
@@ -391,111 +397,45 @@ def analyze_from_dict(dict, outdir, num_models):
             "rt50_Ta": float(0),
             "rt95_Ta": float(0),
         }
-        biomarker_dict[f"m{PoMm}"]["maxTa"] = float(np.max(dict[f"m{PoMm}"]["Ta"]))
-        biomarker_dict[f"m{PoMm}"]["ampTa"] = float(
-            np.max(dict[f"m{PoMm}"]["Ta"]) - np.min(dict[f"m{PoMm}"]["Ta"]),
-        )
-        biomarker_dict[f"m{PoMm}"]["APD40"] = find_duration(
-            dict[f"m{PoMm}"]["V"],
-            dict[f"m{PoMm}"]["time"],
-            40,
-        )
-        biomarker_dict[f"m{PoMm}"]["APD50"] = find_duration(
-            dict[f"m{PoMm}"]["V"],
-            dict[f"m{PoMm}"]["time"],
-            50,
-        )
-        biomarker_dict[f"m{PoMm}"]["APD90"] = find_duration(
-            dict[f"m{PoMm}"]["V"],
-            dict[f"m{PoMm}"]["time"],
-            90,
-        )
+        # Create numpy arrays for analysis
+        time = np.array(dict[f"m{PoMm}"]["time"], dtype=float)
+        V = np.array(dict[f"m{PoMm}"]["V"], dtype=float)
+        Ca = np.array(dict[f"m{PoMm}"]["Ca"], dtype=float)
+        Ta = np.array(dict[f"m{PoMm}"]["Ta"], dtype=float)
+        lmbda = np.array(dict[f"m{PoMm}"]["lmbda"], dtype=float)
+        # Create contraction-array as 1-lambda
+        inv_lmbda = np.zeros_like(lmbda)
+        for i in range(0, len(lmbda)):
+            inv_lmbda[i] = 1.0 - lmbda[i]
+
+        biomarker_dict[f"m{PoMm}"]["maxTa"] = np.max(Ta)
+        biomarker_dict[f"m{PoMm}"]["ampTa"] = np.max(Ta) - np.min(Ta)
+        biomarker_dict[f"m{PoMm}"]["APD40"] = find_duration(V, time, 40)
+        biomarker_dict[f"m{PoMm}"]["APD50"] = find_duration(V, time, 50)
+        biomarker_dict[f"m{PoMm}"]["APD90"] = find_duration(V, time, 90)
         biomarker_dict[f"m{PoMm}"]["triangulation"] = (
             biomarker_dict[f"m{PoMm}"]["APD90"] - biomarker_dict[f"m{PoMm}"]["APD40"]
         )
-        biomarker_dict[f"m{PoMm}"]["Vpeak"] = float(np.max(dict[f"m{PoMm}"]["V"]))
-        biomarker_dict[f"m{PoMm}"]["Vmin"] = float(np.min(dict[f"m{PoMm}"]["V"]))
-        biomarker_dict[f"m{PoMm}"]["dvdt"] = (
-            dict[f"m{PoMm}"]["V"][1] - dict[f"m{PoMm}"]["V"][0]
-        ) / 2.0
+        biomarker_dict[f"m{PoMm}"]["Vpeak"] = np.max(V)
+        biomarker_dict[f"m{PoMm}"]["Vmin"] = np.min(V)
+        biomarker_dict[f"m{PoMm}"]["dvdt"] = (V[1] - V[0]) / 2.0
+        biomarker_dict[f"m{PoMm}"]["maxCa"] = np.max(Ca)
+        biomarker_dict[f"m{PoMm}"]["ampCa"] = np.max(Ca) - np.min(Ca)
+        biomarker_dict[f"m{PoMm}"]["CaTD50"] = find_duration(Ca, time, 50)
+        biomarker_dict[f"m{PoMm}"]["CaTD80"] = find_duration(Ca, time, 80)
+        biomarker_dict[f"m{PoMm}"]["CaTD90"] = find_duration(Ca, time, 90)
+        biomarker_dict[f"m{PoMm}"]["ttp_Ta"] = find_ttp(Ta, time)
+        biomarker_dict[f"m{PoMm}"]["rt50_Ta"] = find_decaytime(Ta, time, 50)
+        biomarker_dict[f"m{PoMm}"]["rt95_Ta"] = find_decaytime(Ta, time, 5)
+        biomarker_dict[f"m{PoMm}"]["maxlmbda"] = np.max(lmbda)
+        biomarker_dict[f"m{PoMm}"]["minlmbda"] = np.min(lmbda)
+        biomarker_dict[f"m{PoMm}"]["ttplmbda"] = find_ttp(inv_lmbda, time)
+        biomarker_dict[f"m{PoMm}"]["lmbdaD50"] = find_duration(inv_lmbda, time, 50)
+        biomarker_dict[f"m{PoMm}"]["lmbdaD80"] = find_duration(inv_lmbda, time, 80)
+        biomarker_dict[f"m{PoMm}"]["lmbdaD90"] = find_duration(inv_lmbda, time, 90)
+        biomarker_dict[f"m{PoMm}"]["rt50_lmbda"] = find_decaytime(inv_lmbda, time, 50)
+        biomarker_dict[f"m{PoMm}"]["rt95_lmbda"] = find_decaytime(inv_lmbda, time, 5)
 
-        biomarker_dict[f"m{PoMm}"]["maxCa"] = float(np.max(dict[f"m{PoMm}"]["Ca"]))
-        biomarker_dict[f"m{PoMm}"]["ampCa"] = float(
-            np.max(dict[f"m{PoMm}"]["Ca"]) - np.min(dict[f"m{PoMm}"]["Ca"]),
-        )
-        biomarker_dict[f"m{PoMm}"]["CaTD50"] = find_duration(
-            dict[f"m{PoMm}"]["Ca"],
-            dict[f"m{PoMm}"]["time"],
-            50,
-        )
-        biomarker_dict[f"m{PoMm}"]["CaTD80"] = find_duration(
-            dict[f"m{PoMm}"]["Ca"],
-            dict[f"m{PoMm}"]["time"],
-            80,
-        )
-        biomarker_dict[f"m{PoMm}"]["CaTD90"] = find_duration(
-            dict[f"m{PoMm}"]["Ca"],
-            dict[f"m{PoMm}"]["time"],
-            90,
-        )
-        # biomarker_dict[f"m{PoMm}"][""] =
-        biomarker_dict[f"m{PoMm}"]["ttp_Ta"] = find_ttp(
-            dict[f"m{PoMm}"]["Ta"],
-            dict[f"m{PoMm}"]["time"],
-        )
-        biomarker_dict[f"m{PoMm}"]["rt50_Ta"] = find_decaytime(
-            dict[f"m{PoMm}"]["Ta"],
-            dict[f"m{PoMm}"]["time"],
-            50,
-        )
-        biomarker_dict[f"m{PoMm}"]["rt95_Ta"] = find_decaytime(
-            dict[f"m{PoMm}"]["Ta"],
-            dict[f"m{PoMm}"]["time"],
-            5,
-        )
-
-        # Create contraction-array as 1-lambda
-        inv_lmbda = np.zeros_like(dict[f"m{PoMm}"]["lmbda"])
-        for i in range(0, len(dict[f"m{PoMm}"]["lmbda"])):
-            inv_lmbda[i] = 1.0 - dict[f"m{PoMm}"]["lmbda"][i]
-
-        biomarker_dict[f"m{PoMm}"]["maxlmbda"] = float(
-            np.max(dict[f"m{PoMm}"]["lmbda"]),
-        )
-        biomarker_dict[f"m{PoMm}"]["minlmbda"] = float(
-            np.min(dict[f"m{PoMm}"]["lmbda"]),
-        )
-        biomarker_dict[f"m{PoMm}"]["ttplmbda"] = find_ttp(
-            inv_lmbda,
-            dict[f"m{PoMm}"]["time"],
-        )
-        biomarker_dict[f"m{PoMm}"]["lmbdaD50"] = find_duration(
-            inv_lmbda,
-            dict[f"m{PoMm}"]["time"],
-            50,
-        )
-        biomarker_dict[f"m{PoMm}"]["lmbdaD80"] = find_duration(
-            inv_lmbda,
-            dict[f"m{PoMm}"]["time"],
-            80,
-        )
-        biomarker_dict[f"m{PoMm}"]["lmbdaD90"] = find_duration(
-            inv_lmbda,
-            dict[f"m{PoMm}"]["time"],
-            90,
-        )
-        biomarker_dict[f"m{PoMm}"]["rt50_lmbda"] = find_decaytime(
-            inv_lmbda,
-            dict[f"m{PoMm}"]["time"],
-            50,
-        )
-        biomarker_dict[f"m{PoMm}"]["rt95_lmbda"] = find_decaytime(
-            inv_lmbda,
-            dict[f"m{PoMm}"]["time"],
-            5,
-        )
-
-        print(biomarker_dict[f"m{PoMm}"]["APD90"])
         ax.plot(PoMm, biomarker_dict[f"m{PoMm}"]["APD90"], "*")
 
     fig.savefig(outdir.joinpath("APD90_permodel.png"), dpi=300)
@@ -503,115 +443,15 @@ def analyze_from_dict(dict, outdir, num_models):
     with open(outdir.joinpath("biomarkers_PoMcontrol.json"), "w") as f:
         json.dump(biomarker_dict, f)
 
-    # Do some statistics on biomarkers
-    maxTa = []
-    ampTa = []
-    maxCa = []
-    ampCa = []
-    APD40 = []
-    APD50 = []
-    APD90 = []
-    triangulation = []
-    Vpeak = []
-    dvdt = []
-    CaTD50 = []
-    CaTD80 = []
-    CaTD90 = []
-    ttp_Ta = []
-    rt50_Ta = []
-    rt95_Ta = []
-    maxlmbda = []
-    minlmbda = []
-    ttplmbda = []
-    lmbdaD50 = []
-    lmbdaD80 = []
-    lmbdaD90 = []
-    rt50_lmbda = []
-    rt95_lmbda = []
+    # Get average and standard deviation of each biomarker
+    biomarker_stats = {}
+    for biomarker in biomarker_dict["m1"].keys():
+        biomarker_stats[biomarker] = []
+        for PoMm in biomarker_dict.keys():
+            biomarker_stats[biomarker].append(biomarker_dict[PoMm][biomarker])
 
-    for PoMm in range(1, num_models + 1):
-        maxTa.append(biomarker_dict[f"m{PoMm}"]["maxTa"])
-        ampTa.append(biomarker_dict[f"m{PoMm}"]["ampTa"])
-        maxCa.append(biomarker_dict[f"m{PoMm}"]["maxCa"])
-        ampCa.append(biomarker_dict[f"m{PoMm}"]["ampCa"])
-        APD40.append(biomarker_dict[f"m{PoMm}"]["APD40"])
-        APD50.append(biomarker_dict[f"m{PoMm}"]["APD50"])
-        APD90.append(biomarker_dict[f"m{PoMm}"]["APD90"])
-        triangulation.append(biomarker_dict[f"m{PoMm}"]["triangulation"])
-        Vpeak.append(biomarker_dict[f"m{PoMm}"]["Vpeak"])
-        dvdt.append(biomarker_dict[f"m{PoMm}"]["dvdt"])
-        CaTD50.append(biomarker_dict[f"m{PoMm}"]["CaTD50"])
-        CaTD80.append(biomarker_dict[f"m{PoMm}"]["CaTD80"])
-        CaTD90.append(biomarker_dict[f"m{PoMm}"]["CaTD90"])
-        ttp_Ta.append(biomarker_dict[f"m{PoMm}"]["ttp_Ta"])
-        rt50_Ta.append(biomarker_dict[f"m{PoMm}"]["rt50_Ta"])
-        rt95_Ta.append(biomarker_dict[f"m{PoMm}"]["rt95_Ta"])
-        maxlmbda.append(biomarker_dict[f"m{PoMm}"]["maxlmbda"])
-        minlmbda.append(biomarker_dict[f"m{PoMm}"]["minlmbda"])
-        ttplmbda.append(biomarker_dict[f"m{PoMm}"]["ttplmbda"])
-        lmbdaD50.append(biomarker_dict[f"m{PoMm}"]["lmbdaD50"])
-        lmbdaD80.append(biomarker_dict[f"m{PoMm}"]["lmbdaD80"])
-        lmbdaD90.append(biomarker_dict[f"m{PoMm}"]["lmbdaD90"])
-        rt50_lmbda.append(biomarker_dict[f"m{PoMm}"]["rt50_lmbda"])
-        rt95_lmbda.append(biomarker_dict[f"m{PoMm}"]["rt95_lmbda"])
-
-    list_biomarkers = [
-        "maxTa",
-        "ampTa",
-        "maxCa",
-        "ampCa",
-        "APD40",
-        "APD50",
-        "APD90",
-        "triangulation",
-        "Vpeak",
-        "dvdt",
-        "CaTD50",
-        "CaTD80",
-        "CaTD90",
-        "ttp_Ta",
-        "rt50_Ta",
-        "rt95_Ta",
-        "maxlmbda",
-        "minlmbda",
-        "ttplmbda",
-        "lmbdaD50",
-        "lmbdaD80",
-        "lmbdaD90",
-        "rt50_lmbda",
-        "rt95_lmbda",
-    ]
-    for i, item in enumerate(
-        [
-            maxTa,
-            ampTa,
-            maxCa,
-            ampCa,
-            APD40,
-            APD50,
-            APD90,
-            triangulation,
-            Vpeak,
-            dvdt,
-            CaTD50,
-            CaTD80,
-            CaTD90,
-            ttp_Ta,
-            rt50_Ta,
-            rt95_Ta,
-            maxlmbda,
-            minlmbda,
-            ttplmbda,
-            lmbdaD50,
-            lmbdaD80,
-            lmbdaD90,
-            rt50_lmbda,
-            rt95_lmbda,
-        ],
-    ):
-        ave = sum(item) / len(item)
-        SD = (sum([((x - ave) ** 2) for x in item]) / len(item)) ** 0.5
-        print("Average {} ± SD = {} ± {} ".format(list_biomarkers[i], ave, SD))
+        ave, SD = stats(biomarker_stats[biomarker])
+        print("Average {} ± SD = {} ± {} ".format(biomarker, ave, SD))
 
     return biomarker_dict
 
@@ -619,10 +459,8 @@ def analyze_from_dict(dict, outdir, num_models):
 def save_popu_json(population_folder, num_models):
     population_folder = Path(population_folder)
     if population_folder.joinpath("output_dict_center.json").is_file():
-        # load json file
         print("Load json file")
         f = open(population_folder.joinpath("output_dict_center.json"))
-        # output_file = population_folder.joinpath("output_dict_center.json")
         dict = json.load(f)
         f.close()
         if len(dict.keys()) != num_models:
