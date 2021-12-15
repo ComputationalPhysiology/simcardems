@@ -261,7 +261,6 @@ def plot_peaks(fname, data, threshold):
 
 
 def plot_state_traces(results_file):
-
     fig, ax = plt.subplots(2, 2, figsize=(10, 8), sharex=True)
     results_file = Path(results_file)
     if not results_file.is_file():
@@ -327,7 +326,7 @@ def plot_state_traces(results_file):
     fig.savefig(outdir.joinpath("state_traces.png"), dpi=300)
 
 
-def plot_from_dict(dict, outdir, num_models, reset_time=True):
+def plot_population(dict, outdir, num_models, reset_time=True):
     plt.rcParams["svg.fonttype"] = "none"
     plt.rc("axes", labelsize=13)
 
@@ -375,7 +374,7 @@ def stats(y):
     return ave, SD
 
 
-def analyze_from_dict(dict, outdir, num_models):
+def get_biomarkers(dict, outdir, num_models):
     biomarker_dict = {}
     fig, ax = plt.subplots()
     for PoMm in range(1, num_models + 1):
@@ -467,7 +466,6 @@ def save_popu_json(population_folder, num_models):
             raise Exception(
                 "Number of models in json-file is not equal to number of models in cli",
             )
-
     else:
         dict = {}
         for PoMm in range(1, num_models + 1):
@@ -528,7 +526,7 @@ def save_popu_json(population_folder, num_models):
             json.dump(dict, f)
 
     print("Start plotting")
-    plot_from_dict(dict, population_folder, num_models)
+    plot_population(dict, population_folder, num_models)
 
     print("Start analysis of single node results")
-    analyze_from_dict(dict, population_folder, num_models)
+    get_biomarkers(dict, population_folder, num_models)
