@@ -155,11 +155,21 @@ def setup_solver(
     if cell_params is not None:
         cell_params_.update(cell_params)
     # Adding optional drug factors to parameters (if drug_factors_file exists)
-    if drug_factors_file != "" and Path(drug_factors_file).suffix == ".json":
+    if (
+        drug_factors_file != ""
+        and Path(drug_factors_file).is_file()
+        and Path(drug_factors_file).suffix == ".json"
+    ):
+        logger.info(f"Drug scaling factors loaded from {drug_factors_file}")
         with open(drug_factors_file, "r") as fid:
             d = json.load(fid)
         cell_params_.update(d)
-    if popu_factors_file != "" and Path(popu_factors_file).suffix == ".json":
+    if (
+        popu_factors_file != ""
+        and Path(popu_factors_file).is_file()
+        and Path(popu_factors_file).suffix == ".json"
+    ):
+        logger.info(f"Population scaling factors loaded from {popu_factors_file}")
         with open(popu_factors_file, "r") as fid:
             d = json.load(fid)
         cell_params_.update(d)
