@@ -63,25 +63,15 @@ def setup_ep_model(cellmodel, mesh):
     factor = 1.0 / (chi * C_m)  # NB: cbcbeat convention
     amplitude = factor * A * (1.0 / cm2mm) ** 3  # mV/ms
     PCL = 1000  # Pacing cycle length [ms]
-    stimulus_times = list(range(0, 20000, PCL))  # Stimulus applied at each
-    # stimulus_times = [0,20,40] # Stimulus applied at t=0, t=20 and t=40ms
-    s = "0.0"
-    for t in reversed(stimulus_times):
-        s = (
-            "(time >= start + "
-            + str(t)
-            + " ? (time <= (duration + start + "
-            + str(t)
-            + ") ? amplitude : "
-            + s
-            + ") : 0.0 )"
-        )
+    s = "((std::fmod(time,PCL) >= start) & (std::fmod(time,PCL) <= duration + start)) ? amplitude : 0.0"
+
     I_s = dolfin.Expression(
         s,
         time=time,
         start=0.0,
         duration=duration,
         amplitude=amplitude,
+        PCL=PCL,
         degree=0,
     )
     # Store input parameters in cardiac model
@@ -151,6 +141,8 @@ def setup_solver(
     cell_params=None,
     cell_inits=None,
     cell_init_file="",
+    drug_factors_file="",
+    popu_factors_file="",
 ):
     ps = setup_splitting_solver_parameters(
         theta=theta,
@@ -162,6 +154,25 @@ def setup_solver(
     cell_params_ = CellModel.default_parameters()
     if cell_params is not None:
         cell_params_.update(cell_params)
+    # Adding optional drug factors to parameters (if drug_factors_file exists)
+    if (
+        drug_factors_file != ""
+        and Path(drug_factors_file).is_file()
+        and Path(drug_factors_file).suffix == ".json"
+    ):
+        logger.info(f"Drug scaling factors loaded from {drug_factors_file}")
+        with open(drug_factors_file, "r") as fid:
+            d = json.load(fid)
+        cell_params_.update(d)
+    if (
+        popu_factors_file != ""
+        and Path(popu_factors_file).is_file()
+        and Path(popu_factors_file).suffix == ".json"
+    ):
+        logger.info(f"Population scaling factors loaded from {popu_factors_file}")
+        with open(popu_factors_file, "r") as fid:
+            d = json.load(fid)
+        cell_params_.update(d)
 
     cell_inits_ = CellModel.default_initial_conditions()
     if cell_init_file != "":

@@ -45,6 +45,8 @@ class _Defaults:
     loglevel = logging.INFO
     num_refinements: int = 1
     set_material: str = ""
+    drug_factors_file: str = ""
+    popu_factors_file: str = ""
 
 
 class _tqdm:
@@ -153,6 +155,18 @@ def cli():
     default=_Defaults.hpc,
     help="Indicate if simulations runs on hpc. This turns off the progress bar.",
 )
+@click.option(
+    "--drug_factors_file",
+    default=_Defaults.drug_factors_file,
+    type=str,
+    help="Set drugs scaling factors (json file)",
+)
+@click.option(
+    "--popu_factors_file",
+    default=_Defaults.popu_factors_file,
+    type=str,
+    help="Set population scaling factors (json file)",
+)
 def run(
     outdir: PathLike,
     T: float,
@@ -169,6 +183,8 @@ def run(
     loglevel: int,
     num_refinements: int,
     set_material: str,
+    drug_factors_file: str,
+    popu_factors_file: str,
 ):
     main(
         outdir=outdir,
@@ -186,6 +202,8 @@ def run(
         loglevel=loglevel,
         num_refinements=num_refinements,
         set_material=set_material,
+        drug_factors_file=drug_factors_file,
+        popu_factors_file=popu_factors_file,
     )
 
 
@@ -231,6 +249,8 @@ def main(
     loglevel: int = _Defaults.loglevel,
     num_refinements: int = _Defaults.num_refinements,
     set_material: str = _Defaults.set_material,
+    drug_factors_file: str = "",
+    popu_factors_file: str = "",
 ):
 
     # Get all arguments and dump them to a json file
@@ -254,6 +274,8 @@ def main(
         with dolfin.Timer("[demo] Load previously saved state"):
             coupling, solver, mech_heart, t0 = io.load_state(
                 state_path,
+                drug_factors_file,
+                popu_factors_file,
             )
     else:
         logger.info("Create a new state")
@@ -271,6 +293,8 @@ def main(
             dt=dt,
             coupling=coupling,
             cell_init_file=cell_init_file,
+            drug_factors_file=drug_factors_file,
+            popu_factors_file=popu_factors_file,
         )
 
         coupling.register_ep_model(solver)
@@ -392,18 +416,28 @@ def main(
         )
 
 
-@click.command()
+@click.command("postprocess")
 @click.argument("folder", required=True, type=click.Path(exists=True))
 @click.option(
     "--plot-state-traces",
     is_flag=True,
-    default=True,
+    default=False,
     help="Plot state traces",
 )
-def postprocess(folder, plot_state_traces):
+@click.option(
+    "--population",
+    is_flag=True,
+    default=False,
+    help="Plot population",
+)
+@click.option("--num_models", default=5, help="Number of models to be analyzed")
+def postprocess(folder, num_models, plot_state_traces, population):
     folder = Path(folder)
     if plot_state_traces:
         post.plot_state_traces(folder.joinpath("results.h5"))
+    if population:
+        print("Execute postprocess for population")
+        post.save_popu_json(folder, num_models)
 
 
 cli.add_command(run)

@@ -1,6 +1,8 @@
+import json
 import warnings
 from pathlib import Path
 
+import ap_features as apf
 import dolfin
 import h5py
 import matplotlib.pyplot as plt
@@ -152,102 +154,6 @@ class Boundary:
             self.boundaries["max_z"],
         ]
 
-    @property
-    def node_A1B(self):
-        return [
-            self.boundaries["max_x"] * 1.0 / 4.0,
-            self.boundaries["min_y"],
-            self.boundaries["min_z"],
-        ]
-
-    @property
-    def node_A2B(self):
-        return [
-            self.boundaries["max_x"] * 2.0 / 4.0,
-            self.boundaries["min_y"],
-            self.boundaries["min_z"],
-        ]
-
-    @property
-    def node_A3B(self):
-        return [
-            self.boundaries["max_x"] * 3.0 / 4.0,
-            self.boundaries["min_y"],
-            self.boundaries["min_z"],
-        ]
-
-    @property
-    def node_D1C(self):
-        return [
-            self.boundaries["max_x"] * 1.0 / 4.0,
-            self.boundaries["min_y"],
-            self.boundaries["max_z"],
-        ]
-
-    @property
-    def node_D2C(self):
-        return [
-            self.boundaries["max_x"] * 2.0 / 4.0,
-            self.boundaries["min_y"],
-            self.boundaries["max_z"],
-        ]
-
-    @property
-    def node_D3C(self):
-        return [
-            self.boundaries["max_x"] * 3.0 / 4.0,
-            self.boundaries["min_y"],
-            self.boundaries["max_z"],
-        ]
-
-    @property
-    def node_E1F(self):
-        return [
-            self.boundaries["max_x"] * 1.0 / 4.0,
-            self.boundaries["max_y"],
-            self.boundaries["min_z"],
-        ]
-
-    @property
-    def node_E2F(self):
-        return [
-            self.boundaries["max_x"] * 2.0 / 4.0,
-            self.boundaries["max_y"],
-            self.boundaries["min_z"],
-        ]
-
-    @property
-    def node_E3F(self):
-        return [
-            self.boundaries["max_x"] * 3.0 / 4.0,
-            self.boundaries["max_y"],
-            self.boundaries["min_z"],
-        ]
-
-    @property
-    def node_H1G(self):
-        return [
-            self.boundaries["max_x"] * 1.0 / 4.0,
-            self.boundaries["max_y"],
-            self.boundaries["max_z"],
-        ]
-
-    @property
-    def node_H2G(self):
-        return [
-            self.boundaries["max_x"] * 2.0 / 4.0,
-            self.boundaries["max_y"],
-            self.boundaries["max_z"],
-        ]
-
-    @property
-    def node_H3G(self):
-        return [
-            self.boundaries["max_x"] * 3.0 / 4.0,
-            self.boundaries["max_y"],
-            self.boundaries["max_z"],
-        ]
-
 
 def load_mesh(file):
     # load the mesh from the results file
@@ -301,18 +207,6 @@ def load_data(file, mesh, bnd, time_points):
         "node_F": None,
         "node_G": None,
         "node_H": None,
-        "node_A1B": None,
-        "node_A2B": None,
-        "node_A3B": None,
-        "node_D1C": None,
-        "node_D2C": None,
-        "node_D3C": None,
-        "node_E1F": None,
-        "node_E2F": None,
-        "node_E3F": None,
-        "node_H1G": None,
-        "node_H2G": None,
-        "node_H3G": None,
     }
 
     with dolfin.HDF5File(mesh.mpi_comm(), file, "r") as h5file:
@@ -367,7 +261,6 @@ def plot_peaks(fname, data, threshold):
 
 
 def plot_state_traces(results_file):
-
     fig, ax = plt.subplots(2, 2, figsize=(10, 8), sharex=True)
     results_file = Path(results_file)
     if not results_file.is_file():
@@ -402,7 +295,7 @@ def plot_state_traces(results_file):
 
     times = np.array(loader.time_stamps, dtype=float)
 
-    if times[-1] > 4000:
+    if times[-1] > 4000 and False:
         plot_peaks(
             outdir.joinpath("compare-peak-values.png"),
             values["ep"]["Ca"],
@@ -431,3 +324,209 @@ def plot_state_traces(results_file):
         ],
     )
     fig.savefig(outdir.joinpath("state_traces.png"), dpi=300)
+
+
+def plot_population(dict, outdir, num_models, reset_time=True):
+    plt.rcParams["svg.fonttype"] = "none"
+    plt.rc("axes", labelsize=13)
+
+    times = np.array(dict["m1"]["time"], dtype=float)
+    if reset_time:
+        times = times - times[0]
+    fig, ax = plt.subplots(2, 2, figsize=(10, 8), sharex=True)
+    for PoMm in range(1, num_models + 1):
+        ax[0, 0].plot(times, np.array(dict[f"m{PoMm}"]["lmbda"], dtype=float))
+        ax[0, 1].plot(times, np.array(dict[f"m{PoMm}"]["Ta"], dtype=float))
+        ax[1, 0].plot(times, np.array(dict[f"m{PoMm}"]["V"], dtype=float))
+        ax[1, 1].plot(times, np.array(dict[f"m{PoMm}"]["Ca"], dtype=float) * 1000)
+
+    for axi in ax.flatten():
+        axi.grid()
+        # axi.set_xlim([-20, 1000])
+    ax[0, 0].set_ylabel("Active stretch")
+    ax[0, 1].set_ylabel("Active tension (kPa)")
+    ax[1, 0].set_ylabel("Voltage (mV)")
+    ax[1, 0].set_xlabel("Time (ms)")
+    ax[1, 1].set_ylabel(r"Intracellular calcium concentration ($\mu$M)")
+    ax[1, 1].set_xlabel("Time (ms)")
+    fig.savefig(outdir.joinpath("traces_center.png"), dpi=300)
+    fig.savefig(outdir.joinpath("traces_center.svg"), format="svg")
+
+
+def find_duration(y, t, repolarisation):
+    s = apf.Beat(y=y, t=t)
+    return s.apd(repolarisation)
+
+
+def find_ttp(y, x):
+    s = apf.Beat(y=y, t=x)
+    return s.ttp()
+
+
+def find_decaytime(y, x, a):
+    s = apf.Beat(y=y, t=x)
+    return s.tau(a / 100)
+
+
+def stats(y):
+    ave = sum(y) / len(y)
+    SD = (sum([((x - ave) ** 2) for x in y]) / len(y)) ** 0.5
+    return ave, SD
+
+
+def get_biomarkers(dict, outdir, num_models):
+    biomarker_dict = {}
+    fig, ax = plt.subplots()
+    for PoMm in range(1, num_models + 1):
+        biomarker_dict[f"m{PoMm}"] = {
+            "maxTa": float(0),
+            "ampTa": float(0),
+            "APD40": float(0),
+            "APD50": float(0),
+            "APD90": float(0),
+            "triangulation": float(0),
+            "Vpeak": float(0),
+            "dvdt": float(0),
+            "maxCa": float(0),
+            "ampCa": float(0),
+            "CaTD50": float(0),
+            "CaTD80": float(0),
+            "CaTD90": float(0),
+            "ttp_Ta": float(0),
+            "rt50_Ta": float(0),
+            "rt95_Ta": float(0),
+        }
+        # Create numpy arrays for analysis
+        time = np.array(dict[f"m{PoMm}"]["time"], dtype=float)
+        V = np.array(dict[f"m{PoMm}"]["V"], dtype=float)
+        Ca = np.array(dict[f"m{PoMm}"]["Ca"], dtype=float)
+        Ta = np.array(dict[f"m{PoMm}"]["Ta"], dtype=float)
+        lmbda = np.array(dict[f"m{PoMm}"]["lmbda"], dtype=float)
+        # Create contraction-array as 1-lambda
+        inv_lmbda = np.zeros_like(lmbda)
+        for i in range(0, len(lmbda)):
+            inv_lmbda[i] = 1.0 - lmbda[i]
+
+        biomarker_dict[f"m{PoMm}"]["maxTa"] = np.max(Ta)
+        biomarker_dict[f"m{PoMm}"]["ampTa"] = np.max(Ta) - np.min(Ta)
+        biomarker_dict[f"m{PoMm}"]["APD40"] = find_duration(V, time, 40)
+        biomarker_dict[f"m{PoMm}"]["APD50"] = find_duration(V, time, 50)
+        biomarker_dict[f"m{PoMm}"]["APD90"] = find_duration(V, time, 90)
+        biomarker_dict[f"m{PoMm}"]["triangulation"] = (
+            biomarker_dict[f"m{PoMm}"]["APD90"] - biomarker_dict[f"m{PoMm}"]["APD40"]
+        )
+        biomarker_dict[f"m{PoMm}"]["Vpeak"] = np.max(V)
+        biomarker_dict[f"m{PoMm}"]["Vmin"] = np.min(V)
+        biomarker_dict[f"m{PoMm}"]["dvdt"] = (V[1] - V[0]) / 2.0
+        biomarker_dict[f"m{PoMm}"]["maxCa"] = np.max(Ca)
+        biomarker_dict[f"m{PoMm}"]["ampCa"] = np.max(Ca) - np.min(Ca)
+        biomarker_dict[f"m{PoMm}"]["CaTD50"] = find_duration(Ca, time, 50)
+        biomarker_dict[f"m{PoMm}"]["CaTD80"] = find_duration(Ca, time, 80)
+        biomarker_dict[f"m{PoMm}"]["CaTD90"] = find_duration(Ca, time, 90)
+        biomarker_dict[f"m{PoMm}"]["ttp_Ta"] = find_ttp(Ta, time)
+        biomarker_dict[f"m{PoMm}"]["rt50_Ta"] = find_decaytime(Ta, time, 50)
+        biomarker_dict[f"m{PoMm}"]["rt95_Ta"] = find_decaytime(Ta, time, 5)
+        biomarker_dict[f"m{PoMm}"]["maxlmbda"] = np.max(lmbda)
+        biomarker_dict[f"m{PoMm}"]["minlmbda"] = np.min(lmbda)
+        biomarker_dict[f"m{PoMm}"]["ttplmbda"] = find_ttp(inv_lmbda, time)
+        biomarker_dict[f"m{PoMm}"]["lmbdaD50"] = find_duration(inv_lmbda, time, 50)
+        biomarker_dict[f"m{PoMm}"]["lmbdaD80"] = find_duration(inv_lmbda, time, 80)
+        biomarker_dict[f"m{PoMm}"]["lmbdaD90"] = find_duration(inv_lmbda, time, 90)
+        biomarker_dict[f"m{PoMm}"]["rt50_lmbda"] = find_decaytime(inv_lmbda, time, 50)
+        biomarker_dict[f"m{PoMm}"]["rt95_lmbda"] = find_decaytime(inv_lmbda, time, 5)
+
+        ax.plot(PoMm, biomarker_dict[f"m{PoMm}"]["APD90"], "*")
+
+    fig.savefig(outdir.joinpath("APD90_permodel.png"), dpi=300)
+
+    with open(outdir.joinpath("biomarkers_PoMcontrol.json"), "w") as f:
+        json.dump(biomarker_dict, f)
+
+    # Get average and standard deviation of each biomarker
+    biomarker_stats = {}
+    for biomarker in biomarker_dict["m1"].keys():
+        biomarker_stats[biomarker] = []
+        for PoMm in biomarker_dict.keys():
+            biomarker_stats[biomarker].append(biomarker_dict[PoMm][biomarker])
+
+        ave, SD = stats(biomarker_stats[biomarker])
+        print("Average {} ± SD = {} ± {} ".format(biomarker, ave, SD))
+
+    return biomarker_dict
+
+
+def save_popu_json(population_folder, num_models):
+    population_folder = Path(population_folder)
+    if population_folder.joinpath("output_dict_center.json").is_file():
+        print("Load json file")
+        f = open(population_folder.joinpath("output_dict_center.json"))
+        dict = json.load(f)
+        f.close()
+        if len(dict.keys()) != num_models:
+            raise Exception(
+                "Number of models in json-file is not equal to number of models in cli",
+            )
+    else:
+        dict = {}
+        for PoMm in range(1, num_models + 1):
+            print(f"Analyzing model {PoMm}")
+            results_file = population_folder.joinpath(f"m{PoMm}/results.h5")
+
+            if not results_file.is_file():
+                raise FileNotFoundError(f"File {results_file} does not exist")
+
+            loader = DataLoader(results_file)
+            dict[f"m{PoMm}"] = {
+                "time": [],
+                "V": [],
+                "Ca": [],
+                "Ta": [],
+                "lmbda": [],
+            }
+
+            # Save times to dictionary
+            dict[f"m{PoMm}"]["time"] = loader.time_stamps
+
+            bnd = {
+                "ep": Boundary(loader.ep_mesh),
+                "mechanics": Boundary(loader.mech_mesh),
+            }
+
+            all_names = {"mechanics": ["lmbda", "Ta"], "ep": ["V", "Ca"]}
+
+            # Fill arrays with data from file
+            for i, t in enumerate(loader.time_stamps):
+                for group, names in all_names.items():
+                    for name in names:
+                        func = loader.get(group, name, t)
+                        dof_coords = func.function_space().tabulate_dof_coordinates()
+                        dof = np.argmin(
+                            np.linalg.norm(
+                                dof_coords - np.array(bnd[group].center),
+                                axis=1,
+                            ),
+                        )
+                        if np.isclose(
+                            dof_coords[dof],
+                            np.array(bnd[group].center),
+                        ).all():
+                            # If we have a dof at the center - evaluation at dof (cheaper)
+                            dict[f"m{PoMm}"][name].append(
+                                func.vector().get_local()[dof],
+                            )
+
+                        else:
+                            # Otherwise, evaluation at center coordinates
+                            dict[f"m{PoMm}"][name].append(
+                                float(func(bnd[group].center)),
+                            )
+
+        # Save entire dict to json file in outdir(=population_folder)
+        with open(population_folder.joinpath("output_dict_center.json"), "w") as f:
+            json.dump(dict, f)
+
+    print("Start plotting")
+    plot_population(dict, population_folder, num_models)
+
+    print("Start analysis of single node results")
+    get_biomarkers(dict, population_folder, num_models)

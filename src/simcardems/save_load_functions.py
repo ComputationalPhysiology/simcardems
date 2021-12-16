@@ -142,8 +142,10 @@ def save_state(
     )
 
 
-def load_state(path):
+def load_state(path, drug_factors_file="", popu_factors_file=""):
     logger.debug(f"Load state from path {path}")
+    if drug_factors_file != "" or popu_factors_file != "":
+        logger.info("Load drug or population factors from file")
     path = Path(path)
     if not path.is_file():
         raise FileNotFoundError(f"File {path} does not exist")
@@ -159,8 +161,8 @@ def load_state(path):
     mech_mesh = dolfin.Mesh()
     ep_mesh = dolfin.Mesh()
     with dolfin.HDF5File(ep_mesh.mpi_comm(), path.as_posix(), "r") as h5file:
-        h5file.read(ep_mesh, "/ep/mesh", False)
-        h5file.read(mech_mesh, "/mechanics/mesh", False)
+        h5file.read(ep_mesh, "/ep/mesh", True)
+        h5file.read(mech_mesh, "/mechanics/mesh", True)
 
     VS = dolfin.FunctionSpace(ep_mesh, eval(vs_signature))
     vs = dolfin.Function(VS)
@@ -194,6 +196,8 @@ def load_state(path):
         coupling,
         cell_params=cell_params,
         cell_inits=cell_inits,
+        drug_factors_file=drug_factors_file,
+        popu_factors_file=popu_factors_file,
     )
     coupling.register_ep_model(solver)
     bnd_cond_dict = dict([(0, "dirichlet"), (1, "rigid")])
