@@ -206,6 +206,13 @@ class ORdmm_Land(CardiacCellModel):
                 ("scale_popu_TRPN50", 1.0),
                 ("scale_popu_rw", 1.0),
                 ("scale_popu_rs", 1.0),
+                # HF scaling factors
+                ("HF_scaling_CaMKa", 1.0),
+                ("HF_scaling_Jrel_inf", 1.0),
+                ("HF_scaling_Jleak", 1.0),
+                ("HF_scaling_Jup", 1.0),
+                ("HF_scaling_GNaL", 1.0),
+                ("HF_scaling_GK1", 1.0),
             ],
         )
         return params
@@ -416,13 +423,17 @@ class ORdmm_Land(CardiacCellModel):
         scale_popu_GbNa = self._parameters["scale_popu_GbNa"]
         scale_popu_GbCa = self._parameters["scale_popu_GbCa"]
         scale_popu_KpCa = self._parameters["scale_popu_KpCa"]
+        # Systolic Heart Failure (HF with preserved ejection fraction)
+        HF_scaling_CaMKa = self._parameters["HF_scaling_CaMKa"]
+        HF_scaling_GNaL = self._parameters["HF_scaling_GNaL"]
+        HF_scaling_GK1 = self._parameters["HF_scaling_GK1"]
 
         # Init return args
         current = [ufl.zero()] * 1
 
         # Expressions for the CaMKt component
         CaMKb = CaMKo * (1.0 - CaMKt) / (1.0 + KmCaM / cass)
-        CaMKa = CaMKb + CaMKt
+        CaMKa = (CaMKb + CaMKt) * HF_scaling_CaMKa
 
         # Expressions for the reversal potentials component
         ENa = R * T * ufl.ln(nao / nai) / F
@@ -446,7 +457,7 @@ class ORdmm_Land(CardiacCellModel):
         )
 
         # Expressions for the INaL component
-        GNaL = 0.0075 * scale_INaL * scale_drug_INaL * scale_popu_GNaL
+        GNaL = 0.0075 * scale_INaL * scale_drug_INaL * scale_popu_GNaL * HF_scaling_GNaL
         fINaLp = 1.0 / (1.0 + KmCaMK / CaMKa)
         INaL = (-ENa + v) * ((1.0 - fINaLp) * hL + fINaLp * hLp) * GNaL * mL
 
@@ -533,7 +544,7 @@ class ORdmm_Land(CardiacCellModel):
             + 69220.6322106767
             * ufl.exp(0.10534077741493732 * v - 0.27388602127883704 * ko)
         )
-        GK1 = 0.1908 * scale_IK1 * scale_drug_IK1 * scale_popu_GK1
+        GK1 = 0.1908 * scale_IK1 * scale_drug_IK1 * scale_popu_GK1 * HF_scaling_GK1
         IK1 = ufl.sqrt(ko) * (-EK + v) * GK1 * rk1 * xk1
 
         # Expressions for the INaCa_i component
@@ -966,6 +977,14 @@ class ORdmm_Land(CardiacCellModel):
         scale_popu_rw = self._parameters["scale_popu_rw"]
         scale_popu_rs = self._parameters["scale_popu_rs"]
 
+        # Systolic Heart Failure (HF with preserved ejection fraction)
+        HF_scaling_CaMKa = self._parameters["HF_scaling_CaMKa"]
+        HF_scaling_Jrel_inf = self._parameters["HF_scaling_Jrel_inf"]
+        HF_scaling_Jleak = self._parameters["HF_scaling_Jleak"]
+        HF_scaling_Jup = self._parameters["HF_scaling_Jup"]
+        HF_scaling_GNaL = self._parameters["HF_scaling_GNaL"]
+        HF_scaling_GK1 = self._parameters["HF_scaling_GK1"]
+
         # Init return args
         F_expressions = [dolfin.Constant(0.0)] * 48
 
@@ -980,7 +999,7 @@ class ORdmm_Land(CardiacCellModel):
 
         # Expressions for the CaMKt component
         CaMKb = CaMKo * (1.0 - CaMKt) / (1.0 + KmCaM / cass)
-        CaMKa = CaMKb + CaMKt
+        CaMKa = (CaMKb + CaMKt) * HF_scaling_CaMKa
         F_expressions[0] = -bCaMK * CaMKt + aCaMK * (CaMKb + CaMKt) * CaMKb
 
         # Expressions for the reversal potentials component
@@ -1041,7 +1060,7 @@ class ORdmm_Land(CardiacCellModel):
         hLssp = 1.0 / (1.0 + 275969.2903869871 * ufl.exp(0.13354700854700854 * v))
         thLp = 3.0 * thL
         F_expressions[9] = (-hLp + hLssp) / thLp
-        GNaL = 0.0075 * scale_INaL * scale_drug_INaL * scale_popu_GNaL
+        GNaL = 0.0075 * scale_INaL * scale_drug_INaL * scale_popu_GNaL * HF_scaling_GNaL
         fINaLp = 1.0 / (1.0 + KmCaMK / CaMKa)
         INaL = (-ENa + v) * ((1.0 - fINaLp) * hL + fINaLp * hLp) * GNaL * mL
 
@@ -1223,7 +1242,7 @@ class ORdmm_Land(CardiacCellModel):
             + 69220.6322106767
             * ufl.exp(0.10534077741493732 * v - 0.27388602127883704 * ko)
         )
-        GK1 = 0.1908 * scale_IK1 * scale_drug_IK1 * scale_popu_GK1
+        GK1 = 0.1908 * scale_IK1 * scale_drug_IK1 * scale_popu_GK1 * HF_scaling_GK1
         IK1 = ufl.sqrt(ko) * (-EK + v) * GK1 * rk1 * xk1
 
         # Expressions for the INaCa_i component
@@ -1421,14 +1440,20 @@ class ORdmm_Land(CardiacCellModel):
 
         # Expressions for the ryanodione receptor component
         a_rel = 0.5 * bt
-        Jrel_inf = -ICaL * a_rel / (1.0 + 25.62890625 * ufl.elem_pow(1.0 / cajsr, 8.0))
+        Jrel_inf = (
+            -ICaL
+            * a_rel
+            / (1.0 + 25.62890625 * HF_scaling_Jrel_inf * ufl.elem_pow(1.0 / cajsr, 8.0))
+        )
         tau_rel_tmp = bt / (1.0 + 0.0123 / cajsr)
         tau_rel = ufl.conditional(ufl.lt(tau_rel_tmp, 0.001), 0.001, tau_rel_tmp)
         F_expressions[30] = (-Jrelnp + Jrel_inf) / tau_rel
         btp = 1.25 * bt
         a_relp = 0.5 * btp
         Jrel_infp = (
-            -ICaL * a_relp / (1.0 + 25.62890625 * ufl.elem_pow(1.0 / cajsr, 8.0))
+            -ICaL
+            * a_relp
+            / (1.0 + 25.62890625 * HF_scaling_Jrel_inf * ufl.elem_pow(1.0 / cajsr, 8.0))
         )
         tau_relp_tmp = btp / (1.0 + 0.0123 / cajsr)
         tau_relp = ufl.conditional(ufl.lt(tau_relp_tmp, 0.001), 0.001, tau_relp_tmp)
@@ -1440,8 +1465,12 @@ class ORdmm_Land(CardiacCellModel):
         Jupnp = 0.004375 * cai / (0.00092 + cai)
         Jupp = 0.01203125 * cai / (0.00075 + cai)
         fJupp = 1.0 / (1.0 + KmCaMK / CaMKa)
-        Jleak = 0.0002625 * cansr * scale_popu_Kleak
-        Jup = (-Jleak + (1.0 - fJupp) * Jupnp + Jupp * fJupp) * scale_popu_KSERCA
+        Jleak = 0.0002625 * cansr * scale_popu_Kleak * HF_scaling_Jleak
+        Jup = (
+            (-Jleak + (1.0 - fJupp) * Jupnp + Jupp * fJupp)
+            * scale_popu_KSERCA
+            * HF_scaling_Jup
+        )
         Jtr = 0.01 * cansr - 0.01 * cajsr
 
         # Expressions for the intracellular concentrations component
