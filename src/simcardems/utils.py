@@ -88,8 +88,8 @@ def create_boxmesh(Lx, Ly, Lz, dx=0.5, refinements=0):
         dolfin.Point(0.0, 0.0, 0.0),
         dolfin.Point(Lx, Ly, Lz),
         N(Lx / dx),
-        2,
-        2,
+        N(Ly / dx),
+        N(Lz / dx),
     )
 
     for i in range(refinements):
