@@ -178,13 +178,13 @@ def setup_solver(
     # Change parameters if we simulate the HF model
     if disease_state == "HF":
         d = {}
-        d["thL"] = cell_params_["thL"] * 1.8
         d["HF_scaling_GNaL"] = 1.3
         d["HF_scaling_GK1"] = 0.68
-        d["Gto"] = cell_params_["Gto"] * 0.4
-        d["Gncx"] = cell_params_["Gncx"] * 1.6
-        d["Pnak"] = cell_params_["Pnak"] * 0.7
-        d["cat50_ref"] = cell_params_["cat50_ref"] * 0.6
+        d["HF_scaling_thL"] = 1.8
+        d["HF_scaling_Gto"] = 0.4
+        d["HF_scaling_Gncx"] = 1.6
+        d["HF_scaling_Pnak"] = 0.7
+        d["HF_scaling_cat50_ref"] = 0.6
         d["HF_scaling_CaMKa"] = 1.50
         d["HF_scaling_Jrel_inf"] = pow(0.8, 8.0)
         d["HF_scaling_Jleak"] = 1.3
