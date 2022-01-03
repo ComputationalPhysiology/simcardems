@@ -47,6 +47,7 @@ class _Defaults:
     set_material: str = ""
     drug_factors_file: str = ""
     popu_factors_file: str = ""
+    disease_state: str = "healthy"
 
 
 class _tqdm:
@@ -167,6 +168,12 @@ def cli():
     type=str,
     help="Set population scaling factors (json file)",
 )
+@click.option(
+    "--disease_state",
+    default=_Defaults.disease_state,
+    type=str,
+    help="Indicate disease state. Default is healthy. ",
+)
 def run(
     outdir: PathLike,
     T: float,
@@ -185,6 +192,7 @@ def run(
     set_material: str,
     drug_factors_file: str,
     popu_factors_file: str,
+    disease_state: str,
 ):
     main(
         outdir=outdir,
@@ -204,6 +212,7 @@ def run(
         set_material=set_material,
         drug_factors_file=drug_factors_file,
         popu_factors_file=popu_factors_file,
+        disease_state=disease_state,
     )
 
 
@@ -249,8 +258,9 @@ def main(
     loglevel: int = _Defaults.loglevel,
     num_refinements: int = _Defaults.num_refinements,
     set_material: str = _Defaults.set_material,
-    drug_factors_file: str = "",
-    popu_factors_file: str = "",
+    drug_factors_file: str = _Defaults.drug_factors_file,
+    popu_factors_file: str = _Defaults.popu_factors_file,
+    disease_state: str = _Defaults.disease_state,
 ):
 
     # Get all arguments and dump them to a json file
@@ -276,6 +286,7 @@ def main(
                 state_path,
                 drug_factors_file,
                 popu_factors_file,
+                disease_state,
             )
     else:
         logger.info("Create a new state")
@@ -295,6 +306,7 @@ def main(
             cell_init_file=cell_init_file,
             drug_factors_file=drug_factors_file,
             popu_factors_file=popu_factors_file,
+            disease_state=disease_state,
         )
 
         coupling.register_ep_model(solver)

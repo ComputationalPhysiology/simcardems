@@ -143,6 +143,7 @@ def setup_solver(
     cell_init_file="",
     drug_factors_file="",
     popu_factors_file="",
+    disease_state="healthy",
 ):
     ps = setup_splitting_solver_parameters(
         theta=theta,
@@ -151,7 +152,7 @@ def setup_solver(
         scheme=scheme,
     )
 
-    cell_params_ = CellModel.default_parameters()
+    cell_params_ = CellModel.default_parameters(disease_state)
     if cell_params is not None:
         cell_params_.update(cell_params)
     # Adding optional drug factors to parameters (if drug_factors_file exists)

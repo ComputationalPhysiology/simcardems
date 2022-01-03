@@ -142,7 +142,12 @@ def save_state(
     )
 
 
-def load_state(path, drug_factors_file="", popu_factors_file=""):
+def load_state(
+    path,
+    drug_factors_file="",
+    popu_factors_file="",
+    disease_state="healthy",
+):
     logger.debug(f"Load state from path {path}")
     if drug_factors_file != "" or popu_factors_file != "":
         logger.info("Load drug or population factors from file")
@@ -198,6 +203,7 @@ def load_state(path, drug_factors_file="", popu_factors_file=""):
         cell_inits=cell_inits,
         drug_factors_file=drug_factors_file,
         popu_factors_file=popu_factors_file,
+        disease_state=disease_state,
     )
     coupling.register_ep_model(solver)
     bnd_cond_dict = dict([(0, "dirichlet"), (1, "rigid")])
