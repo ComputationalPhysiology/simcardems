@@ -47,7 +47,7 @@ class ORdmm_Land(CardiacCellModel):
         super().__init__(params, init_conditions)
 
     @staticmethod
-    def default_parameters():
+    def default_parameters(disease_state):
         "Set-up and return default parameters."
         params = OrderedDict(
             [
@@ -220,6 +220,21 @@ class ORdmm_Land(CardiacCellModel):
                 ("HF_scaling_cat50_ref", 1.0),
             ],
         )
+
+        if disease_state == "HF" or disease_state == "hf":
+            logger.info("Update scaling parameters for heart failure model")
+            params["HF_scaling_CaMKa"] = 1.50
+            params["HF_scaling_Jrel_inf"] = pow(0.8, 8.0)
+            params["HF_scaling_Jleak"] = 1.3
+            params["HF_scaling_Jup"] = 0.45
+            params["HF_scaling_GNaL"] = 1.3
+            params["HF_scaling_GK1"] = 0.68
+            params["HF_scaling_thL"] = 1.8
+            params["HF_scaling_Gto"] = 0.4
+            params["HF_scaling_Gncx"] = 1.6
+            params["HF_scaling_Pnak"] = 0.7
+            params["HF_scaling_cat50_ref"] = 0.6
+
         return params
 
     @staticmethod

@@ -152,7 +152,7 @@ def setup_solver(
         scheme=scheme,
     )
 
-    cell_params_ = CellModel.default_parameters()
+    cell_params_ = CellModel.default_parameters(disease_state)
     if cell_params is not None:
         cell_params_.update(cell_params)
     # Adding optional drug factors to parameters (if drug_factors_file exists)
@@ -173,22 +173,6 @@ def setup_solver(
         logger.info(f"Population scaling factors loaded from {popu_factors_file}")
         with open(popu_factors_file, "r") as fid:
             d = json.load(fid)
-        cell_params_.update(d)
-
-    # Change parameters if we simulate the HF model
-    if disease_state == "HF":
-        d = {}
-        d["HF_scaling_GNaL"] = 1.3
-        d["HF_scaling_GK1"] = 0.68
-        d["HF_scaling_thL"] = 1.8
-        d["HF_scaling_Gto"] = 0.4
-        d["HF_scaling_Gncx"] = 1.6
-        d["HF_scaling_Pnak"] = 0.7
-        d["HF_scaling_cat50_ref"] = 0.6
-        d["HF_scaling_CaMKa"] = 1.50
-        d["HF_scaling_Jrel_inf"] = pow(0.8, 8.0)
-        d["HF_scaling_Jleak"] = 1.3
-        d["HF_scaling_Jup"] = 0.45
         cell_params_.update(d)
 
     cell_inits_ = CellModel.default_initial_conditions()
