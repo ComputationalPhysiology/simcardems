@@ -378,30 +378,14 @@ def get_biomarkers(dict, outdir, num_models):
     biomarker_dict = {}
     fig, ax = plt.subplots()
     for PoMm in range(1, num_models + 1):
-        biomarker_dict[f"m{PoMm}"] = {
-            "maxTa": float(0),
-            "ampTa": float(0),
-            "APD40": float(0),
-            "APD50": float(0),
-            "APD90": float(0),
-            "triangulation": float(0),
-            "Vpeak": float(0),
-            "dvdt": float(0),
-            "maxCa": float(0),
-            "ampCa": float(0),
-            "CaTD50": float(0),
-            "CaTD80": float(0),
-            "CaTD90": float(0),
-            "ttp_Ta": float(0),
-            "rt50_Ta": float(0),
-            "rt95_Ta": float(0),
-        }
+        biomarker_dict[f"m{PoMm}"] = {}
         # Create numpy arrays for analysis
         time = np.array(dict[f"m{PoMm}"]["time"], dtype=float)
         V = np.array(dict[f"m{PoMm}"]["V"], dtype=float)
         Ca = np.array(dict[f"m{PoMm}"]["Ca"], dtype=float)
         Ta = np.array(dict[f"m{PoMm}"]["Ta"], dtype=float)
         lmbda = np.array(dict[f"m{PoMm}"]["lmbda"], dtype=float)
+        u = np.array(dict[f"m{PoMm}"]["u"], dtype=float)
         # Create contraction-array as 1-lambda
         inv_lmbda = np.zeros_like(lmbda)
         for i in range(0, len(lmbda)):
@@ -434,6 +418,22 @@ def get_biomarkers(dict, outdir, num_models):
         biomarker_dict[f"m{PoMm}"]["lmbdaD90"] = find_duration(inv_lmbda, time, 90)
         biomarker_dict[f"m{PoMm}"]["rt50_lmbda"] = find_decaytime(inv_lmbda, time, 50)
         biomarker_dict[f"m{PoMm}"]["rt95_lmbda"] = find_decaytime(inv_lmbda, time, 5)
+
+        biomarker_dict[f"m{PoMm}"]["max_displacement"] = np.abs(np.min(u))
+        biomarker_dict[f"m{PoMm}"]["rel_max_displacement"] = np.abs(
+            np.min(u) - np.max(u),
+        )
+        biomarker_dict[f"m{PoMm}"]["max_displacement_perc"] = (
+            biomarker_dict[f"m{PoMm}"]["max_displacement"] * 100 / 20.0
+        )
+        biomarker_dict[f"m{PoMm}"]["rel_max_displacement_perc"] = (
+            biomarker_dict[f"m{PoMm}"]["rel_max_displacement"]
+            * 100
+            / (20.0 - np.abs(np.max(u)))
+        )
+        biomarker_dict[f"m{PoMm}"]["time_to_max_displacement"] = (
+            time[np.where(u == np.min(u))[0][0]] % 1000
+        )
 
         ax.plot(PoMm, biomarker_dict[f"m{PoMm}"]["APD90"], "*")
 
@@ -482,6 +482,7 @@ def save_popu_json(population_folder, num_models):
                 "Ca": [],
                 "Ta": [],
                 "lmbda": [],
+                "u": [],
             }
 
             # Save times to dictionary
@@ -492,7 +493,7 @@ def save_popu_json(population_folder, num_models):
                 "mechanics": Boundary(loader.mech_mesh),
             }
 
-            all_names = {"mechanics": ["lmbda", "Ta"], "ep": ["V", "Ca"]}
+            all_names = {"mechanics": ["lmbda", "Ta", "u"], "ep": ["V", "Ca"]}
 
             # Fill arrays with data from file
             for i, t in enumerate(loader.time_stamps):
