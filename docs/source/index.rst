@@ -7,24 +7,44 @@ Simcardems
 ==========
 
 ``simcardems`` is a FEniCS-based cardiac electro-mechanics solver and is
-developed as a part of the `SimCardio Test
-project <https://www.simcardiotest.eu/wordpress/>`__. The solver depdens
-on ```pulse`` <https://github.com/ComputationalPhysiology/pulse>`__ and
-```cbcbeat`` <https://github.com/ComputationalPhysiology/cbcbeat>`__.
+developed as a part of the `SimCardio Test project <https://www.simcardiotest.eu/wordpress/>`__. The solver depends
+on pulse_ and cbcbeat_.
 
+
+
+.. _pulse: https://github.com/ComputationalPhysiology/pulse
+.. _cbcbeat: https://github.com/ComputationalPhysiology/cbcbeat
+
+
+Content
+-------
 
 .. toctree::
    :maxdepth: 1
-   :caption: Constents:
 
    install
    motivation
    quickstart
    models
 
+License
+-------
+``simcardems`` is licensed under the GNU LGPL, version 3 or (at your option) any later version.
+``simcardems`` is Copyright (2011-2022) by the authors and Simula Research Laboratory.
+
+Authors
+-------
+``simcardems`` is developed at `Simula Research Laboratory <https://www.simula.no>`__. The core developers are
+
+- Henrik Finsberg (henriknf@simula.no)
+- Ilsbeth van Herck (ilse@simula.no)
+- Cécile Daversin-Catty (cecile@simula.no)
+
+
+API documentation
+------------------
 .. toctree::
    :maxdepth: 1
-   :caption: Programmers reference:
 
    modules
 

@@ -13,6 +13,15 @@ cd simcardems
 python -m pip install .
 ```
 
+## Install with pip
+
+TODO: We should upload `simcardems` to pypi
+
+## Install with conda
+
+TODO: We should make it possible to install `simcardems` with conda. Preferable, we should add it to conda-forge.
+
+
 ## Docker
 
 We also provide a Dockerfile that contain all the instructions for installing the software using docker. To use this, you need to first create docker image. You can do this by executing the following command in the root folder of the project
