@@ -47,13 +47,13 @@ class ORdmm_Land(CardiacCellModel):
         super().__init__(params, init_conditions)
 
     @staticmethod
-    def default_parameters(disease_state="normal"):
+    def default_parameters(disease_state="healthy"):
         """Set-up and return default parameters.
 
         Parameters
         ----------
         disease_state : str, optional
-            String with "hf" or "normal", by default "normal".
+            String with "hf" or "healthy", by default "healthy".
             If "hf", then parameters representing heart failure
             will be used.
 
