@@ -28,8 +28,8 @@ class _Defaults:
     T: float = 1000
     dx: float = 0.2
     dt: float = 0.05
-    bnd_cond: mechanics_model.BoudaryConditions = (
-        mechanics_model.BoudaryConditions.dirichlet
+    bnd_cond: mechanics_model.BoundaryConditions = (
+        mechanics_model.BoundaryConditions.dirichlet
     )
     load_state: bool = False
     cell_init_file: PathLike = ""
@@ -48,6 +48,10 @@ class _Defaults:
     drug_factors_file: str = ""
     popu_factors_file: str = ""
     disease_state: str = "healthy"
+
+
+def default_parameters():
+    return {k: v for k, v in _Defaults.__dict__.items() if not k.startswith("_")}
 
 
 class _tqdm:
@@ -82,7 +86,7 @@ def cli():
     "T",
     default=_Defaults.T,
     type=float,
-    help="Endtime of simulation",
+    help="End-time of simulation",
 )
 @click.option(
     "-n",
@@ -125,7 +129,7 @@ def cli():
 @click.option(
     "--bnd_cond",
     default=_Defaults.bnd_cond,
-    type=click.Choice(mechanics_model.BoudaryConditions._member_names_),
+    type=click.Choice(mechanics_model.BoundaryConditions._member_names_),
     help="Boundary conditions for the mechanics problem",
 )
 @click.option(
@@ -179,7 +183,7 @@ def run(
     T: float,
     dx: float,
     dt: float,
-    bnd_cond: mechanics_model.BoudaryConditions,
+    bnd_cond: mechanics_model.BoundaryConditions,
     load_state: bool,
     cell_init_file: PathLike,
     hpc: bool,
@@ -243,7 +247,7 @@ def main(
     T: float = _Defaults.T,
     dx: float = _Defaults.dx,
     dt: float = _Defaults.dt,
-    bnd_cond: mechanics_model.BoudaryConditions = _Defaults.bnd_cond,
+    bnd_cond: mechanics_model.BoundaryConditions = _Defaults.bnd_cond,
     load_state: bool = _Defaults.load_state,
     cell_init_file: PathLike = _Defaults.cell_init_file,
     hpc: bool = _Defaults.hpc,

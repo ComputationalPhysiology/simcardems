@@ -48,7 +48,7 @@ class EMCoupling:
         logger.debug("Update mechanics")
         self.XS_ep_assigner.assign(self.XS_ep, utils.sub_function(self.vs, 40))
         self.XW_ep_assigner.assign(self.XW_ep, utils.sub_function(self.vs, 41))
-        logger.debug("Done udating mechanics")
+        logger.debug("Done updating mechanics")
 
     def interpolate_mechanics(self):
         logger.debug("Interpolate mechanics")

@@ -12,7 +12,7 @@ from . import utils
 logger = utils.getLogger(__name__)
 
 
-class BoudaryConditions(str, Enum):
+class BoundaryConditions(str, Enum):
     dirichlet = "dirichlet"
     rigid = "rigid"
 
@@ -434,7 +434,7 @@ def setup_mechanics_model(
     mesh,
     coupling,
     dt,
-    bnd_cond: BoudaryConditions,
+    bnd_cond: BoundaryConditions,
     cell_params,
     pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
     traction: typing.Union[dolfin.Constant, float] = None,
@@ -449,7 +449,7 @@ def setup_mechanics_model(
 
     marker_functions = None
     bcs = None
-    if bnd_cond == BoudaryConditions.dirichlet:
+    if bnd_cond == BoundaryConditions.dirichlet:
         bcs, marker_functions = setup_diriclet_bc(
             mesh=mesh,
             pre_stretch=pre_stretch,
@@ -510,7 +510,7 @@ def setup_mechanics_model(
         )
 
     Problem = MechanicsProblem
-    if bnd_cond == BoudaryConditions.rigid:
+    if bnd_cond == BoundaryConditions.rigid:
         Problem = RigidMotionProblem
 
     verbose = logger.getEffectiveLevel() < logging.INFO

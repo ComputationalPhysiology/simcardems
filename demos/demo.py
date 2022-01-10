@@ -1,29 +1,21 @@
 from pathlib import Path
 
 import dolfin
-from simcardems.cli import get_parser
+from simcardems.cli import default_parameters
 from simcardems.cli import main
 
 
 here = Path(__file__).parent.absolute()
-parser = get_parser()
-args = vars(parser.parse_args())
+
+args = default_parameters()
 
 cell_init_file = args["cell_init_file"]
-if args["reset_state"] and cell_init_file:
+if not args["load_state"] and cell_init_file:
     cell_init_file = here.parent.joinpath(
         "initial_conditions",
     ).joinpath(cell_init_file)
 
-main(
-    args["outdir"],
-    T=args["T"],
-    T_release=args["T_release"],
-    bnd_cond=args["bnd_cond"],
-    add_release=args["add_release"],
-    cell_init_file=cell_init_file,
-    reset_state=args["reset_state"],
-)
+main(**args)
 time_table = dolfin.timings(dolfin.TimingClear.keep, [dolfin.TimingType.user])
 print("time table = ", time_table.str(True))
 with open(args["outdir"] + "_timings.log", "w+") as out:

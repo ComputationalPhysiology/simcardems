@@ -59,7 +59,7 @@ class ORdmm_Land(CardiacCellModel):
 
         Returns
         -------
-        OrderdDict
+        OrderedDict
             Dictionary with default values
         """
         params = OrderedDict(

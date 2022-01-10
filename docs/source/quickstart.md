@@ -27,7 +27,7 @@ Usage: python -m simcardems run [OPTIONS]
 Options:
   -o, --outdir PATH              Output directory
   --dt FLOAT                     Time step
-  -T, --end-time FLOAT           Endtime of simulation
+  -T, --end-time FLOAT           End-time of simulation
   -n, --num_refinements INTEGER  Number of refinements of for the mesh using
                                  in the EP model
   --save_freq INTEGER            Set frequency of saving results to file

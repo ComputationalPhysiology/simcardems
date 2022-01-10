@@ -92,9 +92,9 @@ class DataLoader:
             if not ("ep" in h5file and "mesh" in h5file["ep"]):
                 raise ValueError("No ep mesh in results file. Cannot load data")
             if not ("mechanics" in h5file and "mesh" in h5file["mechanics"]):
-                raise ValueError("No mechancis mesh in results file. Cannot load data")
+                raise ValueError("No mechanics mesh in results file. Cannot load data")
 
-            # Find the remining funcitons
+            # Find the remaining functions
             self.names = {
                 group: [name for name in h5file[group].keys() if name != "mesh"]
                 for group in ["ep", "mechanics"]
@@ -151,14 +151,14 @@ class DataLoader:
 
         self._function_spaces = {}
 
-        for group, singature_dict in self._signatures.items():
+        for group, signature_dict in self._signatures.items():
             mesh = self.ep_mesh if group == "ep" else self.mech_mesh
 
             self._function_spaces.update(
                 {
                     group: {
                         signature: dolfin.FunctionSpace(mesh, eval(signature))
-                        for signature in set(singature_dict.values())
+                        for signature in set(signature_dict.values())
                     },
                 },
             )

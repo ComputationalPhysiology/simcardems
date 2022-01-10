@@ -255,7 +255,7 @@ def plot_peaks(fname, data, threshold):
     ax.plot(change_y)
     ax.set_title("Compare peak values")
     ax.grid()
-    ax.set_xlabel("Numer of beats")
+    ax.set_xlabel("Number of beats")
     ax.set_ylabel("% change from previous beat")
     fig.savefig(fname, dpi=300)
 
