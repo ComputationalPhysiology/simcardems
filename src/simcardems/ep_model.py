@@ -26,7 +26,7 @@ def define_conductivity_tensor(chi, C_m):
     sigma_l = harmonic_mean(sigma_il, sigma_el)
     sigma_t = harmonic_mean(sigma_it, sigma_et)
 
-    # Scale conducitivites by 1/(C_m * chi)
+    # Scale conductivities by 1/(C_m * chi)
     s_l = sigma_l / (C_m * chi)  # mm^2 / ms
     s_t = sigma_t / (C_m * chi)  # mm^2 / ms
 
@@ -182,10 +182,10 @@ def setup_solver(
                 d = json.load(fid)
             cell_inits_.update(d)
         else:
-            from .save_load_functions import load_initial_condions_from_h5
+            from .save_load_functions import load_initial_conditions_from_h5
 
             assert Path(cell_init_file).suffix == ".h5", "Expecting .h5 format"
-            cell_inits = load_initial_condions_from_h5(cell_init_file)
+            cell_inits = load_initial_conditions_from_h5(cell_init_file)
 
     if cell_inits is not None:
         cell_inits_.update(cell_inits)

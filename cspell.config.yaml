@@ -1,0 +1,7 @@
+dictionaryDefinitions:
+  - name: simcardems
+    path: .cspell_dict.txt
+    addWords: true
+dictionaries:
+  - simcardems
+ignoreWords: [quickstart, toctree, maxdepth, genindex, modindex]

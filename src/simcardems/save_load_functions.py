@@ -225,7 +225,7 @@ def load_state(
     )
 
 
-def load_initial_condions_from_h5(path):
+def load_initial_conditions_from_h5(path):
     path = Path(path)
     if not path.is_file():
         raise FileNotFoundError(f"File {path} does not exist")
