@@ -26,6 +26,7 @@ Content
    motivation
    quickstart
    models
+   cell_model
 
 License
 -------

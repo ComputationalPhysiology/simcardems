@@ -41,6 +41,9 @@ Tests are provided in the folder [tests](tests). You can run the tests with pyte
 python3 -m pytest tests -vv
 ```
 
+## Contributing
+See [CONTRIBUTING.md](CONTRIBUTING.md)
+
 
 ## Known issues
 

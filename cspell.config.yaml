@@ -4,4 +4,16 @@ dictionaryDefinitions:
     addWords: true
 dictionaries:
   - simcardems
-ignoreWords: [quickstart, toctree, maxdepth, genindex, modindex]
+ignoreWords:
+  [
+    quickstart,
+    toctree,
+    maxdepth,
+    genindex,
+    modindex,
+    mathbf,
+    mathrm,
+    mathbb,
+    mathcal,
+    operatorname,
+  ]
