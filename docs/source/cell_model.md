@@ -1,8 +1,11 @@
+(section:cell)=
+# Cellular model
 
-# ORdmm_Land_em_coupling
+
+## ORdmm_Land_em_coupling
 This document is automatically generated using [gotran](https://pypi.org/project/gotran/)
 
-## Parameters
+### Parameters
 | Name                  | Value                    |
 | --------------------- | ------------------------ |
 | $scale_{\mathcal{I}}$ | $1.02$                   |

@@ -25,8 +25,10 @@ Content
    install
    motivation
    quickstart
-   models
+   mechanics_model
+   electrophysiology_model
    cell_model
+   electro_mechanical_coupling
 
 License
 -------
