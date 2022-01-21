@@ -14,8 +14,6 @@ To get an overview of the project, read the [README](README.md). Here are some r
 - [Collaborating with pull requests](https://docs.github.com/en/github/collaborating-with-pull-requests)
 
 
-
-
 ## Pull Request Process
 
 
