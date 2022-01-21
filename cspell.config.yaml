@@ -4,8 +4,7 @@ dictionaryDefinitions:
     addWords: true
 dictionaries:
   - simcardems
-ignoreWords:
-  [
+ignoreWords: [
     quickstart,
     toctree,
     maxdepth,
@@ -16,4 +15,6 @@ ignoreWords:
     mathbb,
     mathcal,
     operatorname,
+    docname
+    docnames,
   ]
