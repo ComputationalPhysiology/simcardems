@@ -1,5 +1,11 @@
 demos/results/
+*.pvd
+*.vtu
 *.DS_Store
+*.vscode
+*.json
+docs/source/modules.rst
+docs/source/simcardems.rst
 # Created by https://www.toptal.com/developers/gitignore/api/python,visualstudiocode
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,visualstudiocode
 
