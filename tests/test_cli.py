@@ -2,6 +2,7 @@ import json
 import shutil
 from pathlib import Path
 
+import pytest
 from click.testing import CliRunner
 from simcardems.cli import run
 from simcardems.cli import run_json
@@ -9,6 +10,7 @@ from simcardems.cli import run_json
 mesh_args = ["-lx", 1, "-ly", 1, "-lz", 1, "-dx", 1, "--num_refinements", 1]
 
 
+@pytest.mark.slow
 def test_run():
     runner = CliRunner()
     outdir = Path("test_outdir").absolute()
@@ -28,6 +30,7 @@ def test_run():
         assert dumped_arguments[k] == v, k
 
 
+@pytest.mark.slow
 def test_run_json():
     runner = CliRunner()
     outdir = Path("test_outdir").absolute()
