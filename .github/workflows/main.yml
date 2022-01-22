@@ -20,9 +20,9 @@ jobs:
             ~/.cache/instant
             ~/.cache/dijitso
             ~/.cache/pip
-          key: cache_v1
+          key: cache_v2
           restore-keys: |
-            cache_v1
+            cache_v2
 
       - name: Install dependencies
         run: |
