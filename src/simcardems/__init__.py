@@ -8,6 +8,7 @@ from . import cli
 from . import datacollector
 from . import em_model
 from . import ep_model
+from . import geometry
 from . import mechanics_model
 from . import ORdmm_Land
 from . import postprocess
@@ -62,6 +63,7 @@ __all__ = [
     "mechanics_model",
     "ORdmm_Land",
     "postprocess",
+    "geometry",
     "save_load_functions",
     "utils",
     "cli",

@@ -16,6 +16,7 @@ from . import postprocess as post
 from . import save_load_functions as io
 from . import utils
 from .datacollector import DataCollector
+from .geometry import SlabGeometry
 from .version import __version__
 
 logger = utils.getLogger(__name__)
@@ -229,19 +230,6 @@ def run_json(path):
     main(**data)
 
 
-def refine_mesh(
-    mesh: dolfin.Mesh,
-    num_refinements: int,
-    redistribute: bool = False,
-) -> dolfin.Mesh:
-
-    for i in range(num_refinements):
-        logger.info(f"Performing refinement {i+1}")
-        mesh = dolfin.refine(mesh, redistribute=redistribute)
-
-    return mesh
-
-
 def main(
     outdir: PathLike = _Defaults.outdir,
     T: float = _Defaults.T,
@@ -295,16 +283,18 @@ def main(
     else:
         logger.info("Create a new state")
         # Create a new state
-        with dolfin.Timer("[demo] Create mesh"):
-            mech_mesh = utils.create_boxmesh(Lx=lx, Ly=ly, Lz=lz, dx=dx)
+        geometry = SlabGeometry(
+            lx=lx,
+            ly=ly,
+            lz=lz,
+            dx=dx,
+            num_refinements=num_refinements,
+        )
 
-        ep_mesh = refine_mesh(mech_mesh, num_refinements=num_refinements)
-
-        coupling = em_model.EMCoupling(mech_mesh, ep_mesh)
+        coupling = em_model.EMCoupling(geometry)
 
         # Set-up solver and time it
         solver = ep_model.setup_solver(
-            mesh=ep_mesh,
             dt=dt,
             coupling=coupling,
             cell_init_file=cell_init_file,
@@ -317,7 +307,6 @@ def main(
 
         with dolfin.Timer("[demo] Setup Mech solver"):
             mech_heart = mechanics_model.setup_mechanics_model(
-                mesh=mech_mesh,
                 coupling=coupling,
                 dt=dt,
                 bnd_cond=bnd_cond,
@@ -423,11 +412,9 @@ def main(
             state_path,
             solver=solver,
             mech_heart=mech_heart,
+            coupling=coupling,
             dt=dt,
             bnd_cond=bnd_cond,
-            Lx=lx,
-            Ly=ly,
-            Lz=lz,
             t0=t0,
         )
 

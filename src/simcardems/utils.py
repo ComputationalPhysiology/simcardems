@@ -2,7 +2,6 @@ import logging
 from pathlib import Path
 
 import dolfin
-import numpy as np
 import ufl
 
 
@@ -78,22 +77,7 @@ def sub_function(vs, index):
     return sub_vs
 
 
-def create_boxmesh(Lx, Ly, Lz, dx=0.5, refinements=0):
-    # Create computational domain [0, Lx] x [0, Ly] x [0, Lz]
-    # with resolution prescribed by benchmark or more refinements
-
-    N = lambda v: int(np.rint(v))
-    mesh = dolfin.BoxMesh(
-        dolfin.MPI.comm_world,
-        dolfin.Point(0.0, 0.0, 0.0),
-        dolfin.Point(Lx, Ly, Lz),
-        N(Lx / dx),
-        N(Ly / dx),
-        N(Lz / dx),
-    )
-
-    for i in range(refinements):
-        logger.info(f"Performing refinement {i + 1}")
-        mesh = dolfin.refine(mesh, redistribute=False)
-
-    return mesh
+def print_mesh_info(mesh, total_dofs):
+    logger.info(f"Mesh elements: {mesh.num_entities(mesh.topology().dim())}")
+    logger.info(f"Mesh vertices: {mesh.num_entities(0)}")
+    logger.info(f"Total degrees of freedom: {total_dofs}")

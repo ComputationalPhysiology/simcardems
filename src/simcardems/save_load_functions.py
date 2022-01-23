@@ -12,6 +12,7 @@ from dolfin import VectorElement  # noqa: F401
 
 from . import em_model
 from . import ep_model
+from . import geometry
 from . import mechanics_model
 from . import utils
 from .ORdmm_Land import vs_functions_to_dict
@@ -100,11 +101,9 @@ def save_state(
     path,
     solver,
     mech_heart,
+    coupling: em_model.EMCoupling,
     dt=0.02,
     bnd_cond="dirichlet",
-    Lx=2.0,
-    Ly=0.7,
-    Lz=0.3,
     t0=0,
 ):
     path = Path(path)
@@ -129,12 +128,14 @@ def save_state(
     logger.debug("Save using h5py")
     dict_to_h5(solver.ode_solver._model.parameters(), path, "ep/cell_params")
     dict_to_h5(
+        coupling.geometry.parameters,
+        path,
+        "geometry_params",
+    )
+    dict_to_h5(
         dict(
             dt=dt,
             bnd_cond=bnd_cond_dict[bnd_cond],
-            Lx=Lx,
-            Ly=Ly,
-            Lz=Lz,
             t0=t0,
         ),
         path,
@@ -158,6 +159,24 @@ def load_state(
     logger.debug("Open file with h5py")
     with h5pyfile(path) as h5file:
         state_params = h5_to_dict(h5file["state_params"])
+        if "geometry_params" in h5file:
+            geometry_params = h5_to_dict(h5file["geometry_params"])
+        else:
+            # For backwards compatability
+            warnings.warn(
+                (
+                    f"Unable to find 'geometry_params' in result file {path}. "
+                    "Please make sure to save the results to the new format. "
+                ),
+                category=DeprecationWarning,
+            )
+            geometry_params = {
+                "lx": state_params["Lx"],
+                "ly": state_params["Ly"],
+                "lz": state_params["Lz"],
+                "dx": 1,  # This is not saved, so just set it to some value
+                "num_refinements": 1,  # This is not saved, so just set it to some value
+            }
         cell_params = h5_to_dict(h5file["ep"]["cell_params"])
         vs_signature = h5file["ep"]["vs"].attrs["signature"].decode()
         mech_signature = h5file["mechanics"]["state"].attrs["signature"].decode()
@@ -168,6 +187,10 @@ def load_state(
     with dolfin.HDF5File(ep_mesh.mpi_comm(), path.as_posix(), "r") as h5file:
         h5file.read(ep_mesh, "/ep/mesh", True)
         h5file.read(mech_mesh, "/mechanics/mesh", True)
+
+    geo = geometry.SlabGeometry(
+        mechanics_mesh=mech_mesh, ep_mesh=ep_mesh, **geometry_params
+    )
 
     VS = dolfin.FunctionSpace(ep_mesh, eval(vs_signature))
     vs = dolfin.Function(VS)
@@ -189,14 +212,12 @@ def load_state(
     cell_inits = vs_functions_to_dict(vs)
 
     coupling = em_model.EMCoupling(
-        mech_mesh=mech_mesh,
-        ep_mesh=ep_mesh,
+        geometry=geo,
         lmbda_mech=lmbda_prev,
         Zetas_mech=Zetas_prev,
         Zetaw_mech=Zetaw_prev,
     )
     solver = ep_model.setup_solver(
-        ep_mesh,
         state_params["dt"],
         coupling,
         cell_params=cell_params,
@@ -209,7 +230,6 @@ def load_state(
     bnd_cond_dict = dict([(0, "dirichlet"), (1, "rigid")])
 
     mech_heart = mechanics_model.setup_mechanics_model(
-        mesh=mech_mesh,
         coupling=coupling,
         dt=state_params["dt"],
         bnd_cond=bnd_cond_dict[state_params["bnd_cond"]],

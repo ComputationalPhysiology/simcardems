@@ -6,6 +6,7 @@ import dolfin
 import pulse
 import ufl
 from mpi4py import MPI
+from simcardems.em_model import EMCoupling
 
 from . import utils
 
@@ -431,8 +432,7 @@ def setup_diriclet_bc(
 
 
 def setup_mechanics_model(
-    mesh,
-    coupling,
+    coupling: EMCoupling,
     dt,
     bnd_cond: BoundaryConditions,
     cell_params,
@@ -445,13 +445,13 @@ def setup_mechanics_model(
     """Setup mechanics model with dirichlet boundary conditions or rigid motion."""
     logger.info("Set up mechanics model")
 
-    microstructure = setup_microstructure(mesh)
+    microstructure = setup_microstructure(coupling.mech_mesh)
 
     marker_functions = None
     bcs = None
     if bnd_cond == BoundaryConditions.dirichlet:
         bcs, marker_functions = setup_diriclet_bc(
-            mesh=mesh,
+            mesh=coupling.mech_mesh,
             pre_stretch=pre_stretch,
             traction=traction,
             spring=spring,
@@ -459,7 +459,7 @@ def setup_mechanics_model(
         )
     # Create the geometry
     geometry = pulse.Geometry(
-        mesh=mesh,
+        mesh=coupling.mech_mesh,
         microstructure=microstructure,
         marker_functions=marker_functions,
     )
@@ -477,7 +477,7 @@ def setup_mechanics_model(
         b_fs=0.0,
     )
 
-    V = dolfin.FunctionSpace(mesh, "CG", 1)
+    V = dolfin.FunctionSpace(coupling.mech_mesh, "CG", 1)
     active_model = LandModel(
         f0=microstructure.f0,
         s0=microstructure.s0,
@@ -525,8 +525,6 @@ def setup_mechanics_model(
 
     total_dofs = problem.state.function_space().dim()
     logger.info("Mechanics model")
-    logger.info(f"Mesh elements: {mesh.num_entities(mesh.topology().dim())}")
-    logger.info(f"Mesh vertices: {mesh.num_entities(0)}")
-    logger.info(f"Total degrees of freedom: {total_dofs}")
+    utils.print_mesh_info(coupling.mech_mesh, total_dofs)
 
     return problem

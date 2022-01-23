@@ -13,9 +13,21 @@ def mesh():
     return dolfin.UnitCubeMesh(1, 1, 1)
 
 
+@pytest.fixture(scope="session")
+def geometry(mesh):
+    return simcardems.geometry.SlabGeometry(
+        lx=1,
+        ly=1,
+        lz=1,
+        dx=1,
+        num_refinements=1,
+        mechanics_mesh=mesh,
+    )
+
+
 @pytest.fixture
-def coupling(mesh):
-    return simcardems.EMCoupling(mesh, mesh)
+def coupling(geometry):
+    return simcardems.EMCoupling(geometry)
 
 
 @pytest.fixture
@@ -31,12 +43,12 @@ def cell_params():
         .joinpath("init_5000beats.json"),
     ],
 )
-def ep_solver(request, mesh, coupling):
+def ep_solver(request, coupling):
     params = dolfin.Parameters("CardiacODESolver")
     params.add("scheme", "BackwardEuler")
     states = simcardems.ORdmm_Land.ORdmm_Land.default_initial_conditions()
     modelparams = simcardems.ORdmm_Land.ORdmm_Land.default_parameters()
-    VS = dolfin.VectorFunctionSpace(mesh, "CG", 1, dim=len(states))
+    VS = dolfin.VectorFunctionSpace(coupling.ep_mesh, "CG", 1, dim=len(states))
     vs = dolfin.Function(VS)
     vs.assign(dolfin.Constant(list(states.values())))
     vs_ = vs.copy()
@@ -53,7 +65,6 @@ def ep_solver(request, mesh, coupling):
         instance.solution_fields.return_value = (vs_, vs)
         instance._model.parameters.return_value = modelparams
         solver = simcardems.ep_model.setup_solver(
-            mesh=mesh,
             dt=0.01,
             coupling=coupling,
             cell_init_file=request.param,
