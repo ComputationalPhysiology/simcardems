@@ -441,6 +441,7 @@ def setup_mechanics_model(
     spring: typing.Union[dolfin.Constant, float] = None,
     fix_right_plane: bool = False,
     set_material: str = "",
+    linear_solver="mumps",
 ):
     """Setup mechanics model with dirichlet boundary conditions or rigid motion."""
     logger.info("Set up mechanics model")
@@ -518,7 +519,7 @@ def setup_mechanics_model(
         geometry,
         material,
         bcs,
-        solver_parameters={"linear_solver": "mumps", "verbose": verbose},
+        solver_parameters={"linear_solver": linear_solver, "verbose": verbose},
     )
 
     problem.solve()
