@@ -22,6 +22,26 @@ class Boundary:
     def __init__(self, mesh):
         self.mesh = mesh
 
+    @staticmethod
+    def nodes():
+        return (
+            "center",
+            "node_A",
+            "node_B",
+            "node_C",
+            "node_D",
+            "node_E",
+            "node_F",
+            "node_G",
+            "node_H",
+            "xmax",
+            "xmin",
+            "ymax",
+            "ymin",
+            "zmax",
+            "zmin",
+        )
+
     @property
     def boundaries(self):
         coords = self.mesh.coordinates()
