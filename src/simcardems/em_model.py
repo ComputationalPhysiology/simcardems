@@ -1,4 +1,5 @@
 import dolfin
+from simcardems.geometry import BaseGeometry
 
 from . import utils
 
@@ -8,16 +9,14 @@ logger = utils.getLogger(__name__)
 class EMCoupling:
     def __init__(
         self,
-        mech_mesh,
-        ep_mesh,
+        geometry: BaseGeometry,
         lmbda_mech=dolfin.Constant(1.0),
         Zetas_mech=dolfin.Constant(0.0),
         Zetaw_mech=dolfin.Constant(0.0),
     ) -> None:
         logger.debug("Create EM coupling")
-        self.mech_mesh = mech_mesh
-        self.ep_mesh = ep_mesh
-        self.V_mech = dolfin.FunctionSpace(mech_mesh, "CG", 1)
+        self.geometry = geometry
+        self.V_mech = dolfin.FunctionSpace(self.mech_mesh, "CG", 1)
         self.XS_mech = dolfin.Function(self.V_mech, name="XS_mech")
         self.XW_mech = dolfin.Function(self.V_mech, name="XW_mech")
         self.lmbda_mech = dolfin.Function(self.V_mech, name="lambda_mech")
@@ -27,13 +26,21 @@ class EMCoupling:
         self.Zetaw_mech = dolfin.Function(self.V_mech, name="Zetaw_mech")
         self.Zetaw_mech.assign(Zetaw_mech)
 
-        self.V_ep = dolfin.FunctionSpace(ep_mesh, "CG", 1)
+        self.V_ep = dolfin.FunctionSpace(self.ep_mesh, "CG", 1)
         self.XS_ep = dolfin.Function(self.V_ep, name="XS_ep")
         self.XW_ep = dolfin.Function(self.V_ep, name="XW_ep")
         self.lmbda_ep = dolfin.Function(self.V_ep, name="lambda_ep")
         self.Zetas_ep = dolfin.Function(self.V_ep, name="Zetas_ep")
         self.Zetaw_ep = dolfin.Function(self.V_ep, name="Zetaw_ep")
         self.interpolate_ep()
+
+    @property
+    def mech_mesh(self):
+        return self.geometry.mechanics_mesh
+
+    @property
+    def ep_mesh(self):
+        return self.geometry.ep_mesh
 
     def register_ep_model(self, solver):
         logger.debug("Registering EP model")

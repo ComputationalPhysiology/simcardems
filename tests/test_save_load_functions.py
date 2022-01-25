@@ -73,14 +73,10 @@ def test_save_and_load_state(
     coupling.register_ep_model(ep_solver)
 
     dt = 0.01
-    Lx = 1
-    Ly = 1
-    Lz = 1
 
     bnd_cond = "dirichlet"
 
     mech_heart = simcardems.mechanics_model.setup_mechanics_model(
-        mesh=mesh,
         coupling=coupling,
         dt=0.01,
         bnd_cond=bnd_cond,
@@ -99,11 +95,9 @@ def test_save_and_load_state(
         dummyfile,
         solver=ep_solver,
         mech_heart=mech_heart,
+        coupling=coupling,
         dt=dt,
         bnd_cond=bnd_cond,
-        Lx=Lx,
-        Ly=Ly,
-        Lz=Lz,
         t0=t0,
     )
 

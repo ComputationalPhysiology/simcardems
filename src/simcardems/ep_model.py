@@ -1,5 +1,7 @@
 import json
 from pathlib import Path
+from typing import Dict
+from typing import Optional
 
 import cbcbeat
 import dolfin
@@ -131,8 +133,71 @@ def setup_splitting_solver_parameters(
     return ps
 
 
+def file_exist(filename: Optional[str], suffix: str) -> bool:
+    return (
+        filename is not None
+        and filename != ""
+        and Path(filename).is_file()
+        and Path(filename).suffix == suffix
+    )
+
+
+def load_json(filename: str):
+    with open(filename, "r") as fid:
+        d = json.load(fid)
+    return d
+
+
+def handle_cell_params(
+    cell_params: Optional[Dict[str, float]] = None,
+    disease_state: str = "healthy",
+    drug_factors_file: str = "",
+    popu_factors_file: str = "",
+):
+    cell_params_tmp = CellModel.default_parameters(disease_state)
+    # FIXME: In this case we update the parameters first, while in the
+    # initial condition case we do that last. We need to be consistent
+    # about this.
+    if cell_params is not None:
+        cell_params_tmp.update(cell_params)
+    # Adding optional drug factors to parameters (if drug_factors_file exists)
+    if file_exist(drug_factors_file, ".json"):
+        logger.info(f"Drug scaling factors loaded from {drug_factors_file}")
+        cell_params_tmp.update(load_json(drug_factors_file))
+    # FIXME: A problem here is that popu_factors_file will overwrite the
+    # drug_factors_file. Is it possible to only have one file?
+    if file_exist(popu_factors_file, ".json"):
+        logger.info(f"Population scaling factors loaded from {popu_factors_file}")
+        cell_params_tmp.update(load_json(popu_factors_file))
+
+    return cell_params_tmp
+
+
+def handle_cell_inits(
+    cell_inits: Optional[Dict[str, float]] = None,
+    cell_init_file: str = "",
+) -> Dict[str, float]:
+    cell_inits_tmp = CellModel.default_initial_conditions()
+    if file_exist(cell_init_file, ".json"):
+        cell_inits_tmp.update(load_json(cell_init_file))
+
+    if file_exist(cell_init_file, ".h5"):
+        cell_inits_tmp.update(load_json(cell_init_file))
+        from .save_load_functions import load_initial_conditions_from_h5
+
+        cell_inits = load_initial_conditions_from_h5(cell_init_file)
+
+    # FIXME: This is a bit confusing, since it will overwrite the
+    # inputs from the cell_init_file. There should be only one way to
+    # do this IMO. I think this might be difficult for the user to reason
+    # about. I think in general we should handle the loading from files
+    # at higher level.
+    if cell_inits is not None:
+        cell_inits_tmp.update(cell_inits)
+    return cell_inits_tmp
+
+
 def setup_solver(
-    mesh,
     dt,
     coupling,
     scheme="GRL1",
@@ -140,9 +205,9 @@ def setup_solver(
     preconditioner="sor",
     cell_params=None,
     cell_inits=None,
-    cell_init_file="",
-    drug_factors_file="",
-    popu_factors_file="",
+    cell_init_file=None,
+    drug_factors_file=None,
+    popu_factors_file=None,
     disease_state="healthy",
 ):
     ps = setup_splitting_solver_parameters(
@@ -152,52 +217,23 @@ def setup_solver(
         scheme=scheme,
     )
 
-    cell_params_ = CellModel.default_parameters(disease_state)
-    if cell_params is not None:
-        cell_params_.update(cell_params)
-    # Adding optional drug factors to parameters (if drug_factors_file exists)
-    if (
-        drug_factors_file != ""
-        and Path(drug_factors_file).is_file()
-        and Path(drug_factors_file).suffix == ".json"
-    ):
-        logger.info(f"Drug scaling factors loaded from {drug_factors_file}")
-        with open(drug_factors_file, "r") as fid:
-            d = json.load(fid)
-        cell_params_.update(d)
-    if (
-        popu_factors_file != ""
-        and Path(popu_factors_file).is_file()
-        and Path(popu_factors_file).suffix == ".json"
-    ):
-        logger.info(f"Population scaling factors loaded from {popu_factors_file}")
-        with open(popu_factors_file, "r") as fid:
-            d = json.load(fid)
-        cell_params_.update(d)
+    cell_params = handle_cell_params(
+        cell_params=cell_params,
+        disease_state=disease_state,
+        drug_factors_file=drug_factors_file,
+        popu_factors_file=popu_factors_file,
+    )
 
-    cell_inits_ = CellModel.default_initial_conditions()
-    if cell_init_file != "":
-        if Path(cell_init_file).suffix == ".json":
-            with open(cell_init_file, "r") as fid:
-                d = json.load(fid)
-            cell_inits_.update(d)
-        else:
-            from .save_load_functions import load_initial_conditions_from_h5
+    cell_inits = handle_cell_inits(cell_inits=cell_inits, cell_init_file=cell_init_file)
 
-            assert Path(cell_init_file).suffix == ".h5", "Expecting .h5 format"
-            cell_inits = load_initial_conditions_from_h5(cell_init_file)
+    cell_inits["lmbda"] = coupling.lmbda_ep
+    cell_inits["Zetas"] = coupling.Zetas_ep
+    cell_inits["Zetaw"] = coupling.Zetaw_ep
 
-    if cell_inits is not None:
-        cell_inits_.update(cell_inits)
-
-    cell_inits_["lmbda"] = coupling.lmbda_ep
-    cell_inits_["Zetas"] = coupling.Zetas_ep
-    cell_inits_["Zetaw"] = coupling.Zetaw_ep
-
-    cellmodel = CellModel(init_conditions=cell_inits_, params=cell_params_)
+    cellmodel = CellModel(init_conditions=cell_inits, params=cell_params)
 
     # Set-up cardiac model
-    ep_heart = setup_ep_model(cellmodel, mesh)
+    ep_heart = setup_ep_model(cellmodel, coupling.ep_mesh)
     timer = dolfin.Timer("SplittingSolver: setup")
 
     solver = cbcbeat.SplittingSolver(ep_heart, ps)
@@ -209,11 +245,6 @@ def setup_solver(
 
     # Output some degrees of freedom
     total_dofs = vs.function_space().dim()
-    # pde_dofs = V.dim()
     logger.info("EP model")
-    logger.info(f"Mesh elements: {mesh.num_entities(mesh.topology().dim())}")
-    logger.info(f"Mesh vertices: {mesh.num_entities(0)}")
-    logger.info(f"Total degrees of freedom: {total_dofs}")
-    # logger.info("PDE degrees of freedom: ", pde_dofs)
-
+    utils.print_mesh_info(coupling.ep_mesh, total_dofs)
     return solver
