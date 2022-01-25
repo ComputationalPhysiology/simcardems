@@ -2,6 +2,19 @@
 
 Before installing you need to install [FEniCS version 2019.1.0](https://fenicsproject.org/download/). Next you can install `simcardems` with pip
 
+
+```
+python -m pip install simcardems
+```
+
+## Install with conda
+
+TODO: We should make it possible to install `simcardems` with conda. Preferable, we should add it to conda-forge.
+
+## Install from source
+
+If you want the latest version or you want to develop `simcardems` you can install the code on the `master` branch
+
 ```
 python -m pip install git+https://github.com/ComputationalPhysiology/simcardems.git@master
 ```
@@ -12,15 +25,6 @@ git clone git@github.com:ComputationalPhysiology/simcardems.git
 cd simcardems
 python -m pip install .
 ```
-
-## Install with pip
-
-TODO: We should upload `simcardems` to pypi
-
-## Install with conda
-
-TODO: We should make it possible to install `simcardems` with conda. Preferable, we should add it to conda-forge.
-
 
 ## Docker
 
