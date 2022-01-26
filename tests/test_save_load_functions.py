@@ -76,7 +76,7 @@ def test_save_and_load_state(
 
     bnd_cond = "dirichlet"
 
-    mech_heart = simcardems.mechanics_model.setup_mechanics_model(
+    mech_heart = simcardems.setup_models.setup_mechanics_solver(
         coupling=coupling,
         dt=0.01,
         bnd_cond=bnd_cond,
@@ -101,7 +101,7 @@ def test_save_and_load_state(
         t0=t0,
     )
 
-    with mock.patch("simcardems.ep_model.cbcbeat.SplittingSolver") as m:
+    with mock.patch("simcardems.setup_models.cbcbeat.SplittingSolver") as m:
         m.return_value = ep_solver
 
         coupling_, ep_solver_, mech_heart_, t0_ = slf.load_state(

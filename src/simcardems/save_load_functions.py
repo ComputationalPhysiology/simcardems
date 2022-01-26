@@ -10,9 +10,8 @@ from dolfin import tetrahedron  # noqa: F401
 from dolfin import VectorElement  # noqa: F401
 
 from . import em_model
-from . import ep_model
 from . import geometry
-from . import mechanics_model
+from . import setup_models
 from . import utils
 from .ORdmm_Land import vs_functions_to_dict
 
@@ -212,7 +211,7 @@ def load_state(
         Zetas_mech=Zetas_prev,
         Zetaw_mech=Zetaw_prev,
     )
-    solver = ep_model.setup_solver(
+    solver = setup_models.setup_ep_solver(
         state_params["dt"],
         coupling,
         cell_params=cell_params,
@@ -224,7 +223,7 @@ def load_state(
     coupling.register_ep_model(solver)
     bnd_cond_dict = dict([(0, "dirichlet"), (1, "rigid")])
 
-    mech_heart = mechanics_model.setup_mechanics_model(
+    mech_heart = setup_models.setup_mechanics_solver(
         coupling=coupling,
         dt=state_params["dt"],
         bnd_cond=bnd_cond_dict[state_params["bnd_cond"]],
@@ -232,7 +231,7 @@ def load_state(
     )
     mech_heart.state.assign(mech_state)
 
-    return em_model.EMState(
+    return setup_models.EMState(
         coupling=coupling,
         solver=solver,
         mech_heart=mech_heart,

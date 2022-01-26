@@ -14,7 +14,6 @@ from . import geometry
 from . import mechanics_model
 from . import save_load_functions as io
 from . import utils
-from .datacollector import DataCollector
 from .ORdmm_Land import ORdmm_Land as CellModel
 
 logger = utils.getLogger(__name__)
@@ -380,6 +379,7 @@ class Runner:
         self.collector.store(t0)
 
     def _setup_datacollector(self, reset: bool = True):
+        from .datacollector import DataCollector
 
         self.collector = DataCollector(
             self._outdir,

@@ -59,12 +59,12 @@ def ep_solver(request, coupling):
     }
 
     with mock.patch(
-        "simcardems.ep_model.cbcbeat.splittingsolver.CardiacODESolver", **config
+        "simcardems.setup_models.cbcbeat.splittingsolver.CardiacODESolver", **config
     ) as m:
         instance = m.return_value
         instance.solution_fields.return_value = (vs_, vs)
         instance._model.parameters.return_value = modelparams
-        solver = simcardems.ep_model.setup_solver(
+        solver = simcardems.setup_models.setup_ep_solver(
             dt=0.01,
             coupling=coupling,
             cell_init_file=request.param,
