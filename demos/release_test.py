@@ -1,3 +1,6 @@
+# # Release test
+#
+# The release test is test to make sure that the coupling between the mechanics and the electrophysiology is implemented correctly
 from pathlib import Path
 
 import cbcbeat

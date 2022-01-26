@@ -1,4 +1,3 @@
-import logging
 import typing
 from enum import Enum
 
@@ -6,7 +5,6 @@ import dolfin
 import pulse
 import ufl
 from mpi4py import MPI
-from simcardems.em_model import EMCoupling
 
 from . import utils
 
@@ -429,103 +427,3 @@ def setup_diriclet_bc(
     )
 
     return bcs, marker_functions
-
-
-def setup_mechanics_model(
-    coupling: EMCoupling,
-    dt,
-    bnd_cond: BoundaryConditions,
-    cell_params,
-    pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
-    traction: typing.Union[dolfin.Constant, float] = None,
-    spring: typing.Union[dolfin.Constant, float] = None,
-    fix_right_plane: bool = False,
-    set_material: str = "",
-    linear_solver="mumps",
-):
-    """Setup mechanics model with dirichlet boundary conditions or rigid motion."""
-    logger.info("Set up mechanics model")
-
-    microstructure = setup_microstructure(coupling.mech_mesh)
-
-    marker_functions = None
-    bcs = None
-    if bnd_cond == BoundaryConditions.dirichlet:
-        bcs, marker_functions = setup_diriclet_bc(
-            mesh=coupling.mech_mesh,
-            pre_stretch=pre_stretch,
-            traction=traction,
-            spring=spring,
-            fix_right_plane=fix_right_plane,
-        )
-    # Create the geometry
-    geometry = pulse.Geometry(
-        mesh=coupling.mech_mesh,
-        microstructure=microstructure,
-        marker_functions=marker_functions,
-    )
-    # Create the material
-    # material_parameters = pulse.HolzapfelOgden.default_parameters()
-    # Use parameters from Biaxial test in Holzapfel 2019 (Table 1).
-    material_parameters = dict(
-        a=2.28,
-        a_f=1.686,
-        b=9.726,
-        b_f=15.779,
-        a_s=0.0,
-        b_s=0.0,
-        a_fs=0.0,
-        b_fs=0.0,
-    )
-
-    V = dolfin.FunctionSpace(coupling.mech_mesh, "CG", 1)
-    active_model = LandModel(
-        f0=microstructure.f0,
-        s0=microstructure.s0,
-        n0=microstructure.n0,
-        eta=0,
-        lmbda=coupling.lmbda_mech,
-        Zetas=coupling.Zetas_mech,
-        Zetaw=coupling.Zetaw_mech,
-        parameters=cell_params,
-        XS=coupling.XS_mech,
-        XW=coupling.XW_mech,
-        dt=dt,
-        function_space=V,
-    )
-    material = pulse.HolzapfelOgden(
-        active_model=active_model,
-        parameters=material_parameters,
-    )
-
-    if set_material == "Guccione":
-        material_parameters = pulse.Guccione.default_parameters()
-        material_parameters["CC"] = 2.0
-        material_parameters["bf"] = 8.0
-        material_parameters["bfs"] = 4.0
-        material_parameters["bt"] = 2.0
-
-        material = pulse.Guccione(
-            params=material_parameters,
-            active_model=active_model,
-        )
-
-    Problem = MechanicsProblem
-    if bnd_cond == BoundaryConditions.rigid:
-        Problem = RigidMotionProblem
-
-    verbose = logger.getEffectiveLevel() < logging.INFO
-    problem = Problem(
-        geometry,
-        material,
-        bcs,
-        solver_parameters={"linear_solver": linear_solver, "verbose": verbose},
-    )
-
-    problem.solve()
-
-    total_dofs = problem.state.function_space().dim()
-    logger.info("Mechanics model")
-    utils.print_mesh_info(coupling.mech_mesh, total_dofs)
-
-    return problem

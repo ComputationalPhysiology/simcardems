@@ -1,7 +1,6 @@
 import contextlib
 import os
 import warnings
-from collections import namedtuple
 from pathlib import Path
 
 import dolfin
@@ -18,10 +17,6 @@ from . import utils
 from .ORdmm_Land import vs_functions_to_dict
 
 logger = utils.getLogger(__name__)
-EMState = namedtuple(
-    "EMState",
-    ["coupling", "solver", "mech_heart", "t0"],
-)
 
 
 @contextlib.contextmanager
@@ -237,7 +232,7 @@ def load_state(
     )
     mech_heart.state.assign(mech_state)
 
-    return EMState(
+    return em_model.EMState(
         coupling=coupling,
         solver=solver,
         mech_heart=mech_heart,

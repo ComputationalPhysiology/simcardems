@@ -1,7 +1,8 @@
 import dolfin
-from simcardems.geometry import BaseGeometry
 
+from . import geometry
 from . import utils
+
 
 logger = utils.getLogger(__name__)
 
@@ -9,7 +10,7 @@ logger = utils.getLogger(__name__)
 class EMCoupling:
     def __init__(
         self,
-        geometry: BaseGeometry,
+        geometry: geometry.BaseGeometry,
         lmbda_mech=dolfin.Constant(1.0),
         Zetas_mech=dolfin.Constant(0.0),
         Zetaw_mech=dolfin.Constant(0.0),
