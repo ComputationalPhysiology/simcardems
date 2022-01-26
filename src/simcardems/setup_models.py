@@ -1,16 +1,20 @@
 import logging
 import typing
 from collections import namedtuple
+from pathlib import Path
 
 import cbcbeat
 import dolfin
 import pulse
+from tqdm import tqdm
 
 from . import em_model
 from . import ep_model
 from . import geometry
 from . import mechanics_model
+from . import save_load_functions as io
 from . import utils
+from .datacollector import DataCollector
 from .ORdmm_Land import ORdmm_Land as CellModel
 
 logger = utils.getLogger(__name__)
@@ -267,3 +271,215 @@ def setup_ep_solver(
     logger.info("EP model")
     utils.print_mesh_info(coupling.ep_mesh, total_dofs)
     return solver
+
+
+class Runner:
+    def __init__(
+        self,
+        outdir: utils.PathLike,
+        dx: float = Defaults.dx,
+        dt: float = Defaults.dt,
+        cell_init_file: utils.PathLike = Defaults.cell_init_file,
+        lx: float = Defaults.lx,
+        ly: float = Defaults.ly,
+        lz: float = Defaults.lz,
+        pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
+        traction: typing.Union[dolfin.Constant, float] = None,
+        spring: typing.Union[dolfin.Constant, float] = None,
+        fix_right_plane: bool = True,
+        num_refinements: int = Defaults.num_refinements,
+        set_material: str = Defaults.set_material,
+        bnd_cond: mechanics_model.BoundaryConditions = Defaults.bnd_cond,
+        drug_factors_file: str = Defaults.drug_factors_file,
+        popu_factors_file: str = Defaults.popu_factors_file,
+        disease_state: str = Defaults.disease_state,
+        reset: bool = True,
+    ) -> None:
+
+        self._state_path = Path(outdir).joinpath("state.h5")
+
+        if not reset and self._state_path.is_file():
+            # Load state
+            logger.info("Load previously saved state")
+            with dolfin.Timer("[demo] Load previously saved state"):
+                (
+                    self.coupling,
+                    self.ep_solver,
+                    self.mech_heart,
+                    self._t0,
+                ) = io.load_state(
+                    self._state_path,
+                    drug_factors_file,
+                    popu_factors_file,
+                    disease_state,
+                )
+        else:
+            logger.info("Create a new state")
+            # Create a new state
+            (
+                self.coupling,
+                self.ep_solver,
+                self.mech_heart,
+                self._t0,
+            ) = setup_EM_model(
+                dx=dx,
+                dt=dt,
+                bnd_cond=bnd_cond,
+                cell_init_file=cell_init_file,
+                lx=lx,
+                ly=ly,
+                lz=lz,
+                pre_stretch=pre_stretch,
+                spring=spring,
+                traction=traction,
+                fix_right_plane=fix_right_plane,
+                num_refinements=num_refinements,
+                set_material=set_material,
+                drug_factors_file=drug_factors_file,
+                popu_factors_file=popu_factors_file,
+                disease_state=disease_state,
+            )
+
+        self._dt = dt
+        self._bnd_cond = bnd_cond
+        self._outdir = outdir
+        self._setup_assigners()
+        self._setup_datacollector(reset=reset)
+
+        logger.info(f"Starting at t0={self._t0}")
+
+    def _setup_assigners(self):
+        self._vs = self.ep_solver.solution_fields()[1]
+        self._v, self._v_assigner = utils.setup_assigner(self._vs, 0)
+        self._Ca, self._Ca_assigner = utils.setup_assigner(self._vs, 45)
+
+        self._pre_XS, self._preXS_assigner = utils.setup_assigner(self._vs, 40)
+        self._pre_XW, self._preXW_assigner = utils.setup_assigner(self._vs, 41)
+
+        self._u_subspace_index = 1 if self._bnd_cond == "rigid" else 0
+        self._u, self._u_assigner = utils.setup_assigner(
+            self.mech_heart.state,
+            self._u_subspace_index,
+        )
+        self._assign_displacement()
+
+    def _assign_displacement(self):
+        self._u_assigner.assign(
+            self._u,
+            self.mech_heart.state.sub(self._u_subspace_index),
+        )
+
+    def _assign_ep(self):
+        self._v_assigner.assign(self._v, utils.sub_function(self._vs, 0))
+        self._Ca_assigner.assign(self._Ca, utils.sub_function(self._vs, 45))
+
+    def store(self, t0):
+        # Assign u, v and Ca for postprocessing
+        self._assign_displacement()
+        self._assign_ep()
+        self.collector.store(t0)
+
+    def _setup_datacollector(self, reset: bool = True):
+
+        self.collector = DataCollector(
+            self._outdir,
+            self.coupling.mech_mesh,
+            self.coupling.ep_mesh,
+            reset_state=reset,
+        )
+        for group, name, f in [
+            ("mechanics", "u", self._u),
+            ("ep", "V", self._v),
+            ("ep", "Ca", self._Ca),
+            ("mechanics", "lmbda", self.coupling.lmbda_mech),
+            ("mechanics", "Ta", self.mech_heart.material.active.Ta_current),
+        ]:
+            self.collector.register(group, name, f)
+
+    def _solve_mechanics_now(self) -> bool:
+
+        # Update these states that are needed in the Mechanics solver
+        self.coupling.update_mechanics()
+
+        XS_norm = utils.compute_norm(self.coupling.XS_ep, self._pre_XS)
+        XW_norm = utils.compute_norm(self.coupling.XW_ep, self._pre_XW)
+
+        return XS_norm + XW_norm >= 0.1
+
+    def _pre_mechanics_solve(self) -> None:
+        self._preXS_assigner.assign(self._pre_XS, utils.sub_function(self._vs, 40))
+        self._preXW_assigner.assign(self._pre_XW, utils.sub_function(self._vs, 41))
+
+        self.coupling.interpolate_mechanics()
+
+    def _post_mechanics_solve(self) -> None:
+        self.coupling.interpolate_ep()
+        # Update previous active tension
+        self.mech_heart.material.active.update_prev()
+        self.coupling.update_ep()
+
+    def _solve_mechanics(self):
+        self._pre_mechanics_solve()
+        self.mech_heart.solve()
+        self._post_mechanics_solve()
+
+    def solve(
+        self,
+        T: float = Defaults.T,
+        save_freq: int = Defaults.save_freq,
+        hpc: bool = Defaults.hpc,
+    ):
+
+        save_it = int(save_freq / self._dt)
+        pbar = create_progressbar(t0=self._t0, T=T, dt=self._dt, hpc=hpc)
+
+        for (i, (t0, t1)) in enumerate(pbar):
+
+            logger.debug(f"Solve EP model at step {i} from {t0} to {t1}")
+
+            # Solve EP model
+            self.ep_solver.step((t0, t1))
+
+            if self._solve_mechanics_now():
+                self._solve_mechanics()
+
+            self.ep_solver.vs_.assign(self.ep_solver.vs)
+            # Store every 'save_freq' ms
+            if i % save_it == 0:
+                self.store(t0)
+
+        io.save_state(
+            self._state_path,
+            solver=self.ep_solver,
+            mech_heart=self.mech_heart,
+            coupling=self.coupling,
+            dt=self._dt,
+            bnd_cond=self._bnd_cond,
+            t0=t0,
+        )
+
+
+class _tqdm:
+    def __init__(self, iterable, *args, **kwargs):
+        self._iterable = iterable
+
+    def set_postfix(self, msg):
+        pass
+
+    def __iter__(self):
+        return iter(self._iterable)
+
+
+def create_progressbar(
+    t0: float = 0,
+    T: float = Defaults.T,
+    dt: float = Defaults.dt,
+    hpc: bool = Defaults.hpc,
+):
+    time_stepper = cbcbeat.utils.TimeStepper((t0, T), dt, annotate=False)
+    if hpc:
+        # Turn off progressbar
+        pbar = _tqdm(time_stepper, total=round((T - t0) / dt))
+    else:
+        pbar = tqdm(time_stepper, total=round((T - t0) / dt))
+    return pbar
