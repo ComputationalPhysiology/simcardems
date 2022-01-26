@@ -1,6 +1,6 @@
 import dolfin
 
-from . import geometry
+from . import geometry as _geometry
 from . import utils
 
 
@@ -10,7 +10,7 @@ logger = utils.getLogger(__name__)
 class EMCoupling:
     def __init__(
         self,
-        geometry: geometry.BaseGeometry,
+        geometry: _geometry.BaseGeometry,
         lmbda_mech=dolfin.Constant(1.0),
         Zetas_mech=dolfin.Constant(0.0),
         Zetaw_mech=dolfin.Constant(0.0),
