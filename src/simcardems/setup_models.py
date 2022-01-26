@@ -300,27 +300,16 @@ class Runner:
         if not reset and self._state_path.is_file():
             # Load state
             logger.info("Load previously saved state")
-            with dolfin.Timer("[demo] Load previously saved state"):
-                (
-                    self.coupling,
-                    self.ep_solver,
-                    self.mech_heart,
-                    self._t0,
-                ) = io.load_state(
-                    self._state_path,
-                    drug_factors_file,
-                    popu_factors_file,
-                    disease_state,
-                )
+            coupling, ep_solver, mech_heart, t0 = io.load_state(
+                self._state_path,
+                drug_factors_file,
+                popu_factors_file,
+                disease_state,
+            )
         else:
             logger.info("Create a new state")
             # Create a new state
-            (
-                self.coupling,
-                self.ep_solver,
-                self.mech_heart,
-                self._t0,
-            ) = setup_EM_model(
+            coupling, ep_solver, mech_heart, t0 = setup_EM_model(
                 dx=dx,
                 dt=dt,
                 bnd_cond=bnd_cond,
@@ -338,6 +327,11 @@ class Runner:
                 popu_factors_file=popu_factors_file,
                 disease_state=disease_state,
             )
+
+        self.coupling: em_model.EMCoupling = coupling
+        self.ep_solver: cbcbeat.SplittingSolver = ep_solver
+        self.mech_heart: mechanics_model.MechanicsProblem = mech_heart
+        self._t0: float = t0
 
         self._dt = dt
         self._bnd_cond = bnd_cond
@@ -372,11 +366,11 @@ class Runner:
         self._v_assigner.assign(self._v, utils.sub_function(self._vs, 0))
         self._Ca_assigner.assign(self._Ca, utils.sub_function(self._vs, 45))
 
-    def store(self, t0):
+    def store(self):
         # Assign u, v and Ca for postprocessing
         self._assign_displacement()
         self._assign_ep()
-        self.collector.store(t0)
+        self.collector.store(self._t)
 
     def _setup_datacollector(self, reset: bool = True):
         from .datacollector import DataCollector
@@ -433,12 +427,12 @@ class Runner:
         save_it = int(save_freq / self._dt)
         pbar = create_progressbar(t0=self._t0, T=T, dt=self._dt, hpc=hpc)
 
-        for (i, (t0, t1)) in enumerate(pbar):
+        for (i, (self._t, t1)) in enumerate(pbar):
 
-            logger.debug(f"Solve EP model at step {i} from {t0} to {t1}")
+            logger.debug(f"Solve EP model at step {i} from {self._t} to {t1}")
 
             # Solve EP model
-            self.ep_solver.step((t0, t1))
+            self.ep_solver.step((self._t, t1))
 
             if self._solve_mechanics_now():
                 self._solve_mechanics()
@@ -446,7 +440,7 @@ class Runner:
             self.ep_solver.vs_.assign(self.ep_solver.vs)
             # Store every 'save_freq' ms
             if i % save_it == 0:
-                self.store(t0)
+                self.store()
 
         io.save_state(
             self._state_path,
@@ -455,7 +449,7 @@ class Runner:
             coupling=self.coupling,
             dt=self._dt,
             bnd_cond=self._bnd_cond,
-            t0=t0,
+            t0=self._t,
         )
 
 
