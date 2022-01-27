@@ -98,7 +98,7 @@ bump-patch:  ## Bump patch version
 	bump2version patch
 
 bump-minor: ## Bump minor version
-	bump2version patch
+	bump2version minor
 
 bump-major: ## Bump major version
-	bump2version patch
+	bump2version major

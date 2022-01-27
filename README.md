@@ -8,11 +8,11 @@
 
 ## Installation
 
-See [Installation instructions](docs/source/install.md)
+See [Installation instructions](https://computationalphysiology.github.io/simcardems/install.html)
 
 ## Getting started
 
-See [Quickstart guide](docs/source/quickstart.md)
+See [the demos](https://computationalphysiology.github.io/simcardems/demo.html)
 
 ## Documentation
 
@@ -43,7 +43,7 @@ python3 -m pytest tests -vv
 ```
 
 ## Contributing
-See [CONTRIBUTING.md](CONTRIBUTING.md)
+See [the contributing section](https://computationalphysiology.github.io/simcardems/CONTRIBUTING.html)
 
 
 ## Known issues
