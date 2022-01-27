@@ -267,6 +267,9 @@ def postprocess(folder, num_models, plot_state_traces, population):
 
 @click.command("gui")
 def gui():
+    # Make sure we can import the required packages
+    from . import gui  # noqa: F401
+
     gui_path = Path(__file__).parent.joinpath("gui.py")
     import subprocess as sp
 
