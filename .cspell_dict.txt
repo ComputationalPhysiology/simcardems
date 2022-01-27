@@ -44,6 +44,7 @@ Cd
 Cécile
 celltype
 cmdnmax
+codecov
 conda
 Cristobal
 csqnmax
@@ -88,6 +89,7 @@ fcafp
 fcap
 fcas
 fcass
+fenics
 ff
 ffast
 ffp
@@ -239,6 +241,7 @@ petsc
 phi
 Piola
 PKNa
+plotly
 PNab
 Pnak
 popu
@@ -309,7 +312,9 @@ silico
 simcardems
 Simcardio
 Simula
+streamlit
 sundnes
+superlu
 T
 tfcaf
 tfcafp
@@ -373,7 +378,3 @@ Zetaw
 zk
 zmax
 zmin
-fenics
-plotly
-streamlit
-superlu

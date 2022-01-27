@@ -1,5 +1,10 @@
 [![CI](https://github.com/ComputationalPhysiology/simcardems/actions/workflows/main.yml/badge.svg)](https://github.com/ComputationalPhysiology/simcardems/actions/workflows/main.yml)
 [![PyPI version](https://badge.fury.io/py/simcardems.svg)](https://badge.fury.io/py/simcardems)
+[![codecov](https://codecov.io/gh/ComputationalPhysiology/simcardems/branch/master/graph/badge.svg?token=V5DOQ1PUVF)](https://codecov.io/gh/ComputationalPhysiology/simcardems)
+[![github pages](https://github.com/ComputationalPhysiology/simcardems/actions/workflows/github-pages.yml/badge.svg)](https://github.com/ComputationalPhysiology/simcardems/actions/workflows/github-pages.yml)
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/ComputationalPhysiology/simcardems/master.svg)](https://results.pre-commit.ci/latest/github/ComputationalPhysiology/simcardems/master)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 # Simula Cardiac Electro-Mechanics Solver
 
