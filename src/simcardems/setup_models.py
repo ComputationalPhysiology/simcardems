@@ -293,6 +293,7 @@ class Runner:
         popu_factors_file: str = Defaults.popu_factors_file,
         disease_state: str = Defaults.disease_state,
         reset: bool = True,
+        **kwargs,
     ) -> None:
 
         self._state_path = Path(outdir).joinpath("state.h5")

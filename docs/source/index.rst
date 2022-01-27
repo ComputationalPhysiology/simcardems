@@ -23,12 +23,9 @@ Content
    :maxdepth: 1
 
    install
-   motivation
-   quickstart
-   mechanics_model
-   electrophysiology_model
-   cell_model
-   electro_mechanical_coupling
+   theory
+   demo
+   CONTRIBUTING
 
 License
 -------
