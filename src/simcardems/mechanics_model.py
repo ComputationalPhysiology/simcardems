@@ -178,12 +178,16 @@ class LandModel(pulse.ActiveModel):
 
 
 class MechanicsProblem(pulse.MechanicsProblem):
+    boundary_condition = BoundaryConditions.dirichlet
+
     def solve(self):
         self._init_forms()
         return super().solve()
 
 
 class RigidMotionProblem(MechanicsProblem):
+    boundary_condition = BoundaryConditions.rigid
+
     def _init_spaces(self):
 
         mesh = self.geometry.mesh

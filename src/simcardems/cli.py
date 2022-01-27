@@ -265,6 +265,15 @@ def postprocess(folder, num_models, plot_state_traces, population):
         post.save_popu_json(folder, num_models)
 
 
+@click.command("gui")
+def gui():
+    gui_path = Path(__file__).parent.joinpath("gui.py")
+    import subprocess as sp
+
+    sp.run(["streamlit", "run", gui_path.as_posix()])
+
+
 cli.add_command(run)
 cli.add_command(run_json)
 cli.add_command(postprocess)
+cli.add_command(gui)

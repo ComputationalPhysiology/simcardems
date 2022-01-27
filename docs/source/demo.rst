@@ -13,3 +13,4 @@ Content
    cli
    docker
    release_test
+   gui

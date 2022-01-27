@@ -373,3 +373,7 @@ Zetaw
 zk
 zmax
 zmin
+fenics
+plotly
+streamlit
+superlu

@@ -275,7 +275,7 @@ def setup_ep_solver(
 class Runner:
     def __init__(
         self,
-        outdir: utils.PathLike,
+        outdir: utils.PathLike = Defaults.outdir,
         dx: float = Defaults.dx,
         dt: float = Defaults.dt,
         cell_init_file: utils.PathLike = Defaults.cell_init_file,
@@ -293,8 +293,12 @@ class Runner:
         popu_factors_file: str = Defaults.popu_factors_file,
         disease_state: str = Defaults.disease_state,
         reset: bool = True,
+        empty: bool = False,
         **kwargs,
     ) -> None:
+
+        if empty:
+            return
 
         self._state_path = Path(outdir).joinpath("state.h5")
 
@@ -334,13 +338,45 @@ class Runner:
         self.mech_heart: mechanics_model.MechanicsProblem = mech_heart
         self._t0: float = t0
 
+        self._reset = reset
         self._dt = dt
         self._bnd_cond = bnd_cond
-        self._outdir = outdir
+
         self._setup_assigners()
-        self._setup_datacollector(reset=reset)
+        self.outdir = outdir
 
         logger.info(f"Starting at t0={self._t0}")
+
+    @property
+    def outdir(self):
+        return self._outdir
+
+    @outdir.setter
+    def outdir(self, outdir):
+        self._outdir = outdir
+        self._state_path = Path(outdir).joinpath("state.h5")
+        self._setup_datacollector()
+
+    @classmethod
+    def from_models(
+        cls,
+        coupling: em_model.EMCoupling,
+        ep_solver: cbcbeat.SplittingSolver,
+        mech_heart: mechanics_model.MechanicsProblem,
+        reset: bool = True,
+        t0: float = 0,
+    ):
+        obj = cls(empty=True)
+        obj.coupling = coupling
+        obj.ep_solver = ep_solver
+        obj.mech_heart = mech_heart
+        obj._t0 = t0
+
+        obj._reset = reset
+        obj._dt = ep_solver.parameters["MonodomainSolver"]["default_timestep"]
+        obj._bnd_cond = mech_heart.boundary_condition
+        obj._setup_assigners()
+        return obj
 
     def _setup_assigners(self):
         self._vs = self.ep_solver.solution_fields()[1]
@@ -373,14 +409,14 @@ class Runner:
         self._assign_ep()
         self.collector.store(self._t)
 
-    def _setup_datacollector(self, reset: bool = True):
+    def _setup_datacollector(self):
         from .datacollector import DataCollector
 
         self.collector = DataCollector(
             self._outdir,
             self.coupling.mech_mesh,
             self.coupling.ep_mesh,
-            reset_state=reset,
+            reset_state=self._reset,
         )
         for group, name, f in [
             ("mechanics", "u", self._u),
@@ -424,6 +460,8 @@ class Runner:
         save_freq: int = Defaults.save_freq,
         hpc: bool = Defaults.hpc,
     ):
+        if not hasattr(self, "_outdir"):
+            raise RuntimeError("Please set the output directory")
 
         save_it = int(save_freq / self._dt)
         pbar = create_progressbar(t0=self._t0, T=T, dt=self._dt, hpc=hpc)
