@@ -25,21 +25,21 @@ bibliography: paper.bib
 
 # Summary
 
-Modeling and simulations can help us to develop better understanding of the physiology and pathophysiology of the heart. It is especially challenging to study interactions across different scales, since of this tight coupling between several mechanisms. One example of this is in the modeling the effect of drugs. A drug might block an ion channel in the cell, causing a change in the flow of ions in and out of the cell. Understanding how this effect propagates to the organ level and affects the electrophysiology and mechanics of the heart is key.
+Modeling and simulations can help us to develop better understanding of the physiology and pathophysiology of the heart. It is especially challenging to study interactions across different scales, since of the tight coupling between several mechanisms. One example of this is in the modeling of the effect of drugs. A drug might block an ion channel in the cell, causing a change in the flow of ions in and out of the cell. Understanding how this effect propagates to the organ level and affects the electrophysiology and mechanics of the heart is key to understand if a drug is safe.
 
 An electromechanics solver contains a model that couples the models at the cellular level to the models at the tissue level, i.e a monodomain model for the electrophysiology and a hyperelastic continuum model for the mechanics.
 
-The availability of software for performing fully coupled cardiac electro-mechanics is currently limited, but the ones that exist are typically written in a low-level language such as C[@arens2018gems] or C++[@Cooper2020]. The SIMula CARDiac Electro Mechanics Solver, abbreviated `simcardems`, fuses the functionality from `pulse`[@finsberg2019pulse] and `cbcbeat`[@rognes2017cbcbeat] which are both based on the open source finite element framework FEniCS[@logg2012automated]. The implementation and user interface is written in python which makes it more applicable for a wide range of scientistic which are not necessarily expert programmers. Furthermore, since FEniCS utilizes just-in-time compilation to compile the code into highly efficient C++ code, that also support high performance compting ar
+The availability of software for performing fully coupled cardiac electro-mechanics is currently limited, but the ones that exist are typically written in a low-level language such as C[@arens2018gems] or C++[@Cooper2020]. The SIMula CARDiac Electro Mechanics Solver, abbreviated `simcardems`, fuses the functionality from `pulse`[@finsberg2019pulse] and `cbcbeat`[@rognes2017cbcbeat] which are both based on the open source finite element framework FEniCS[@logg2012automated]. The implementation and user interface is written in python which makes it more applicable for a wide range of scientistic which are not necessarily expert programmers. Furthermore, FEniCS utilizes just-in-time compilation to compile the code into highly efficient C++ code, so that it doesn't suffer from poor performance. FEniCS also work well on high performance compting cluster which enable even more realistic simulations.
 
-A command line interface is available for running quick simulations using pre-defined options. For more fine-tuned control the user can use the python API.
+We developed a command line interface and a graphical user interface for running quick simulations using pre-defined options. For more fine-tuned control the user can use the python API.
 
 # Statement of need
 
-`simcardems` is Python package for performing cardiac electro-mechanics simulations. The package is developed at Simula Research Laboratory as part of the SimCardioTest project. One of the aims of the SimCardioTest project is develop a framework for using in-silico models to simulate the efficacy and safety of drugs.
+`simcardems` is python package for performing cardiac electro-mechanics simulations. The package is developed at Simula Research Laboratory as part of the SimCardioTest project. One of the aims of the SimCardioTest project is develop a framework for using in-silico models to simulate the efficacy and safety of drugs.
 
-The `simcardems` software enables simulation of drugs response in hearth through a multi-scale model of the heart. Drugs work in a way such that they block or stimulate different receptors in the underlying cell model which can be modeled by changes in the model parameters. The effect of the drugs at the organ level can thereby be modeled using this software.
+The `simcardems` software enables simulation of drugs response of hearth tissue through a multi-scale modeling framework.
 
-Even though the purpose of the project is to study the drug effects, the software can be used to study cardiac electro-mechanics in general. `simcardems` is therefore also a great tool to use for learning about cardiac electro-mechanics
+Even though the purpose of the project is to study drug effects, this software can be used to study cardiac electro-mechanics in general. `simcardems` is therefore also a great tool to use for learning about cardiac electro-mechanics
 
 
 # Acknowledgements
