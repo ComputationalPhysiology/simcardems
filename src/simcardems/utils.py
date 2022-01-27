@@ -1,8 +1,12 @@
 import logging
+import os
+import typing
 from pathlib import Path
 
 import dolfin
 import ufl
+
+PathLike = typing.Union[os.PathLike, str]
 
 
 class MPIFilt(logging.Filter):

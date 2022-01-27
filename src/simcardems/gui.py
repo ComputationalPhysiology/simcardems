@@ -19,7 +19,6 @@ import matplotlib.pyplot as plt
 import simcardems
 
 import pulse
-import cbcbeat
 import hashlib
 
 simcardems_folder = Path.home().joinpath("simcardems")
@@ -127,7 +126,7 @@ def postprocess():
         format_func=lambda x: "Select an option" if x == "" else x,
     )
     if outdir == "":
-        st.info("Please select a result diretcory")
+        st.info("Please select a result directory")
         return
 
     outdir = Path(outdir)
@@ -160,21 +159,21 @@ class Simulation:
     @staticmethod
     def handle_mesh():
         st.header("Mesh")
-        cols_lxyz = st.columns(3)
-        with cols_lxyz[0]:
-            lx = st.number_input("lx", value=simcardems.cli._Defaults.lx)
-        with cols_lxyz[1]:
-            ly = st.number_input("ly", value=simcardems.cli._Defaults.ly)
-        with cols_lxyz[2]:
-            lz = st.number_input("lz", value=simcardems.cli._Defaults.lz)
+        cols_l_xyz = st.columns(3)
+        with cols_l_xyz[0]:
+            lx = st.number_input("lx", value=simcardems.setup_models.Defaults.lx)
+        with cols_l_xyz[1]:
+            ly = st.number_input("ly", value=simcardems.setup_models.Defaults.ly)
+        with cols_l_xyz[2]:
+            lz = st.number_input("lz", value=simcardems.setup_models.Defaults.lz)
 
-        cols_dxref = st.columns(2)
-        with cols_dxref[0]:
-            dx = st.number_input("dx", value=simcardems.cli._Defaults.dx)
-        with cols_dxref[1]:
+        cols_dx_ref = st.columns(2)
+        with cols_dx_ref[0]:
+            dx = st.number_input("dx", value=simcardems.setup_models.Defaults.dx)
+        with cols_dx_ref[1]:
             num_refinements = st.number_input(
                 "num_refinements",
-                value=simcardems.cli._Defaults.num_refinements,
+                value=simcardems.setup_models.Defaults.num_refinements,
             )
 
         return {
@@ -193,7 +192,7 @@ class Simulation:
         with cols_ep[0]:
             dt = st.number_input(
                 "dt",
-                value=simcardems.cli._Defaults.dt,
+                value=simcardems.setup_models.Defaults.dt,
                 help="Time step for EP solver",
             )
         with cols_ep[1]:
@@ -218,7 +217,7 @@ class Simulation:
             )
         with cols_files[2]:
             popu_factors_file = st.file_uploader(
-                "Poulation factors",
+                "Population factors",
                 type="json",
                 help="File with population factors",
             )
@@ -273,19 +272,25 @@ class Simulation:
         st.info("Create EM coupling")
         coupling = simcardems.EMCoupling(geometry)
         st.info("Create EP model")
-        solver = simcardems.ep_model.setup_solver(coupling=coupling, **ep_solver_args)
-        coupling.register_ep_model(solver)
+        ep_solver = simcardems.setup_models.setup_ep_solver(
+            coupling=coupling, **ep_solver_args
+        )
+        coupling.register_ep_model(ep_solver)
         st.info("Create Mechanics model")
         mech_heart: pulse.MechanicsProblem = (
-            simcardems.mechanics_model.setup_mechanics_model(
+            simcardems.setup_models.setup_mechanics_solver(
                 coupling=coupling,
-                cell_params=solver.ode_solver._model.parameters(),
+                cell_params=ep_solver.ode_solver._model.parameters(),
                 linear_solver="superlu_dist",
                 **mechanics_args,
             )
         )
         st.success("Done loading model")
-        return coupling, solver, mech_heart
+        return simcardems.Runner.from_models(
+            coupling=coupling,
+            ep_solver=ep_solver,
+            mech_heart=mech_heart,
+        )
 
     @staticmethod
     def visualize_model(
@@ -310,12 +315,16 @@ class Simulation:
 
         cols_run = st.columns(3)
         with cols_run[0]:
-            T = st.number_input("T", value=simcardems.cli._Defaults.T, help="End time")
+            T = st.number_input(
+                "T",
+                value=simcardems.setup_models.Defaults.T,
+                help="End time",
+            )
 
         with cols_run[1]:
             save_freq = st.number_input(
                 "Save frequency",
-                value=simcardems.cli._Defaults.save_freq,
+                value=simcardems.setup_models.Defaults.save_freq,
                 help="How often to save the results",
             )
 
@@ -338,99 +347,6 @@ class Simulation:
             st.info(f"Directory '{outdir}' allready exist")
         return T, save_freq, outdir
 
-    @staticmethod
-    def run(
-        coupling,
-        mech_heart,
-        solver,
-        mechanics_args,
-        ep_solver_args,
-        T,
-        save_freq,
-        outdir,
-    ):
-        vs = solver.solution_fields()[1]
-        v, v_assigner = simcardems.utils.setup_assigner(vs, 0)
-        Ca, Ca_assigner = simcardems.utils.setup_assigner(vs, 45)
-
-        pre_XS, preXS_assigner = simcardems.utils.setup_assigner(vs, 40)
-        pre_XW, preXW_assigner = simcardems.utils.setup_assigner(vs, 41)
-        u_subspace_index = 1 if mechanics_args["bnd_cond"] == "rigid" else 0
-        u, u_assigner = simcardems.utils.setup_assigner(
-            mech_heart.state,
-            u_subspace_index,
-        )
-        u_assigner.assign(u, mech_heart.state.sub(u_subspace_index))
-
-        collector = simcardems.DataCollector(
-            outdir,
-            coupling.mech_mesh,
-            coupling.ep_mesh,
-            reset_state=True,
-        )
-        for group, name, f in [
-            ("mechanics", "u", u),
-            ("ep", "V", v),
-            ("ep", "Ca", Ca),
-            ("mechanics", "lmbda", coupling.lmbda_mech),
-            ("mechanics", "Ta", mech_heart.material.active.Ta_current),
-        ]:
-            collector.register(group, name, f)
-
-        state_path = outdir.joinpath("state.h5")
-        t0 = 0
-        dt = ep_solver_args["dt"]
-        time_stepper = cbcbeat.utils.TimeStepper((t0, T), dt, annotate=False)
-        save_it = int(save_freq / dt)
-
-        mech_heart.solve()
-
-        my_bar = st.progress(0)
-        total = round((T - t0) / dt)
-
-        for (i, (t0, t1)) in enumerate(time_stepper):
-            my_bar.progress((i + 1) / total)
-            # Solve EP model
-            solver.step((t0, t1))
-            # Update these states that are needed in the Mechanics solver
-            coupling.update_mechanics()
-            XS_norm = simcardems.utils.compute_norm(coupling.XS_ep, pre_XS)
-            XW_norm = simcardems.utils.compute_norm(coupling.XW_ep, pre_XW)
-
-            if XS_norm + XW_norm >= 0.1:
-
-                preXS_assigner.assign(pre_XS, simcardems.utils.sub_function(vs, 40))
-                preXW_assigner.assign(pre_XW, simcardems.utils.sub_function(vs, 41))
-
-                coupling.interpolate_mechanics()
-
-                # Solve the Mechanics model
-                mech_heart.solve()
-                coupling.interpolate_ep()
-                # Update previous
-                mech_heart.material.active.update_prev()
-                coupling.update_ep()
-
-            solver.vs_.assign(solver.vs)
-            # # Store every 'save_freq' ms
-            if i % save_it == 0:
-                # Assign u, v and Ca for postprocessing
-                v_assigner.assign(v, simcardems.utils.sub_function(vs, 0))
-                Ca_assigner.assign(Ca, simcardems.utils.sub_function(vs, 45))
-                u_assigner.assign(u, mech_heart.state.sub(u_subspace_index))
-                collector.store(t0)
-
-        simcardems.save_load_functions.save_state(
-            state_path,
-            solver=solver,
-            mech_heart=mech_heart,
-            coupling=coupling,
-            dt=dt,
-            bnd_cond=mechanics_args["bnd_cond"],
-            t0=t0,
-        )
-        st.success("Done!")
-
 
 def simulation():
     st.title("Simulation")
@@ -443,12 +359,12 @@ def simulation():
     if not load_model:
         return
 
-    coupling, ep_solver, mech_heart = Simulation.load_model(
+    runner: simcardems.Runner = Simulation.load_model(
         geometry_args=geometry_args,
         ep_solver_args=ep_solver_args,
         mechanics_args=mechanics_args,
     )
-    Simulation.visualize_model(coupling=coupling)
+    Simulation.visualize_model(coupling=runner.coupling)
 
     T, save_freq, outdir = Simulation.setup_simulation(
         geometry_args,
@@ -459,17 +375,9 @@ def simulation():
         return
 
     if st.button("Run simulation"):
-
-        Simulation.run(
-            coupling=coupling,
-            mech_heart=mech_heart,
-            solver=ep_solver,
-            T=T,
-            outdir=outdir,
-            save_freq=save_freq,
-            mechanics_args=mechanics_args,
-            ep_solver_args=ep_solver_args,
-        )
+        runner.outdir = outdir
+        runner.solve(T=T, save_freq=save_freq)
+        st.success("Done!")
 
     return
 

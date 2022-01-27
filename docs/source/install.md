@@ -26,9 +26,17 @@ cd simcardems
 python -m pip install .
 ```
 
+(section:docker-install)=
 ## Docker
 
-We also provide a Dockerfile that contain all the instructions for installing the software using docker. To use this, you need to first create docker image. You can do this by executing the following command in the root folder of the project
+`simcardems` is also available through [Docker](https://docs.docker.com/get-docker/). This is a good choice if you want to use `simcardems` in an isolated environment.
+
+We provide both a pre-built docker image which you can get by pulling from docker hub
+```
+docker pull simcardems
+```
+An alternative to pulling the image from docker hub, is to build it yourselves.
+We provide a Dockerfile in the root of the repo that contain all the instructions for building the docker image. You can do this by executing the following command in the root folder of the project
 
 ```
 docker build -t simcardems .

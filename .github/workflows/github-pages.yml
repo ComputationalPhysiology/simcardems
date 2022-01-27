@@ -20,11 +20,11 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sphinx-apidoc -o docs/source src/simcardems
-          cd docs && make html
+          python -m pip install -e ".[docs]"
 
       - name: Build docs
-        run: make docs
+        run: |
+          make docs
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
