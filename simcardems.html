@@ -274,7 +274,7 @@
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#simcardems-gui-module">
+  <a class="reference internal nav-link" href="#module-simcardems.gui">
    simcardems.gui module
   </a>
  </li>
@@ -605,8 +605,80 @@ membrane potential).</p>
 <dd></dd></dl>
 
 </div>
-<div class="section" id="simcardems-gui-module">
-<h2>simcardems.gui module<a class="headerlink" href="#simcardems-gui-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-simcardems.gui">
+<span id="simcardems-gui-module"></span><h2>simcardems.gui module<a class="headerlink" href="#module-simcardems.gui" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="simcardems.gui.Postprocess">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">simcardems.gui.</span></span><span class="sig-name descname"><span class="pre">Postprocess</span></span><a class="reference internal" href="_modules/simcardems/gui.html#Postprocess"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.gui.Postprocess" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="simcardems.gui.Postprocess.load_data">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outdir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/gui.html#Postprocess.load_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.gui.Postprocess.load_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simcardems.gui.Postprocess.make_figures">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">make_figures</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">times</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/gui.html#Postprocess.make_figures"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.gui.Postprocess.make_figures" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="simcardems.gui.Simulation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">simcardems.gui.</span></span><span class="sig-name descname"><span class="pre">Simulation</span></span><a class="reference internal" href="_modules/simcardems/gui.html#Simulation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.gui.Simulation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="simcardems.gui.Simulation.handle_ep_solver_args">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">handle_ep_solver_args</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/gui.html#Simulation.handle_ep_solver_args"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.gui.Simulation.handle_ep_solver_args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simcardems.gui.Simulation.handle_mechanics_args">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">handle_mechanics_args</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/gui.html#Simulation.handle_mechanics_args"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.gui.Simulation.handle_mechanics_args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simcardems.gui.Simulation.handle_mesh">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">handle_mesh</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/gui.html#Simulation.handle_mesh"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.gui.Simulation.handle_mesh" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simcardems.gui.Simulation.load_model">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geometry_args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ep_solver_args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mechanics_args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/gui.html#Simulation.load_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.gui.Simulation.load_model" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simcardems.gui.Simulation.plot_mesh">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">plot_mesh</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/gui.html#Simulation.plot_mesh"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.gui.Simulation.plot_mesh" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simcardems.gui.Simulation.setup_simulation">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">setup_simulation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geometry_args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ep_solver_args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mechanics_args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/gui.html#Simulation.setup_simulation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.gui.Simulation.setup_simulation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simcardems.gui.Simulation.visualize_model">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">visualize_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coupling</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/gui.html#Simulation.visualize_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.gui.Simulation.visualize_model" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="simcardems.gui.about">
+<span class="sig-prename descclassname"><span class="pre">simcardems.gui.</span></span><span class="sig-name descname"><span class="pre">about</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/gui.html#about"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.gui.about" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="simcardems.gui.postprocess">
+<span class="sig-prename descclassname"><span class="pre">simcardems.gui.</span></span><span class="sig-name descname"><span class="pre">postprocess</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/gui.html#postprocess"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.gui.postprocess" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="simcardems.gui.simulation">
+<span class="sig-prename descclassname"><span class="pre">simcardems.gui.</span></span><span class="sig-name descname"><span class="pre">simulation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/gui.html#simulation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.gui.simulation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </div>
 <div class="section" id="module-simcardems.mechanics_model">
 <span id="simcardems-mechanics-model-module"></span><h2>simcardems.mechanics_model module<a class="headerlink" href="#module-simcardems.mechanics_model" title="Permalink to this headline">¶</a></h2>
