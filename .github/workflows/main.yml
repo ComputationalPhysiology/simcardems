@@ -51,14 +51,14 @@ jobs:
 
       - name: Install pypa/build
         run: >-
-          python -m
+          python3 -m
           pip install
           build
           --user
 
       - name: Build a binary wheel and a source tarball
         run: >-
-          python -m
+          python3 -m
           build
           --sdist
           --wheel
