@@ -1,6 +1,6 @@
 # # Release test
 #
-# The release test is test to make sure that the coupling between the mechanics and the electrophysiology is implemented correctly.
+# The release test is a test to make sure that the coupling between the mechanics and the electrophysiology is implemented correctly.
 #
 # The idea is to apply a rapid length reduction of 1-2% during the middle o the activation. If the coupling is implemented correctly, this would make the active force $T_a$ drop to zero. If the coupling is not implemented correctly, the solver will most likely fail.
 #
@@ -29,7 +29,6 @@
 
 import logging
 from pathlib import Path
-
 import dolfin
 import pulse
 import simcardems
@@ -38,10 +37,9 @@ import simcardems
 
 pulse.set_log_level(logging.WARNING)
 
-
 # Next we create a new `Runner` by subclassing the `simcardems.Runner` class.
-# We also make this runner take in an argument `T_release` that will be the
-#
+# We also make this runner take in an argument `T_release` that will be the the time when we trigger the rapid length reduction. We also store the pre-stretch variable which is the variable we will change when applying the rapid length reduction.
+# Also, we can only do this on a slab type geometry so we add an extra test for that.
 
 
 class ReleaseRunner(simcardems.Runner):
@@ -50,7 +48,6 @@ class ReleaseRunner(simcardems.Runner):
         self.pre_stretch = kwargs.get("pre_stretch")
         assert self.pre_stretch is not None
         super().__init__(*args, **kwargs)
-
         # Make sure we have a SlabGeometry
         assert isinstance(self.coupling.geometry, simcardems.geometry.SlabGeometry)
         self.Lx = self.coupling.geometry.lx
@@ -62,12 +59,19 @@ class ReleaseRunner(simcardems.Runner):
         return super()._post_mechanics_solve()
 
 
+# The rapid length reduction is implemented as a part of the `_post_mechanics_solve` method which is an internal method of the `Runner` class that is called after the mechanics system is solved. Note that we also call the `_post_mechanics_solve` method of the parent class at the end (through `super`).
+# Now we can set up the main function
+
+
 def main(outdir: Path):
     T = 200
     T_release = 100
     pre_stretch = dolfin.Constant(0.1)
     runner = ReleaseRunner(outdir=outdir, T_release=T_release, pre_stretch=pre_stretch)
     runner.solve(T=T)
+
+
+# and a function for plotting the traces
 
 
 def postprocess(outdir: Path):
@@ -79,13 +83,12 @@ if __name__ == "__main__":
     main(outdir=outdir)
     postprocess(outdir=outdir)
 
-
 # In {numref}`Figure {number} <release_test_state_traces>` we see the resulting state traces, and can also see the instant drop in the active tension ($T_a$) at the time of the triggered release.
 #
 # ```{figure} figures/release_test_state_traces.png
 # ---
 # name: release_test_state_traces
 # ---
-#
 # Traces of the stretch ($\lambda$), the active tension ($T_a$), the membrane potential ($V$) and the intercellular calcium concentration ($Ca$) at the center of the geometry.
 # ```
+#

@@ -23,25 +23,9 @@ See [the demos](https://computationalphysiology.github.io/simcardems/demo.html)
 
 Documentation is hosted at http://computationalphysiology.github.io/simcardems.
 
-To build the documentation locally should should first install the documentation requirements
-```
-python -m pip install ".[docs]"
-```
-Then should should run the sphinx-apidoc command (from the root directory)
-```
-sphinx-apidoc -o docs/source src/simcardems
-```
-and finally build the html
-```
-cd docs
-make html
-```
-Now open `docs/build/html/index.html` to see the documentation.
-
-
 ## Automated test
 
-Tests are provided in the folder [tests](tests). You can run the tests with pytest
+Tests are provided in the folder [tests](https://github.com/ComputationalPhysiology/simcardems/tree/master/tests). You can run the tests with pytest
 
 ```
 python3 -m pytest tests -vv

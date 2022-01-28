@@ -78,6 +78,9 @@ docs: ## generate Sphinx HTML documentation, including API docs
 	jupytext demos/simple_demo.py -o docs/source/simple_demo.md
 	cd docs && make html
 
+show-docs:
+	open docs/build/html/index.html
+
 release: dist ## package and upload a release
 	python3 -m twine upload -u ${PYPI_USERNAME} -p ${PYPI_PASSWORD} dist/*
 

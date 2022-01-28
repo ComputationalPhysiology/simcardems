@@ -46,6 +46,16 @@ templates_path = ["_templates"]
 # This pattern also affects html_static_path and html_extra_path.
 # exclude_patterns = []
 
+html_theme_options = {
+    "toc_title": "simcardems",
+    "repository_url": "https://github.com/ComputationalPhysiology/simcardems",
+    "use_issues_button": True,
+    "use_repository_button": True,
+    "extra_navbar": '<a href="https://www.simula.no/research/projects/department-computational-physiology">Computational Physiology at Simula</a>',
+}
+
+html_logo = "logo.png"
+html_favicon = "favicon.ico"
 
 # -- Options for HTML output -------------------------------------------------
 
