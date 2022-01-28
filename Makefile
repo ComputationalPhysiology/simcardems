@@ -84,6 +84,9 @@ show-docs:
 release: dist ## package and upload a release
 	python3 -m twine upload -u ${PYPI_USERNAME} -p ${PYPI_PASSWORD} dist/*
 
+release-test: dist ## package and upload a release
+	python3 -m twine upload --repository testpypi -u ${TEST_PYPI_USERNAME} -p ${TEST_PYPI_PASSWORD} dist/*
+
 dist: clean ## builds source and wheel package
 	python -m build
 
