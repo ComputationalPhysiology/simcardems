@@ -34,6 +34,7 @@
     <script src="_static/sphinx-book-theme.12a9622fbb08dcb3a2a40b2c02b83a57.js"></script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Graphical user interface" href="gui.html" />
@@ -59,6 +60,11 @@
         <div class="navbar-brand-box">
     <a class="navbar-brand text-wrap" href="index.html">
       
+        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+        
+      
+      
+      <img src="_static/logo.png" class="logo" alt="logo">
       
       
       <h1 class="site-logo" id="site-title">simcardems  documentation</h1>
@@ -174,7 +180,7 @@
 </nav> <!-- To handle the deprecated key -->
 
 <div class="navbar_extra_footer">
-  Theme by the <a href="https://ebp.jupyterbook.org">Executable Book Project</a>
+  <a href="https://www.simula.no/research/projects/department-computational-physiology">Computational Physiology at Simula</a>
 </div>
 
 </div>
@@ -220,6 +226,22 @@
 
             <!-- Source interaction buttons -->
 
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
+    <div class="dropdown-buttons sourcebuttons">
+        <a class="repository-button"
+            href="https://github.com/ComputationalPhysiology/simcardems"><button type="button" class="btn btn-secondary topbarbtn"
+                data-toggle="tooltip" data-placement="left" title="Source repository"><i
+                    class="fab fa-github"></i>repository</button></a>
+        <a class="issues-button"
+            href="https://github.com/ComputationalPhysiology/simcardems/issues/new?title=Issue%20on%20page%20%2Frelease_test.html&body=Your%20issue%20content%20here."><button
+                type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
+                title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
+        
+    </div>
+</div>
+
             <!-- Full screen (wrap in <a> to have style consistency -->
 
 <a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
@@ -245,7 +267,7 @@
   <!-- #region -->
 <div class="tex2jax_ignore mathjax_ignore section" id="release-test">
 <h1>Release test<a class="headerlink" href="#release-test" title="Permalink to this headline">¶</a></h1>
-<p>The release test is test to make sure that the coupling between the mechanics and the electrophysiology is implemented correctly.</p>
+<p>The release test is a test to make sure that the coupling between the mechanics and the electrophysiology is implemented correctly.</p>
 <p>The idea is to apply a rapid length reduction of 1-2% during the middle o the activation. If the coupling is implemented correctly, this would make the active force <span class="math notranslate nohighlight">\(T_a\)</span> drop to zero. If the coupling is not implemented correctly, the solver will most likely fail.</p>
 <p>We can simulate a rapid length reduction by fixing one side of the slab, and control the position of the opposite side through a varying dirichlet boundary condition, i.e</p>
 <div class="math notranslate nohighlight">
@@ -264,9 +286,7 @@
 <!-- #endregion -->
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">dolfin</span>
+<span class="kn">import</span> <span class="nn">dolfin</span>
 <span class="kn">import</span> <span class="nn">pulse</span>
 <span class="kn">import</span> <span class="nn">simcardems</span>
 </pre></div>
@@ -276,14 +296,14 @@
 </pre></div>
 </div>
 <p>Next we create a new <code class="docutils literal notranslate"><span class="pre">Runner</span></code> by subclassing the <code class="docutils literal notranslate"><span class="pre">simcardems.Runner</span></code> class.
-We also make this runner take in an argument <code class="docutils literal notranslate"><span class="pre">T_release</span></code> that will be the</p>
+We also make this runner take in an argument <code class="docutils literal notranslate"><span class="pre">T_release</span></code> that will be the the time when we trigger the rapid length reduction. We also store the pre-stretch variable which is the variable we will change when applying the rapid length reduction.
+Also, we can only do this on a slab type geometry so we add an extra test for that.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ReleaseRunner</span><span class="p">(</span><span class="n">simcardems</span><span class="o">.</span><span class="n">Runner</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">T_release</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_T_release</span> <span class="o">=</span> <span class="n">T_release</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pre_stretch</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pre_stretch&quot;</span><span class="p">)</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_stretch</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
         <span class="c1"># Make sure we have a SlabGeometry</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">geometry</span><span class="p">,</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">SlabGeometry</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Lx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">lx</span>
@@ -295,6 +315,8 @@ We also make this runner take in an argument <code class="docutils literal notra
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_post_mechanics_solve</span><span class="p">()</span>
 </pre></div>
 </div>
+<p>The rapid length reduction is implemented as a part of the <code class="docutils literal notranslate"><span class="pre">_post_mechanics_solve</span></code> method which is an internal method of the <code class="docutils literal notranslate"><span class="pre">Runner</span></code> class that is called after the mechanics system is solved. Note that we also call the <code class="docutils literal notranslate"><span class="pre">_post_mechanics_solve</span></code> method of the parent class at the end (through <code class="docutils literal notranslate"><span class="pre">super</span></code>).
+Now we can set up the main function</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">outdir</span><span class="p">:</span> <span class="n">Path</span><span class="p">):</span>
     <span class="n">T</span> <span class="o">=</span> <span class="mi">200</span>
     <span class="n">T_release</span> <span class="o">=</span> <span class="mi">100</span>
@@ -303,6 +325,7 @@ We also make this runner take in an argument <code class="docutils literal notra
     <span class="n">runner</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>and a function for plotting the traces</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">postprocess</span><span class="p">(</span><span class="n">outdir</span><span class="p">:</span> <span class="n">Path</span><span class="p">):</span>
     <span class="n">simcardems</span><span class="o">.</span><span class="n">postprocess</span><span class="o">.</span><span class="n">plot_state_traces</span><span class="p">(</span><span class="n">outdir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;results.h5&quot;</span><span class="p">))</span>
 </pre></div>

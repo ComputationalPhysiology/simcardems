@@ -27,6 +27,10 @@ Content
    demo
    CONTRIBUTING
 
+Source code
+-----------
+The source code can be found on `GitHub <https://github.com/ComputationalPhysiology/simcardems>`__
+
 License
 -------
 ``simcardems`` is licensed under the GNU LGPL, version 3 or (at your option) any later version.
