@@ -301,7 +301,7 @@
 <div class="section" id="creating-the-container">
 <h2>Creating the container<a class="headerlink" href="#creating-the-container" title="Permalink to this headline">¶</a></h2>
 <p>Once you have the <code class="docutils literal notranslate"><span class="pre">simcardems</span></code> docker image you can create the container as follows</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">run</span> <span class="o">--</span><span class="n">name</span> <span class="n">simcardems</span> <span class="o">-</span><span class="n">v</span> <span class="s2">&quot;$(pwd)&quot;</span><span class="p">:</span><span class="o">/</span><span class="n">app</span> <span class="o">-</span><span class="n">dit</span> <span class="n">simcardems</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">run</span> <span class="o">--</span><span class="n">name</span> <span class="n">simcardems</span> <span class="o">-</span><span class="n">v</span> <span class="s2">&quot;$(pwd)&quot;</span><span class="p">:</span><span class="o">/</span><span class="n">app</span> <span class="o">-</span><span class="n">p</span> <span class="mi">8501</span><span class="p">:</span><span class="mi">8501</span> <span class="o">-</span><span class="n">dit</span> <span class="n">ghcr</span><span class="o">.</span><span class="n">io</span><span class="o">/</span><span class="n">computationalphysiology</span><span class="o">/</span><span class="n">simcardems</span>
 </pre></div>
 </div>
 <p>This will create a a new container (aka a virtual machine) that you can use to execute the scripts.

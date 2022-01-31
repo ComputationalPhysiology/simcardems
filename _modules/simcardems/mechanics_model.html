@@ -317,7 +317,7 @@
 
 <div class="viewcode-block" id="LandModel.lmbda"><a class="viewcode-back" href="../../simcardems.html#simcardems.mechanics_model.LandModel.lmbda">[docs]</a>    <span class="k">def</span> <span class="nf">lmbda</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">F</span><span class="p">):</span>
         <span class="n">f</span> <span class="o">=</span> <span class="n">F</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">f0</span>
-        <span class="k">return</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">f</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">f</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="LandModel.dLambda"><a class="viewcode-back" href="../../simcardems.html#simcardems.mechanics_model.LandModel.dLambda">[docs]</a>    <span class="k">def</span> <span class="nf">dLambda</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">F</span><span class="p">):</span>
         <span class="n">dLambda</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lmbda</span><span class="p">(</span><span class="n">F</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">lmbda_prev</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span>
@@ -460,12 +460,9 @@
         <span class="n">J</span> <span class="o">=</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Jacobian</span><span class="p">(</span><span class="n">F</span><span class="p">)</span>
         <span class="n">dx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">dx</span>
 
-        <span class="n">internal_energy</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">strain_energy</span><span class="p">(</span>
-                <span class="n">F</span><span class="p">,</span>
-            <span class="p">)</span>
-            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">compressibility</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">J</span><span class="p">)</span>
-        <span class="p">)</span>
+        <span class="n">internal_energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">strain_energy</span><span class="p">(</span>
+            <span class="n">F</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">compressibility</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">J</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_virtual_work</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">derivative</span><span class="p">(</span>
             <span class="n">internal_energy</span> <span class="o">*</span> <span class="n">dx</span><span class="p">,</span>
