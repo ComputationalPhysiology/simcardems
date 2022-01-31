@@ -45,6 +45,7 @@ Cécile
 celltype
 cmdnmax
 codecov
+computationalphysiology
 conda
 Cristobal
 csqnmax

@@ -6,7 +6,7 @@ If you want to use docker please make sure to follow the installations step for 
 Once you have the `simcardems` docker image you can create the container as follows
 
 ```
-docker run --name simcardems -v "$(pwd)":/app -dit simcardems
+docker run --name simcardems -v "$(pwd)":/app -p 8501:8501 -dit ghcr.io/computationalphysiology/simcardems
 ```
 This will create a a new container (aka a virtual machine) that you can use to execute the scripts.
 Note that after executing the `docker run` command, the container will be created and it will run in the background (daemon-mode).
