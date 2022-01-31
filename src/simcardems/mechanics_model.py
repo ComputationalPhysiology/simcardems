@@ -11,6 +11,10 @@ from . import utils
 logger = utils.getLogger(__name__)
 
 
+def Max(a, b):
+    return (a + b + abs(a - b)) / dolfin.Constant(2)
+
+
 class BoundaryConditions(str, Enum):
     dirichlet = "dirichlet"
     rigid = "rigid"
@@ -81,15 +85,54 @@ class LandModel(pulse.ActiveModel):
 
         phi = self._parameters["phi"]
         Tot_A = self._parameters["Tot_A"]
+        F = self._parameters["F"]
+        L = self._parameters["L"]
+        rad = self._parameters["rad"]
+        cmdnmax = self._parameters["cmdnmax"]
+        kmcmdn = self._parameters["kmcmdn"]
+        trpnmax = self._parameters["trpnmax"]
+        Beta1 = self._parameters["Beta1"]
+
+        Trpn50 = self._parameters["Trpn50"]
+        cat50_ref = self._parameters["cat50_ref"]
+
+        etal = self._parameters["etal"]
+        etas = self._parameters["etas"]
+        gammas = self._parameters["gammas"]
+        gammaw = self._parameters["gammaw"]
+        ktrpn = self._parameters["ktrpn"]
+        ku = self._parameters["ku"]
         kuw = self._parameters["kuw"]
         kws = self._parameters["kws"]
+        # lmbda = self._parameters["lmbda"]
+        ntm = self._parameters["ntm"]
+        ntrpn = self._parameters["ntrpn"]
+        p_k = self._parameters["p_k"]
+
         rs = self._parameters["rs"]
         rw = self._parameters["rw"]
 
+        # Population factors
+        scale_popu_nTm = self._parameters["scale_popu_nTm"]
+        scale_popu_CaT50ref = self._parameters["scale_popu_CaT50ref"]
         scale_popu_kuw = self._parameters["scale_popu_kuw"]
         scale_popu_kws = self._parameters["scale_popu_kws"]
+        scale_popu_kTRPN = self._parameters["scale_popu_kTRPN"]
+        scale_popu_nTRPN = self._parameters["scale_popu_nTRPN"]
+        scale_popu_ku = self._parameters["scale_popu_ku"]
+        scale_popu_TRPN50 = self._parameters["scale_popu_TRPN50"]
         scale_popu_rw = self._parameters["scale_popu_rw"]
         scale_popu_rs = self._parameters["scale_popu_rs"]
+
+        # Systolic Heart Failure (HF with preserved ejection fraction)
+        HF_scaling_cat50_ref = self._parameters["HF_scaling_cat50_ref"]
+
+        vcell = 3140.0 * L * (rad * rad)
+        Ageo = 6.28 * (rad * rad) + 6.28 * L * rad
+        Acap = 2 * Ageo
+        vmyo = 0.68 * vcell
+        vnsr = 0.0552 * vcell
+        vss = 0.02 * vcell
 
         Aw = (
             Tot_A
@@ -116,12 +159,86 @@ class LandModel(pulse.ActiveModel):
             / (rs * scale_popu_rs)
         )
 
+        kwu = -kws * scale_popu_kws + (kuw * scale_popu_kuw) * (
+            -1 + 1.0 / (rw * scale_popu_rw)
+        )
+
+        lambda_min12 = ufl.conditional(ufl.lt(self.lmbda(F), 1.2), self.lmbda(F), 1.2)
+
         # dZetas = self.dLambda * As - self.Zetas * cs
         # dZetaw = self.dLambda * Aw - self.Zetaw * cw
 
         # Lets use Backward Euler scheme with a few fixed point iterations
         Zetas = self.Zetas
         Zetaw = self.Zetaw
+        XS = self.XS
+        XW = self.XW
+
+        XS = ufl.conditional(ufl.lt(XS, 0), 0, XS)
+        XW = ufl.conditional(ufl.lt(XW, 0), 0, XW)
+        XU = 1 - TmB - XS - XW
+        gammawu = gammaw * abs(Zetaw)
+
+        zetas1 = Zetas * ufl.conditional(ufl.gt(Zetas, 0), 1, 0)
+        zetas2 = (-1 - Zetas) * ufl.conditional(ufl.lt(Zetas, -1), 1, 0)
+        gammasu = gammas * Max(zetas1, zetas2)
+
+        dXS_dt = kws * scale_popu_kws * XW - XS * gammasu - XS * ksu
+        dXW_dt = (
+            kuw * scale_popu_kuw * XU
+            - kws * scale_popu_kws * XW
+            - XW * gammawu
+            - XW * kwu
+        )
+        cat50 = cat50_ref * scale_popu_CaT50ref * HF_scaling_cat50_ref + Beta1 * (
+            -1 + lambda_min12
+        )
+        CaTrpn = ufl.conditional(ufl.lt(CaTrpn, 0), 0, CaTrpn)
+        dCaTrpn_dt = (
+            ktrpn
+            * scale_popu_kTRPN
+            * (
+                -CaTrpn
+                + ufl.elem_pow(1000 * cai / cat50, ntrpn * scale_popu_nTRPN)
+                * (1 - CaTrpn)
+            )
+        )
+        kb = (
+            ku
+            * scale_popu_ku
+            * ufl.elem_pow(Trpn50 * scale_popu_TRPN50, (ntm * scale_popu_nTm))
+            / (
+                1
+                - (rs * scale_popu_rs)
+                - rw * scale_popu_rw * (1 - (rs * scale_popu_rs))
+            )
+        )
+        dTmB_dt = (
+            ufl.conditional(
+                ufl.lt(ufl.elem_pow(CaTrpn, -(ntm * scale_popu_nTm) / 2), 100),
+                ufl.elem_pow(CaTrpn, -(ntm * scale_popu_nTm) / 2),
+                100,
+            )
+            * XU
+            * kb
+            - ku
+            * scale_popu_ku
+            * ufl.elem_pow(CaTrpn, (ntm * scale_popu_nTm) / 2)
+            * TmB
+        )
+
+        C = -1 + lambda_min12
+        dCd = -Cd + C
+        eta = ufl.conditional(ufl.lt(dCd, 0), etas, etal)
+        dCd_dt = p_k * (-Cd + C) / eta
+        Bcai = 1.0 / (1.0 + cmdnmax * kmcmdn * ufl.elem_pow(kmcmdn + cai, -2.0))
+        J_TRPN = trpnmax * dCaTrpn_dt
+        dcai = (
+            -J_TRPN
+            + Jdiff * vss / vmyo
+            - Jup * vnsr / vmyo
+            + 0.5 * (-ICab - IpCa - Isac_P_ns / 3 + 2.0 * INaCa_i) * Acap / (F * vmyo)
+        ) * Bcai
 
         for _ in range(10):
             Zetas = self.Zetas_prev + self.dt * (self.dLambda(F) * As - Zetas * cs)
