@@ -45,6 +45,6 @@ Even though the purpose of the project is to study drug effects, this software c
 # Acknowledgements
 This project received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 101016496 (SimCardioTest).
 
-We also wish to than Dr. Hermenegild Arevalo, Dr. Samuel T. Wall and Dr. Joakim Sundnes for scientific discussions and insightful comments and suggestions.
+We also wish to thank Dr. Hermenegild Arevalo, Dr. Samuel T. Wall and Dr. Joakim Sundnes for scientific discussions and insightful comments and suggestions.
 
 # References

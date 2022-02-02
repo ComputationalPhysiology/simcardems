@@ -172,6 +172,8 @@ def setup_mechanics_solver(
         lmbda=coupling.lmbda_mech,
         Zetas=coupling.Zetas_mech,
         Zetaw=coupling.Zetaw_mech,
+        TmB=coupling.TmB_mech,
+        CaTrpn=coupling.CaTrpn_mech,
         parameters=cell_params,
         XS=coupling.XS_mech,
         XW=coupling.XW_mech,
@@ -383,8 +385,8 @@ class Runner:
         self._v, self._v_assigner = utils.setup_assigner(self._vs, 0)
         self._Ca, self._Ca_assigner = utils.setup_assigner(self._vs, 45)
 
-        self._pre_XS, self._preXS_assigner = utils.setup_assigner(self._vs, 40)
-        self._pre_XW, self._preXW_assigner = utils.setup_assigner(self._vs, 41)
+        # self._pre_XS, self._preXS_assigner = utils.setup_assigner(self._vs, 40)
+        # self._pre_XW, self._preXW_assigner = utils.setup_assigner(self._vs, 41)
 
         self._u_subspace_index = 1 if self._bnd_cond == "rigid" else 0
         self._u, self._u_assigner = utils.setup_assigner(
@@ -432,14 +434,14 @@ class Runner:
         # Update these states that are needed in the Mechanics solver
         self.coupling.update_mechanics()
 
-        XS_norm = utils.compute_norm(self.coupling.XS_ep, self._pre_XS)
-        XW_norm = utils.compute_norm(self.coupling.XW_ep, self._pre_XW)
+        # XS_norm = utils.compute_norm(self.coupling.XS_ep, self._pre_XS)
+        # XW_norm = utils.compute_norm(self.coupling.XW_ep, self._pre_XW)
 
-        return XS_norm + XW_norm >= 0.1
+        return True  # XS_norm + XW_norm >= 0.1
 
     def _pre_mechanics_solve(self) -> None:
-        self._preXS_assigner.assign(self._pre_XS, utils.sub_function(self._vs, 40))
-        self._preXW_assigner.assign(self._pre_XW, utils.sub_function(self._vs, 41))
+        # self._preXS_assigner.assign(self._pre_XS, utils.sub_function(self._vs, 40))
+        # self._preXW_assigner.assign(self._pre_XW, utils.sub_function(self._vs, 41))
 
         self.coupling.interpolate_mechanics()
 

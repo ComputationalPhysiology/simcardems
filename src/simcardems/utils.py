@@ -49,7 +49,7 @@ def remove_file(path):
     dolfin.MPI.barrier(dolfin.MPI.comm_world)
 
 
-def setup_assigner(vs, index):
+def setup_assigner(vs, index, retrun_space=False):
 
     # Set-up separate potential function for post processing
     VS0 = vs.function_space().sub(index)
@@ -58,6 +58,8 @@ def setup_assigner(vs, index):
     # Set-up object to optimize assignment from a function to subfunction
     v_assigner = dolfin.FunctionAssigner(V, VS0)
     v_assigner.assign(v, vs.sub(index))
+    if retrun_space:
+        return v, v_assigner, V
     return v, v_assigner
 
 
