@@ -208,7 +208,6 @@ def setup_mechanics_solver(
         bcs,
         solver_parameters={"linear_solver": linear_solver, "verbose": verbose},
     )
-
     problem.solve()
 
     total_dofs = problem.state.function_space().dim()
@@ -444,6 +443,7 @@ class Runner:
         # self._preXW_assigner.assign(self._pre_XW, utils.sub_function(self._vs, 41))
 
         self.coupling.interpolate_mechanics()
+        self.mech_heart.material.active.update_feedback_states()
 
     def _post_mechanics_solve(self) -> None:
         self.coupling.interpolate_ep()

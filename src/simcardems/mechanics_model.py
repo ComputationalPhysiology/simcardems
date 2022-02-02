@@ -69,10 +69,16 @@ class LandModel(pulse.ActiveModel):
         self.lmbda_current = lmbda
         self.update_prev()
 
-    def update_prev(self):
+    def update_feedback_states(self):
         self.XS_prev.vector()[:] = self.XS.vector()
         self.XW_prev.vector()[:] = self.XW.vector()
         self.TmB_prev.vector()[:] = self.TmB.vector()
+
+    def update_prev(self):
+        # self.XS_prev.vector()[:] = self.XS.vector()
+        # self.XW_prev.vector()[:] = self.XW.vector()
+        # self.TmB_prev.vector()[:] = self.TmB.vector()
+
         self.CaTrpn_prev.vector()[:] = self.CaTrpn.vector()
 
         self.Zetas_prev_prev.vector()[:] = self.Zetas_prev.vector()
@@ -93,54 +99,25 @@ class LandModel(pulse.ActiveModel):
 
         phi = self._parameters["phi"]
         Tot_A = self._parameters["Tot_A"]
-        F = self._parameters["F"]
-        # L = self._parameters["L"]
-        # rad = self._parameters["rad"]
-        # cmdnmax = self._parameters["cmdnmax"]
-        # kmcmdn = self._parameters["kmcmdn"]
-        # trpnmax = self._parameters["trpnmax"]
-        # Beta1 = self._parameters["Beta1"]
-
         Trpn50 = self._parameters["Trpn50"]
-        # cat50_ref = self._parameters["cat50_ref"]
-
-        # etal = self._parameters["etal"]
-        # etas = self._parameters["etas"]
         gammas = self._parameters["gammas"]
         gammaw = self._parameters["gammaw"]
-        # ktrpn = self._parameters["ktrpn"]
         ku = self._parameters["ku"]
         kuw = self._parameters["kuw"]
         kws = self._parameters["kws"]
-        # lmbda = self._parameters["lmbda"]
         ntm = self._parameters["ntm"]
-        # ntrpn = self._parameters["ntrpn"]
-        # p_k = self._parameters["p_k"]
 
         rs = self._parameters["rs"]
         rw = self._parameters["rw"]
 
         # Population factors
         scale_popu_nTm = self._parameters["scale_popu_nTm"]
-        # scale_popu_CaT50ref = self._parameters["scale_popu_CaT50ref"]
         scale_popu_kuw = self._parameters["scale_popu_kuw"]
         scale_popu_kws = self._parameters["scale_popu_kws"]
-        # scale_popu_kTRPN = self._parameters["scale_popu_kTRPN"]
-        # scale_popu_nTRPN = self._parameters["scale_popu_nTRPN"]
         scale_popu_ku = self._parameters["scale_popu_ku"]
         scale_popu_TRPN50 = self._parameters["scale_popu_TRPN50"]
         scale_popu_rw = self._parameters["scale_popu_rw"]
         scale_popu_rs = self._parameters["scale_popu_rs"]
-
-        # Systolic Heart Failure (HF with preserved ejection fraction)
-        # HF_scaling_cat50_ref = self._parameters["HF_scaling_cat50_ref"]
-
-        # vcell = 3140.0 * L * (rad * rad)
-        # Ageo = 6.28 * (rad * rad) + 6.28 * L * rad
-        # Acap = 2 * Ageo
-        # vmyo = 0.68 * vcell
-        # vnsr = 0.0552 * vcell
-        # vss = 0.02 * vcell
 
         Aw = (
             Tot_A
@@ -187,70 +164,70 @@ class LandModel(pulse.ActiveModel):
         dLambda = self.dLambda(F)
 
         # Current values obtained from the EP state
-        XS_ = self.XS.copy()
-        XW_ = self.XW.copy()
-        TmB_ = self.TmB.copy()
         XS = self.XS
         XW = self.XW
         TmB = self.TmB
-
         CaTrpn = self.CaTrpn
+        # XS = self.XS
+        # XW = self.XW
+        # TmB = self.TmB
 
-        for _ in range(10):
-            XS_ = ufl.conditional(ufl.lt(XS_, 0), 0, XS_)
-            XW_ = ufl.conditional(ufl.lt(XW_, 0), 0, XW_)
-            XU = 1 - TmB_ - XS_ - XW_
-            gammawu = gammaw * abs(Zetaw)
+        XS = ufl.conditional(ufl.lt(XS, 0), 0, XS)
+        XW = ufl.conditional(ufl.lt(XW, 0), 0, XW)
+        XU = 1 - TmB - XS - XW
+        gammawu = gammaw * abs(Zetaw)
 
-            zetas1 = Zetas * ufl.conditional(ufl.gt(Zetas, 0), 1, 0)
-            zetas2 = (-1 - Zetas) * ufl.conditional(ufl.lt(Zetas, -1), 1, 0)
-            gammasu = gammas * Max(zetas1, zetas2)
+        zetas1 = Zetas * ufl.conditional(ufl.gt(Zetas, 0), 1, 0)
+        zetas2 = (-1 - Zetas) * ufl.conditional(ufl.lt(Zetas, -1), 1, 0)
+        gammasu = gammas * Max(zetas1, zetas2)
 
-            dXS_dt = kws * scale_popu_kws * XW_ - XS_ * gammasu - XS_ * ksu
-            dXW_dt = (
-                kuw * scale_popu_kuw * XU
-                - kws * scale_popu_kws * XW_
-                - XW_ * gammawu
-                - XW_ * kwu
+        dXS_dt = kws * scale_popu_kws * XW - XS * gammasu - XS * ksu
+        dXW_dt = (
+            kuw * scale_popu_kuw * XU
+            - kws * scale_popu_kws * XW
+            - XW * gammawu
+            - XW * kwu
+        )
+
+        kb = (
+            ku
+            * scale_popu_ku
+            * ufl.elem_pow(Trpn50 * scale_popu_TRPN50, (ntm * scale_popu_nTm))
+            / (
+                1
+                - (rs * scale_popu_rs)
+                - rw * scale_popu_rw * (1 - (rs * scale_popu_rs))
             )
-
-            kb = (
-                ku
-                * scale_popu_ku
-                * ufl.elem_pow(Trpn50 * scale_popu_TRPN50, (ntm * scale_popu_nTm))
-                / (
-                    1
-                    - (rs * scale_popu_rs)
-                    - rw * scale_popu_rw * (1 - (rs * scale_popu_rs))
-                )
+        )
+        dTmB_dt = (
+            ufl.conditional(
+                ufl.lt(ufl.elem_pow(CaTrpn, -(ntm * scale_popu_nTm) / 2), 100),
+                ufl.elem_pow(CaTrpn, -(ntm * scale_popu_nTm) / 2),
+                100,
             )
-            dTmB_dt = (
-                ufl.conditional(
-                    ufl.lt(ufl.elem_pow(CaTrpn, -(ntm * scale_popu_nTm) / 2), 100),
-                    ufl.elem_pow(CaTrpn, -(ntm * scale_popu_nTm) / 2),
-                    100,
-                )
-                * XU
-                * kb
-                - ku
-                * scale_popu_ku
-                * ufl.elem_pow(CaTrpn, (ntm * scale_popu_nTm) / 2)
-                * TmB_
-            )
+            * XU
+            * kb
+            - ku
+            * scale_popu_ku
+            * ufl.elem_pow(CaTrpn, (ntm * scale_popu_nTm) / 2)
+            * TmB
+        )
 
-            XS = XS_ + self.dt * dXS_dt
-            XW = XW_ + self.dt * dXW_dt
-            TmB = TmB_ + self.dt * dTmB_dt
+        dZetas_dt = dLambda * As - Zetas * cs
+        dZetaw_dt = dLambda * Aw - Zetaw * cw
 
-            Zetas = self.Zetas_prev + self.dt * (dLambda * As - Zetas * cs)
-            Zetaw = self.Zetaw_prev + self.dt * (dLambda * Aw - Zetaw * cw)
+        XS = self.XS_prev + self.dt * dXS_dt
+        XW = self.XW_prev + self.dt * dXW_dt
+        TmB = self.TmB_prev + self.dt * dTmB_dt
+        Zetas = self.Zetas_prev + self.dt * dZetas_dt
+        Zetaw = self.Zetaw_prev + self.dt * dZetaw_dt
 
-        self.TmB.assign(dolfin.project(TmB, self.function_space))
-        return Zetas, Zetaw, XS, XW
+        return Zetas, Zetaw, XS, XW, TmB
 
     def Ta(self, F):
 
-        Zetas, Zetaw, XS, XW = self._solve_ode(F)
+        Zetas, Zetaw, XS, XW, TmB = self._solve_ode(F)
+
         Tref = self._parameters["Tref"]
         rs = self._parameters["rs"]
         scale_popu_Tref = self._parameters["scale_popu_Tref"]
@@ -281,6 +258,7 @@ class LandModel(pulse.ActiveModel):
         self.Zetaw.assign(dolfin.project(Zetaw, self.function_space))
         self.XS.assign(dolfin.project(XS, self.function_space))
         self.XW.assign(dolfin.project(XW, self.function_space))
+        self.TmB.assign(dolfin.project(TmB, self.function_space))
 
         return Ta
 
