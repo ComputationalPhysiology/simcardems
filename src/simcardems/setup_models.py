@@ -180,10 +180,7 @@ def setup_mechanics_solver(
         dt=dt,
         function_space=V,
     )
-    material = pulse.HolzapfelOgden(
-        active_model=active_model,
-        parameters=material_parameters,
-    )
+    material = pulse.HolzapfelOgden(parameters=material_parameters, T_ref=0)
 
     if set_material == "Guccione":
         material_parameters = pulse.Guccione.default_parameters()
@@ -192,10 +189,7 @@ def setup_mechanics_solver(
         material_parameters["bfs"] = 4.0
         material_parameters["bt"] = 2.0
 
-        material = pulse.Guccione(
-            params=material_parameters,
-            active_model=active_model,
-        )
+        material = pulse.Guccione(params=material_parameters, T_ref=0)
 
     Problem = mechanics_model.MechanicsProblem
     if bnd_cond == mechanics_model.BoundaryConditions.rigid:
@@ -203,10 +197,11 @@ def setup_mechanics_solver(
 
     verbose = logger.getEffectiveLevel() < logging.INFO
     problem = Problem(
-        geometry,
-        material,
-        bcs,
+        geometry=geometry,
+        material=material,
+        bcs=bcs,
         solver_parameters={"linear_solver": linear_solver, "verbose": verbose},
+        active_model=active_model,
     )
     problem.solve()
 
@@ -424,7 +419,7 @@ class Runner:
             ("ep", "V", self._v),
             ("ep", "Ca", self._Ca),
             ("mechanics", "lmbda", self.coupling.lmbda_mech),
-            ("mechanics", "Ta", self.mech_heart.material.active.Ta_current),
+            ("mechanics", "Ta", self.mech_heart.active_model.Ta_current),
         ]:
             self.collector.register(group, name, f)
 
@@ -443,12 +438,12 @@ class Runner:
         # self._preXW_assigner.assign(self._pre_XW, utils.sub_function(self._vs, 41))
 
         self.coupling.interpolate_mechanics()
-        self.mech_heart.material.active.update_feedback_states()
+        self.mech_heart.active_model.update_time(self._t)
 
     def _post_mechanics_solve(self) -> None:
         self.coupling.interpolate_ep()
         # Update previous active tension
-        self.mech_heart.material.active.update_prev()
+        self.mech_heart.active_model.update_prev()
         self.coupling.update_ep()
 
     def _solve_mechanics(self):
