@@ -29,8 +29,12 @@ class DataCollector:
                 h5file.write(ep_mesh, "/ep/mesh")
 
         else:
-            with h5pyfile(self._results_file, "r") as f:
-                self._times_stamps = set(f["ep"]["V"].keys())
+
+            try:
+                with h5pyfile(self._results_file, "r") as f:
+                    self._times_stamps = set(f["ep"]["V"].keys())
+            except KeyError:
+                pass
 
         self._functions: Dict[str, Dict[str, dolfin.Function]] = {
             "ep": {},

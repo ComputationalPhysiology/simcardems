@@ -230,6 +230,7 @@ def load_state(
         cell_params=solver.ode_solver._model.parameters(),
     )
     mech_heart.state.assign(mech_state)
+    coupling.interpolate_mechanics()
 
     return setup_models.EMState(
         coupling=coupling,

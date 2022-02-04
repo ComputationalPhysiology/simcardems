@@ -194,7 +194,7 @@ def test_load_state_with_new_parameters_uses_new_parameters(
     )
     assert np.isclose(
         ep_solver_.ode_solver._model.parameters()["scale_popu_GNa"],
-        drug_factors["scale_popu_GNa"],
+        popu_factors["scale_popu_GNa"],
     )
 
     drug_factors_file.unlink()
