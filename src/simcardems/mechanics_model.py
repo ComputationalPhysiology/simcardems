@@ -109,14 +109,8 @@ class BoundaryConditions(str, Enum):
 class LandModel(pulse.ActiveModel):
     def __init__(
         self,
-        XS,
-        XW,
-        TmB,
         CaTrpn,
-        dt,
         lmbda,
-        Zetas,
-        Zetaw,
         parameters,
         function_space,
         f0=None,
@@ -135,11 +129,6 @@ class LandModel(pulse.ActiveModel):
         self.state_ = dolfin.Function(self.state_space)
         self.state_test = dolfin.TestFunction(self.state_space)
 
-        self.XS = XS
-        self.XW = XW
-        self.TmB = TmB
-        self.Zetas = Zetas
-        self.Zetaw = Zetaw
         self.CaTrpn = CaTrpn
         self.CaTrpn_prev = dolfin.Function(function_space)
         self._parameters = parameters
@@ -195,8 +184,6 @@ class LandModel(pulse.ActiveModel):
         return Dt_s - F_theta
 
     def Ta(self, F, s):
-
-        # breakpoint()
         s_split = dolfin.as_vector(dolfin.split(s))
         G = self._solve_ode(F, s_split)
         (XS, XW, TmB, Zetas, Zetaw) = s_split
@@ -227,15 +214,10 @@ class LandModel(pulse.ActiveModel):
         self.Ta_current.assign(dolfin.project(Ta, self.function_space))
         # Assign these in order to update the EM coupling
         self.lmbda_current.assign(dolfin.project(lmbda, self.function_space))
-        self.Zetas.assign(dolfin.project(Zetas, self.function_space))
-        self.Zetaw.assign(dolfin.project(Zetaw, self.function_space))
-        self.XS.assign(dolfin.project(XS, self.function_space))
-        self.XW.assign(dolfin.project(XW, self.function_space))
-        self.TmB.assign(dolfin.project(TmB, self.function_space))
 
         return Ta, G
 
-    def Wactive(self, F, s, diff=0):
+    def Wactive(self, F, s):
         """Active stress energy"""
         C = F.T * F
 
@@ -274,17 +256,19 @@ class MechanicsProblem(pulse.MechanicsProblem):
         self.state = dolfin.Function(self.state_space, name="state")
         self.state_test = dolfin.TestFunction(self.state_space)
 
+        self.s, self.s_assigner = utils.setup_assigner(self.state, 2)
+
     def _init_forms(self):
-        # Displacement and hydrostatic_pressure; 3rd space for rigid motion component
         u, p, s = dolfin.split(self.state)
         v, q, w = dolfin.split(self.state_test)
+        self.s_assigner.assign(self.s, utils.sub_function(self.state, 2))
 
         # Some mechanical quantities
         F = dolfin.variable(pulse.DeformationGradient(u))
         J = pulse.Jacobian(F)
         dx = self.geometry.dx
 
-        Wactive, G_ode = self.active_model.Wactive(F, s)
+        Wactive, G_ode = self.active_model.Wactive(F, self.s)
 
         internal_energy = (
             self.material.strain_energy(

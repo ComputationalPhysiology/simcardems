@@ -108,6 +108,9 @@ def setup_EM_model(
         set_material=set_material,
     )
 
+    coupling.register_mech_model(mech_heart)
+    coupling.coupling_to_mechanics()
+
     return EMState(
         coupling=coupling,
         solver=solver,
@@ -170,13 +173,8 @@ def setup_mechanics_solver(
         n0=microstructure.n0,
         eta=0,
         lmbda=coupling.lmbda_mech,
-        Zetas=coupling.Zetas_mech,
-        Zetaw=coupling.Zetaw_mech,
-        TmB=coupling.TmB_mech,
         CaTrpn=coupling.CaTrpn_mech,
         parameters=cell_params,
-        XS=coupling.XS_mech,
-        XW=coupling.XW_mech,
         dt=dt,
         function_space=V,
     )
@@ -426,7 +424,7 @@ class Runner:
     def _solve_mechanics_now(self) -> bool:
 
         # Update these states that are needed in the Mechanics solver
-        self.coupling.update_mechanics()
+        self.coupling.ep_to_coupling()
 
         # XS_norm = utils.compute_norm(self.coupling.XS_ep, self._pre_XS)
         # XW_norm = utils.compute_norm(self.coupling.XW_ep, self._pre_XW)
@@ -437,14 +435,14 @@ class Runner:
         # self._preXS_assigner.assign(self._pre_XS, utils.sub_function(self._vs, 40))
         # self._preXW_assigner.assign(self._pre_XW, utils.sub_function(self._vs, 41))
 
-        self.coupling.interpolate_mechanics()
+        self.coupling.coupling_to_mechanics()
         self.mech_heart.active_model.update_time(self._t)
 
     def _post_mechanics_solve(self) -> None:
-        self.coupling.interpolate_ep()
+        self.coupling.mechanics_to_coupling()
         # Update previous active tension
         self.mech_heart.active_model.update_prev()
-        self.coupling.update_ep()
+        self.coupling.coupling_to_ep()
 
     def _solve_mechanics(self):
         self._pre_mechanics_solve()
