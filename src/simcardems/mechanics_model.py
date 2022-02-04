@@ -140,7 +140,6 @@ class LandModel(pulse.ActiveModel):
         return Zetas, Zetaw
 
     def Ta(self, F):
-        print("dt = ", self.dt, "t = ", self.t, "t_prev =", self._t_prev)
         Zetas, Zetaw = self._solve_ode(F)
         Tref = self._parameters["Tref"]
         rs = self._parameters["rs"]

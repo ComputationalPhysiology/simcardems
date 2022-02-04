@@ -78,7 +78,6 @@ def test_save_and_load_state(
 
     mech_heart = simcardems.setup_models.setup_mechanics_solver(
         coupling=coupling,
-        dt=0.01,
         bnd_cond=bnd_cond,
         cell_params=cell_params,
     )
@@ -87,9 +86,12 @@ def test_save_and_load_state(
     t0 = 1.0
     ep_solver.vs.vector()[:] = 1.0
     ep_solver.vs_.vector()[:] = 1.0
-    coupling.XS_mech.vector()[:] = 1.0
-    coupling.XW_mech.vector()[:] = 1.0
     mech_heart.state.vector()[:] = 1.0
+
+    # Translate these value to the coupling object
+    coupling.ep_to_coupling()
+    # Translate to the mechanics model
+    coupling.coupling_to_mechanics()
 
     slf.save_state(
         dummyfile,

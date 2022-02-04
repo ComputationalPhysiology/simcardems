@@ -225,11 +225,11 @@ def load_state(
 
     mech_heart = setup_models.setup_mechanics_solver(
         coupling=coupling,
-        dt=state_params["dt"],
         bnd_cond=bnd_cond_dict[state_params["bnd_cond"]],
         cell_params=solver.ode_solver._model.parameters(),
     )
     mech_heart.state.assign(mech_state)
+    coupling.coupling_to_mechanics()
 
     return setup_models.EMState(
         coupling=coupling,
