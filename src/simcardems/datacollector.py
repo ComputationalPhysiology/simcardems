@@ -21,15 +21,17 @@ class DataCollector:
 
         if reset_state:
             utils.remove_file(self._results_file)
+
+        self._times_stamps = set()
         if not self._results_file.is_file():
             with dolfin.HDF5File(self.comm, self.results_file, "w") as h5file:
                 h5file.write(mech_mesh, "/mechanics/mesh")
                 h5file.write(ep_mesh, "/ep/mesh")
 
-        self._xdmffiles: Dict[str, Dict[str, dolfin.XDMFFile]] = {
-            "ep": {},
-            "mechanics": {},
-        }
+        else:
+            with h5pyfile(self._results_file, "r") as f:
+                self._times_stamps = set(f["ep"]["V"].keys())
+
         self._functions: Dict[str, Dict[str, dolfin.Function]] = {
             "ep": {},
             "mechanics": {},
@@ -49,25 +51,21 @@ class DataCollector:
             logger.warning(
                 f"Warning: {name} in group {group} is allready registered - overwriting",
             )
-        self._xdmffiles[group][name] = dolfin.XDMFFile(
-            self.comm,
-            self.outdir.joinpath(f"{group}_{name}.xdmf").as_posix(),
-        )
         self._functions[group][name] = f
 
     @property
     def names(self) -> Dict[str, List[str]]:
         return {k: list(v.keys()) for k, v in self._functions.items()}
 
-    def store(self, t):
-        logger.debug(f"Store results at time {t:.2f}")
-        for group, names in self.names.items():
-            logger.debug(f"Save xdmffile for group {group}")
-            for name in names:
-                logger.debug(f"Save {name}")
-                f = self._functions[group][name]
-                xdmf = self._xdmffiles[group][name]
-                xdmf.write(f, t)
+    def store(self, t: float) -> None:
+
+        t_str = f"{t:.2f}"
+        logger.debug(f"Store results at time {t_str}")
+        if f"{t_str}" in self._times_stamps:
+            logger.info(f"Time stamp {t_str} allready exist in file")
+            return
+
+        self._times_stamps.add(t_str)
 
         with dolfin.HDF5File(self.comm, self.results_file, "a") as h5file:
             for group, names in self.names.items():
@@ -75,7 +73,7 @@ class DataCollector:
                 for name in names:
                     logger.debug(f"Save {name}")
                     f = self._functions[group][name]
-                    h5file.write(f, f"{group}/{name}/{t:.2f}")
+                    h5file.write(f, f"{group}/{name}/{t_str}")
 
 
 class DataLoader:

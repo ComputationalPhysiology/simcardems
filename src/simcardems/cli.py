@@ -250,16 +250,24 @@ def main(
     help="Plot state traces",
 )
 @click.option(
+    "--make-xdmf",
+    is_flag=True,
+    default=False,
+    help="Make xdmf files",
+)
+@click.option(
     "--population",
     is_flag=True,
     default=False,
     help="Plot population",
 )
 @click.option("--num_models", default=5, help="Number of models to be analyzed")
-def postprocess(folder, num_models, plot_state_traces, population):
+def postprocess(folder, num_models, plot_state_traces, make_xdmf, population):
     folder = Path(folder)
     if plot_state_traces:
         post.plot_state_traces(folder.joinpath("results.h5"))
+    if make_xdmf:
+        post.make_xdmffiles(folder.joinpath("results.h5"))
     if population:
         print("Execute postprocess for population")
         post.save_popu_json(folder, num_models)
