@@ -42,7 +42,7 @@ def test_runner_load_state_with_new_parameters():
     )
     assert np.isclose(
         runner2.ep_solver.ode_solver._model.parameters()["scale_popu_GNa"],
-        drug_factors["scale_popu_GNa"],
+        popu_factors["scale_popu_GNa"],
     )
 
     drug_factors_file.unlink()
