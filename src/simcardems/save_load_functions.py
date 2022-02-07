@@ -144,8 +144,6 @@ def load_state(
     disease_state="healthy",
 ):
     logger.debug(f"Load state from path {path}")
-    if drug_factors_file != "" or popu_factors_file != "":
-        logger.info("Load drug or population factors from file")
     path = Path(path)
     if not path.is_file():
         raise FileNotFoundError(f"File {path} does not exist")

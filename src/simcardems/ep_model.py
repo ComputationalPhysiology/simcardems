@@ -164,11 +164,17 @@ def handle_cell_params(
     if file_exist(drug_factors_file, ".json"):
         logger.info(f"Drug scaling factors loaded from {drug_factors_file}")
         cell_params_tmp.update(load_json(drug_factors_file))
+    else:
+        if drug_factors_file != "":
+            logger.warning(f"Unable to load drug factors file {drug_factors_file}")
     # FIXME: A problem here is that popu_factors_file will overwrite the
     # drug_factors_file. Is it possible to only have one file?
     if file_exist(popu_factors_file, ".json"):
         logger.info(f"Population scaling factors loaded from {popu_factors_file}")
         cell_params_tmp.update(load_json(popu_factors_file))
+    else:
+        if popu_factors_file != "":
+            logger.warning(f"Unable to load popu factors file {popu_factors_file}")
 
     return cell_params_tmp
 
