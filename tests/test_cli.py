@@ -16,7 +16,7 @@ def test_run():
     outdir = Path("test_outdir").absolute()
     if outdir.exists():
         shutil.rmtree(outdir)
-    args = ["-T", 1, "--outdir", outdir.as_posix()] + mesh_args
+    args = ["-T", 0.2, "--outdir", outdir.as_posix()] + mesh_args
     kwargs = dict(zip([arg.strip("-").strip("-") for arg in args[::2]], args[1::2]))
     result = runner.invoke(run, args)
     assert result.exit_code == 0
@@ -28,6 +28,8 @@ def test_run():
 
     for k, v in kwargs.items():
         assert dumped_arguments[k] == v, k
+
+    shutil.rmtree(outdir)
 
 
 @pytest.mark.slow
@@ -51,3 +53,5 @@ def test_run_json():
         dumped_arguments = json.load(f)
     for k, v in kwargs.items():
         assert dumped_arguments[k] == v
+
+    shutil.rmtree(outdir)

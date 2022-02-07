@@ -273,6 +273,7 @@ class Runner:
     def __init__(
         self,
         outdir: utils.PathLike = Defaults.outdir,
+        *,
         dx: float = Defaults.dx,
         dt: float = Defaults.dt,
         cell_init_file: utils.PathLike = Defaults.cell_init_file,
@@ -467,19 +468,24 @@ class Runner:
         save_it = int(save_freq / self._dt)
         pbar = create_progressbar(t0=self._t0, T=T, dt=self._dt, hpc=hpc)
 
-        for (i, (self._t, t1)) in enumerate(pbar):
+        # Store initial state
+        self._t = self._t0
+        self.store()
 
-            logger.debug(f"Solve EP model at step {i} from {self._t} to {t1}")
+        # Store the initial time point
+        for (i, (t0, self._t)) in enumerate(pbar):
+
+            logger.debug(f"Solve EP model at step {i} from {t0} to {self._t}")
 
             # Solve EP model
-            self.ep_solver.step((self._t, t1))
+            self.ep_solver.step((t0, self._t))
 
             if self._solve_mechanics_now():
                 self._solve_mechanics()
 
             self.ep_solver.vs_.assign(self.ep_solver.vs)
             # Store every 'save_freq' ms
-            if i % save_it == 0:
+            if i > 0 and i % save_it == 0:
                 self.store()
 
         io.save_state(

@@ -1,3 +1,5 @@
+import json
+from pathlib import Path
 from unittest import mock
 
 import numpy as np
@@ -126,3 +128,75 @@ def test_save_and_load_state(
     assert (
         simcardems.utils.compute_norm(coupling.Zetaw_mech, coupling_.Zetaw_mech) < 1e-12
     )
+
+
+@mock.patch("simcardems.mechanics_model.pulse.mechanicsproblem.MechanicsProblem.solve")
+def test_load_state_with_new_parameters_uses_new_parameters(
+    solve_mock,
+    dummyfile,
+    coupling,
+    cell_params,
+):
+
+    ep_solver = simcardems.setup_models.setup_ep_solver(
+        dt=0.01,
+        coupling=coupling,
+        cell_params=cell_params,
+        scheme="ForwardEuler",
+    )
+    solve_mock.return_value = (1, True)  # (niter, nconv)
+    coupling.register_ep_model(ep_solver)
+
+    dt = 0.01
+
+    bnd_cond = "dirichlet"
+
+    mech_heart = simcardems.setup_models.setup_mechanics_solver(
+        coupling=coupling,
+        bnd_cond=bnd_cond,
+        cell_params=cell_params,
+    )
+
+    # Save some non-zero values
+    t0 = 1.0
+    ep_solver.vs.vector()[:] = 1.0
+    ep_solver.vs_.vector()[:] = 1.0
+    coupling.XS_mech.vector()[:] = 1.0
+    coupling.XW_mech.vector()[:] = 1.0
+    mech_heart.state.vector()[:] = 1.0
+
+    slf.save_state(
+        dummyfile,
+        solver=ep_solver,
+        mech_heart=mech_heart,
+        coupling=coupling,
+        dt=dt,
+        bnd_cond=bnd_cond,
+        t0=t0,
+    )
+
+    drug_factors_file = Path("drug_factors_file.json")
+    drug_factors = {"scale_drug_INa": 42.43}
+    drug_factors_file.write_text(json.dumps(drug_factors))
+
+    popu_factors_file = Path("popu_factors_file.json")
+    popu_factors = {"scale_popu_GNa": 13.13}
+    popu_factors_file.write_text(json.dumps(popu_factors))
+
+    coupling_, ep_solver_, mech_heart_, t0_ = slf.load_state(
+        dummyfile,
+        drug_factors_file=drug_factors_file,
+        popu_factors_file=popu_factors_file,
+    )
+
+    assert np.isclose(
+        ep_solver_.ode_solver._model.parameters()["scale_drug_INa"],
+        drug_factors["scale_drug_INa"],
+    )
+    assert np.isclose(
+        ep_solver_.ode_solver._model.parameters()["scale_popu_GNa"],
+        popu_factors["scale_popu_GNa"],
+    )
+
+    drug_factors_file.unlink()
+    popu_factors_file.unlink()

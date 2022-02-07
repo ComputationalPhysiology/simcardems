@@ -7,6 +7,7 @@ import dolfin
 import h5py
 import matplotlib.pyplot as plt
 import numpy as np
+import tqdm
 
 from . import utils
 from .datacollector import DataLoader
@@ -344,6 +345,24 @@ def plot_state_traces(results_file):
         ],
     )
     fig.savefig(outdir.joinpath("state_traces.png"), dpi=300)
+
+
+def make_xdmffiles(results_file):
+
+    loader = DataLoader(results_file)
+    outdir = Path(results_file).parent
+
+    for group, names in loader.names.items():
+        logger.info(f"Save xdmffile for group {group}")
+        for name in names:
+            xdmf = dolfin.XDMFFile(
+                dolfin.MPI.comm_world,
+                outdir.joinpath(f"{group}_{name}.xdmf").as_posix(),
+            )
+            logger.info(f"Save {name}")
+            for t in tqdm.tqdm(loader.time_stamps):
+                f = loader.get(group, name, t)
+                xdmf.write(f, float(t))
 
 
 def plot_population(dict, outdir, num_models, reset_time=True):
