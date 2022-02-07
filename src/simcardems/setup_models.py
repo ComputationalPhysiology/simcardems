@@ -98,7 +98,6 @@ def setup_EM_model(
 
     mech_heart = setup_mechanics_solver(
         coupling=coupling,
-        dt=dt,
         bnd_cond=bnd_cond,
         cell_params=solver.ode_solver._model.parameters(),
         pre_stretch=pre_stretch,
@@ -118,7 +117,6 @@ def setup_EM_model(
 
 def setup_mechanics_solver(
     coupling: em_model.EMCoupling,
-    dt,
     bnd_cond: mechanics_model.BoundaryConditions,
     cell_params,
     pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
@@ -175,7 +173,6 @@ def setup_mechanics_solver(
         parameters=cell_params,
         XS=coupling.XS_mech,
         XW=coupling.XW_mech,
-        dt=dt,
         function_space=V,
     )
     material = pulse.HolzapfelOgden(
@@ -431,24 +428,28 @@ class Runner:
     def _solve_mechanics_now(self) -> bool:
 
         # Update these states that are needed in the Mechanics solver
-        self.coupling.update_mechanics()
+        self.coupling.ep_to_coupling()
 
         XS_norm = utils.compute_norm(self.coupling.XS_ep, self._pre_XS)
         XW_norm = utils.compute_norm(self.coupling.XW_ep, self._pre_XW)
 
-        return XS_norm + XW_norm >= 0.1
+        # dt for the mechanics model should not be larger than 1 ms
+        dt = self._t - self.mech_heart.material.active.t
+
+        return (XS_norm + XW_norm >= 0.1) or dt > 1.0
 
     def _pre_mechanics_solve(self) -> None:
         self._preXS_assigner.assign(self._pre_XS, utils.sub_function(self._vs, 40))
         self._preXW_assigner.assign(self._pre_XW, utils.sub_function(self._vs, 41))
 
-        self.coupling.interpolate_mechanics()
+        self.coupling.coupling_to_mechanics()
+        self.mech_heart.material.active.update_time(self._t)
 
     def _post_mechanics_solve(self) -> None:
-        self.coupling.interpolate_ep()
+        self.coupling.mechanics_to_coupling()
         # Update previous active tension
         self.mech_heart.material.active.update_prev()
-        self.coupling.update_ep()
+        self.coupling.coupling_to_ep()
 
     def _solve_mechanics(self):
         self._pre_mechanics_solve()

@@ -14,7 +14,6 @@ def test_em_model(coupling, ep_solver, cell_params, bnd_cond):
         solve_mock.return_value = (1, True)  # (niter, nconv)
         simcardems.setup_models.setup_mechanics_solver(
             coupling=coupling,
-            dt=0.01,
             bnd_cond=bnd_cond,
             cell_params=cell_params,
         )
