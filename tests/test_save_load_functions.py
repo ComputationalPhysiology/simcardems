@@ -153,7 +153,6 @@ def test_load_state_with_new_parameters_uses_new_parameters(
 
     mech_heart = simcardems.setup_models.setup_mechanics_solver(
         coupling=coupling,
-        dt=0.01,
         bnd_cond=bnd_cond,
         cell_params=cell_params,
     )
