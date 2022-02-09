@@ -471,7 +471,7 @@ class Runner:
         # Store initial state
         self._t = self._t0
         self.store()
-
+        self.mech_heart.material.active.t = self._t0
         # Store the initial time point
         for (i, (t0, self._t)) in enumerate(pbar):
 
