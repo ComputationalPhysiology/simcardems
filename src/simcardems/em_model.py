@@ -33,7 +33,7 @@ class EMCoupling:
         self.lmbda_ep = dolfin.Function(self.V_ep, name="lambda_ep")
         self.Zetas_ep = dolfin.Function(self.V_ep, name="Zetas_ep")
         self.Zetaw_ep = dolfin.Function(self.V_ep, name="Zetaw_ep")
-        self.coupling_to_mechanics()
+        self.mechanics_to_coupling()
 
     @property
     def mech_mesh(self):
