@@ -436,7 +436,7 @@ class Runner:
         # dt for the mechanics model should not be larger than 1 ms
         dt = self._t - self.mech_heart.material.active.t
 
-        return (XS_norm + XW_norm >= 0.1) or dt > 1.0
+        return (XS_norm + XW_norm >= 0.1) or dt > 0.990
 
     def _pre_mechanics_solve(self) -> None:
         self._preXS_assigner.assign(self._pre_XS, utils.sub_function(self._vs, 40))
@@ -470,9 +470,9 @@ class Runner:
 
         # Store initial state
         self._t = self._t0
-        self.store()
         self.mech_heart.material.active.t = self._t0
         # Store the initial time point
+        self.store()
         for (i, (t0, self._t)) in enumerate(pbar):
 
             logger.debug(f"Solve EP model at step {i} from {t0} to {self._t}")
@@ -481,6 +481,11 @@ class Runner:
             self.ep_solver.step((t0, self._t))
 
             if self._solve_mechanics_now():
+                logger.debug(
+                    f"Solve mechanics model at step {i} from \
+                        {self.mech_heart.material.active.t} to {self._t} with timestep \
+                        {self._t-self.mech_heart.material.active.t}",
+                )
                 self._solve_mechanics()
 
             self.ep_solver.vs_.assign(self.ep_solver.vs)
