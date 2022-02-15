@@ -33,7 +33,7 @@ The source code can be found on `GitHub <https://github.com/ComputationalPhysiol
 
 License
 -------
-``simcardems`` is licensed under the GNU LGPL, version 3 or (at your option) any later version.
+``simcardems`` is licensed under the GNU LGPL, version 2.1 or (at your option) any later version.
 ``simcardems`` is Copyright (2011-2022) by the authors and Simula Research Laboratory.
 
 Authors
