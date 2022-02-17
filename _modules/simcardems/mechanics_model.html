@@ -267,7 +267,6 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">XS</span><span class="p">,</span>
         <span class="n">XW</span><span class="p">,</span>
-        <span class="n">dt</span><span class="p">,</span>
         <span class="n">lmbda</span><span class="p">,</span>
         <span class="n">Zetas</span><span class="p">,</span>
         <span class="n">Zetaw</span><span class="p">,</span>
@@ -288,7 +287,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">XW</span> <span class="o">=</span> <span class="n">XW</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">XW_prev</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">function_space</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span> <span class="o">=</span> <span class="n">parameters</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">dt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_t_prev</span> <span class="o">=</span> <span class="mf">0.0</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">Zetas</span> <span class="o">=</span> <span class="n">Zetas</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Zetaw</span> <span class="o">=</span> <span class="n">Zetaw</span>
@@ -304,6 +304,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">lmbda_current</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">function_space</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lmbda_current</span> <span class="o">=</span> <span class="n">lmbda</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_prev</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_t_prev</span>
+
+<div class="viewcode-block" id="LandModel.update_time"><a class="viewcode-back" href="../../simcardems.html#simcardems.mechanics_model.LandModel.update_time">[docs]</a>    <span class="k">def</span> <span class="nf">update_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_t_prev</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="n">t</span></div>
 
 <div class="viewcode-block" id="LandModel.update_prev"><a class="viewcode-back" href="../../simcardems.html#simcardems.mechanics_model.LandModel.update_prev">[docs]</a>    <span class="k">def</span> <span class="nf">update_prev</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">XS_prev</span><span class="o">.</span><span class="n">vector</span><span class="p">()[:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">XS</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span>
@@ -324,6 +332,11 @@
         <span class="k">return</span> <span class="n">dLambda</span></div>
 
     <span class="k">def</span> <span class="nf">_solve_ode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">F</span><span class="p">):</span>
+
+        <span class="n">Zetas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Zetas</span>
+        <span class="n">Zetaw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Zetaw</span>
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-10</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Zetas</span><span class="p">,</span> <span class="n">Zetaw</span>
 
         <span class="n">phi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;phi&quot;</span><span class="p">]</span>
         <span class="n">Tot_A</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;Tot_A&quot;</span><span class="p">]</span>
@@ -366,17 +379,13 @@
         <span class="c1"># dZetaw = self.dLambda * Aw - self.Zetaw * cw</span>
 
         <span class="c1"># Lets use Backward Euler scheme with a few fixed point iterations</span>
-        <span class="n">Zetas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Zetas</span>
-        <span class="n">Zetaw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Zetaw</span>
 
-        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
-            <span class="n">Zetas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Zetas_prev</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dLambda</span><span class="p">(</span><span class="n">F</span><span class="p">)</span> <span class="o">*</span> <span class="n">As</span> <span class="o">-</span> <span class="n">Zetas</span> <span class="o">*</span> <span class="n">cs</span><span class="p">)</span>
-            <span class="n">Zetaw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Zetaw_prev</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dLambda</span><span class="p">(</span><span class="n">F</span><span class="p">)</span> <span class="o">*</span> <span class="n">Aw</span> <span class="o">-</span> <span class="n">Zetaw</span> <span class="o">*</span> <span class="n">cw</span><span class="p">)</span>
+        <span class="n">Zetas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Zetas_prev</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dLambda</span><span class="p">(</span><span class="n">F</span><span class="p">)</span> <span class="o">*</span> <span class="n">As</span> <span class="o">-</span> <span class="n">Zetas</span> <span class="o">*</span> <span class="n">cs</span><span class="p">)</span>
+        <span class="n">Zetaw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Zetaw_prev</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dLambda</span><span class="p">(</span><span class="n">F</span><span class="p">)</span> <span class="o">*</span> <span class="n">Aw</span> <span class="o">-</span> <span class="n">Zetaw</span> <span class="o">*</span> <span class="n">cw</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">Zetas</span><span class="p">,</span> <span class="n">Zetaw</span>
 
 <div class="viewcode-block" id="LandModel.Ta"><a class="viewcode-back" href="../../simcardems.html#simcardems.mechanics_model.LandModel.Ta">[docs]</a>    <span class="k">def</span> <span class="nf">Ta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">F</span><span class="p">):</span>
-
         <span class="n">Zetas</span><span class="p">,</span> <span class="n">Zetaw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solve_ode</span><span class="p">(</span><span class="n">F</span><span class="p">)</span>
         <span class="n">Tref</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;Tref&quot;</span><span class="p">]</span>
         <span class="n">rs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;rs&quot;</span><span class="p">]</span>

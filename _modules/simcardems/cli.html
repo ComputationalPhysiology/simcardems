@@ -496,16 +496,24 @@
     <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Plot state traces&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
+    <span class="s2">&quot;--make-xdmf&quot;</span><span class="p">,</span>
+    <span class="n">is_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Make xdmf files&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
     <span class="s2">&quot;--population&quot;</span><span class="p">,</span>
     <span class="n">is_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Plot population&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;--num_models&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Number of models to be analyzed&quot;</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">postprocess</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">num_models</span><span class="p">,</span> <span class="n">plot_state_traces</span><span class="p">,</span> <span class="n">population</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">postprocess</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">num_models</span><span class="p">,</span> <span class="n">plot_state_traces</span><span class="p">,</span> <span class="n">make_xdmf</span><span class="p">,</span> <span class="n">population</span><span class="p">):</span>
     <span class="n">folder</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">plot_state_traces</span><span class="p">:</span>
         <span class="n">post</span><span class="o">.</span><span class="n">plot_state_traces</span><span class="p">(</span><span class="n">folder</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;results.h5&quot;</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">make_xdmf</span><span class="p">:</span>
+        <span class="n">post</span><span class="o">.</span><span class="n">make_xdmffiles</span><span class="p">(</span><span class="n">folder</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;results.h5&quot;</span><span class="p">))</span>
     <span class="k">if</span> <span class="n">population</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Execute postprocess for population&quot;</span><span class="p">)</span>
         <span class="n">post</span><span class="o">.</span><span class="n">save_popu_json</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">num_models</span><span class="p">)</span>

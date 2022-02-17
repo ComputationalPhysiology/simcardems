@@ -314,28 +314,24 @@
 </div>
 <p>This will create the output directory <code class="docutils literal notranslate"><span class="pre">results_simple_demo</span></code> with the following output</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>results_simple_demo
-├── ep_Ca.h5
-├── ep_Ca.xdmf
-├── ep_V.h5
-├── ep_V.xdmf
-├── mechanics_Ta.h5
-├── mechanics_Ta.xdmf
-├── mechanics_lmbda.h5
-├── mechanics_lmbda.xdmf
-├── mechanics_u.h5
-├── mechanics_u.xdmf
 ├── results.h5
 ├── state.h5
+</pre></div>
+</div>
+<p>The file <code class="docutils literal notranslate"><span class="pre">state.h5</span></code> contains the final state which can be used if you want use the final state as a starting point for the next simulation.
+The file <code class="docutils literal notranslate"><span class="pre">results.h5</span></code> contains the Displacement (<span class="math notranslate nohighlight">\(u\)</span>), active tension (<span class="math notranslate nohighlight">\(T_a\)</span>), voltage (<span class="math notranslate nohighlight">\(V\)</span>) and calcium (<span class="math notranslate nohighlight">\(Ca\)</span>) for each time step.
+We can also plot the traces using the postprocess module</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">simcardems</span><span class="o">.</span><span class="n">postprocess</span><span class="o">.</span><span class="n">plot_state_traces</span><span class="p">(</span><span class="n">outdir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;results.h5&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>And save the output to xdmf-files that can be viewed in Paraview</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">simcardems</span><span class="o">.</span><span class="n">postprocess</span><span class="o">.</span><span class="n">make_xdmffiles</span><span class="p">(</span><span class="n">outdir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;results.h5&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">xdmf</span></code> files are can be opened in <a class="reference external" href="https://www.paraview.org/download/">Paraview</a> to visualize the different variables such as in <a class="reference internal" href="#simple-demo-paraview"><span class="std std-numref">Figure 1</span></a>.</p>
 <div class="figure align-default" id="simple-demo-paraview">
 <img alt="_images/simple_demo.png" src="_images/simple_demo.png" />
 <p class="caption"><span class="caption-number">Fig. 1 </span><span class="caption-text">Displacement (<span class="math notranslate nohighlight">\(u\)</span>), active tension (<span class="math notranslate nohighlight">\(T_a\)</span>), voltage (<span class="math notranslate nohighlight">\(V\)</span>) and calcium (<span class="math notranslate nohighlight">\(Ca\)</span>) visualized for a specific time point in Paraview.</span><a class="headerlink" href="#simple-demo-paraview" title="Permalink to this image">¶</a></p>
-</div>
-<p>We can also plot the traces using the postprocess module</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">simcardems</span><span class="o">.</span><span class="n">postprocess</span><span class="o">.</span><span class="n">plot_state_traces</span><span class="p">(</span><span class="n">outdir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;results.h5&quot;</span><span class="p">))</span>
-</pre></div>
 </div>
 <p>This will create a figure in the output directory called <code class="docutils literal notranslate"><span class="pre">state_traces.png</span></code> which in this case is shown in <a class="reference internal" href="#simple-demo-state-traces"><span class="std std-numref">Figure 2</span></a> we see the resulting state traces, and can also see the instant drop in the active tension (<span class="math notranslate nohighlight">\(T_a\)</span>) at the time of the triggered release.</p>
 <div class="figure align-default" id="simple-demo-state-traces">
