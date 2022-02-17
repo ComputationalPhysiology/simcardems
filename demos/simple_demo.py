@@ -59,19 +59,23 @@ runner.solve(T=parameters["T"], save_freq=parameters["save_freq"], hpc=False)
 #
 # ```
 # results_simple_demo
-# ├── ep_Ca.h5
-# ├── ep_Ca.xdmf
-# ├── ep_V.h5
-# ├── ep_V.xdmf
-# ├── mechanics_Ta.h5
-# ├── mechanics_Ta.xdmf
-# ├── mechanics_lmbda.h5
-# ├── mechanics_lmbda.xdmf
-# ├── mechanics_u.h5
-# ├── mechanics_u.xdmf
 # ├── results.h5
 # ├── state.h5
 # ```
+# The file `state.h5` contains the final state which can be used if you want use the final state as a starting point for the next simulation.
+# The file `results.h5` contains the Displacement ($u$), active tension ($T_a$), voltage ($V$) and calcium ($Ca$) for each time step.
+# We can also plot the traces using the postprocess module
+#
+#
+
+simcardems.postprocess.plot_state_traces(outdir.joinpath("results.h5"))
+
+#
+# And save the output to xdmf-files that can be viewed in Paraview
+#
+
+simcardems.postprocess.make_xdmffiles(outdir.joinpath("results.h5"))
+
 #
 # The `xdmf` files are can be opened in [Paraview](https://www.paraview.org/download/) to visualize the different variables such as in {numref}`Figure {number} <simple-demo-paraview>`.
 #
@@ -82,12 +86,6 @@ runner.solve(T=parameters["T"], save_freq=parameters["save_freq"], hpc=False)
 #
 # Displacement ($u$), active tension ($T_a$), voltage ($V$) and calcium ($Ca$) visualized for a specific time point in Paraview.
 # ```
-#
-# We can also plot the traces using the postprocess module
-#
-#
-
-simcardems.postprocess.plot_state_traces(outdir.joinpath("results.h5"))
 
 
 # This will create a figure in the output directory called `state_traces.png` which in this case is shown in {numref}`Figure {number} <simple_demo_state_traces>` we see the resulting state traces, and can also see the instant drop in the active tension ($T_a$) at the time of the triggered release.

@@ -98,7 +98,6 @@ def setup_EM_model(
 
     mech_heart = setup_mechanics_solver(
         coupling=coupling,
-        dt=dt,
         bnd_cond=bnd_cond,
         cell_params=solver.ode_solver._model.parameters(),
         pre_stretch=pre_stretch,
@@ -118,7 +117,6 @@ def setup_EM_model(
 
 def setup_mechanics_solver(
     coupling: em_model.EMCoupling,
-    dt,
     bnd_cond: mechanics_model.BoundaryConditions,
     cell_params,
     pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
@@ -175,7 +173,6 @@ def setup_mechanics_solver(
         parameters=cell_params,
         XS=coupling.XS_mech,
         XW=coupling.XW_mech,
-        dt=dt,
         function_space=V,
     )
     material = pulse.HolzapfelOgden(
@@ -276,6 +273,7 @@ class Runner:
     def __init__(
         self,
         outdir: utils.PathLike = Defaults.outdir,
+        *,
         dx: float = Defaults.dx,
         dt: float = Defaults.dt,
         cell_init_file: utils.PathLike = Defaults.cell_init_file,
@@ -430,24 +428,28 @@ class Runner:
     def _solve_mechanics_now(self) -> bool:
 
         # Update these states that are needed in the Mechanics solver
-        self.coupling.update_mechanics()
+        self.coupling.ep_to_coupling()
 
         XS_norm = utils.compute_norm(self.coupling.XS_ep, self._pre_XS)
         XW_norm = utils.compute_norm(self.coupling.XW_ep, self._pre_XW)
 
-        return XS_norm + XW_norm >= 0.1
+        # dt for the mechanics model should not be larger than 1 ms
+        dt = self._t - self.mech_heart.material.active.t
+
+        return (XS_norm + XW_norm >= 0.1) or dt > 0.990
 
     def _pre_mechanics_solve(self) -> None:
         self._preXS_assigner.assign(self._pre_XS, utils.sub_function(self._vs, 40))
         self._preXW_assigner.assign(self._pre_XW, utils.sub_function(self._vs, 41))
 
-        self.coupling.interpolate_mechanics()
+        self.coupling.coupling_to_mechanics()
+        self.mech_heart.material.active.update_time(self._t)
 
     def _post_mechanics_solve(self) -> None:
-        self.coupling.interpolate_ep()
+        self.coupling.mechanics_to_coupling()
         # Update previous active tension
         self.mech_heart.material.active.update_prev()
-        self.coupling.update_ep()
+        self.coupling.coupling_to_ep()
 
     def _solve_mechanics(self):
         self._pre_mechanics_solve()
@@ -466,19 +468,29 @@ class Runner:
         save_it = int(save_freq / self._dt)
         pbar = create_progressbar(t0=self._t0, T=T, dt=self._dt, hpc=hpc)
 
-        for (i, (self._t, t1)) in enumerate(pbar):
+        # Store initial state
+        self._t = self._t0
+        self.mech_heart.material.active.t = self._t0
+        # Store the initial time point
+        self.store()
+        for (i, (t0, self._t)) in enumerate(pbar):
 
-            logger.debug(f"Solve EP model at step {i} from {self._t} to {t1}")
+            logger.debug(f"Solve EP model at step {i} from {t0} to {self._t}")
 
             # Solve EP model
-            self.ep_solver.step((self._t, t1))
+            self.ep_solver.step((t0, self._t))
 
             if self._solve_mechanics_now():
+                logger.debug(
+                    f"Solve mechanics model at step {i} from \
+                        {self.mech_heart.material.active.t} to {self._t} with timestep \
+                        {self._t-self.mech_heart.material.active.t}",
+                )
                 self._solve_mechanics()
 
             self.ep_solver.vs_.assign(self.ep_solver.vs)
             # Store every 'save_freq' ms
-            if i % save_it == 0:
+            if i > 0 and i % save_it == 0:
                 self.store()
 
         io.save_state(

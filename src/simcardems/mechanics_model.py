@@ -21,7 +21,6 @@ class LandModel(pulse.ActiveModel):
         self,
         XS,
         XW,
-        dt,
         lmbda,
         Zetas,
         Zetaw,
@@ -42,7 +41,8 @@ class LandModel(pulse.ActiveModel):
         self.XW = XW
         self.XW_prev = dolfin.Function(function_space)
         self._parameters = parameters
-        self.dt = dt
+        self.t = 0.0
+        self._t_prev = 0.0
 
         self.Zetas = Zetas
         self.Zetaw = Zetaw
@@ -58,6 +58,14 @@ class LandModel(pulse.ActiveModel):
         self.lmbda_current = dolfin.Function(function_space)
         self.lmbda_current = lmbda
         self.update_prev()
+
+    @property
+    def dt(self):
+        return self.t - self._t_prev
+
+    def update_time(self, t):
+        self._t_prev = self.t
+        self.t = t
 
     def update_prev(self):
         self.XS_prev.vector()[:] = self.XS.vector()
@@ -78,6 +86,11 @@ class LandModel(pulse.ActiveModel):
         return dLambda
 
     def _solve_ode(self, F):
+
+        Zetas = self.Zetas
+        Zetaw = self.Zetaw
+        if abs(self.dt) < 1e-10:
+            return Zetas, Zetaw
 
         phi = self._parameters["phi"]
         Tot_A = self._parameters["Tot_A"]
@@ -120,17 +133,13 @@ class LandModel(pulse.ActiveModel):
         # dZetaw = self.dLambda * Aw - self.Zetaw * cw
 
         # Lets use Backward Euler scheme with a few fixed point iterations
-        Zetas = self.Zetas
-        Zetaw = self.Zetaw
 
-        for _ in range(10):
-            Zetas = self.Zetas_prev + self.dt * (self.dLambda(F) * As - Zetas * cs)
-            Zetaw = self.Zetaw_prev + self.dt * (self.dLambda(F) * Aw - Zetaw * cw)
+        Zetas = self.Zetas_prev + self.dt * (self.dLambda(F) * As - Zetas * cs)
+        Zetaw = self.Zetaw_prev + self.dt * (self.dLambda(F) * Aw - Zetaw * cw)
 
         return Zetas, Zetaw
 
     def Ta(self, F):
-
         Zetas, Zetaw = self._solve_ode(F)
         Tref = self._parameters["Tref"]
         rs = self._parameters["rs"]

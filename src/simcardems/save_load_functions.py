@@ -144,8 +144,6 @@ def load_state(
     disease_state="healthy",
 ):
     logger.debug(f"Load state from path {path}")
-    if drug_factors_file != "" or popu_factors_file != "":
-        logger.info("Load drug or population factors from file")
     path = Path(path)
     if not path.is_file():
         raise FileNotFoundError(f"File {path} does not exist")
@@ -225,11 +223,11 @@ def load_state(
 
     mech_heart = setup_models.setup_mechanics_solver(
         coupling=coupling,
-        dt=state_params["dt"],
         bnd_cond=bnd_cond_dict[state_params["bnd_cond"]],
         cell_params=solver.ode_solver._model.parameters(),
     )
     mech_heart.state.assign(mech_state)
+    coupling.coupling_to_mechanics()
 
     return setup_models.EMState(
         coupling=coupling,

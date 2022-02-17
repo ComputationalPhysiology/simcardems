@@ -7,6 +7,7 @@ import dolfin
 import h5py
 import matplotlib.pyplot as plt
 import numpy as np
+import tqdm
 
 from . import utils
 from .datacollector import DataLoader
@@ -314,6 +315,8 @@ def plot_state_traces(results_file):
                     values[group][name][i] = func(bnd[group].center)
 
     times = np.array(loader.time_stamps, dtype=float)
+    print(times)
+    print(values)
 
     if times[-1] > 4000 and False:
         plot_peaks(
@@ -322,10 +325,10 @@ def plot_state_traces(results_file):
             0.0002,
         )
 
-    ax[0, 0].plot(times[1:], values["mechanics"]["lmbda"][1:])
-    ax[0, 1].plot(times[1:], values["mechanics"]["Ta"][1:])
+    ax[0, 0].plot(times, values["mechanics"]["lmbda"])
+    ax[0, 1].plot(times, values["mechanics"]["Ta"])
     ax[1, 0].plot(times, values["ep"]["V"])
-    ax[1, 1].plot(times[1:], values["ep"]["Ca"][1:])
+    ax[1, 1].plot(times, values["ep"]["Ca"])
 
     ax[0, 0].set_title(r"$\lambda$")
     ax[0, 1].set_title("Ta")
@@ -344,6 +347,24 @@ def plot_state_traces(results_file):
         ],
     )
     fig.savefig(outdir.joinpath("state_traces.png"), dpi=300)
+
+
+def make_xdmffiles(results_file):
+
+    loader = DataLoader(results_file)
+    outdir = Path(results_file).parent
+
+    for group, names in loader.names.items():
+        logger.info(f"Save xdmffile for group {group}")
+        for name in names:
+            xdmf = dolfin.XDMFFile(
+                dolfin.MPI.comm_world,
+                outdir.joinpath(f"{group}_{name}.xdmf").as_posix(),
+            )
+            logger.info(f"Save {name}")
+            for t in tqdm.tqdm(loader.time_stamps):
+                f = loader.get(group, name, t)
+                xdmf.write(f, float(t))
 
 
 def plot_population(dict, outdir, num_models, reset_time=True):
