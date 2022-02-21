@@ -1587,7 +1587,9 @@ class ORdmm_Land(CardiacCellModel):
         zetas2 = (-1 - Zetas) * ufl.conditional(ufl.lt(Zetas, -1), 1, 0)
         gammasu = gammas * Max(zetas1, zetas2)
 
-        F_expressions[39] = kws * scale_drug_kws * scale_popu_kws * XW - XS * gammasu - XS * ksu
+        F_expressions[39] = (
+            kws * scale_drug_kws * scale_popu_kws * XW - XS * gammasu - XS * ksu
+        )
         F_expressions[40] = (
             kuw * scale_popu_kuw * XU
             - kws * scale_drug_kws * scale_popu_kws * XW
