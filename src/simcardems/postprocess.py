@@ -476,9 +476,11 @@ def get_biomarkers(dict, outdir, num_models):
             time[np.where(u == np.min(u))[0][0]] % 1000
         )
 
-        ax.plot(PoMm, biomarker_dict[f"m{PoMm}"]["APD90"], "*")
+        if num_models > 1:
+            ax.plot(PoMm, biomarker_dict[f"m{PoMm}"]["APD90"], "*")
 
-    fig.savefig(outdir.joinpath("APD90_permodel.png"), dpi=300)
+    if num_models > 1:
+        fig.savefig(outdir.joinpath("APD90_permodel.png"), dpi=300)
 
     with open(outdir.joinpath("biomarkers_PoMcontrol.json"), "w") as f:
         json.dump(biomarker_dict, f)
@@ -511,7 +513,10 @@ def save_popu_json(population_folder, num_models):
         dict = {}
         for PoMm in range(1, num_models + 1):
             print(f"Analyzing model {PoMm}")
-            results_file = population_folder.joinpath(f"m{PoMm}/results.h5")
+            if num_models == 1:
+                results_file = population_folder.joinpath("results.h5")
+            else:
+                results_file = population_folder.joinpath(f"m{PoMm}/results.h5")
 
             if not results_file.is_file():
                 raise FileNotFoundError(f"File {results_file} does not exist")
