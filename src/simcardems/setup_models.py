@@ -436,7 +436,7 @@ class Runner:
         # dt for the mechanics model should not be larger than 1 ms
         dt = self._t - self.mech_heart.material.active.t
 
-        return (XS_norm + XW_norm >= 0.1) or dt > 0.990
+        return (XS_norm + XW_norm >= 0.05) or dt > 0.990
 
     def _pre_mechanics_solve(self) -> None:
         self._preXS_assigner.assign(self._pre_XS, utils.sub_function(self._vs, 40))
