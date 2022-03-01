@@ -56,12 +56,12 @@ def setup_ep_model(cellmodel, mesh):
     S1_marker = 1
 
     setstim = "stimall"
-    if setstim == "stimpart":    #Stimpart
+    if setstim == "stimpart":  # Stimpart
         L = 2.0
-        S1_subdomain = dolfin.CompiledSubDomain("x[0] <= L + DOLFIN_EPS",L=L)
+        S1_subdomain = dolfin.CompiledSubDomain("x[0] <= L + DOLFIN_EPS", L=L)
         S1_markers = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim())
         S1_subdomain.mark(S1_markers, S1_marker)
-    elif setstim == "stimall":       #Stimall
+    elif setstim == "stimall":  # Stimall
         S1_markers = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim())
         S1_markers.set_all(S1_marker)  # Mark the whole mesh
 
