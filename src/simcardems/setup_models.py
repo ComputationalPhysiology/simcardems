@@ -497,7 +497,9 @@ class Runner:
             # Store state every 5 beats
             if i > 0 and i % int(5000 / self._dt) == 0:
                 io.save_state(
-                    self._state_path.parent.joinpath(f"state_{int(i*self._dt/1000)}beat.h5"),
+                    self._state_path.parent.joinpath(
+                        f"state_{int(i*self._dt/1000)}beat.h5",
+                    ),
                     solver=self.ep_solver,
                     mech_heart=self.mech_heart,
                     coupling=self.coupling,
