@@ -193,6 +193,7 @@ class ORdmm_Land(CardiacCellModel):
                 ("scale_drug_Isacns", 1.0),
                 ("scale_drug_Isack", 1.0),
                 ("scale_drug_kws", 1.0),
+                ("scale_drug_kuw", 1.0),
                 # Population factors
                 ("scale_popu_GNa", 1.0),
                 ("scale_popu_GCaL", 1.0),
@@ -998,6 +999,7 @@ class ORdmm_Land(CardiacCellModel):
         scale_drug_Isacns = self._parameters["scale_drug_Isacns"]
         scale_drug_Isack = self._parameters["scale_drug_Isack"]
         scale_drug_kws = self._parameters["scale_drug_kws"]
+        scale_drug_kuw = self._parameters["scale_drug_kuw"]
 
         # Population factors
         scale_popu_GNa = self._parameters["scale_popu_GNa"]
@@ -1591,7 +1593,7 @@ class ORdmm_Land(CardiacCellModel):
             kws * scale_drug_kws * scale_popu_kws * XW - XS * gammasu - XS * ksu
         )
         F_expressions[40] = (
-            kuw * scale_popu_kuw * XU
+            kuw * scale_drug_kuw * scale_popu_kuw * XU
             - kws * scale_drug_kws * scale_popu_kws * XW
             - XW * gammawu
             - XW * kwu
