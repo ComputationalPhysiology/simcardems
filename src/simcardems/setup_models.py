@@ -391,6 +391,9 @@ class Runner:
         )
         self._assign_displacement()
 
+        self.CaTrpn, self.CaTrpn_assigner = utils.setup_assigner(self._vs, 42)
+        self.TmB, self.TmB_assigner = utils.setup_assigner(self._vs, 43)
+
     def _assign_displacement(self):
         self._u_assigner.assign(
             self._u,
@@ -400,6 +403,8 @@ class Runner:
     def _assign_ep(self):
         self._v_assigner.assign(self._v, utils.sub_function(self._vs, 0))
         self._Ca_assigner.assign(self._Ca, utils.sub_function(self._vs, 45))
+        self.CaTrpn_assigner.assign(self.CaTrpn, utils.sub_function(self._vs, 42))
+        self.TmB_assigner.assign(self.TmB, utils.sub_function(self._vs, 43))
 
     def store(self):
         # Assign u, v and Ca for postprocessing
@@ -422,6 +427,12 @@ class Runner:
             ("ep", "Ca", self._Ca),
             ("mechanics", "lmbda", self.coupling.lmbda_mech),
             ("mechanics", "Ta", self.mech_heart.material.active.Ta_current),
+            ("ep", "CaTrpn", self.CaTrpn),
+            ("ep", "TmB", self.TmB),
+            ("mechanics", "zetas", self.coupling.Zetas_mech),
+            ("mechanics", "zetaw", self.coupling.Zetaw_mech),
+            ("mechanics", "XS", self.coupling.XS_mech),
+            ("mechanics", "XW", self.coupling.XW_mech),
         ]:
             self.collector.register(group, name, f)
 
