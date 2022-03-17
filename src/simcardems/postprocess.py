@@ -282,7 +282,8 @@ def plot_peaks(fname, data, threshold):
 
 
 def plot_state_traces(results_file):
-    fig, ax = plt.subplots(2, 2, figsize=(10, 8), sharex=True)
+    fig, ax = plt.subplots(2, 2, sharex=True)
+    fig_mech, ax_mech = plt.subplots(2, 2, sharex=True)
     results_file = Path(results_file)
     if not results_file.is_file():
         raise FileNotFoundError(f"File {results_file} does not exist")
@@ -292,7 +293,7 @@ def plot_state_traces(results_file):
     loader = DataLoader(results_file)
     bnd = {"ep": Boundary(loader.ep_mesh), "mechanics": Boundary(loader.mech_mesh)}
 
-    all_names = {"mechanics": ["lmbda", "Ta"], "ep": ["V", "Ca"]}
+    all_names = {"mechanics": ["lmbda", "Ta", "zetas", "zetaw", 'XS', "XW"], "ep": ["V", "Ca", "CaTrpn", "TmB"]}
 
     values = {
         group: {name: np.zeros(len(loader.time_stamps)) for name in names}
@@ -348,6 +349,22 @@ def plot_state_traces(results_file):
     )
     fig.savefig(outdir.joinpath("state_traces.png"), dpi=300)
 
+    ax_mech[0, 0].plot(times, values["mechanics"]["zetas"])
+    ax_mech[0, 0].plot(times, values["mechanics"]["zetaw"])
+    ax_mech[1, 0].plot(times, values["mechanics"]["XS"])
+    ax_mech[1, 0].plot(times, values["mechanics"]["XW"])
+    ax_mech[0, 1].plot(times, values["ep"]["CaTrpn"])
+    ax_mech[1, 1].plot(times, values["ep"]["TmB"])
+
+    ax_mech[0, 0].set_title("zeta(s/w)")
+    ax_mech[1, 0].set_title("X(S/W)")
+    ax_mech[0, 1].set_title("CaTrpn")
+    ax_mech[1, 1].set_title("TmB")
+    ax_mech[1, 0].set_xlabel("Time (ms)")
+    ax_mech[1, 1].set_xlabel("Time (ms)")
+    for axi in ax_mech.flatten():
+        axi.grid()
+    fig_mech.savefig(outdir.joinpath("state_traces_mechanics.png"), dpi=300)
 
 def make_xdmffiles(results_file):
 
