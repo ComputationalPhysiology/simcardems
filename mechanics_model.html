@@ -31,9 +31,9 @@
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx-book-theme.12a9622fbb08dcb3a2a40b2c02b83a57.js"></script>
-    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/sphinx-book-theme.d59cb220de22ca1c485ebbdc042f0030.js"></script>
     <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="shortcut icon" href="_static/favicon.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -220,7 +220,7 @@
                 data-placement="left">.md</button></a>
         <!-- Download PDF via print -->
         <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
-            onClick="window.print()" data-toggle="tooltip" data-placement="left">.pdf</button>
+                onclick="printPdf(this)" data-toggle="tooltip" data-placement="left">.pdf</button>
     </div>
 </div>
 
@@ -254,7 +254,7 @@
         </div>
 
         <!-- Table of contents -->
-        <div class="d-none d-md-block col-md-2 bd-toc show">
+        <div class="d-none d-md-block col-md-2 bd-toc show noprint">
             
             <div class="tocsection onthispage pt-5 pb-3">
                 <i class="fas fa-list"></i> simcardems
@@ -294,12 +294,55 @@
 </div>
     <div id="main-content" class="row">
         <div class="col-12 col-md-9 pl-md-3 pr-md-0">
-        
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1>Tissue level mechanics model</h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                        <div>
+                            <h2> simcardems </h2>
+                        </div>
+                        <nav aria-label="Page">
+                            <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#passive-mechanics">
+   Passive mechanics
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#active-mechanics">
+   Active mechanics
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#discretization">
+   Discretization
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#software">
+   Software
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#references">
+   References
+  </a>
+ </li>
+</ul>
+
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            
               <div>
                 
   <div class="tex2jax_ignore mathjax_ignore section" id="tissue-level-mechanics-model">
 <span id="section-mechanics"></span><h1>Tissue level mechanics model<a class="headerlink" href="#tissue-level-mechanics-model" title="Permalink to this headline">¶</a></h1>
-<p>The equations of motion at the tissue level can be derived from the conservations laws of linear and angular momentum. The reader is referred to <span id="id1">[<a class="reference internal" href="#id7">Hol00</a>]</span> for more details.</p>
+<p>The equations of motion at the tissue level can be derived from the conservations laws of linear and angular momentum. The reader is referred to <span id="id1">[<a class="reference internal" href="#id7" title="A Gerhard Holzapfel. Nonlinear solid mechanics II. John Wiley &amp; Sons, Inc., 2000.">Hol00</a>]</span> for more details.</p>
 <p>We represent the tissue as a non-linear, incompressible hyperelastic material that satisfies the equilibrium equation</p>
 <div class="math notranslate nohighlight">
 \[\nabla \cdot \mathbf{P} = 0 \;\; \mathbf{x} \in \Omega.\]</div>
@@ -309,7 +352,7 @@
 <p>where <span class="math notranslate nohighlight">\(\Psi\)</span> is the strain energy density function and <span class="math notranslate nohighlight">\(\mathbf{F}\)</span> is the deformation gradient.</p>
 <div class="section" id="passive-mechanics">
 <h2>Passive mechanics<a class="headerlink" href="#passive-mechanics" title="Permalink to this headline">¶</a></h2>
-<p>We use the model from <span id="id2">[<a class="reference internal" href="#id8">HO09</a>]</span> which is given by</p>
+<p>We use the model from <span id="id2">[<a class="reference internal" href="#id8" title="Gerhard A Holzapfel and Ray W Ogden. Constitutive modelling of passive myocardium: a structurally based framework for material characterization. Philosophical Transactions of the Royal Society A: Mathematical, Physical and Engineering Sciences, 367(1902):3445–3475, 2009.">HO09</a>]</span> which is given by</p>
 <div class="math notranslate nohighlight" id="equation-holzapfel-full">
 <span class="eqno">(1)<a class="headerlink" href="#equation-holzapfel-full" title="Permalink to this equation">¶</a></span>\[\begin{split}\begin{align}
   \begin{split}
@@ -329,7 +372,7 @@
 <h2>Active mechanics<a class="headerlink" href="#active-mechanics" title="Permalink to this headline">¶</a></h2>
 <p>We know that the heart tissue is able to contract by itself without any external loads. To model the activate contraction of the cardiomyocites we use the active stress approach where the
 active contribution naturally decomposes the total stress into a sum
-of passive and active stresses <span id="id3">[<a class="reference internal" href="#id9">NP04</a>]</span>,</p>
+of passive and active stresses <span id="id3">[<a class="reference internal" href="#id9" title="Martyn P Nash and Alexander V Panfilov. Electromechanical model of excitable tissue to study reentrant cardiac arrhythmias. Progress in biophysics and molecular biology, 85(2-3):501–522, 2004.">NP04</a>]</span>,</p>
 <div class="math notranslate nohighlight">
 \[\mathbf{P} = \mathbf{P}_p + \mathbf{P}_a =  \frac{\partial \Psi_p}{\partial \mathbf{F}} +  \frac{\partial \Psi_a}{\partial \mathbf{F}}\]</div>
 <p>Here <span class="math notranslate nohighlight">\(\Psi_p\)</span> is the strain energy density function defined in <a class="reference internal" href="#equation-holzapfel-full">(1)</a> and</p>
@@ -365,8 +408,8 @@ of passive and active stresses <span id="id3">[<a class="reference internal" hre
 
               </div>
               
-        
-            <!-- Previous / next buttons -->
+            
+                <!-- Previous / next buttons -->
 <div class='prev-next-area'> 
     <a class='left-prev' id="prev-link" href="theory.html" title="previous page">
         <i class="fas fa-angle-left"></i>
@@ -383,19 +426,17 @@ of passive and active stresses <span id="id3">[<a class="reference internal" hre
     <i class="fas fa-angle-right"></i>
     </a>
 </div>
-        
+            
         </div>
     </div>
     <footer class="footer">
-    <div class="container">
-      <p>
-        
-          By Simula Research Laboratory<br/>
-        
-            &copy; Copyright 2022, Simula Research Laboratory.<br/>
-      </p>
-    </div>
-  </footer>
+  <p>
+    
+      By Simula Research Laboratory<br/>
+    
+        &copy; Copyright 2022, Simula Research Laboratory.<br/>
+  </p>
+</footer>
 </main>
 
 

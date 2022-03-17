@@ -31,7 +31,7 @@
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx-book-theme.12a9622fbb08dcb3a2a40b2c02b83a57.js"></script>
+    <script src="_static/sphinx-book-theme.d59cb220de22ca1c485ebbdc042f0030.js"></script>
     <link rel="shortcut icon" href="_static/favicon.ico"/>
     <link rel="index" title="Index" href="#" />
     <link rel="search" title="Search" href="search.html" />
@@ -233,14 +233,24 @@
         </div>
 
         <!-- Table of contents -->
-        <div class="d-none d-md-block col-md-2 bd-toc show">
+        <div class="d-none d-md-block col-md-2 bd-toc show noprint">
             
         </div>
     </div>
 </div>
     <div id="main-content" class="row">
         <div class="col-12 col-md-9 pl-md-3 pr-md-0">
-        
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1></h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                    </div>
+                </div>
+            </div>
+            
               <div>
                 
 
@@ -353,6 +363,8 @@
         <li><a href="simcardems.html#simcardems.datacollector.DataCollector">(class in simcardems.datacollector)</a>
 </li>
       </ul></li>
+      <li><a href="simcardems.html#simcardems.datacollector.DataGroups">DataGroups (class in simcardems.datacollector)</a>
+</li>
       <li><a href="simcardems.html#simcardems.DataLoader">DataLoader (class in simcardems)</a>
 
       <ul>
@@ -415,6 +427,10 @@
       </ul></li>
       <li><a href="simcardems.html#simcardems.setup_models.EMState">EMState (class in simcardems.setup_models)</a>
 </li>
+      <li><a href="simcardems.html#simcardems.datacollector.DataGroups.ep">ep (simcardems.datacollector.DataGroups attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="simcardems.html#simcardems.em_model.EMCoupling.ep_mesh">ep_mesh (simcardems.em_model.EMCoupling property)</a>
 
       <ul>
@@ -423,8 +439,6 @@
         <li><a href="simcardems.html#simcardems.geometry.BaseGeometry.ep_mesh">(simcardems.geometry.BaseGeometry property)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="simcardems.html#simcardems.em_model.EMCoupling.ep_to_coupling">ep_to_coupling() (simcardems.em_model.EMCoupling method)</a>
 
       <ul>
@@ -587,14 +601,10 @@
         <li><a href="simcardems.html#simcardems.EMCoupling.mech_mesh">(simcardems.EMCoupling property)</a>
 </li>
       </ul></li>
+      <li><a href="simcardems.html#simcardems.datacollector.DataGroups.mechanics">mechanics (simcardems.datacollector.DataGroups attribute)</a>
+</li>
       <li><a href="simcardems.html#simcardems.geometry.BaseGeometry.mechanics_mesh">mechanics_mesh (simcardems.geometry.BaseGeometry attribute)</a>
-
-      <ul>
-        <li><a href="simcardems.html#simcardems.geometry.Geometry.mechanics_mesh">(simcardems.geometry.Geometry attribute)</a>
 </li>
-        <li><a href="simcardems.html#simcardems.geometry.SlabGeometry.mechanics_mesh">(simcardems.geometry.SlabGeometry attribute)</a>
-</li>
-      </ul></li>
       <li><a href="simcardems.html#simcardems.em_model.EMCoupling.mechanics_to_coupling">mechanics_to_coupling() (simcardems.em_model.EMCoupling method)</a>
 
       <ul>
@@ -609,8 +619,6 @@
       </ul></li>
       <li><a href="simcardems.html#simcardems.ORdmm_Land.Min">Min() (in module simcardems.ORdmm_Land)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     module
 
@@ -644,6 +652,8 @@
         <li><a href="simcardems.html#module-simcardems.version">simcardems.version</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="simcardems.html#simcardems.utils.MPIFilt">MPIFilt (class in simcardems.utils)</a>
 </li>
   </ul></td>
@@ -930,6 +940,12 @@
 </li>
       <li><a href="simcardems.html#simcardems.gui.simulation">simulation() (in module simcardems.gui)</a>
 </li>
+      <li><a href="simcardems.html#simcardems.datacollector.DataLoader.size">size (simcardems.datacollector.DataLoader property)</a>
+
+      <ul>
+        <li><a href="simcardems.html#simcardems.DataLoader.size">(simcardems.DataLoader property)</a>
+</li>
+      </ul></li>
       <li><a href="simcardems.html#simcardems.geometry.SlabGeometry">SlabGeometry (class in simcardems.geometry)</a>
 </li>
       <li><a href="simcardems.html#simcardems.mechanics_model.MechanicsProblem.solve">solve() (simcardems.mechanics_model.MechanicsProblem method)</a>
@@ -1067,23 +1083,21 @@
 
               </div>
               
-        
-            <!-- Previous / next buttons -->
+            
+                <!-- Previous / next buttons -->
 <div class='prev-next-area'>
 </div>
-        
+            
         </div>
     </div>
     <footer class="footer">
-    <div class="container">
-      <p>
-        
-          By Simula Research Laboratory<br/>
-        
-            &copy; Copyright 2022, Simula Research Laboratory.<br/>
-      </p>
-    </div>
-  </footer>
+  <p>
+    
+      By Simula Research Laboratory<br/>
+    
+        &copy; Copyright 2022, Simula Research Laboratory.<br/>
+  </p>
+</footer>
 </main>
 
 

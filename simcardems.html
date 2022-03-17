@@ -31,9 +31,9 @@
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx-book-theme.12a9622fbb08dcb3a2a40b2c02b83a57.js"></script>
-    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/sphinx-book-theme.d59cb220de22ca1c485ebbdc042f0030.js"></script>
     <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="shortcut icon" href="_static/favicon.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -219,7 +219,7 @@
                 data-placement="left">.rst</button></a>
         <!-- Download PDF via print -->
         <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
-            onClick="window.print()" data-toggle="tooltip" data-placement="left">.pdf</button>
+                onclick="printPdf(this)" data-toggle="tooltip" data-placement="left">.pdf</button>
     </div>
 </div>
 
@@ -253,7 +253,7 @@
         </div>
 
         <!-- Table of contents -->
-        <div class="d-none d-md-block col-md-2 bd-toc show">
+        <div class="d-none d-md-block col-md-2 bd-toc show noprint">
             
             <div class="tocsection onthispage pt-5 pb-3">
                 <i class="fas fa-list"></i> simcardems
@@ -343,7 +343,100 @@
 </div>
     <div id="main-content" class="row">
         <div class="col-12 col-md-9 pl-md-3 pr-md-0">
-        
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1>simcardems package</h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                        <div>
+                            <h2> simcardems </h2>
+                        </div>
+                        <nav aria-label="Page">
+                            <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#submodules">
+   Submodules
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#module-simcardems.ORdmm_Land">
+   simcardems.ORdmm_Land module
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#module-simcardems.cli">
+   simcardems.cli module
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#module-simcardems.datacollector">
+   simcardems.datacollector module
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#module-simcardems.em_model">
+   simcardems.em_model module
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#module-simcardems.ep_model">
+   simcardems.ep_model module
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#module-simcardems.geometry">
+   simcardems.geometry module
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#module-simcardems.gui">
+   simcardems.gui module
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#module-simcardems.mechanics_model">
+   simcardems.mechanics_model module
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#module-simcardems.postprocess">
+   simcardems.postprocess module
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#module-simcardems.save_load_functions">
+   simcardems.save_load_functions module
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#module-simcardems.setup_models">
+   simcardems.setup_models module
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#module-simcardems.utils">
+   simcardems.utils module
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#module-simcardems.version">
+   simcardems.version module
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#module-simcardems">
+   Module contents
+  </a>
+ </li>
+</ul>
+
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            
               <div>
                 
   <div class="section" id="simcardems-package">
@@ -461,12 +554,58 @@ membrane potential).</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="simcardems.datacollector.DataGroups">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">simcardems.datacollector.</span></span><span class="sig-name descname"><span class="pre">DataGroups</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/datacollector.html#DataGroups"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.datacollector.DataGroups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>An enumeration.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simcardems.datacollector.DataGroups.ep">
+<span class="sig-name descname"><span class="pre">ep</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'ep'</span></em><a class="headerlink" href="#simcardems.datacollector.DataGroups.ep" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simcardems.datacollector.DataGroups.mechanics">
+<span class="sig-name descname"><span class="pre">mechanics</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'mechanics'</span></em><a class="headerlink" href="#simcardems.datacollector.DataGroups.mechanics" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="simcardems.datacollector.DataLoader">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">simcardems.datacollector.</span></span><span class="sig-name descname"><span class="pre">DataLoader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h5name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/datacollector.html#DataLoader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.datacollector.DataLoader" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="simcardems.datacollector.DataLoader.get">
-<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/datacollector.html#DataLoader.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.datacollector.DataLoader.get" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#simcardems.datacollector.DataGroups" title="simcardems.datacollector.DataGroups"><span class="pre">simcardems.datacollector.DataGroups</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dolfin.function.function.Function</span></span></span><a class="reference internal" href="_modules/simcardems/datacollector.html#DataLoader.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.datacollector.DataLoader.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve the function from the file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>group</strong> (<a class="reference internal" href="#simcardems.datacollector.DataGroups" title="simcardems.datacollector.DataGroups"><em>DataGroups</em></a>) – The group where the function is stored, either
+‘ep’ or ‘mechanics’</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – Name of the function</p></li>
+<li><p><strong>t</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>float</em><em>]</em>) – Time stamp you want to use. See <cite>DataLoader.time_stamps</cite></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The function</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dolfin.Function</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>KeyError</strong> – If group does not exist in the file</p></li>
+<li><p><strong>KeyError</strong> – If name does not exist in group</p></li>
+<li><p><strong>KeyError</strong> – If ‘t’ provided is not among the time stamps</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="simcardems.datacollector.DataLoader.size">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#simcardems.datacollector.DataLoader.size" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -588,11 +727,6 @@ membrane potential).</p>
 <dt class="sig sig-object py" id="simcardems.geometry.Geometry">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">simcardems.geometry.</span></span><span class="sig-name descname"><span class="pre">Geometry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mesh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dolfin.cpp.mesh.Mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_refinements</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/geometry.html#Geometry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.geometry.Geometry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#simcardems.geometry.BaseGeometry" title="simcardems.geometry.BaseGeometry"><code class="xref py py-class docutils literal notranslate"><span class="pre">simcardems.geometry.BaseGeometry</span></code></a></p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="simcardems.geometry.Geometry.mechanics_mesh">
-<span class="sig-name descname"><span class="pre">mechanics_mesh</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dolfin.cpp.mesh.Mesh</span></em><a class="headerlink" href="#simcardems.geometry.Geometry.mechanics_mesh" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="simcardems.geometry.Geometry.parameters">
 <span class="sig-name descname"><span class="pre">parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/geometry.html#Geometry.parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.geometry.Geometry.parameters" title="Permalink to this definition">¶</a></dt>
@@ -604,11 +738,6 @@ membrane potential).</p>
 <dt class="sig sig-object py" id="simcardems.geometry.SlabGeometry">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">simcardems.geometry.</span></span><span class="sig-name descname"><span class="pre">SlabGeometry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ly</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_refinements</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mechanics_mesh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dolfin.cpp.mesh.Mesh</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ep_mesh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dolfin.cpp.mesh.Mesh</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/geometry.html#SlabGeometry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.geometry.SlabGeometry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#simcardems.geometry.BaseGeometry" title="simcardems.geometry.BaseGeometry"><code class="xref py py-class docutils literal notranslate"><span class="pre">simcardems.geometry.BaseGeometry</span></code></a></p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="simcardems.geometry.SlabGeometry.mechanics_mesh">
-<span class="sig-name descname"><span class="pre">mechanics_mesh</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dolfin.cpp.mesh.Mesh</span></em><a class="headerlink" href="#simcardems.geometry.SlabGeometry.mechanics_mesh" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="py property">
 <dt class="sig sig-object py" id="simcardems.geometry.SlabGeometry.parameters">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parameters</span></span><a class="headerlink" href="#simcardems.geometry.SlabGeometry.parameters" title="Permalink to this definition">¶</a></dt>
@@ -805,7 +934,7 @@ membrane potential).</p>
 If value is allready a constant, do nothing.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>x</strong> (<em>typing.Union</em><em>[</em><em>dolfin.Constant</em><em>, </em><em>float</em><em>]</em>) – The value to be converted</p>
+<dd class="field-odd"><p><strong>x</strong> (<em>Union</em><em>[</em><em>dolfin.Constant</em><em>, </em><em>float</em><em>]</em>) – The value to be converted</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>The same value, wrapped in a constant</p>
@@ -825,9 +954,9 @@ lowest x-values) and apply some boundary condition to the right side.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>mesh</strong> (<em>dolfin.Mesh</em>) – A cube or box-shaped mesh</p></li>
-<li><p><strong>pre_stretch</strong> (<em>typing.Union</em><em>[</em><em>dolfin.Constant</em><em>, </em><em>float</em><em>]</em><em>, </em><em>optional</em>) – Value representing the amount of pre stretch, by default None</p></li>
-<li><p><strong>traction</strong> (<em>typing.Union</em><em>[</em><em>dolfin.Constant</em><em>, </em><em>float</em><em>]</em><em>, </em><em>optional</em>) – Value representing the amount of traction, by default None</p></li>
-<li><p><strong>spring</strong> (<em>typing.Union</em><em>[</em><em>dolfin.Constant</em><em>, </em><em>float</em><em>]</em><em>, </em><em>optional</em>) – Value representing the stiffness of the string, by default None</p></li>
+<li><p><strong>pre_stretch</strong> (<em>Union</em><em>[</em><em>dolfin.Constant</em><em>, </em><em>float</em><em>]</em><em>, </em><em>optional</em>) – Value representing the amount of pre stretch, by default None</p></li>
+<li><p><strong>traction</strong> (<em>Union</em><em>[</em><em>dolfin.Constant</em><em>, </em><em>float</em><em>]</em><em>, </em><em>optional</em>) – Value representing the amount of traction, by default None</p></li>
+<li><p><strong>spring</strong> (<em>Union</em><em>[</em><em>dolfin.Constant</em><em>, </em><em>float</em><em>]</em><em>, </em><em>optional</em>) – Value representing the stiffness of the string, by default None</p></li>
 <li><p><strong>fix_right_plane</strong> (<em>bool</em><em>, </em><em>optional</em>) – Fix the right plane so that it is not able to move in any direction
 except the x-direction, by default True</p></li>
 </ul>
@@ -836,7 +965,7 @@ except the x-direction, by default True</p></li>
 <dd class="field-even"><p>The boundary conditions and markers for the mesh</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>typing.Tuple[pulse.BoundaryConditions, pulse.MarkerFunctions]</p>
+<dd class="field-odd"><p><em>Tuple</em>[pulse.BoundaryConditions, pulse.MarkerFunctions]</p>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
@@ -1380,7 +1509,36 @@ If deemed appropriate, the record may be modified in-place.</p>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="simcardems.DataLoader.get">
-<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/datacollector.html#DataLoader.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.DataLoader.get" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#simcardems.datacollector.DataGroups" title="simcardems.datacollector.DataGroups"><span class="pre">simcardems.datacollector.DataGroups</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dolfin.function.function.Function</span></span></span><a class="reference internal" href="_modules/simcardems/datacollector.html#DataLoader.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.DataLoader.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve the function from the file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>group</strong> (<a class="reference internal" href="#simcardems.datacollector.DataGroups" title="simcardems.datacollector.DataGroups"><em>DataGroups</em></a>) – The group where the function is stored, either
+‘ep’ or ‘mechanics’</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – Name of the function</p></li>
+<li><p><strong>t</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>float</em><em>]</em>) – Time stamp you want to use. See <cite>DataLoader.time_stamps</cite></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The function</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dolfin.Function</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>KeyError</strong> – If group does not exist in the file</p></li>
+<li><p><strong>KeyError</strong> – If name does not exist in group</p></li>
+<li><p><strong>KeyError</strong> – If ‘t’ provided is not among the time stamps</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="simcardems.DataLoader.size">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#simcardems.DataLoader.size" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -1540,8 +1698,8 @@ If deemed appropriate, the record may be modified in-place.</p>
 
               </div>
               
-        
-            <!-- Previous / next buttons -->
+            
+                <!-- Previous / next buttons -->
 <div class='prev-next-area'> 
     <a class='left-prev' id="prev-link" href="modules.html" title="previous page">
         <i class="fas fa-angle-left"></i>
@@ -1551,19 +1709,17 @@ If deemed appropriate, the record may be modified in-place.</p>
         </div>
     </a>
 </div>
-        
+            
         </div>
     </div>
     <footer class="footer">
-    <div class="container">
-      <p>
-        
-          By Simula Research Laboratory<br/>
-        
-            &copy; Copyright 2022, Simula Research Laboratory.<br/>
-      </p>
-    </div>
-  </footer>
+  <p>
+    
+      By Simula Research Laboratory<br/>
+    
+        &copy; Copyright 2022, Simula Research Laboratory.<br/>
+  </p>
+</footer>
 </main>
 
 
