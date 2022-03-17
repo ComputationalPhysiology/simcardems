@@ -176,8 +176,8 @@ def run_benchmark():
 
 
 def postprocess():
-    # simcardems.postprocess.plot_state_traces("benchmark/results.h5")
-    # simcardems.postprocess.make_xdmffiles("benchmark/results.h5")
+    simcardems.postprocess.plot_state_traces("benchmark/results.h5")
+    simcardems.postprocess.make_xdmffiles("benchmark/results.h5")
 
     loader = simcardems.DataLoader("benchmark/results.h5")
 
@@ -194,7 +194,7 @@ def postprocess():
     ax.legend()
     ax.set_xlabel("Time [ms]")
     ax.set_ylabel("Displacement")
-    ax.set_title(f"Displacment of corner located at (x,y,z)={(Lx,Ly,Lx)}")
+    ax.set_title(f"Displacment of corner located at (x,y,z)={(Lx,Ly,Ly)}")
     fig.savefig("benchmark/displacement_corner.png")
 
     plt.show()
