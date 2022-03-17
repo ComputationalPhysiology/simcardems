@@ -194,7 +194,7 @@ def postprocess():
     ax.legend()
     ax.set_xlabel("Time [ms]")
     ax.set_ylabel("Displacement")
-    ax.set_title(f"Displacment of corner located at (x,y,z)={(Lx,Ly,Ly)}")
+    ax.set_title(f"Displacment of corner located at (x,y,z)={(Lx,Ly,Lz)}")
     fig.savefig("benchmark/displacement_corner.png")
 
     plt.show()
