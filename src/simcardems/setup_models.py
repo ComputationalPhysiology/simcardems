@@ -471,8 +471,7 @@ class Runner:
         # Store initial state
         self._t = self._t0
         self.mech_heart.material.active.t = self._t0
-        # Store the initial time point
-        self.store()
+
         for (i, (t0, self._t)) in enumerate(pbar):
 
             logger.debug(f"Solve EP model at step {i} from {t0} to {self._t}")
@@ -491,13 +490,15 @@ class Runner:
             self.ep_solver.vs_.assign(self.ep_solver.vs)
 
             # Store every 'save_freq' ms
-            if i > 0 and i % save_it == 0:
+            if i % save_it == 0:
                 self.store()
 
             # Store state every 5 beats
             if i > 0 and i % int(5000 / self._dt) == 0:
                 io.save_state(
-                    self._state_path.parent.joinpath(f"state_{int(i*self._dt/1000)}beat.h5"),
+                    self._state_path.parent.joinpath(
+                        f"state_{int(i*self._dt/1000)}beat.h5",
+                    ),
                     solver=self.ep_solver,
                     mech_heart=self.mech_heart,
                     coupling=self.coupling,
