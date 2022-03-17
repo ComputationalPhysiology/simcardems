@@ -1,6 +1,8 @@
+from enum import Enum
 from pathlib import Path
 from typing import Dict
 from typing import List
+from typing import Union
 
 import dolfin
 from dolfin import FiniteElement  # noqa: F401
@@ -11,6 +13,11 @@ from . import utils
 from .save_load_functions import h5pyfile
 
 logger = utils.getLogger(__name__)
+
+
+class DataGroups(str, Enum):
+    ep = "ep"
+    mechanics = "mechanics"
 
 
 class DataCollector:
@@ -82,7 +89,7 @@ class DataCollector:
 
 class DataLoader:
     def __init__(self, h5name) -> None:
-        self._h5file = None
+
         self._h5name = Path(h5name)
         if not self._h5name.is_file():
             raise FileNotFoundError(f"File {h5name} does not exist")
@@ -143,6 +150,13 @@ class DataLoader:
 
         self._create_functions()
 
+    @property
+    def size(self) -> int:
+        return len(self.time_stamps)
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({str(self._h5name)})"
+
     def __del__(self):
         if self._h5file is not None:
             self._h5file.close()
@@ -175,13 +189,48 @@ class DataLoader:
             for group, names in self.names.items()
         }
 
-    def get(self, group, name, t):
+    def get(
+        self,
+        group: DataGroups,
+        name: str,
+        t: Union[str, float],
+    ) -> dolfin.Function:
+        """Retrieve the function from the file
+
+        Parameters
+        ----------
+        group : DataGroups
+            The group where the function is stored, either
+            'ep' or 'mechanics'
+        name : str
+            Name of the function
+        t : Union[str, float]
+            Time stamp you want to use. See `DataLoader.time_stamps`
+
+        Returns
+        -------
+        dolfin.Function
+            The function
+
+        Raises
+        ------
+        KeyError
+            If group does not exist in the file
+        KeyError
+            If name does not exist in group
+        KeyError
+            If 't' provided is not among the time stamps
+        """
         if group not in self.names:
             raise KeyError(
                 f"Cannot find group {group} in names, expected of of {self.names.keys()}",
             )
-        if f"{name}" not in self.names[group]:
-            raise KeyError(f"Cannot find name {name} in group {group}")
+
+        names = self.names[group]
+        if f"{name}" not in names:
+            raise KeyError(
+                f"Cannot find name {name} in group {group}. Possible options are {names}",
+            )
 
         if isinstance(t, (int, float)):
             t = f"{t:.2f}"
