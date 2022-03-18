@@ -4,6 +4,7 @@ import daiquiri as _daiquiri
 import dolfin as _dolfin
 import pulse as _pulse
 
+from . import cell_model
 from . import cli
 from . import datacollector
 from . import em_model
@@ -39,6 +40,7 @@ def set_log_level(level):
         "simcardems.postprocess.logger",
         "simcardems.save_load_functions.logger",
         "simcardems.utils.logger",
+        "simcardems.cell_model.logger",
     ]
     _pulse.set_log_level(level)
     _daiquiri.setup(level=level)
@@ -70,6 +72,7 @@ __all__ = [
     "save_load_functions",
     "utils",
     "cli",
+    "cell_model",
     "LandModel",
     "MechanicsProblem",
     "RigidMotionProblem",
