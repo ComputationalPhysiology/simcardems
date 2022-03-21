@@ -14,6 +14,10 @@ from . import utils
 logger = utils.getLogger(__name__)
 
 
+def Max(a, b):
+    return (a + b + abs(a - b)) / dolfin.Constant(2)
+
+
 class CustomParameterSchema(TypedDict):
     value: float
     factors: Dict[str, float]
@@ -163,9 +167,9 @@ def apply_HF_scaling(parameters: Dict[str, Parameter]) -> Dict[str, Parameter]:
     """
     scaling = {
         "CaMKa_ref": 1.50,
-        "Jrel_inf": pow(0.8, 8.0),
-        "Jleak": 1.3,
-        "Jup": 0.45,
+        "scale_Jrel_inf": pow(0.8, 8.0),
+        "scale_Jleak": 1.3,
+        "scale_Jup": 0.45,
         "GNaL": 1.3,
         "GK1": 0.68,
         "thL": 1.8,
@@ -329,8 +333,10 @@ class ORdmm_Land(CardiacCellModel):
                     Parameter("GK1", 0.1908 * 1.414),  # multiply with scale_IK1
                     Parameter("Gsac_ns", 0.006),
                     Parameter("Gsac_k", (0.2882 * 800 / 210)),
-                    Parameter("Jrel_inf_ref", 25.62890625),
+                    Parameter("scale_Jrel_inf", 25.62890625),
                     Parameter("KRyR", 1.0),
+                    Parameter("scale_Jleak", 1.0),
+                    Parameter("scale_Jup", 1.0),
                 ],
             ),
         )
@@ -399,7 +405,7 @@ class ORdmm_Land(CardiacCellModel):
         """
         Original gotran transmembrane current dV/dt
         """
-        time = time if time else Constant(0.0)
+        time = time if time else dolfin.Constant(0.0)
 
         # Assign states
         assert len(s) == 48
@@ -906,11 +912,6 @@ class ORdmm_Land(CardiacCellModel):
         ) = s
 
         # Assign parameters
-        # scale_ICaL = self._parameters["scale_ICaL"]
-        # scale_IK1 = self._parameters["scale_IK1"]
-        # scale_IKr = self._parameters["scale_IKr"]
-        # scale_IKs = self._parameters["scale_IKs"]
-        # scale_INaL = self._parameters["scale_INaL"]
         cao = self._parameters["cao"]
         ko = self._parameters["ko"]
         nao = self._parameters["nao"]
@@ -1013,8 +1014,10 @@ class ORdmm_Land(CardiacCellModel):
         GK1 = self._parameters["GK1"]
         Gsac_ns = self._parameters["Gsac_ns"]
         Gsac_k = self._parameters["Gsac_k"]  # Pueyo endo
-        Jrel_inf_ref = self._parameters["Jrel_inf_ref"]
+        scale_Jrel_inf = self._parameters["scale_Jrel_inf"]
         KRyR = self._parameters["KRyR"]
+        scale_Jleak = self._parameters["scale_Jleak"]
+        scale_Jup = self._parameters["scale_Jup"]
 
         # Init return args
         F_expressions = [dolfin.Constant(0.0)] * 48
@@ -1445,14 +1448,16 @@ class ORdmm_Land(CardiacCellModel):
 
         # Expressions for the ryanodione receptor component
         a_rel = 0.5 * bt
-        Jrel_inf = -ICaL * a_rel / (1.0 + Jrel_inf_ref * ufl.elem_pow(1.0 / cajsr, 8.0))
+        Jrel_inf = (
+            -ICaL * a_rel / (1.0 + scale_Jrel_inf * ufl.elem_pow(1.0 / cajsr, 8.0))
+        )
         tau_rel_tmp = bt / (1.0 + 0.0123 / cajsr)
         tau_rel = ufl.conditional(ufl.lt(tau_rel_tmp, 0.001), 0.001, tau_rel_tmp)
         F_expressions[30] = (-Jrelnp + Jrel_inf) / tau_rel
         btp = 1.25 * bt
         a_relp = 0.5 * btp
         Jrel_infp = (
-            -ICaL * a_relp / (1.0 + Jrel_inf_ref * ufl.elem_pow(1.0 / cajsr, 8.0))
+            -ICaL * a_relp / (1.0 + scale_Jrel_inf * ufl.elem_pow(1.0 / cajsr, 8.0))
         )
         tau_relp_tmp = btp / (1.0 + 0.0123 / cajsr)
         tau_relp = ufl.conditional(ufl.lt(tau_relp_tmp, 0.001), 0.001, tau_relp_tmp)
@@ -1464,12 +1469,8 @@ class ORdmm_Land(CardiacCellModel):
         Jupnp = 0.004375 * cai / (0.00092 + cai)
         Jupp = 0.01203125 * cai / (0.00075 + cai)
         fJupp = 1.0 / (1.0 + KmCaMK / CaMKa)
-        Jleak = 0.0002625 * cansr * scale_popu_Kleak * HF_scaling_Jleak
-        Jup = (
-            (-Jleak + (1.0 - fJupp) * Jupnp + Jupp * fJupp)
-            * scale_popu_KSERCA
-            * HF_scaling_Jup
-        )
+        Jleak = 0.0002625 * cansr * scale_Jleak
+        Jup = (-Jleak + (1.0 - fJupp) * Jupnp + Jupp * fJupp) * scale_Jup
         Jtr = 0.01 * cansr - 0.01 * cajsr
 
         # Expressions for the intracellular concentrations component
@@ -1496,16 +1497,8 @@ class ORdmm_Land(CardiacCellModel):
         F_expressions[38] = (-Jrel + Jtr) * Bcajsr
 
         # Expressions for the mechanics component
-        kwu = -kws * scale_popu_kws + (kuw * scale_popu_kuw) * (
-            -1 + 1.0 / (rw * scale_popu_rw)
-        )
-        ksu = (
-            kws
-            * scale_popu_kws
-            * rw
-            * scale_popu_rw
-            * (-1 + 1.0 / (rs * scale_popu_rs))
-        )
+        kwu = -kws + kuw * (-1 + 1.0 / rw)
+        ksu = kws * rw * (-1 + 1.0 / rs)
 
         lambda_min12 = ufl.conditional(ufl.lt(lmbda, 1.2), lmbda, 1.2)
         XS = ufl.conditional(ufl.lt(XS, 0), 0, XS)
@@ -1520,48 +1513,23 @@ class ORdmm_Land(CardiacCellModel):
         zetas2 = (-1 - Zetas) * ufl.conditional(ufl.lt(Zetas, -1), 1, 0)
         gammasu = gammas * Max(zetas1, zetas2)
 
-        F_expressions[39] = kws * scale_popu_kws * XW - XS * gammasu - XS * ksu
-        F_expressions[40] = (
-            kuw * scale_popu_kuw * XU
-            - kws * scale_popu_kws * XW
-            - XW * gammawu
-            - XW * kwu
-        )
-        cat50 = cat50_ref * scale_popu_CaT50ref * HF_scaling_cat50_ref + Beta1 * (
-            -1 + lambda_min12
-        )
+        F_expressions[39] = kws * XW - XS * gammasu - XS * ksu
+        F_expressions[40] = kuw * XU - kws * XW - XW * gammawu - XW * kwu
+        cat50 = cat50_ref + Beta1 * (-1 + lambda_min12)
         CaTrpn = ufl.conditional(ufl.lt(CaTrpn, 0), 0, CaTrpn)
-        F_expressions[41] = (
-            ktrpn
-            * scale_popu_kTRPN
-            * (
-                -CaTrpn
-                + ufl.elem_pow(1000 * cai / cat50, ntrpn * scale_popu_nTRPN)
-                * (1 - CaTrpn)
-            )
+        F_expressions[41] = ktrpn * (
+            -CaTrpn + ufl.elem_pow(1000 * cai / cat50, ntrpn) * (1 - CaTrpn)
         )
-        kb = (
-            ku
-            * scale_popu_ku
-            * ufl.elem_pow(Trpn50 * scale_popu_TRPN50, (ntm * scale_popu_nTm))
-            / (
-                1
-                - (rs * scale_popu_rs)
-                - rw * scale_popu_rw * (1 - (rs * scale_popu_rs))
-            )
-        )
+        kb = ku * ufl.elem_pow(Trpn50, ntm) / (1 - rs - rw * (1 - rs))
         F_expressions[42] = (
             ufl.conditional(
-                ufl.lt(ufl.elem_pow(CaTrpn, -(ntm * scale_popu_nTm) / 2), 100),
-                ufl.elem_pow(CaTrpn, -(ntm * scale_popu_nTm) / 2),
+                ufl.lt(ufl.elem_pow(CaTrpn, -ntm / 2), 100),
+                ufl.elem_pow(CaTrpn, -ntm / 2),
                 100,
             )
             * XU
             * kb
-            - ku
-            * scale_popu_ku
-            * ufl.elem_pow(CaTrpn, (ntm * scale_popu_nTm) / 2)
-            * TmB
+            - ku * ufl.elem_pow(CaTrpn, ntm / 2) * TmB
         )
 
         C = -1 + lambda_min12

@@ -1,8 +1,5 @@
 import numpy as np
-import pytest
-from simcardems.cell_model import apply_custom_parameters
-from simcardems.cell_model import apply_HF_scaling
-from simcardems.cell_model import ORdmm_Land
+from simcardems import cell_model
 from simcardems.cell_model import Parameter
 
 
@@ -67,12 +64,11 @@ def test_parameter_add():
 
 
 def test_dict():
-    from collections import OrderedDict
 
     p1 = Parameter("g_CaL", 2.0, factors={"drug": 2.0, "popu": 2.0})
     p2 = Parameter("g_Na", 3.0, factors={"drug": 3.0, "popu": 3.0})
 
-    d = OrderedDict([p1, p2])
+    d = dict(map(cell_model.tuplize, [p1, p2]))
     assert len(d) == 2
     assert p1.name in d
     assert p2.name in d
@@ -100,8 +96,8 @@ def test_apply_custom_parameters():
         },
     }
 
-    parameters = ORdmm_Land.default_parameters()
-    new_parameters = apply_custom_parameters(parameters, custom_parameters)
+    parameters = cell_model.ORdmm_Land.default_parameters()
+    new_parameters = cell_model.apply_custom_parameters(parameters, custom_parameters)
     assert parameters["GNa"] != new_parameters["GNa"]
     assert parameters["Gto"] != new_parameters["Gto"]
     assert parameters["kws"] != new_parameters["kws"]
@@ -125,12 +121,9 @@ def test_apply_custom_parameters():
     assert new_parameters["kws"] == custom_parameters["kws"]["value"]
 
 
-@pytest.mark.xfail
 def test_HF_scaling():
-    parameters = ORdmm_Land.default_parameters()
-    # This does not work at the momemt because there is
-    # not a parameter with the names defined in the
-    # HF scaling method
-    hf_parameters = apply_HF_scaling(parameters)
-    assert hf_parameters is not None
-    # TODO: Make some proper assertions
+    parameters = cell_model.ORdmm_Land.default_parameters()
+    hf_parameters = cell_model.apply_HF_scaling(parameters)
+    # Just assert one changed parameter
+    assert np.isclose(hf_parameters["scale_Jup"].value, 0.45)
+    assert "HF" in hf_parameters["scale_Jup"].factors()
