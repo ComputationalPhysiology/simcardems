@@ -1,6 +1,10 @@
+import enum
 import functools
+from dataclasses import dataclass
 from typing import Dict
+from typing import List
 from typing import Optional
+from typing import Sequence
 from typing import Tuple
 from typing import TypedDict
 
@@ -16,6 +20,49 @@ logger = utils.getLogger(__name__)
 
 def Max(a, b):
     return (a + b + abs(a - b)) / dolfin.Constant(2)
+
+
+@dataclass
+class ScalingParameters:
+
+    hf: Sequence[Tuple[str, float]] = (
+        ("CaMKa_ref", 1.50),
+        ("scale_Jrel_inf", pow(0.8, 8.0)),
+        ("scale_Jleak", 1.3),
+        ("scale_Jup", 0.45),
+        ("GNaL", 1.3),
+        ("GK1", 0.68),
+        ("thL", 1.8),
+        ("Gto", 0.4),
+        ("Gncx", 1.6),
+        ("Pnak", 0.7),
+        ("cat50_ref", 0.6),
+    )
+
+    # Dutta et al 2016 CinC (used in Drugs, Llopis 2020)
+    duretta2016: Sequence[Tuple[str, float]] = (
+        ("PCa", 1.018),
+        ("GK1", 1.414),
+        ("GKr", 1.119),
+        ("GKs", 1.648),
+        ("GNaL", 2.274),
+    )
+
+
+class InvalidScalingFactorError(KeyError):
+    """Raise if you try to apply an invalid scaling factor"""
+
+
+def list_scaling_factors() -> List[str]:
+    return [
+        name for name in ScalingParameters.__dict__.keys() if not name.startswith("_")
+    ]
+
+
+class CellTypes(int, enum.Enum):
+    endo = 0
+    epi = 1
+    m = 2
 
 
 class CustomParameterSchema(TypedDict):
@@ -146,18 +193,20 @@ def apply_custom_parameters(
     return new_parameters
 
 
-def apply_HF_scaling(parameters: Dict[str, Parameter]) -> Dict[str, Parameter]:
-    """Apply default scaling factor for heart failure
+def apply_scaling(parameters: Dict[str, Parameter], name: str) -> Dict[str, Parameter]:
+    """Apply scaling factors to parameters
 
     Parameters
     ----------
     parameters : Dict[str, Parameter]
         The input parameters
+    name : str
+        Name of the scaling factors. For options see `list_scaling_factors`.
 
     Returns
     -------
     Dict[str, Parameter]
-        Parameters with heart failure scaling factors applied
+        Parameters with scaling factors applied
 
     Raises
     ------
@@ -165,21 +214,12 @@ def apply_HF_scaling(parameters: Dict[str, Parameter]) -> Dict[str, Parameter]:
         If a parameter that should be scaled cannot be found
         in the model
     """
-    scaling = {
-        "CaMKa_ref": 1.50,
-        "scale_Jrel_inf": pow(0.8, 8.0),
-        "scale_Jleak": 1.3,
-        "scale_Jup": 0.45,
-        "GNaL": 1.3,
-        "GK1": 0.68,
-        "thL": 1.8,
-        "Gto": 0.4,
-        "Gncx": 1.6,
-        "Pnak": 0.7,
-        "cat50_ref": 0.6,
-    }
+    if name not in list_scaling_factors():
+        raise InvalidScalingFactorError(
+            f"Unknown scaling factor {name}, expected one of {list_scaling_factors}",
+        )
     new_parameters = parameters.copy()
-    for name, factor in scaling.items():
+    for name, factor in getattr(ScalingParameters, name):
         p_ref = parameters.get(name)
         if p_ref is None:
             raise InvalidParameterError(f"Unknown parameter {name}")
@@ -212,11 +252,6 @@ class ORdmm_Land(CardiacCellModel):
             map(
                 tuplize,
                 [
-                    # Parameter("scale_ICaL", 1.018),
-                    # Parameter("scale_IK1", 1.414),
-                    # Parameter("scale_IKr", 1.119),
-                    # Parameter("scale_IKs", 1.648),
-                    # Parameter("scale_INaL", 2.274),
                     Parameter("celltype", 0),
                     Parameter("cao", 1.8),
                     Parameter("ko", 5.4),
@@ -341,7 +376,7 @@ class ORdmm_Land(CardiacCellModel):
             ),
         )
 
-        return params
+        return apply_scaling(params, "duretta2016")
 
     @staticmethod
     def default_initial_conditions():

@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 from simcardems import cell_model
 from simcardems.cell_model import Parameter
 
@@ -123,7 +124,13 @@ def test_apply_custom_parameters():
 
 def test_HF_scaling():
     parameters = cell_model.ORdmm_Land.default_parameters()
-    hf_parameters = cell_model.apply_HF_scaling(parameters)
+    hf_parameters = cell_model.apply_scaling(parameters, "hf")
     # Just assert one changed parameter
     assert np.isclose(hf_parameters["scale_Jup"].value, 0.45)
     assert "HF" in hf_parameters["scale_Jup"].factors()
+
+
+def test_invalid_scaling_factors():
+    parameters = cell_model.ORdmm_Land.default_parameters()
+    with pytest.raises(cell_model.InvalidScalingFactorError):
+        cell_model.apply_scaling(parameters, "bad_name")
