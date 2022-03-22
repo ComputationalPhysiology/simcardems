@@ -1,3 +1,4 @@
+import dolfin
 import numpy as np
 import pytest
 from simcardems import cell_model
@@ -48,8 +49,8 @@ def test_parameter_factors():
 
 def test_parameter_multiply():
 
-    p1 = Parameter("g_CaL", 2.0, factors={"drug": 2.0, "popu": 2.0})
-    p2 = Parameter("g_Na", 3.0, factors={"drug": 3.0, "popu": 3.0})
+    p1 = Parameter("g_CaL", 2.0, factors={"drug": 2.0, "popu": 2.0}).value
+    p2 = Parameter("g_Na", 3.0, factors={"drug": 3.0, "popu": 3.0}).value
     assert np.isclose(p1 * p2, 8 * 27)
     assert np.isclose(p1 * 27, 8 * 27)
     assert np.isclose(27 * p1, 27 * 8)
@@ -57,8 +58,8 @@ def test_parameter_multiply():
 
 def test_parameter_add():
 
-    p1 = Parameter("g_CaL", 2.0, factors={"drug": 2.0, "popu": 2.0})
-    p2 = Parameter("g_Na", 3.0, factors={"drug": 3.0, "popu": 3.0})
+    p1 = Parameter("g_CaL", 2.0, factors={"drug": 2.0, "popu": 2.0}).value
+    p2 = Parameter("g_Na", 3.0, factors={"drug": 3.0, "popu": 3.0}).value
     assert np.isclose(p1 + p2, 8 + 27)
     assert np.isclose(p1 + 27, 8 + 27)
     assert np.isclose(27 + p1, 27 + 8)
@@ -114,7 +115,7 @@ def test_apply_custom_parameters():
 
     assert (
         new_parameters["Gto"]
-        == parameters["Gto"]
+        == parameters["Gto"].value
         * custom_parameters["Gto"]["factors"]["drug"]
         * custom_parameters["Gto"]["factors"]["popu"]
     )
@@ -134,3 +135,38 @@ def test_invalid_scaling_factors():
     parameters = cell_model.ORdmm_Land.default_parameters()
     with pytest.raises(cell_model.InvalidScalingFactorError):
         cell_model.apply_scaling(parameters, "bad_name")
+
+
+def test_compare_old_model():
+    """This test is simply comparing the old model
+    implementation with the new one. We should probably
+    change this test in the future when we remove the old model"""
+    model = cell_model.ORdmm_Land()
+    from simcardems.ORdmm_Land import ORdmm_Land as ORdmm_Land_old
+
+    old_model = ORdmm_Land_old()
+
+    assert model.num_states() == old_model.num_states() == 48
+
+    mesh = dolfin.UnitSquareMesh(3, 3)
+    V = dolfin.VectorFunctionSpace(mesh, "R", 0, dim=model.num_states() + 1)
+    f = dolfin.Function(V)
+    f.assign(dolfin.Constant(list(model.default_initial_conditions().values())))
+
+    v, *s_lst = dolfin.split(f)
+    s = dolfin.as_vector(s_lst)
+
+    F_new = model.F(v, s)
+    F_old = old_model.F(v, s)
+
+    for state_idx in range(model.num_states()):
+        assert np.isclose(
+            dolfin.assemble(
+                (F_new[state_idx] - F_old[state_idx]) * dolfin.dx(domain=mesh),
+            ),
+            0,
+        )
+
+    I_new = model.I(v, s)
+    I_old = old_model.I(v, s)
+    assert np.isclose(dolfin.assemble((I_new - I_old) * dolfin.dx(domain=mesh)), 0)
