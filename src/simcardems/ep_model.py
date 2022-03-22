@@ -7,7 +7,8 @@ import cbcbeat
 import dolfin
 
 from . import utils
-from .ORdmm_Land import ORdmm_Land as CellModel
+from .cell_model import ORdmm_Land as CellModel
+
 
 logger = utils.getLogger(__name__)
 
@@ -149,7 +150,7 @@ def load_json(filename: str):
 
 
 def handle_cell_params(
-    cell_params: Optional[Dict[str, float]] = None,
+    cell_params=None,
     disease_state: str = "healthy",
     drug_factors_file: str = "",
     popu_factors_file: str = "",

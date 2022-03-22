@@ -23,11 +23,11 @@ def test_runner_load_state_with_new_parameters():
     runner.solve(0.02)
 
     drug_factors_file = Path("drug_factors_file.json")
-    drug_factors = {"scale_drug_INa": 42.43}
+    drug_factors = {"CaMKa_ref": 42.43}
     drug_factors_file.write_text(json.dumps(drug_factors))
 
     popu_factors_file = Path("popu_factors_file.json")
-    popu_factors = {"scale_popu_GNa": 13.13}
+    popu_factors = {"scale_Jleak": 13.13}
     popu_factors_file.write_text(json.dumps(popu_factors))
 
     runner2 = Runner(
@@ -37,12 +37,12 @@ def test_runner_load_state_with_new_parameters():
         reset=False,
     )
     assert np.isclose(
-        runner2.ep_solver.ode_solver._model.parameters()["scale_drug_INa"],
-        drug_factors["scale_drug_INa"],
+        runner2.ep_solver.ode_solver._model.parameters()["CaMKa_ref"],
+        drug_factors["CaMKa_ref"],
     )
     assert np.isclose(
-        runner2.ep_solver.ode_solver._model.parameters()["scale_popu_GNa"],
-        popu_factors["scale_popu_GNa"],
+        runner2.ep_solver.ode_solver._model.parameters()["scale_Jleak"],
+        popu_factors["scale_Jleak"],
     )
 
     drug_factors_file.unlink()

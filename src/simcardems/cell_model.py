@@ -83,6 +83,15 @@ class Parameter:
         factors = factors or {}
         self._factors = factors
 
+    def to_dict(self):
+        return {"name": self.name, "value": self._value, "factors": self.factors()}
+
+    @classmethod
+    def from_dict(cls, d):
+        if isinstance(d, dict):
+            return cls(**d)
+        return d
+
     def factors(self) -> Dict[str, float]:
         return self._factors.copy()
 
@@ -219,7 +228,38 @@ def apply_scaling(parameters: Dict[str, Parameter], name: str) -> Dict[str, Para
     return new_parameters
 
 
+class SimcardemsCellModel(CardiacCellModel):
+    def set_parameters(self, **params):
+        "Update parameters in model"
+        for param_name, param_value in params.items():
+            if param_name not in self._parameters:
+                dolfin.error("'%s' is not a parameter in %s" % (param_name, self))
+            if not isinstance(param_value, (float, int, Parameter)) and not isinstance(
+                param_value._cpp_object,
+                dolfin.cpp.function.GenericFunction,
+            ):
+                dolfin.error("'%s' is not a scalar or a GenericFunction" % param_name)
+                if (
+                    hasattr(param_value, "_cpp_object")
+                    and isinstance(
+                        param_value._cpp_object,
+                        dolfin.cpp.function.GenericFunction,
+                    )
+                    and param_value._cpp_object.value_size() != 1
+                ):
+                    dolfin.error("expected the value_size of '%s' to be 1" % param_name)
+
+            self._parameters[param_name] = param_value
+
+
 class ORdmm_Land(CardiacCellModel):
+    def set_parameters(self, **params):
+        new_params = params.copy()
+        for name, value in params.items():
+            if isinstance(value, Parameter):
+                new_params[name] = value.value
+        super().set_parameters(**new_params)
+
     @staticmethod
     def default_parameters(disease_state: str = "healthy") -> Dict[str, Parameter]:
         """Set-up and return default parameters.
@@ -484,70 +524,70 @@ class ORdmm_Land(CardiacCellModel):
         ) = s
 
         # Assign parameters
-        cao = self._parameters["cao"].value
-        ko = self._parameters["ko"].value
-        nao = self._parameters["nao"].value
-        F = self._parameters["F"].value
-        R = self._parameters["R"].value
-        T = self._parameters["T"].value
-        CaMKo = self._parameters["CaMKo"].value
-        KmCaM = self._parameters["KmCaM"].value
-        KmCaMK = self._parameters["KmCaMK"].value
-        PKNa = self._parameters["PKNa"].value
-        Ahf = self._parameters["Ahf"].value
-        GNa = self._parameters["GNa"].value
-        Gto = self._parameters["Gto"].value
-        Aff = self._parameters["Aff"].value
-        zca = self._parameters["zca"].value
-        Gncx = self._parameters["Gncx"].value
-        KmCaAct = self._parameters["KmCaAct"].value
-        kasymm = self._parameters["kasymm"].value
-        kcaoff = self._parameters["kcaoff"].value
-        kcaon = self._parameters["kcaon"].value
-        kna1 = self._parameters["kna1"].value
-        kna2 = self._parameters["kna2"].value
-        kna3 = self._parameters["kna3"].value
-        qca = self._parameters["qca"].value
-        qna = self._parameters["qna"].value
-        wca = self._parameters["wca"].value
-        wna = self._parameters["wna"].value
-        wnaca = self._parameters["wnaca"].value
-        H = self._parameters["H"].value
-        Khp = self._parameters["Khp"].value
-        Kki = self._parameters["Kki"].value
-        Kko = self._parameters["Kko"].value
-        Kmgatp = self._parameters["Kmgatp"].value
-        Knai0 = self._parameters["Knai0"].value
-        Knao0 = self._parameters["Knao0"].value
-        Knap = self._parameters["Knap"].value
-        Kxkur = self._parameters["Kxkur"].value
-        MgADP = self._parameters["MgADP"].value
-        MgATP = self._parameters["MgATP"].value
-        Pnak = self._parameters["Pnak"].value
-        delta = self._parameters["delta"].value
-        eP = self._parameters["eP"].value
-        k1m = self._parameters["k1m"].value
-        k1p = self._parameters["k1p"].value
-        k2m = self._parameters["k2m"].value
-        k2p = self._parameters["k2p"].value
-        k3m = self._parameters["k3m"].value
-        k3p = self._parameters["k3p"].value
-        k4m = self._parameters["k4m"].value
-        k4p = self._parameters["k4p"].value
-        zk = self._parameters["zk"].value
-        GKb = self._parameters["GKb"].value
-        PNab = self._parameters["PNab"].value
-        PCab = self._parameters["PCab"].value
-        GpCa = self._parameters["GpCa"].value
+        cao = float(self._parameters["cao"])
+        ko = float(self._parameters["ko"])
+        nao = float(self._parameters["nao"])
+        F = float(self._parameters["F"])
+        R = float(self._parameters["R"])
+        T = float(self._parameters["T"])
+        CaMKo = float(self._parameters["CaMKo"])
+        KmCaM = float(self._parameters["KmCaM"])
+        KmCaMK = float(self._parameters["KmCaMK"])
+        PKNa = float(self._parameters["PKNa"])
+        Ahf = float(self._parameters["Ahf"])
+        GNa = float(self._parameters["GNa"])
+        Gto = float(self._parameters["Gto"])
+        Aff = float(self._parameters["Aff"])
+        zca = float(self._parameters["zca"])
+        Gncx = float(self._parameters["Gncx"])
+        KmCaAct = float(self._parameters["KmCaAct"])
+        kasymm = float(self._parameters["kasymm"])
+        kcaoff = float(self._parameters["kcaoff"])
+        kcaon = float(self._parameters["kcaon"])
+        kna1 = float(self._parameters["kna1"])
+        kna2 = float(self._parameters["kna2"])
+        kna3 = float(self._parameters["kna3"])
+        qca = float(self._parameters["qca"])
+        qna = float(self._parameters["qna"])
+        wca = float(self._parameters["wca"])
+        wna = float(self._parameters["wna"])
+        wnaca = float(self._parameters["wnaca"])
+        H = float(self._parameters["H"])
+        Khp = float(self._parameters["Khp"])
+        Kki = float(self._parameters["Kki"])
+        Kko = float(self._parameters["Kko"])
+        Kmgatp = float(self._parameters["Kmgatp"])
+        Knai0 = float(self._parameters["Knai0"])
+        Knao0 = float(self._parameters["Knao0"])
+        Knap = float(self._parameters["Knap"])
+        Kxkur = float(self._parameters["Kxkur"])
+        MgADP = float(self._parameters["MgADP"])
+        MgATP = float(self._parameters["MgATP"])
+        Pnak = float(self._parameters["Pnak"])
+        delta = float(self._parameters["delta"])
+        eP = float(self._parameters["eP"])
+        k1m = float(self._parameters["k1m"])
+        k1p = float(self._parameters["k1p"])
+        k2m = float(self._parameters["k2m"])
+        k2p = float(self._parameters["k2p"])
+        k3m = float(self._parameters["k3m"])
+        k3p = float(self._parameters["k3p"])
+        k4m = float(self._parameters["k4m"])
+        k4p = float(self._parameters["k4p"])
+        zk = float(self._parameters["zk"])
+        GKb = float(self._parameters["GKb"])
+        PNab = float(self._parameters["PNab"])
+        PCab = float(self._parameters["PCab"])
+        GpCa = float(self._parameters["GpCa"])
 
-        GNaL = self._parameters["GNaL"].value
-        CaMKa_ref = self._parameters["CaMKa_ref"].value
-        PCa = self._parameters["PCa"].value
-        GKr = self._parameters["GKr"].value
-        GKs = self._parameters["GKs"].value
-        GK1 = self._parameters["GK1"].value
-        Gsac_ns = self._parameters["Gsac_ns"].value
-        Gsac_k = self._parameters["Gsac_k"].value  # Pueyo endo
+        GNaL = float(self._parameters["GNaL"])
+        CaMKa_ref = float(self._parameters["CaMKa_ref"])
+        PCa = float(self._parameters["PCa"])
+        GKr = float(self._parameters["GKr"])
+        GKs = float(self._parameters["GKs"])
+        GK1 = float(self._parameters["GK1"])
+        Gsac_ns = float(self._parameters["Gsac_ns"])
+        Gsac_k = float(self._parameters["Gsac_k"])  # Pueyo endo
 
         # Init return args
         current = [ufl.zero()] * 1
@@ -928,112 +968,112 @@ class ORdmm_Land(CardiacCellModel):
         ) = s
 
         # Assign parameters
-        cao = self._parameters["cao"].value
-        ko = self._parameters["ko"].value
-        nao = self._parameters["nao"].value
-        F = self._parameters["F"].value
-        R = self._parameters["R"].value
-        T = self._parameters["T"].value
-        L = self._parameters["L"].value
-        rad = self._parameters["rad"].value
-        CaMKo = self._parameters["CaMKo"].value
-        KmCaM = self._parameters["KmCaM"].value
-        KmCaMK = self._parameters["KmCaMK"].value
-        aCaMK = self._parameters["aCaMK"].value
-        bCaMK = self._parameters["bCaMK"].value
-        PKNa = self._parameters["PKNa"].value
-        Ahf = self._parameters["Ahf"].value
-        GNa = self._parameters["GNa"].value
-        thL = self._parameters["thL"].value
-        Gto = self._parameters["Gto"].value
-        delta_epi = self._parameters["delta_epi"].value
-        Aff = self._parameters["Aff"].value
-        Kmn = self._parameters["Kmn"].value
-        k2n = self._parameters["k2n"].value
-        tjca = self._parameters["tjca"].value
-        zca = self._parameters["zca"].value
-        Gncx = self._parameters["Gncx"].value
-        KmCaAct = self._parameters["KmCaAct"].value
-        kasymm = self._parameters["kasymm"].value
-        kcaoff = self._parameters["kcaoff"].value
-        kcaon = self._parameters["kcaon"].value
-        kna1 = self._parameters["kna1"].value
-        kna2 = self._parameters["kna2"].value
-        kna3 = self._parameters["kna3"].value
-        qca = self._parameters["qca"].value
-        qna = self._parameters["qna"].value
-        wca = self._parameters["wca"].value
-        wna = self._parameters["wna"].value
-        wnaca = self._parameters["wnaca"].value
-        H = self._parameters["H"].value
-        Khp = self._parameters["Khp"].value
-        Kki = self._parameters["Kki"].value
-        Kko = self._parameters["Kko"].value
-        Kmgatp = self._parameters["Kmgatp"].value
-        Knai0 = self._parameters["Knai0"].value
-        Knao0 = self._parameters["Knao0"].value
-        Knap = self._parameters["Knap"].value
-        Kxkur = self._parameters["Kxkur"].value
-        MgADP = self._parameters["MgADP"].value
-        MgATP = self._parameters["MgATP"].value
-        Pnak = self._parameters["Pnak"].value
-        delta = self._parameters["delta"].value
-        eP = self._parameters["eP"].value
-        k1m = self._parameters["k1m"].value
-        k1p = self._parameters["k1p"].value
-        k2m = self._parameters["k2m"].value
-        k2p = self._parameters["k2p"].value
-        k3m = self._parameters["k3m"].value
-        k3p = self._parameters["k3p"].value
-        k4m = self._parameters["k4m"].value
-        k4p = self._parameters["k4p"].value
-        zk = self._parameters["zk"].value
-        GKb = self._parameters["GKb"].value
-        PNab = self._parameters["PNab"].value
-        PCab = self._parameters["PCab"].value
-        GpCa = self._parameters["GpCa"].value
-        bt = self._parameters["bt"].value
-        BSLmax = self._parameters["BSLmax"].value
-        BSRmax = self._parameters["BSRmax"].value
-        KmBSL = self._parameters["KmBSL"].value
-        KmBSR = self._parameters["KmBSR"].value
-        cmdnmax = self._parameters["cmdnmax"].value
-        csqnmax = self._parameters["csqnmax"].value
-        kmcmdn = self._parameters["kmcmdn"].value
-        kmcsqn = self._parameters["kmcsqn"].value
-        trpnmax = self._parameters["trpnmax"].value
-        Beta1 = self._parameters["Beta1"].value
+        cao = float(self._parameters["cao"])
+        ko = float(self._parameters["ko"])
+        nao = float(self._parameters["nao"])
+        F = float(self._parameters["F"])
+        R = float(self._parameters["R"])
+        T = float(self._parameters["T"])
+        L = float(self._parameters["L"])
+        rad = float(self._parameters["rad"])
+        CaMKo = float(self._parameters["CaMKo"])
+        KmCaM = float(self._parameters["KmCaM"])
+        KmCaMK = float(self._parameters["KmCaMK"])
+        aCaMK = float(self._parameters["aCaMK"])
+        bCaMK = float(self._parameters["bCaMK"])
+        PKNa = float(self._parameters["PKNa"])
+        Ahf = float(self._parameters["Ahf"])
+        GNa = float(self._parameters["GNa"])
+        thL = float(self._parameters["thL"])
+        Gto = float(self._parameters["Gto"])
+        delta_epi = float(self._parameters["delta_epi"])
+        Aff = float(self._parameters["Aff"])
+        Kmn = float(self._parameters["Kmn"])
+        k2n = float(self._parameters["k2n"])
+        tjca = float(self._parameters["tjca"])
+        zca = float(self._parameters["zca"])
+        Gncx = float(self._parameters["Gncx"])
+        KmCaAct = float(self._parameters["KmCaAct"])
+        kasymm = float(self._parameters["kasymm"])
+        kcaoff = float(self._parameters["kcaoff"])
+        kcaon = float(self._parameters["kcaon"])
+        kna1 = float(self._parameters["kna1"])
+        kna2 = float(self._parameters["kna2"])
+        kna3 = float(self._parameters["kna3"])
+        qca = float(self._parameters["qca"])
+        qna = float(self._parameters["qna"])
+        wca = float(self._parameters["wca"])
+        wna = float(self._parameters["wna"])
+        wnaca = float(self._parameters["wnaca"])
+        H = float(self._parameters["H"])
+        Khp = float(self._parameters["Khp"])
+        Kki = float(self._parameters["Kki"])
+        Kko = float(self._parameters["Kko"])
+        Kmgatp = float(self._parameters["Kmgatp"])
+        Knai0 = float(self._parameters["Knai0"])
+        Knao0 = float(self._parameters["Knao0"])
+        Knap = float(self._parameters["Knap"])
+        Kxkur = float(self._parameters["Kxkur"])
+        MgADP = float(self._parameters["MgADP"])
+        MgATP = float(self._parameters["MgATP"])
+        Pnak = float(self._parameters["Pnak"])
+        delta = float(self._parameters["delta"])
+        eP = float(self._parameters["eP"])
+        k1m = float(self._parameters["k1m"])
+        k1p = float(self._parameters["k1p"])
+        k2m = float(self._parameters["k2m"])
+        k2p = float(self._parameters["k2p"])
+        k3m = float(self._parameters["k3m"])
+        k3p = float(self._parameters["k3p"])
+        k4m = float(self._parameters["k4m"])
+        k4p = float(self._parameters["k4p"])
+        zk = float(self._parameters["zk"])
+        GKb = float(self._parameters["GKb"])
+        PNab = float(self._parameters["PNab"])
+        PCab = float(self._parameters["PCab"])
+        GpCa = float(self._parameters["GpCa"])
+        bt = float(self._parameters["bt"])
+        BSLmax = float(self._parameters["BSLmax"])
+        BSRmax = float(self._parameters["BSRmax"])
+        KmBSL = float(self._parameters["KmBSL"])
+        KmBSR = float(self._parameters["KmBSR"])
+        cmdnmax = float(self._parameters["cmdnmax"])
+        csqnmax = float(self._parameters["csqnmax"])
+        kmcmdn = float(self._parameters["kmcmdn"])
+        kmcsqn = float(self._parameters["kmcsqn"])
+        trpnmax = float(self._parameters["trpnmax"])
+        Beta1 = float(self._parameters["Beta1"])
 
-        Trpn50 = self._parameters["Trpn50"].value
-        cat50_ref = self._parameters["cat50_ref"].value
+        Trpn50 = float(self._parameters["Trpn50"])
+        cat50_ref = float(self._parameters["cat50_ref"])
 
-        etal = self._parameters["etal"].value
-        etas = self._parameters["etas"].value
-        gammas = self._parameters["gammas"].value
-        gammaw = self._parameters["gammaw"].value
-        ktrpn = self._parameters["ktrpn"].value
-        ku = self._parameters["ku"].value
-        kuw = self._parameters["kuw"].value
-        kws = self._parameters["kws"].value
-        ntm = self._parameters["ntm"].value
-        ntrpn = self._parameters["ntrpn"].value
-        p_k = self._parameters["p_k"].value
+        etal = float(self._parameters["etal"])
+        etas = float(self._parameters["etas"])
+        gammas = float(self._parameters["gammas"])
+        gammaw = float(self._parameters["gammaw"])
+        ktrpn = float(self._parameters["ktrpn"])
+        ku = float(self._parameters["ku"])
+        kuw = float(self._parameters["kuw"])
+        kws = float(self._parameters["kws"])
+        ntm = float(self._parameters["ntm"])
+        ntrpn = float(self._parameters["ntrpn"])
+        p_k = float(self._parameters["p_k"])
 
-        rs = self._parameters["rs"].value
-        rw = self._parameters["rw"].value
+        rs = float(self._parameters["rs"])
+        rw = float(self._parameters["rw"])
 
-        GNaL = self._parameters["GNaL"].value
-        CaMKa_ref = self._parameters["CaMKa_ref"].value
-        PCa = self._parameters["PCa"].value
-        GKr = self._parameters["GKr"].value
-        GKs = self._parameters["GKs"].value
-        GK1 = self._parameters["GK1"].value
-        Gsac_ns = self._parameters["Gsac_ns"].value
-        Gsac_k = self._parameters["Gsac_k"].value  # Pueyo endo
-        scale_Jrel_inf = self._parameters["scale_Jrel_inf"].value
-        KRyR = self._parameters["KRyR"].value
-        scale_Jleak = self._parameters["scale_Jleak"].value
-        scale_Jup = self._parameters["scale_Jup"].value
+        GNaL = float(self._parameters["GNaL"])
+        CaMKa_ref = float(self._parameters["CaMKa_ref"])
+        PCa = float(self._parameters["PCa"])
+        GKr = float(self._parameters["GKr"])
+        GKs = float(self._parameters["GKs"])
+        GK1 = float(self._parameters["GK1"])
+        Gsac_ns = float(self._parameters["Gsac_ns"])
+        Gsac_k = float(self._parameters["Gsac_k"])  # Pueyo endo
+        scale_Jrel_inf = float(self._parameters["scale_Jrel_inf"])
+        KRyR = float(self._parameters["KRyR"])
+        scale_Jleak = float(self._parameters["scale_Jleak"])
+        scale_Jup = float(self._parameters["scale_Jup"])
 
         # Init return args
         F_expressions = [dolfin.Constant(0.0)] * 48

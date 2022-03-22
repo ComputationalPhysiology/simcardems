@@ -9,11 +9,13 @@ from dolfin import MixedElement  # noqa: F401
 from dolfin import tetrahedron  # noqa: F401
 from dolfin import VectorElement  # noqa: F401
 
+from . import cell_model
 from . import em_model
 from . import geometry
 from . import setup_models
 from . import utils
 from .ORdmm_Land import vs_functions_to_dict
+
 
 logger = utils.getLogger(__name__)
 
@@ -32,6 +34,27 @@ def h5pyfile(h5name, filemode="r"):
     yield h5file
 
     h5file.close()
+
+
+def parameterdict_to_h5(data, h5name, h5group):
+    with h5pyfile(h5name, "a") as h5file:
+
+        def to_h5(d, file, group_name):
+
+            if group_name == "":
+                group = file
+            else:
+                group = file.create_group(group_name)
+
+            for k, v in d.items():
+                if isinstance(v, cell_model.Parameter):
+                    to_h5(v.to_dict(), file=group, group_name=k)
+                elif isinstance(v, dict):
+                    to_h5(v, file=group, group_name=k)
+                else:
+                    group.create_dataset(k, data=v)
+
+        to_h5(data, h5file, h5group)
 
 
 def dict_to_h5(data, h5name, h5group):
@@ -120,7 +143,8 @@ def save_state(
 
     bnd_cond_dict = dict([("dirichlet", 0), ("rigid", 1)])
     logger.debug("Save using h5py")
-    dict_to_h5(solver.ode_solver._model.parameters(), path, "ep/cell_params")
+
+    parameterdict_to_h5(solver.ode_solver._model.parameters(), path, "ep/cell_params")
     dict_to_h5(
         coupling.geometry.parameters,
         path,
@@ -169,9 +193,13 @@ def load_state(
                 "dx": 1,  # This is not saved, so just set it to some value
                 "num_refinements": 1,  # This is not saved, so just set it to some value
             }
-        cell_params = h5_to_dict(h5file["ep"]["cell_params"])
+        cell_params_dict = h5_to_dict(h5file["ep"]["cell_params"])
         vs_signature = h5file["ep"]["vs"].attrs["signature"].decode()
         mech_signature = h5file["mechanics"]["state"].attrs["signature"].decode()
+
+    cell_params = {
+        k: cell_model.Parameter.from_dict(v) for k, v in cell_params_dict.items()
+    }
 
     logger.debug("Load mesh")
     mech_mesh = dolfin.Mesh()

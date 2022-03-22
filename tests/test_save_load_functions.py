@@ -176,11 +176,11 @@ def test_load_state_with_new_parameters_uses_new_parameters(
     )
 
     drug_factors_file = Path("drug_factors_file.json")
-    drug_factors = {"scale_drug_INa": 42.43}
+    drug_factors = {"CaMKa_ref": 42.43}
     drug_factors_file.write_text(json.dumps(drug_factors))
 
     popu_factors_file = Path("popu_factors_file.json")
-    popu_factors = {"scale_popu_GNa": 13.13}
+    popu_factors = {"scale_Jleak": 13.13}
     popu_factors_file.write_text(json.dumps(popu_factors))
 
     coupling_, ep_solver_, mech_heart_, t0_ = slf.load_state(
@@ -190,13 +190,35 @@ def test_load_state_with_new_parameters_uses_new_parameters(
     )
 
     assert np.isclose(
-        ep_solver_.ode_solver._model.parameters()["scale_drug_INa"],
-        drug_factors["scale_drug_INa"],
+        ep_solver_.ode_solver._model.parameters()["CaMKa_ref"],
+        drug_factors["CaMKa_ref"],
     )
     assert np.isclose(
-        ep_solver_.ode_solver._model.parameters()["scale_popu_GNa"],
-        popu_factors["scale_popu_GNa"],
+        ep_solver_.ode_solver._model.parameters()["scale_Jleak"],
+        popu_factors["scale_Jleak"],
     )
 
     drug_factors_file.unlink()
     popu_factors_file.unlink()
+
+
+def test_save_load_parameter(dummyfile):
+    p1 = simcardems.cell_model.Parameter(
+        "GCaL",
+        42.0,
+        factors={"hf": 12.2, "drug": 3.4},
+    )
+    p2 = simcardems.cell_model.Parameter("GNaL", 3.1415)
+    data = dict(map(simcardems.cell_model.tuplize, [p1, p2]))
+
+    h5group = "testgroup"
+    slf.parameterdict_to_h5(data, dummyfile, h5group)
+
+    with slf.h5pyfile(dummyfile, "r") as h5file:
+        loaded_data = slf.h5_to_dict(h5file[h5group])
+
+    parameters = {
+        k: simcardems.cell_model.Parameter.from_dict(v) for k, v in loaded_data.items()
+    }
+    assert parameters["GCaL"] == p1
+    assert parameters["GNaL"] == p2
