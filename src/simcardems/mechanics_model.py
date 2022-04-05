@@ -132,7 +132,7 @@ class LandModel(pulse.ActiveModel):
         s_ = dolfin.as_vector(dolfin.split(self.state_))
 
         Dt_s = (s - s_) / self.dt
-        theta = 0.0
+        theta = 0.5
         s_mid = theta * s + (1 - theta) * s_
 
         F_theta = mechanics_ode_rhs(
@@ -179,6 +179,9 @@ class LandModel(pulse.ActiveModel):
 
     def Wactive(self, F, **kwargs):
         """Active stress energy"""
+        if kwargs:
+            # FIXME: Hack to make it work with pulse.material.strain_energy
+            return dolfin.Constant(0.0)
         C = F.T * F
         Ta, G = self.Ta(F)
         return (
@@ -260,7 +263,7 @@ class MechanicsProblem(pulse.MechanicsProblem):
         Wactive, G_ode = self.material.active.Wactive(F)
 
         rhs = dolfin.inner(G_ode, self.s_test) * dolfin.dP(domain=self.geometry.mesh)
-        scheme = dolfin.ForwardEuler(rhs, self.s)
+        scheme = dolfin.CrankNicolson(rhs, self.s)
         self._pi_solver = dolfin.PointIntegralSolver(scheme)
 
         internal_energy = (
