@@ -168,8 +168,6 @@ def setup_mechanics_solver(
         n0=microstructure.n0,
         eta=0,
         lmbda=coupling.lmbda_mech,
-        Zetas=coupling.Zetas_mech,
-        Zetaw=coupling.Zetaw_mech,
         parameters=cell_params,
         XS=coupling.XS_mech,
         XW=coupling.XW_mech,
@@ -205,6 +203,7 @@ def setup_mechanics_solver(
     )
 
     problem.solve()
+    coupling.register_mech_model(problem)
 
     total_dofs = problem.state.function_space().dim()
     logger.info("Mechanics model")
@@ -434,9 +433,9 @@ class Runner:
         XW_norm = utils.compute_norm(self.coupling.XW_ep, self._pre_XW)
 
         # dt for the mechanics model should not be larger than 1 ms
-        dt = self._t - self.mech_heart.material.active.t
+        dt = float(self._t - self.mech_heart.material.active.t)
 
-        return (XS_norm + XW_norm >= 0.1) or dt > 0.990
+        return (XS_norm + XW_norm >= 0.1) or dt > 0.1
 
     def _pre_mechanics_solve(self) -> None:
         self._preXS_assigner.assign(self._pre_XS, utils.sub_function(self._vs, 40))

@@ -11,6 +11,43 @@ from . import utils
 logger = utils.getLogger(__name__)
 
 
+def mechanics_ode_rhs(s, dLambda, parameters):
+    Zetas, Zetaw = s
+    phi = parameters["phi"]
+    Tot_A = parameters["Tot_A"]
+    kuw = parameters["kuw"]
+    kws = parameters["kws"]
+    rs = parameters["rs"]
+    rw = parameters["rw"]
+
+    scale_popu_kuw = parameters["scale_popu_kuw"]
+    scale_popu_kws = parameters["scale_popu_kws"]
+    scale_popu_rw = parameters["scale_popu_rw"]
+    scale_popu_rs = parameters["scale_popu_rs"]
+
+    Aw = (
+        Tot_A
+        * rs
+        * scale_popu_rs
+        / (rs * scale_popu_rs + rw * scale_popu_rw * (1 - (rs * scale_popu_rs)))
+    )
+    As = Aw
+
+    cw = kuw * scale_popu_kuw * phi * (1 - (rw * scale_popu_rw)) / (rw * scale_popu_rw)
+    cs = (
+        kws
+        * scale_popu_kws
+        * phi
+        * rw
+        * scale_popu_rw
+        * (1 - (rs * scale_popu_rs))
+        / (rs * scale_popu_rs)
+    )
+    dZetas_dt = dLambda * As - Zetas * cs
+    dZetaw_dt = dLambda * Aw - Zetaw * cw
+    return dolfin.as_vector([dZetas_dt, dZetaw_dt])
+
+
 class BoundaryConditions(str, Enum):
     dirichlet = "dirichlet"
     rigid = "rigid"
@@ -22,8 +59,6 @@ class LandModel(pulse.ActiveModel):
         XS,
         XW,
         lmbda,
-        Zetas,
-        Zetaw,
         parameters,
         function_space,
         f0=None,
@@ -41,41 +76,45 @@ class LandModel(pulse.ActiveModel):
         self.XW = XW
         self.XW_prev = dolfin.Function(function_space)
         self._parameters = parameters
-        self.t = 0.0
-        self._t_prev = 0.0
-
-        self.Zetas = Zetas
-        self.Zetaw = Zetaw
-
-        self.Zetas_prev = dolfin.Function(self.Zetas.function_space())
-        self.Zetas_prev_prev = dolfin.Function(self.Zetas.function_space())
-
-        self.Zetaw_prev = dolfin.Function(self.Zetaw.function_space())
-        self.Zetaw_prev_prev = dolfin.Function(self.Zetaw.function_space())
+        self.t = dolfin.Constant(0.0)
+        self._t_prev = dolfin.Constant(0.0)
 
         self.Ta_current = dolfin.Function(function_space, name="Ta")
         self.lmbda_prev = dolfin.Function(function_space)
         self.lmbda_current = dolfin.Function(function_space)
         self.lmbda_current = lmbda
-        self.update_prev()
+        # State has not been initialized yet
+        self.update_prev(include_state=False)
+
+    def register_state(self, state):
+        self.state = state
+        self.state_ = dolfin.Function(state.function_space())
+        self.state_.vector()[:] = self.state.vector()
 
     @property
     def dt(self):
         return self.t - self._t_prev
 
-    def update_time(self, t):
-        self._t_prev = self.t
-        self.t = t
+    @property
+    def t(self) -> dolfin.Constant:
+        return self._t
 
-    def update_prev(self):
+    @t.setter
+    def t(self, t: typing.Union[float, dolfin.Constant]) -> None:
+        if isinstance(t, (int, float)):
+            t = dolfin.Constant(t)
+        self._t = t
+
+    def update_time(self, t):
+        self._t_prev.assign(self.t)
+        self._t.assign(dolfin.Constant(t))
+
+    def update_prev(self, include_state: bool = True):
         self.XS_prev.vector()[:] = self.XS.vector()
         self.XW_prev.vector()[:] = self.XW.vector()
-
-        self.Zetas_prev_prev.vector()[:] = self.Zetas_prev.vector()
-        self.Zetaw_prev_prev.vector()[:] = self.Zetaw_prev.vector()
-        self.Zetas_prev.vector()[:] = self.Zetas.vector()
-        self.Zetaw_prev.vector()[:] = self.Zetaw.vector()
         self.lmbda_prev.vector()[:] = self.lmbda_current.vector()
+        if include_state:
+            self.state_.vector()[:] = self.state.vector()
 
     def lmbda(self, F):
         f = F * self.f0
@@ -85,62 +124,30 @@ class LandModel(pulse.ActiveModel):
         dLambda = (self.lmbda(F) - self.lmbda_prev) / self.dt
         return dLambda
 
-    def _solve_ode(self, F):
+    def _solve_ode(self, F, s):
 
-        Zetas = self.Zetas
-        Zetaw = self.Zetaw
-        if abs(self.dt) < 1e-10:
-            return Zetas, Zetaw
+        if abs(float(self.dt)) < 1e-10:
+            return dolfin.Constant([0.0] * 2)
 
-        phi = self._parameters["phi"]
-        Tot_A = self._parameters["Tot_A"]
-        kuw = self._parameters["kuw"]
-        kws = self._parameters["kws"]
-        rs = self._parameters["rs"]
-        rw = self._parameters["rw"]
+        s_ = dolfin.as_vector(dolfin.split(self.state_))
 
-        scale_popu_kuw = self._parameters["scale_popu_kuw"]
-        scale_popu_kws = self._parameters["scale_popu_kws"]
-        scale_popu_rw = self._parameters["scale_popu_rw"]
-        scale_popu_rs = self._parameters["scale_popu_rs"]
+        Dt_s = (s - s_) / self.dt
+        theta = 0.0
+        s_mid = theta * s + (1 - theta) * s_
 
-        Aw = (
-            Tot_A
-            * rs
-            * scale_popu_rs
-            / (rs * scale_popu_rs + rw * scale_popu_rw * (1 - (rs * scale_popu_rs)))
-        )
-        As = Aw
-
-        cw = (
-            kuw
-            * scale_popu_kuw
-            * phi
-            * (1 - (rw * scale_popu_rw))
-            / (rw * scale_popu_rw)
-        )
-        cs = (
-            kws
-            * scale_popu_kws
-            * phi
-            * rw
-            * scale_popu_rw
-            * (1 - (rs * scale_popu_rs))
-            / (rs * scale_popu_rs)
+        F_theta = mechanics_ode_rhs(
+            s_mid,
+            dLambda=self.dLambda(F),
+            parameters=self._parameters,
         )
 
-        # dZetas = self.dLambda * As - self.Zetas * cs
-        # dZetaw = self.dLambda * Aw - self.Zetaw * cw
-
-        # Lets use Backward Euler scheme with a few fixed point iterations
-
-        Zetas = self.Zetas_prev + self.dt * (self.dLambda(F) * As - Zetas * cs)
-        Zetaw = self.Zetaw_prev + self.dt * (self.dLambda(F) * Aw - Zetaw * cw)
-
-        return Zetas, Zetaw
+        return Dt_s - F_theta
 
     def Ta(self, F):
-        Zetas, Zetaw = self._solve_ode(F)
+        s_split = dolfin.as_vector(dolfin.split(self.state))
+
+        G = self._solve_ode(F, s_split)
+        Zetas, Zetaw = s_split
         Tref = self._parameters["Tref"]
         rs = self._parameters["rs"]
         scale_popu_Tref = self._parameters["scale_popu_Tref"]
@@ -167,30 +174,120 @@ class LandModel(pulse.ActiveModel):
         self.Ta_current.assign(dolfin.project(Ta, self.function_space))
         # Assign these in order to update the EM coupling
         self.lmbda_current.assign(dolfin.project(lmbda, self.function_space))
-        self.Zetas.assign(dolfin.project(Zetas, self.function_space))
-        self.Zetaw.assign(dolfin.project(Zetaw, self.function_space))
 
-        return Ta
+        return Ta, G
 
-    def Wactive(self, F, diff=0):
+    def Wactive(self, F, **kwargs):
         """Active stress energy"""
         C = F.T * F
-
-        if diff == 0:
-            return pulse.material.active_model.Wactive_transversally(
-                Ta=self.Ta(F),
+        Ta, G = self.Ta(F)
+        return (
+            pulse.material.active_model.Wactive_transversally(
+                Ta=Ta,
                 C=C,
                 f0=self.f0,
                 eta=self.eta,
-            )
-        return self.Ta(F)
+            ),
+            G,
+        )
+
+
+class HolzapfelOgden(pulse.HolzapfelOgden):
+    def strain_energy(self, F):
+        # Invariants
+        I1 = pulse.kinematics.I1(F, isochoric=self.isochoric)
+        I4f = pulse.kinematics.I4(F, self.f0, isochoric=self.isochoric)
+        I4s = pulse.kinematics.I4(F, self.s0, isochoric=self.isochoric)
+        I8fs = pulse.kinematics.I8(F, self.f0, self.s0)
+
+        if self.active_model == "active_strain":
+            inv_gamma = 1 - self.activation_field
+            I1e = inv_gamma * I1 + (1 / inv_gamma**2 - inv_gamma) * I4f
+            I4fe = 1 / inv_gamma**2 * I4f
+            I4se = inv_gamma * I4s
+            I8fse = 1 / dolfin.sqrt(inv_gamma) * I8fs
+        else:
+            I1e = I1
+            I4fe = I4f
+            I4se = I4s
+            I8fse = I8fs
+
+        W1 = self.W_1(I1e)
+        W4f = self.W_4(I4fe, "f")
+        W4s = self.W_4(I4se, "s")
+        W8fs = self.W_8(I8fse)
+
+        W = W1 + W4f + W4s + W8fs
+
+        return W
 
 
 class MechanicsProblem(pulse.MechanicsProblem):
     boundary_condition = BoundaryConditions.dirichlet
 
+    def _init_spaces(self):
+
+        mesh = self.geometry.mesh
+
+        P1 = dolfin.FiniteElement("Lagrange", mesh.ufl_cell(), 1)
+        P2 = dolfin.VectorElement("Lagrange", mesh.ufl_cell(), 2)
+        P_ode = dolfin.VectorElement("Lagrange", mesh.ufl_cell(), 1, dim=2)
+
+        self.state_space = dolfin.FunctionSpace(
+            mesh,
+            dolfin.MixedElement([P2, P1]),
+        )
+
+        self.state = dolfin.Function(self.state_space, name="state")
+        self.state_test = dolfin.TestFunction(self.state_space)
+
+        V_P_ode = dolfin.FunctionSpace(mesh, P_ode)
+        self.s = dolfin.Function(V_P_ode)
+        self.s_test = dolfin.TestFunction(V_P_ode)
+        # self.s, self.s_assigner = utils.setup_assigner(self.state, 2)
+        self.material.active.register_state(self.s)
+
+    def _init_forms(self):
+        u, p = dolfin.split(self.state)
+        v, q = dolfin.split(self.state_test)
+        # self.s_assigner.assign(self.s, utils.sub_function(self.state, 2))
+
+        # Some mechanical quantities
+        F = dolfin.variable(pulse.DeformationGradient(u))
+        J = pulse.Jacobian(F)
+        dx = self.geometry.dx
+
+        Wactive, G_ode = self.material.active.Wactive(F)
+
+        rhs = dolfin.inner(G_ode, self.s_test) * dolfin.dP(domain=self.geometry.mesh)
+        scheme = dolfin.ForwardEuler(rhs, self.s)
+        self._pi_solver = dolfin.PointIntegralSolver(scheme)
+
+        internal_energy = (
+            self.material.strain_energy(
+                F,
+            )
+            + self.material.compressibility(p, J)
+            + Wactive
+        )
+
+        self._virtual_work = dolfin.derivative(
+            internal_energy * dx,
+            self.state,
+            self.state_test,
+        )
+
+        self._set_dirichlet_bc()
+        self._jacobian = dolfin.derivative(
+            self._virtual_work,
+            self.state,
+            dolfin.TrialFunction(self.state_space),
+        )
+        self._init_solver()
+
     def solve(self):
         self._init_forms()
+        self._pi_solver.step(float(self.material.active.dt))
         return super().solve()
 
 
