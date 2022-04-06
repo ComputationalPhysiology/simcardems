@@ -225,13 +225,19 @@ class MechanicsProblem(pulse.MechanicsProblem):
         self._setup_ode_assigners()
 
     def _setup_ode_assigners(self):
-        V_s1 = self.state_space.sub(2).sub(0).collapse()
-        V_s2 = self.state_space.sub(2).sub(1).collapse()
-        self.s1_ = dolfin.Function(V_s1)
-        self.s2_ = dolfin.Function(V_s2)
+        V_Zetas = self.state_space.sub(2).sub(0).collapse()
+        V_Zetaw = self.state_space.sub(2).sub(1).collapse()
+        self.Zetas_ = dolfin.Function(V_Zetas)
+        self.Zetaw_ = dolfin.Function(V_Zetaw)
 
-        self.s1_assigner = dolfin.FunctionAssigner(V_s1, self.state_space.sub(2).sub(0))
-        self.s2_assigner = dolfin.FunctionAssigner(V_s2, self.state_space.sub(2).sub(1))
+        self.Zetas_assigner = dolfin.FunctionAssigner(
+            V_Zetas,
+            self.state_space.sub(2).sub(0),
+        )
+        self.Zetaw_assigner = dolfin.FunctionAssigner(
+            V_Zetaw,
+            self.state_space.sub(2).sub(1),
+        )
 
     def _init_forms(self):
         u, p, s = dolfin.split(self.state)
@@ -243,23 +249,23 @@ class MechanicsProblem(pulse.MechanicsProblem):
         dx = self.geometry.dx
 
         Wactive, rhs = self.material.active.Wactive(F, s)
-        w1, w2 = dolfin.split(w)
+        Zetas_test, Zetaw_test = dolfin.split(w)
         if float(self.material.active.dt) > 1e-10:
             Dt = self.material.active.dt
-            s1, s2 = dolfin.split(s)
+            Zetas, Zetaw = dolfin.split(s)
 
-            s1_t = (s1 - self.s1_) / Dt
-            s2_t = (s2 - self.s2_) / Dt
+            Zetas_t = (Zetas - self.Zetas_) / Dt
+            Zetaw_t = (Zetaw - self.Zetaw_) / Dt
 
             # Residual of the ODE
-            r1 = s1_t - rhs[0]
-            r2 = s2_t - rhs[1]
+            res_Zetas = Zetas_t - rhs[0]
+            res_Zetaw = Zetaw_t - rhs[1]
 
         else:
-            r1 = dolfin.Constant(0.0)
-            r2 = dolfin.Constant(0.0)
+            res_Zetas = dolfin.Constant(0.0)
+            res_Zetaw = dolfin.Constant(0.0)
 
-        R_ode = r1 * w1 * dx + r2 * w2 * dx
+        R_ode = res_Zetas * Zetas_test * dx + res_Zetaw * Zetaw_test * dx
 
         internal_energy = (
             self.material.strain_energy(
@@ -290,8 +296,8 @@ class MechanicsProblem(pulse.MechanicsProblem):
         self._init_forms()
         ret = super().solve()
         # Update previous solution of the ODE
-        self.s1_assigner.assign(self.s1_, self.state.sub(2).sub(0))
-        self.s2_assigner.assign(self.s2_, self.state.sub(2).sub(1))
+        self.Zetas_assigner.assign(self.Zetas_, self.state.sub(2).sub(0))
+        self.Zetaw_assigner.assign(self.Zetaw_, self.state.sub(2).sub(1))
         return ret
 
 
@@ -304,29 +310,58 @@ class RigidMotionProblem(MechanicsProblem):
 
         P1 = dolfin.FiniteElement("Lagrange", mesh.ufl_cell(), 1)
         P2 = dolfin.VectorElement("Lagrange", mesh.ufl_cell(), 2)
+        P_ode = dolfin.VectorElement("Lagrange", mesh.ufl_cell(), 1, dim=2)
         P3 = dolfin.VectorElement("Real", mesh.ufl_cell(), 0, 6)
 
-        self.state_space = dolfin.FunctionSpace(mesh, dolfin.MixedElement([P1, P2, P3]))
+        self.state_space = dolfin.FunctionSpace(
+            mesh,
+            dolfin.MixedElement([P1, P2, P_ode, P3]),
+        )
 
         self.state = dolfin.Function(self.state_space, name="state")
         self.state_test = dolfin.TestFunction(self.state_space)
+
+        self._setup_ode_assigners()
 
     def _handle_bcs(self, bcs, bcs_parameters):
         self.bcs = pulse.BoundaryConditions()
 
     def _init_forms(self):
         # Displacement and hydrostatic_pressure; 3rd space for rigid motion component
-        p, u, r = dolfin.split(self.state)
-        q, v, w = dolfin.split(self.state_test)
+        p, u, s, r = dolfin.split(self.state)
+        q, v, w, z = dolfin.split(self.state_test)
 
         # Some mechanical quantities
         F = dolfin.variable(pulse.DeformationGradient(u))
         J = pulse.Jacobian(F)
         dx = self.geometry.dx
 
-        internal_energy = self.material.strain_energy(
-            F,
-        ) + self.material.compressibility(p, J)
+        Wactive, rhs = self.material.active.Wactive(F, s)
+        w1, w2 = dolfin.split(w)
+        if float(self.material.active.dt) > 1e-10:
+            Dt = self.material.active.dt
+            s1, s2 = dolfin.split(s)
+
+            s1_t = (s1 - self.Zetas_) / Dt
+            s2_t = (s2 - self.Zetaw_) / Dt
+
+            # Residual of the ODE
+            r1 = s1_t - rhs[0]
+            r2 = s2_t - rhs[1]
+
+        else:
+            r1 = dolfin.Constant(0.0)
+            r2 = dolfin.Constant(0.0)
+
+        R_ode = r1 * w1 * dx + r2 * w2 * dx
+
+        internal_energy = (
+            self.material.strain_energy(
+                F,
+            )
+            + self.material.compressibility(p, J)
+            + Wactive
+        )
 
         self._virtual_work = dolfin.derivative(
             internal_energy * dx,
@@ -334,14 +369,17 @@ class RigidMotionProblem(MechanicsProblem):
             self.state_test,
         )
 
-        self._virtual_work += dolfin.derivative(
-            RigidMotionProblem.rigid_motion_term(
-                mesh=self.geometry.mesh,
-                u=u,
-                r=r,
-            ),
-            self.state,
-            self.state_test,
+        self._virtual_work += (
+            dolfin.derivative(
+                RigidMotionProblem.rigid_motion_term(
+                    mesh=self.geometry.mesh,
+                    u=u,
+                    r=r,
+                ),
+                self.state,
+                self.state_test,
+            )
+            + R_ode
         )
 
         self._jacobian = dolfin.derivative(
