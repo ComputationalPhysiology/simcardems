@@ -48,7 +48,7 @@ class EMCoupling:
     def register_mech_model(self, solver):
         logger.debug("Registering EP model")
         self._mech_solver = solver
-        self.Zeta = solver.material.active.state
+        self.Zeta = solver.state.sub(2)
         self.Zetas_mech, self.Zetas_mech_assigner = utils.setup_assigner(self.Zeta, 0)
         self.Zetaw_mech, self.Zetaw_mech_assigner = utils.setup_assigner(self.Zeta, 1)
         self.mechanics_to_coupling()

@@ -83,11 +83,6 @@ class LandModel(pulse.ActiveModel):
         self.lmbda_prev = dolfin.Function(function_space)
         self.lmbda_current = dolfin.Function(function_space)
         self.lmbda_current = lmbda
-        # State has not been initialized yet
-        state_space = dolfin.VectorFunctionSpace(function_space.mesh(), "CG", 1, dim=2)
-        self.state = dolfin.Function(state_space)
-        self.state_ = dolfin.Function(state_space)
-        self.state_test = dolfin.TestFunction(state_space)
         self.update_prev()
 
     @property
@@ -112,7 +107,7 @@ class LandModel(pulse.ActiveModel):
         self.XS_prev.vector()[:] = self.XS.vector()
         self.XW_prev.vector()[:] = self.XW.vector()
         self.lmbda_prev.vector()[:] = self.lmbda_current.vector()
-        self.state_.vector()[:] = self.state.vector()
+        # self.state_.vector()[:] = self.state.vector()
 
     def lmbda(self, F):
         f = F * self.f0
@@ -122,31 +117,15 @@ class LandModel(pulse.ActiveModel):
         dLambda = (self.lmbda(F) - self.lmbda_prev) / self.dt
         return dLambda
 
-    def _solve_ode(self, F):
+    def Ta(self, F, s):
 
-        s = dolfin.as_vector(dolfin.split(self.state))
-
-        F_vec = mechanics_ode_rhs(
+        s_split = dolfin.as_vector(dolfin.split(s))
+        G = mechanics_ode_rhs(
             s,
             dLambda=self.dLambda(F),
             parameters=self._parameters,
         )
-        F_expr = F_vec[0] * self.state_test[0] + F_vec[1] * self.state_test[1]
-
-        # # FIXME: Do not reinitialize this in every iteration
-        rhs = F_expr * dolfin.dP(domain=self.function_space.mesh())
-
-        scheme = dolfin.ForwardEuler(rhs, self.state, self.t)
-        self._pi_solver = dolfin.PointIntegralSolver(scheme)
-        self._pi_solver.step(float(self.dt))
-
-    def Ta(self, F):
-
-        if abs(float(self.dt)) > 1e-10:
-            self._solve_ode(F)
-
-        # G = self._solve_ode(F, s_split)
-        Zetas, Zetaw = dolfin.as_vector(dolfin.split(self.state))
+        Zetas, Zetaw = s_split
         Tref = self._parameters["Tref"]
         rs = self._parameters["rs"]
         scale_popu_Tref = self._parameters["scale_popu_Tref"]
@@ -174,20 +153,23 @@ class LandModel(pulse.ActiveModel):
         # Assign these in order to update the EM coupling
         self.lmbda_current.assign(dolfin.project(lmbda, self.function_space))
 
-        return Ta
+        return Ta, G
 
-    def Wactive(self, F, **kwargs):
+    def Wactive(self, F, s=None, **kwargs):
         """Active stress energy"""
-        if kwargs:
+        if s is None:
             # FIXME: Hack to make it work with pulse.material.strain_energy
             return dolfin.Constant(0.0)
         C = F.T * F
-        Ta = self.Ta(F)
-        return pulse.material.active_model.Wactive_transversally(
-            Ta=Ta,
-            C=C,
-            f0=self.f0,
-            eta=self.eta,
+        Ta, G = self.Ta(F, s)
+        return (
+            pulse.material.active_model.Wactive_transversally(
+                Ta=Ta,
+                C=C,
+                f0=self.f0,
+                eta=self.eta,
+            ),
+            G,
         )
 
 
@@ -230,33 +212,54 @@ class MechanicsProblem(pulse.MechanicsProblem):
 
         P1 = dolfin.FiniteElement("Lagrange", mesh.ufl_cell(), 1)
         P2 = dolfin.VectorElement("Lagrange", mesh.ufl_cell(), 2)
-        # P_ode = dolfin.VectorElement("Lagrange", mesh.ufl_cell(), 1, dim=2)
+        P_ode = dolfin.VectorElement("Lagrange", mesh.ufl_cell(), 1, dim=2)
 
         self.state_space = dolfin.FunctionSpace(
             mesh,
-            dolfin.MixedElement([P2, P1]),
+            dolfin.MixedElement([P2, P1, P_ode]),
         )
 
         self.state = dolfin.Function(self.state_space, name="state")
         self.state_test = dolfin.TestFunction(self.state_space)
 
-        # V_P_ode = dolfin.FunctionSpace(mesh, P_ode)
-        # self.s = dolfin.Function(V_P_ode)
-        # self.s_test = dolfin.TestFunction(V_P_ode)
-        # self.s, self.s_assigner = utils.setup_assigner(self.state, 2)
-        # self.material.active.register_state(self.s)
+        self._setup_ode_assigners()
+
+    def _setup_ode_assigners(self):
+        V_s1 = self.state_space.sub(2).sub(0).collapse()
+        V_s2 = self.state_space.sub(2).sub(1).collapse()
+        self.s1_ = dolfin.Function(V_s1)
+        self.s2_ = dolfin.Function(V_s2)
+
+        self.s1_assigner = dolfin.FunctionAssigner(V_s1, self.state_space.sub(2).sub(0))
+        self.s2_assigner = dolfin.FunctionAssigner(V_s2, self.state_space.sub(2).sub(1))
 
     def _init_forms(self):
-        u, p = dolfin.split(self.state)
-        v, q = dolfin.split(self.state_test)
-        # self.s_assigner.assign(self.s, utils.sub_function(self.state, 2))
+        u, p, s = dolfin.split(self.state)
+        v, q, w = dolfin.split(self.state_test)
 
         # Some mechanical quantities
         F = dolfin.variable(pulse.DeformationGradient(u))
         J = pulse.Jacobian(F)
         dx = self.geometry.dx
 
-        Wactive = self.material.active.Wactive(F)
+        Wactive, rhs = self.material.active.Wactive(F, s)
+        w1, w2 = dolfin.split(w)
+        if float(self.material.active.dt) > 1e-10:
+            Dt = self.material.active.dt
+            s1, s2 = dolfin.split(s)
+
+            s1_t = (s1 - self.s1_) / Dt
+            s2_t = (s2 - self.s2_) / Dt
+
+            # Residual of the ODE
+            r1 = s1_t - rhs[0]
+            r2 = s2_t - rhs[1]
+
+        else:
+            r1 = dolfin.Constant(0.0)
+            r2 = dolfin.Constant(0.0)
+
+        R_ode = r1 * w1 * dx + r2 * w2 * dx
 
         internal_energy = (
             self.material.strain_energy(
@@ -266,10 +269,13 @@ class MechanicsProblem(pulse.MechanicsProblem):
             + Wactive
         )
 
-        self._virtual_work = dolfin.derivative(
-            internal_energy * dx,
-            self.state,
-            self.state_test,
+        self._virtual_work = (
+            dolfin.derivative(
+                internal_energy * dx,
+                self.state,
+                self.state_test,
+            )
+            + R_ode
         )
 
         self._set_dirichlet_bc()
@@ -282,8 +288,11 @@ class MechanicsProblem(pulse.MechanicsProblem):
 
     def solve(self):
         self._init_forms()
-        # self._pi_solver.step(float(self.material.active.dt))
-        return super().solve()
+        ret = super().solve()
+        # Update previous solution of the ODE
+        self.s1_assigner.assign(self.s1_, self.state.sub(2).sub(0))
+        self.s2_assigner.assign(self.s2_, self.state.sub(2).sub(1))
+        return ret
 
 
 class RigidMotionProblem(MechanicsProblem):
