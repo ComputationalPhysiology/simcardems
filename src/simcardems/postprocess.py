@@ -293,7 +293,10 @@ def plot_state_traces(results_file):
     loader = DataLoader(results_file)
     bnd = {"ep": Boundary(loader.ep_mesh), "mechanics": Boundary(loader.mech_mesh)}
 
-    all_names = {"mechanics": ["lmbda", "Ta", "zetas", "zetaw", 'XS', "XW"], "ep": ["V", "Ca", "CaTrpn", "TmB"]}
+    all_names = {
+        "mechanics": ["lmbda", "Ta", "zetas", "zetaw", "XS", "XW"],
+        "ep": ["V", "Ca", "CaTrpn", "TmB"],
+    }
 
     values = {
         group: {name: np.zeros(len(loader.time_stamps)) for name in names}
@@ -365,6 +368,7 @@ def plot_state_traces(results_file):
     for axi in ax_mech.flatten():
         axi.grid()
     fig_mech.savefig(outdir.joinpath("state_traces_mechanics.png"), dpi=300)
+
 
 def make_xdmffiles(results_file):
 
