@@ -463,9 +463,13 @@ class Runner:
             try:
                 self.mech_heart.solve()
             except pulse.mechanicsproblem.SolverDidNotConverge:
+                logger.warning(f"Failed to solve mechanics problem with dt={dt}")
                 dt /= 2
+                logger.warning(f"Try with dt={dt}")
                 if dt < 1e-6:
+                    logger.warning("dt is too small. Good bye")
                     raise
+
             else:
                 if abs(t - target_t) < 1e-12:
                     # We have reached the target
