@@ -167,7 +167,6 @@ def setup_mechanics_solver(
         s0=microstructure.s0,
         n0=microstructure.n0,
         eta=0,
-        lmbda=coupling.lmbda_mech,
         parameters=cell_params,
         XS=coupling.XS_mech,
         XW=coupling.XW_mech,
@@ -195,6 +194,7 @@ def setup_mechanics_solver(
         Problem = mechanics_model.RigidMotionProblem
 
     verbose = logger.getEffectiveLevel() < logging.INFO
+    verbose = True
     problem = Problem(
         geometry,
         material,
@@ -433,51 +433,57 @@ class Runner:
         # Update these states that are needed in the Mechanics solver
         self.coupling.ep_to_coupling()
 
-        XS_norm = utils.compute_norm(self.coupling.XS_ep, self._pre_XS)
-        XW_norm = utils.compute_norm(self.coupling.XW_ep, self._pre_XW)
+        # XS_norm = utils.compute_norm(self.coupling.XS_ep, self._pre_XS)
+        # XW_norm = utils.compute_norm(self.coupling.XW_ep, self._pre_XW)
 
         # dt for the mechanics model should not be larger than 1 ms
-        return (XS_norm + XW_norm >= 0.1) or self.dt_mechanics > 0.1
+        return True  # (XS_norm + XW_norm >= 0.1) or self.dt_mechanics > 0.1
 
     def _pre_mechanics_solve(self) -> None:
         self._preXS_assigner.assign(self._pre_XS, utils.sub_function(self._vs, 40))
         self._preXW_assigner.assign(self._pre_XW, utils.sub_function(self._vs, 41))
 
         self.coupling.coupling_to_mechanics()
+        self.mech_heart.material.active.update_time(self._t)
 
     def _post_mechanics_solve(self) -> None:
-        self.coupling.mechanics_to_coupling()
+
         # Update previous active tension
+        self.mech_heart.material.active.update_prev()
+        self.mech_heart.update_zeta_prev()
+        self.mech_heart.update_lmbda_prev()
+        self.coupling.mechanics_to_coupling()
         self.coupling.coupling_to_ep()
 
     def _solve_mechanics(self):
         self._pre_mechanics_solve()
-        converged = False
+        self.mech_heart.solve()
+        # converged = False
 
-        current_t = float(self.mech_heart.material.active.t)
-        target_t = self._t
-        dt = self.dt_mechanics
-        while not converged:
-            t = current_t + dt
-            self.mech_heart.material.active.update_time(t)
-            try:
-                self.mech_heart.solve()
-            except pulse.mechanicsproblem.SolverDidNotConverge:
-                logger.warning(f"Failed to solve mechanics problem with dt={dt}")
-                dt /= 2
-                logger.warning(f"Try with dt={dt}")
-                if dt < 1e-6:
-                    logger.warning("dt is too small. Good bye")
-                    raise
+        # current_t = float(self.mech_heart.material.active.t)
+        # target_t = self._t
+        # dt = self.dt_mechanics
+        # while not converged:
+        #     t = current_t + dt
+        #     self.mech_heart.material.active.update_time(t)
+        #     try:
+        #         self.mech_heart.solve()
+        #     except pulse.mechanicsproblem.SolverDidNotConverge:
+        #         logger.warning(f"Failed to solve mechanics problem with dt={dt}")
+        #         dt /= 2
+        #         logger.warning(f"Try with dt={dt}")
+        #         if dt < 1e-6:
+        #             logger.warning("dt is too small. Good bye")
+        #             raise
 
-            else:
-                if abs(t - target_t) < 1e-12:
-                    # We have reached the target
-                    converged = True
-                # Update dt so that we hit the target next time
-                current_t = t
-                dt = target_t - t
-                self.mech_heart.material.active.update_prev()
+        #     else:
+        #         if abs(t - target_t) < 1e-12:
+        #             # We have reached the target
+        #             converged = True
+        #         # Update dt so that we hit the target next time
+        #         current_t = t
+        #         dt = target_t - t
+        #         self.mech_heart.material.active.update_prev()
 
         self._post_mechanics_solve()
 
