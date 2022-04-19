@@ -381,3 +381,6 @@ Zetaw
 zk
 zmax
 zmin
+tuplize
+Dutta
+Llopis

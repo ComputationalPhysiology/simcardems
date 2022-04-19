@@ -92,42 +92,18 @@ class LandModel(pulse.ActiveModel):
         if abs(self.dt) < 1e-10:
             return Zetas, Zetaw
 
-        phi = self._parameters["phi"]
-        Tot_A = self._parameters["Tot_A"]
-        kuw = self._parameters["kuw"]
-        kws = self._parameters["kws"]
-        rs = self._parameters["rs"]
-        rw = self._parameters["rw"]
+        phi = float(self._parameters["phi"])
+        Tot_A = float(self._parameters["Tot_A"])
+        kuw = float(self._parameters["kuw"])
+        kws = float(self._parameters["kws"])
+        rs = float(self._parameters["rs"])
+        rw = float(self._parameters["rw"])
 
-        scale_popu_kuw = self._parameters["scale_popu_kuw"]
-        scale_popu_kws = self._parameters["scale_popu_kws"]
-        scale_popu_rw = self._parameters["scale_popu_rw"]
-        scale_popu_rs = self._parameters["scale_popu_rs"]
-
-        Aw = (
-            Tot_A
-            * rs
-            * scale_popu_rs
-            / (rs * scale_popu_rs + rw * scale_popu_rw * (1 - (rs * scale_popu_rs)))
-        )
+        Aw = Tot_A * rs / (rs + rw * (1 - rs))
         As = Aw
 
-        cw = (
-            kuw
-            * scale_popu_kuw
-            * phi
-            * (1 - (rw * scale_popu_rw))
-            / (rw * scale_popu_rw)
-        )
-        cs = (
-            kws
-            * scale_popu_kws
-            * phi
-            * rw
-            * scale_popu_rw
-            * (1 - (rs * scale_popu_rs))
-            / (rs * scale_popu_rs)
-        )
+        cw = kuw * phi * (1 - rw) / rw
+        cs = kws * phi * rw * (1 - rs) / rs
 
         # dZetas = self.dLambda * As - self.Zetas * cs
         # dZetaw = self.dLambda * Aw - self.Zetaw * cw
@@ -141,11 +117,9 @@ class LandModel(pulse.ActiveModel):
 
     def Ta(self, F):
         Zetas, Zetaw = self._solve_ode(F)
-        Tref = self._parameters["Tref"]
-        rs = self._parameters["rs"]
-        scale_popu_Tref = self._parameters["scale_popu_Tref"]
-        scale_popu_rs = self._parameters["scale_popu_rs"]
-        Beta0 = self._parameters["Beta0"]
+        Tref = float(self._parameters["Tref"])
+        rs = float(self._parameters["rs"])
+        Beta0 = float(self._parameters["Beta0"])
         lmbda = self.lmbda(F)
 
         _min = ufl.min_value
@@ -157,11 +131,7 @@ class LandModel(pulse.ActiveModel):
         h_lambda_prima = 1 + Beta0 * (lmbda + _min(lmbda, 0.87) - 1.87)
         h_lambda = _max(0, h_lambda_prima)
 
-        Ta = (
-            h_lambda
-            * (Tref * scale_popu_Tref / (rs * scale_popu_rs))
-            * (self.XS * (Zetas + 1) + self.XW * Zetaw)
-        )
+        Ta = h_lambda * (Tref / rs) * (self.XS * (Zetas + 1) + self.XW * Zetaw)
 
         # Assign the current value of Ta so that we can retrive them for postprocessing
         self.Ta_current.assign(dolfin.project(Ta, self.function_space))

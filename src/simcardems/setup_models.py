@@ -14,7 +14,7 @@ from . import geometry
 from . import mechanics_model
 from . import save_load_functions as io
 from . import utils
-from .ORdmm_Land import ORdmm_Land as CellModel
+from .cell_model import ORdmm_Land as CellModel
 
 logger = utils.getLogger(__name__)
 

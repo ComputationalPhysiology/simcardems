@@ -32,7 +32,7 @@ def coupling(geometry):
 
 @pytest.fixture
 def cell_params():
-    return simcardems.ORdmm_Land.ORdmm_Land.default_parameters()
+    return simcardems.cell_model.ORdmm_Land.default_parameters()
 
 
 @pytest.fixture(
@@ -46,8 +46,8 @@ def cell_params():
 def ep_solver(request, coupling):
     params = dolfin.Parameters("CardiacODESolver")
     params.add("scheme", "BackwardEuler")
-    states = simcardems.ORdmm_Land.ORdmm_Land.default_initial_conditions()
-    modelparams = simcardems.ORdmm_Land.ORdmm_Land.default_parameters()
+    states = simcardems.cell_model.ORdmm_Land.default_initial_conditions()
+    modelparams = simcardems.cell_model.ORdmm_Land.default_parameters()
     VS = dolfin.VectorFunctionSpace(coupling.ep_mesh, "CG", 1, dim=len(states))
     vs = dolfin.Function(VS)
     vs.assign(dolfin.Constant(list(states.values())))
