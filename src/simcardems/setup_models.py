@@ -161,7 +161,6 @@ def setup_mechanics_solver(
         b_fs=0.0,
     )
 
-    V = dolfin.FunctionSpace(coupling.mech_mesh, "CG", 1)
     active_model = mechanics_model.LandModel(
         f0=microstructure.f0,
         s0=microstructure.s0,
@@ -170,7 +169,7 @@ def setup_mechanics_solver(
         parameters=cell_params,
         XS=coupling.XS_mech,
         XW=coupling.XW_mech,
-        function_space=V,
+        mesh=coupling.mech_mesh,
     )
     material = mechanics_model.HolzapfelOgden(
         active_model=active_model,
@@ -194,7 +193,6 @@ def setup_mechanics_solver(
         Problem = mechanics_model.RigidMotionProblem
 
     verbose = logger.getEffectiveLevel() < logging.INFO
-    verbose = True
     problem = Problem(
         geometry,
         material,
@@ -450,7 +448,6 @@ class Runner:
 
         # Update previous active tension
         self.mech_heart.material.active.update_prev()
-        self.mech_heart.update_zeta_prev()
         self.mech_heart.update_lmbda_prev()
         self.coupling.mechanics_to_coupling()
         self.coupling.coupling_to_ep()

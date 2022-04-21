@@ -2,6 +2,7 @@ import dolfin
 
 from . import geometry as _geometry
 from . import utils
+from .mechanics_model import MechanicsProblem
 
 
 logger = utils.getLogger(__name__)
@@ -11,15 +12,12 @@ class EMCoupling:
     def __init__(
         self,
         geometry: _geometry.BaseGeometry,
-        lmbda_mech=dolfin.Constant(1.0),
     ) -> None:
         logger.debug("Create EM coupling")
         self.geometry = geometry
         self.V_mech = dolfin.FunctionSpace(self.mech_mesh, "CG", 1)
         self.XS_mech = dolfin.Function(self.V_mech, name="XS_mech")
         self.XW_mech = dolfin.Function(self.V_mech, name="XW_mech")
-        # self.lmbda_mech = dolfin.Function(self.V_mech, name="lambda_mech")
-        # self.lmbda_mech.assign(lmbda_mech)
 
         self.V_ep = dolfin.FunctionSpace(self.ep_mesh, "CG", 1)
         self.XS_ep = dolfin.Function(self.V_ep, name="XS_ep")
@@ -45,10 +43,12 @@ class EMCoupling:
         self.coupling_to_mechanics()
         logger.debug("Done registering EP model")
 
-    def register_mech_model(self, solver):
+    def register_mech_model(self, solver: MechanicsProblem):
         logger.debug("Registering EP model")
         self._mech_solver = solver
-        self.Zetas_mech, self.Zetaw_mech = solver.Zeta_.split()
+
+        self.Zetas_mech = solver.material.active.Zetas_prev
+        self.Zetaw_mech = solver.material.active.Zetaw_prev
         self.lmbda_mech = solver.lmbda_prev
         self.mechanics_to_coupling()
         logger.debug("Done registering EP model")

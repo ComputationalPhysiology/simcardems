@@ -109,9 +109,9 @@ def save_state(
     ep_mesh = solver.VS.mesh()
     logger.debug("Save using dolfin.HDF5File")
     with dolfin.HDF5File(ep_mesh.mpi_comm(), path.as_posix(), "w") as h5file:
-        h5file.write(mech_heart.material.active.lmbda_prev, "/em/lmbda_prev")
-        h5file.write(mech_heart.Zetas_, "/em/Zetas_prev")
-        h5file.write(mech_heart.Zetaw_, "/em/Zetaw_prev")
+        h5file.write(mech_heart.lmbda_prev, "/em/lmbda_prev")
+        h5file.write(mech_heart.material.active.Zetas_prev, "/em/Zetas_prev")
+        h5file.write(mech_heart.material.active.Zetaw_prev, "/em/Zetaw_prev")
 
         h5file.write(ep_mesh, "/ep/mesh")
         h5file.write(solver.vs, "/ep/vs")
@@ -205,7 +205,6 @@ def load_state(
 
     coupling = em_model.EMCoupling(
         geometry=geo,
-        lmbda_mech=lmbda_prev,
     )
     solver = setup_models.setup_ep_solver(
         state_params["dt"],
@@ -225,8 +224,9 @@ def load_state(
         cell_params=solver.ode_solver._model.parameters(),
     )
     mech_heart.state.assign(mech_state)
-    mech_heart.Zetas_.assign(Zetas_prev)
-    mech_heart.Zetaw_.assign(Zetaw_prev)
+    mech_heart.material.active.Zetas_prev.assign(Zetas_prev)
+    mech_heart.material.active.Zetaw_prev.assign(Zetaw_prev)
+    mech_heart.lmbda_prev.assign(lmbda_prev)
     coupling.coupling_to_mechanics()
 
     return setup_models.EMState(
