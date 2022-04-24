@@ -16,6 +16,12 @@ class BoundaryConditions(str, Enum):
     rigid = "rigid"
 
 
+class Scheme(str, Enum):
+    fd = "fd"
+    bd = "bd"
+    analytic = "analytic"
+
+
 class LandModel(pulse.ActiveModel):
     def __init__(
         self,
@@ -29,6 +35,7 @@ class LandModel(pulse.ActiveModel):
         s0=None,
         n0=None,
         eta=0,
+        scheme: Scheme = Scheme.fd,
         **kwargs,
     ):
         super().__init__(f0=f0, s0=s0, n0=n0)
@@ -40,6 +47,7 @@ class LandModel(pulse.ActiveModel):
         self._parameters = parameters
         self.t = dolfin.Constant(0.0)
         self._t_prev = dolfin.Constant(0.0)
+        self._scheme = scheme
 
         self._Ta = dolfin.Constant(0.0)
 
@@ -110,11 +118,26 @@ class LandModel(pulse.ActiveModel):
 
     @property
     def Zetas(self):
-        return self.Zetas_prev + self.As * self.dLambda / (1 + self.cs * self.dt)
+        if self._scheme == Scheme.analytic:
+            return self.Zetas_prev * dolfin.exp(-self.cs * self.dt) + (
+                self.As * self.dLambda / self.cs * self.dt
+            ) * (1 - dolfin.exp(-self.cs * self.dt))
+
+        elif self._scheme == Scheme.bd:
+            return self.Zetas_prev + self.As * self.dLambda / (1 + self.cs * self.dt)
+        else:
+            return self.Zetas_prev * (1 - self.cs * self.dt) + self.As * self.dLambda
 
     @property
     def Zetaw(self):
-        return self.Zetaw_prev + self.Aw * self.dLambda / (1 + self.cw * self.dt)
+        if self._scheme == Scheme.analytic:
+            return self.Zetaw_prev * dolfin.exp(-self.cw * self.dt) + (
+                self.Aw * self.dLambda / self.cw * self.dt
+            ) * (1 - dolfin.exp(-self.cw * self.dt))
+        elif self._scheme == Scheme.bd:
+            return self.Zetaw_prev + self.Aw * self.dLambda / (1 + self.cw * self.dt)
+        else:
+            return self.Zetaw_prev * (1 - self.cw * self.dt) + self.Aw * self.dLambda
 
     @property
     def dt(self):
@@ -231,6 +254,7 @@ class MechanicsProblem(pulse.MechanicsProblem):
         self.state_test = dolfin.TestFunction(self.state_space)
         self.lmbda_space = dolfin.FunctionSpace(self.geometry.mesh, "CG", 1)
         self.lmbda_prev = dolfin.Function(self.lmbda_space)
+        self.lmbda = dolfin.Function(self.lmbda_space)
 
     def _init_forms(self):
         u, p = dolfin.split(self.state)
@@ -240,10 +264,14 @@ class MechanicsProblem(pulse.MechanicsProblem):
         J = pulse.Jacobian(F)
         dx = self.geometry.dx
 
+        f = F * self.material.f0
+        self.lmbda = dolfin.sqrt(f**2)
+        dLambda = self.lmbda - self.lmbda_prev
+
         Wactive = self.material.active.Wactive(
             F=F,
             lmbda=self.lmbda,
-            dLambda=self.dLambda,
+            dLambda=dLambda,
         )
 
         internal_energy = (
@@ -271,15 +299,6 @@ class MechanicsProblem(pulse.MechanicsProblem):
     @property
     def F(self):
         return dolfin.variable(pulse.DeformationGradient(dolfin.split(self.state)[0]))
-
-    @property
-    def lmbda(self):
-        f = self.F * self.material.f0
-        return dolfin.sqrt(f**2)
-
-    @property
-    def dLambda(self):
-        return self.lmbda - self.lmbda_prev
 
     def solve(self):
         # self._init_forms()
