@@ -176,7 +176,7 @@ def setup_mechanics_solver(
         mesh=coupling.mech_mesh,
         scheme=mech_scheme,
     )
-    material = mechanics_model.HolzapfelOgden(
+    material = pulse.HolzapfelOgden(
         active_model=active_model,
         parameters=material_parameters,
     )
@@ -454,7 +454,6 @@ class Runner:
 
         # Update previous active tension
         self.mech_heart.material.active.update_prev()
-        self.mech_heart.update_lmbda_prev()
         self.coupling.mechanics_to_coupling()
         self.coupling.coupling_to_ep()
 
