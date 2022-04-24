@@ -11,48 +11,6 @@ from . import utils
 logger = utils.getLogger(__name__)
 
 
-class DZeta_Dt(typing.NamedTuple):
-    dZetas_dt: ufl.Form
-    dZetaw_dt: ufl.Form
-
-
-def mechanics_ode_rhs(Zetas, Zetaw, dLambda, parameters) -> DZeta_Dt:
-    phi = parameters["phi"]
-    Tot_A = parameters["Tot_A"]
-    kuw = parameters["kuw"]
-    kws = parameters["kws"]
-    rs = parameters["rs"]
-    rw = parameters["rw"]
-
-    scale_popu_kuw = parameters["scale_popu_kuw"]
-    scale_popu_kws = parameters["scale_popu_kws"]
-    scale_popu_rw = parameters["scale_popu_rw"]
-    scale_popu_rs = parameters["scale_popu_rs"]
-
-    Aw = (
-        Tot_A
-        * rs
-        * scale_popu_rs
-        / (rs * scale_popu_rs + rw * scale_popu_rw * (1 - (rs * scale_popu_rs)))
-    )
-    As = Aw
-
-    cw = kuw * scale_popu_kuw * phi * (1 - (rw * scale_popu_rw)) / (rw * scale_popu_rw)
-    cs = (
-        kws
-        * scale_popu_kws
-        * phi
-        * rw
-        * scale_popu_rw
-        * (1 - (rs * scale_popu_rs))
-        / (rs * scale_popu_rs)
-    )
-    dZetas_dt = dLambda * As - Zetas * cs
-    dZetaw_dt = dLambda * Aw - Zetaw * cw
-
-    return DZeta_Dt(dZetas_dt=dZetas_dt, dZetaw_dt=dZetaw_dt)
-
-
 class BoundaryConditions(str, Enum):
     dirichlet = "dirichlet"
     rigid = "rigid"
@@ -85,7 +43,7 @@ class LandModel(pulse.ActiveModel):
 
         self._Ta = dolfin.Constant(0.0)
 
-        self.dZeta_dt = DZeta_Dt(dolfin.Constant(0.0), dolfin.Constant(0.0))
+        self.dLambda = dolfin.Constant(0.0)
 
         self.Zetas_prev = dolfin.Function(self.function_space)
         if Zetas is not None:
@@ -98,12 +56,65 @@ class LandModel(pulse.ActiveModel):
         self.Ta_current = dolfin.Function(self.function_space, name="Ta")
 
     @property
+    def Aw(self):
+        Tot_A = self._parameters["Tot_A"]
+        rs = self._parameters["rs"]
+        rw = self._parameters["rw"]
+        scale_popu_rw = self._parameters["scale_popu_rw"]
+        scale_popu_rs = self._parameters["scale_popu_rs"]
+        return (
+            Tot_A
+            * rs
+            * scale_popu_rs
+            / (rs * scale_popu_rs + rw * scale_popu_rw * (1 - (rs * scale_popu_rs)))
+        )
+
+    @property
+    def As(self):
+        return self.Aw
+
+    @property
+    def cw(self):
+        phi = self._parameters["phi"]
+        kuw = self._parameters["kuw"]
+        rw = self._parameters["rw"]
+
+        scale_popu_kuw = self._parameters["scale_popu_kuw"]
+        scale_popu_rw = self._parameters["scale_popu_rw"]
+        return (
+            kuw
+            * scale_popu_kuw
+            * phi
+            * (1 - (rw * scale_popu_rw))
+            / (rw * scale_popu_rw)
+        )
+
+    @property
+    def cs(self):
+        phi = self._parameters["phi"]
+        kws = self._parameters["kws"]
+        rs = self._parameters["rs"]
+        rw = self._parameters["rw"]
+        scale_popu_kws = self._parameters["scale_popu_kws"]
+        scale_popu_rw = self._parameters["scale_popu_rw"]
+        scale_popu_rs = self._parameters["scale_popu_rs"]
+        return (
+            kws
+            * scale_popu_kws
+            * phi
+            * rw
+            * scale_popu_rw
+            * (1 - (rs * scale_popu_rs))
+            / (rs * scale_popu_rs)
+        )
+
+    @property
     def Zetas(self):
-        return self.Zetas_prev + self.dt * self.dZeta_dt.dZetas_dt
+        return self.Zetas_prev + self.As * self.dLambda / (1 + self.cs * self.dt)
 
     @property
     def Zetaw(self):
-        return self.Zetaw_prev + self.dt * self.dZeta_dt.dZetaw_dt
+        return self.Zetaw_prev + self.Aw * self.dLambda / (1 + self.cw * self.dt)
 
     @property
     def dt(self):
@@ -131,13 +142,7 @@ class LandModel(pulse.ActiveModel):
 
     def Ta(self, lmbda, dLambda):
 
-        self.dZeta_dt = mechanics_ode_rhs(
-            self.Zetas,
-            self.Zetaw,
-            dLambda=dLambda,
-            parameters=self._parameters,
-        )
-
+        self.dLambda = dLambda
         Tref = self._parameters["Tref"]
         rs = self._parameters["rs"]
         scale_popu_Tref = self._parameters["scale_popu_Tref"]
@@ -274,11 +279,7 @@ class MechanicsProblem(pulse.MechanicsProblem):
 
     @property
     def dLambda(self):
-        dt = self.material.active.dt
-        if float(dt) < 1e-10:
-            return dolfin.Constant(0.0)
-
-        return (self.lmbda - self.lmbda_prev) / dt
+        return self.lmbda - self.lmbda_prev
 
     def solve(self):
         # self._init_forms()
