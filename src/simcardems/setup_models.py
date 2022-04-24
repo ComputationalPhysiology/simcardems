@@ -332,6 +332,7 @@ class Runner:
                 drug_factors_file=drug_factors_file,
                 popu_factors_file=popu_factors_file,
                 disease_state=disease_state,
+                mech_scheme=mech_scheme,
             )
 
         self.coupling: em_model.EMCoupling = coupling
