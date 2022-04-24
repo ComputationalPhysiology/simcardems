@@ -22,6 +22,18 @@ class Scheme(str, Enum):
     analytic = "analytic"
 
 
+def _Zeta(Zeta_prev, A, c, dLambda, dt, scheme: Scheme):
+    if scheme == Scheme.analytic:
+        return Zeta_prev * dolfin.exp(-c * dt) + (A * dLambda / c * dt) * (
+            1 - dolfin.exp(-c * dt)
+        )
+
+    elif scheme == Scheme.bd:
+        return Zeta_prev + A * dLambda / (1 + c * dt)
+    else:
+        return Zeta_prev * (1 - c * dt) + A * dLambda
+
+
 class LandModel(pulse.ActiveModel):
     def __init__(
         self,
@@ -35,7 +47,7 @@ class LandModel(pulse.ActiveModel):
         s0=None,
         n0=None,
         eta=0,
-        scheme: Scheme = Scheme.fd,
+        scheme: Scheme = Scheme.analytic,
         **kwargs,
     ):
         super().__init__(f0=f0, s0=s0, n0=n0)
@@ -118,26 +130,25 @@ class LandModel(pulse.ActiveModel):
 
     @property
     def Zetas(self):
-        if self._scheme == Scheme.analytic:
-            return self.Zetas_prev * dolfin.exp(-self.cs * self.dt) + (
-                self.As * self.dLambda / self.cs * self.dt
-            ) * (1 - dolfin.exp(-self.cs * self.dt))
-
-        elif self._scheme == Scheme.bd:
-            return self.Zetas_prev + self.As * self.dLambda / (1 + self.cs * self.dt)
-        else:
-            return self.Zetas_prev * (1 - self.cs * self.dt) + self.As * self.dLambda
+        return _Zeta(
+            self.Zetas_prev,
+            self.As,
+            self.cs,
+            self.dLambda,
+            self.dt,
+            self._scheme,
+        )
 
     @property
     def Zetaw(self):
-        if self._scheme == Scheme.analytic:
-            return self.Zetaw_prev * dolfin.exp(-self.cw * self.dt) + (
-                self.Aw * self.dLambda / self.cw * self.dt
-            ) * (1 - dolfin.exp(-self.cw * self.dt))
-        elif self._scheme == Scheme.bd:
-            return self.Zetaw_prev + self.Aw * self.dLambda / (1 + self.cw * self.dt)
-        else:
-            return self.Zetaw_prev * (1 - self.cw * self.dt) + self.Aw * self.dLambda
+        return _Zeta(
+            self.Zetaw_prev,
+            self.Aw,
+            self.cw,
+            self.dLambda,
+            self.dt,
+            self._scheme,
+        )
 
     @property
     def dt(self):
@@ -296,12 +307,8 @@ class MechanicsProblem(pulse.MechanicsProblem):
         )
         self._init_solver()
 
-    @property
-    def F(self):
-        return dolfin.variable(pulse.DeformationGradient(dolfin.split(self.state)[0]))
-
     def solve(self):
-        # self._init_forms()
+        self._init_forms()
         return super().solve()
 
     def update_lmbda_prev(self):
