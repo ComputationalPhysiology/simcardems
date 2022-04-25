@@ -282,7 +282,8 @@ def plot_peaks(fname, data, threshold):
 
 
 def plot_state_traces(results_file):
-    fig, ax = plt.subplots(2, 2, figsize=(10, 8), sharex=True)
+    fig, ax = plt.subplots(2, 2, sharex=True)
+    fig_mech, ax_mech = plt.subplots(2, 2, sharex=True)
     results_file = Path(results_file)
     if not results_file.is_file():
         raise FileNotFoundError(f"File {results_file} does not exist")
@@ -292,7 +293,10 @@ def plot_state_traces(results_file):
     loader = DataLoader(results_file)
     bnd = {"ep": Boundary(loader.ep_mesh), "mechanics": Boundary(loader.mech_mesh)}
 
-    all_names = {"mechanics": ["lmbda", "Ta"], "ep": ["V", "Ca"]}
+    all_names = {
+        "mechanics": ["lmbda", "Ta", "zetas", "zetaw", "XS", "XW"],
+        "ep": ["V", "Ca", "CaTrpn", "TmB"],
+    }
 
     values = {
         group: {name: np.zeros(len(loader.time_stamps)) for name in names}
@@ -347,6 +351,23 @@ def plot_state_traces(results_file):
         ],
     )
     fig.savefig(outdir.joinpath("state_traces.png"), dpi=300)
+
+    ax_mech[0, 0].plot(times, values["mechanics"]["zetas"])
+    ax_mech[0, 0].plot(times, values["mechanics"]["zetaw"])
+    ax_mech[1, 0].plot(times, values["mechanics"]["XS"])
+    ax_mech[1, 0].plot(times, values["mechanics"]["XW"])
+    ax_mech[0, 1].plot(times, values["ep"]["CaTrpn"])
+    ax_mech[1, 1].plot(times, values["ep"]["TmB"])
+
+    ax_mech[0, 0].set_title("zeta(s/w)")
+    ax_mech[1, 0].set_title("X(S/W)")
+    ax_mech[0, 1].set_title("CaTrpn")
+    ax_mech[1, 1].set_title("TmB")
+    ax_mech[1, 0].set_xlabel("Time (ms)")
+    ax_mech[1, 1].set_xlabel("Time (ms)")
+    for axi in ax_mech.flatten():
+        axi.grid()
+    fig_mech.savefig(outdir.joinpath("state_traces_mechanics.png"), dpi=300)
 
 
 def make_xdmffiles(results_file):
@@ -476,9 +497,11 @@ def get_biomarkers(dict, outdir, num_models):
             time[np.where(u == np.min(u))[0][0]] % 1000
         )
 
-        ax.plot(PoMm, biomarker_dict[f"m{PoMm}"]["APD90"], "*")
+        if num_models > 1:
+            ax.plot(PoMm, biomarker_dict[f"m{PoMm}"]["APD90"], "*")
 
-    fig.savefig(outdir.joinpath("APD90_permodel.png"), dpi=300)
+    if num_models > 1:
+        fig.savefig(outdir.joinpath("APD90_permodel.png"), dpi=300)
 
     with open(outdir.joinpath("biomarkers_PoMcontrol.json"), "w") as f:
         json.dump(biomarker_dict, f)
@@ -511,7 +534,10 @@ def save_popu_json(population_folder, num_models):
         dict = {}
         for PoMm in range(1, num_models + 1):
             print(f"Analyzing model {PoMm}")
-            results_file = population_folder.joinpath(f"m{PoMm}/results.h5")
+            if num_models == 1:
+                results_file = population_folder.joinpath("results.h5")
+            else:
+                results_file = population_folder.joinpath(f"m{PoMm}/results.h5")
 
             if not results_file.is_file():
                 raise FileNotFoundError(f"File {results_file} does not exist")
