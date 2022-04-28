@@ -304,7 +304,8 @@
     <span class="n">set_material</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
     <span class="n">drug_factors_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
     <span class="n">popu_factors_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-    <span class="n">disease_state</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;healthy&quot;</span></div>
+    <span class="n">disease_state</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;healthy&quot;</span>
+    <span class="n">mechanics_ode_scheme</span><span class="p">:</span> <span class="n">mechanics_model</span><span class="o">.</span><span class="n">Scheme</span> <span class="o">=</span> <span class="n">mechanics_model</span><span class="o">.</span><span class="n">Scheme</span><span class="o">.</span><span class="n">analytic</span></div>
 
 
 <div class="viewcode-block" id="default_parameters"><a class="viewcode-back" href="../../simcardems.html#simcardems.setup_models.default_parameters">[docs]</a><span class="k">def</span> <span class="nf">default_parameters</span><span class="p">():</span>
@@ -322,6 +323,7 @@
     <span class="n">spring</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">fix_right_plane</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">bnd_cond</span><span class="p">:</span> <span class="n">mechanics_model</span><span class="o">.</span><span class="n">BoundaryConditions</span> <span class="o">=</span> <span class="n">Defaults</span><span class="o">.</span><span class="n">bnd_cond</span><span class="p">,</span>
+    <span class="n">mech_scheme</span><span class="p">:</span> <span class="n">mechanics_model</span><span class="o">.</span><span class="n">Scheme</span> <span class="o">=</span> <span class="n">Defaults</span><span class="o">.</span><span class="n">mechanics_ode_scheme</span><span class="p">,</span>
     <span class="n">num_refinements</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Defaults</span><span class="o">.</span><span class="n">num_refinements</span><span class="p">,</span>
     <span class="n">set_material</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Defaults</span><span class="o">.</span><span class="n">set_material</span><span class="p">,</span>
     <span class="n">drug_factors_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Defaults</span><span class="o">.</span><span class="n">drug_factors_file</span><span class="p">,</span>
@@ -361,6 +363,7 @@
         <span class="n">spring</span><span class="o">=</span><span class="n">spring</span><span class="p">,</span>
         <span class="n">fix_right_plane</span><span class="o">=</span><span class="n">fix_right_plane</span><span class="p">,</span>
         <span class="n">set_material</span><span class="o">=</span><span class="n">set_material</span><span class="p">,</span>
+        <span class="n">mech_scheme</span><span class="o">=</span><span class="n">mech_scheme</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">EMState</span><span class="p">(</span>
@@ -379,6 +382,7 @@
     <span class="n">traction</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">spring</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">fix_right_plane</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">mech_scheme</span><span class="p">:</span> <span class="n">mechanics_model</span><span class="o">.</span><span class="n">Scheme</span> <span class="o">=</span> <span class="n">Defaults</span><span class="o">.</span><span class="n">mechanics_ode_scheme</span><span class="p">,</span>
     <span class="n">set_material</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="n">linear_solver</span><span class="o">=</span><span class="s2">&quot;mumps&quot;</span><span class="p">,</span>
 <span class="p">):</span>
@@ -417,19 +421,16 @@
         <span class="n">b_fs</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="n">V</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">FunctionSpace</span><span class="p">(</span><span class="n">coupling</span><span class="o">.</span><span class="n">mech_mesh</span><span class="p">,</span> <span class="s2">&quot;CG&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
     <span class="n">active_model</span> <span class="o">=</span> <span class="n">mechanics_model</span><span class="o">.</span><span class="n">LandModel</span><span class="p">(</span>
         <span class="n">f0</span><span class="o">=</span><span class="n">microstructure</span><span class="o">.</span><span class="n">f0</span><span class="p">,</span>
         <span class="n">s0</span><span class="o">=</span><span class="n">microstructure</span><span class="o">.</span><span class="n">s0</span><span class="p">,</span>
         <span class="n">n0</span><span class="o">=</span><span class="n">microstructure</span><span class="o">.</span><span class="n">n0</span><span class="p">,</span>
         <span class="n">eta</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-        <span class="n">lmbda</span><span class="o">=</span><span class="n">coupling</span><span class="o">.</span><span class="n">lmbda_mech</span><span class="p">,</span>
-        <span class="n">Zetas</span><span class="o">=</span><span class="n">coupling</span><span class="o">.</span><span class="n">Zetas_mech</span><span class="p">,</span>
-        <span class="n">Zetaw</span><span class="o">=</span><span class="n">coupling</span><span class="o">.</span><span class="n">Zetaw_mech</span><span class="p">,</span>
         <span class="n">parameters</span><span class="o">=</span><span class="n">cell_params</span><span class="p">,</span>
         <span class="n">XS</span><span class="o">=</span><span class="n">coupling</span><span class="o">.</span><span class="n">XS_mech</span><span class="p">,</span>
         <span class="n">XW</span><span class="o">=</span><span class="n">coupling</span><span class="o">.</span><span class="n">XW_mech</span><span class="p">,</span>
-        <span class="n">function_space</span><span class="o">=</span><span class="n">V</span><span class="p">,</span>
+        <span class="n">mesh</span><span class="o">=</span><span class="n">coupling</span><span class="o">.</span><span class="n">mech_mesh</span><span class="p">,</span>
+        <span class="n">scheme</span><span class="o">=</span><span class="n">mech_scheme</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">material</span> <span class="o">=</span> <span class="n">pulse</span><span class="o">.</span><span class="n">HolzapfelOgden</span><span class="p">(</span>
         <span class="n">active_model</span><span class="o">=</span><span class="n">active_model</span><span class="p">,</span>
@@ -461,6 +462,7 @@
     <span class="p">)</span>
 
     <span class="n">problem</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+    <span class="n">coupling</span><span class="o">.</span><span class="n">register_mech_model</span><span class="p">(</span><span class="n">problem</span><span class="p">)</span>
 
     <span class="n">total_dofs</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">function_space</span><span class="p">()</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Mechanics model&quot;</span><span class="p">)</span>
@@ -543,6 +545,7 @@
         <span class="n">num_refinements</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Defaults</span><span class="o">.</span><span class="n">num_refinements</span><span class="p">,</span>
         <span class="n">set_material</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Defaults</span><span class="o">.</span><span class="n">set_material</span><span class="p">,</span>
         <span class="n">bnd_cond</span><span class="p">:</span> <span class="n">mechanics_model</span><span class="o">.</span><span class="n">BoundaryConditions</span> <span class="o">=</span> <span class="n">Defaults</span><span class="o">.</span><span class="n">bnd_cond</span><span class="p">,</span>
+        <span class="n">mech_scheme</span><span class="p">:</span> <span class="n">mechanics_model</span><span class="o">.</span><span class="n">Scheme</span> <span class="o">=</span> <span class="n">Defaults</span><span class="o">.</span><span class="n">mechanics_ode_scheme</span><span class="p">,</span>
         <span class="n">drug_factors_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Defaults</span><span class="o">.</span><span class="n">drug_factors_file</span><span class="p">,</span>
         <span class="n">popu_factors_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Defaults</span><span class="o">.</span><span class="n">popu_factors_file</span><span class="p">,</span>
         <span class="n">disease_state</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Defaults</span><span class="o">.</span><span class="n">disease_state</span><span class="p">,</span>
@@ -585,6 +588,7 @@
                 <span class="n">drug_factors_file</span><span class="o">=</span><span class="n">drug_factors_file</span><span class="p">,</span>
                 <span class="n">popu_factors_file</span><span class="o">=</span><span class="n">popu_factors_file</span><span class="p">,</span>
                 <span class="n">disease_state</span><span class="o">=</span><span class="n">disease_state</span><span class="p">,</span>
+                <span class="n">mech_scheme</span><span class="o">=</span><span class="n">mech_scheme</span><span class="p">,</span>
             <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="p">:</span> <span class="n">em_model</span><span class="o">.</span><span class="n">EMCoupling</span> <span class="o">=</span> <span class="n">coupling</span>
@@ -681,6 +685,10 @@
         <span class="p">]:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">collector</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
 
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dt_mechanics</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_t</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mech_heart</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">active</span><span class="o">.</span><span class="n">t</span><span class="p">)</span>
+
     <span class="k">def</span> <span class="nf">_solve_mechanics_now</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 
         <span class="c1"># Update these states that are needed in the Mechanics solver</span>
@@ -690,9 +698,7 @@
         <span class="n">XW_norm</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">compute_norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">XW_ep</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pre_XW</span><span class="p">)</span>
 
         <span class="c1"># dt for the mechanics model should not be larger than 1 ms</span>
-        <span class="n">dt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_t</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mech_heart</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">active</span><span class="o">.</span><span class="n">t</span>
-
-        <span class="k">return</span> <span class="p">(</span><span class="n">XS_norm</span> <span class="o">+</span> <span class="n">XW_norm</span> <span class="o">&gt;=</span> <span class="mf">0.1</span><span class="p">)</span> <span class="ow">or</span> <span class="n">dt</span> <span class="o">&gt;</span> <span class="mf">0.990</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">XS_norm</span> <span class="o">+</span> <span class="n">XW_norm</span> <span class="o">&gt;=</span> <span class="mf">0.1</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt_mechanics</span> <span class="o">&gt;</span> <span class="mf">0.1</span>
 
     <span class="k">def</span> <span class="nf">_pre_mechanics_solve</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_preXS_assigner</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pre_XS</span><span class="p">,</span> <span class="n">utils</span><span class="o">.</span><span class="n">sub_function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_vs</span><span class="p">,</span> <span class="mi">40</span><span class="p">))</span>
@@ -702,14 +708,42 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">mech_heart</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">active</span><span class="o">.</span><span class="n">update_time</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_t</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_post_mechanics_solve</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">mechanics_to_coupling</span><span class="p">()</span>
+
         <span class="c1"># Update previous active tension</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mech_heart</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">active</span><span class="o">.</span><span class="n">update_prev</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">mechanics_to_coupling</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">coupling_to_ep</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_solve_mechanics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_pre_mechanics_solve</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mech_heart</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+        <span class="c1"># converged = False</span>
+
+        <span class="c1"># current_t = float(self.mech_heart.material.active.t)</span>
+        <span class="c1"># target_t = self._t</span>
+        <span class="c1"># dt = self.dt_mechanics</span>
+        <span class="c1"># while not converged:</span>
+        <span class="c1">#     t = current_t + dt</span>
+        <span class="c1">#     self.mech_heart.material.active.update_time(t)</span>
+        <span class="c1">#     try:</span>
+        <span class="c1">#         self.mech_heart.solve()</span>
+        <span class="c1">#     except pulse.mechanicsproblem.SolverDidNotConverge:</span>
+        <span class="c1">#         logger.warning(f&quot;Failed to solve mechanics problem with dt={dt}&quot;)</span>
+        <span class="c1">#         dt /= 2</span>
+        <span class="c1">#         logger.warning(f&quot;Try with dt={dt}&quot;)</span>
+        <span class="c1">#         if dt &lt; 1e-6:</span>
+        <span class="c1">#             logger.warning(&quot;dt is too small. Good bye&quot;)</span>
+        <span class="c1">#             raise</span>
+
+        <span class="c1">#     else:</span>
+        <span class="c1">#         if abs(t - target_t) &lt; 1e-12:</span>
+        <span class="c1">#             # We have reached the target</span>
+        <span class="c1">#             converged = True</span>
+        <span class="c1">#         # Update dt so that we hit the target next time</span>
+        <span class="c1">#         current_t = t</span>
+        <span class="c1">#         dt = target_t - t</span>
+        <span class="c1">#         self.mech_heart.material.active.update_prev()</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">_post_mechanics_solve</span><span class="p">()</span>
 
 <div class="viewcode-block" id="Runner.solve"><a class="viewcode-back" href="../../simcardems.html#simcardems.setup_models.Runner.solve">[docs]</a>    <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span>
