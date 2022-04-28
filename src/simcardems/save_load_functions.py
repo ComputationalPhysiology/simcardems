@@ -109,7 +109,7 @@ def save_state(
     ep_mesh = solver.VS.mesh()
     logger.debug("Save using dolfin.HDF5File")
     with dolfin.HDF5File(ep_mesh.mpi_comm(), path.as_posix(), "w") as h5file:
-        h5file.write(mech_heart.lmbda_prev, "/em/lmbda_prev")
+        h5file.write(mech_heart.material.active.lmbda_prev, "/em/lmbda_prev")
         h5file.write(mech_heart.material.active.Zetas_prev, "/em/Zetas_prev")
         h5file.write(mech_heart.material.active.Zetaw_prev, "/em/Zetaw_prev")
 
@@ -226,7 +226,7 @@ def load_state(
     mech_heart.state.assign(mech_state)
     mech_heart.material.active.Zetas_prev.assign(Zetas_prev)
     mech_heart.material.active.Zetaw_prev.assign(Zetaw_prev)
-    mech_heart.lmbda_prev.assign(lmbda_prev)
+    mech_heart.material.active.lmbda_prev.assign(lmbda_prev)
     coupling.coupling_to_mechanics()
 
     return setup_models.EMState(

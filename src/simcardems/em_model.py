@@ -49,7 +49,7 @@ class EMCoupling:
 
         self.Zetas_mech = solver.material.active.Zetas_prev
         self.Zetaw_mech = solver.material.active.Zetaw_prev
-        self.lmbda_mech = solver.lmbda_prev
+        self.lmbda_mech = solver.material.active.lmbda_prev
         self.mechanics_to_coupling()
         logger.debug("Done registering EP model")
 

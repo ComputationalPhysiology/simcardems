@@ -49,6 +49,7 @@ class Defaults:
     drug_factors_file: str = ""
     popu_factors_file: str = ""
     disease_state: str = "healthy"
+    mechanics_ode_scheme: mechanics_model.Scheme = mechanics_model.Scheme.analytic
 
 
 def default_parameters():
@@ -66,6 +67,7 @@ def setup_EM_model(
     spring: typing.Union[dolfin.Constant, float] = None,
     fix_right_plane: bool = True,
     bnd_cond: mechanics_model.BoundaryConditions = Defaults.bnd_cond,
+    mech_scheme: mechanics_model.Scheme = Defaults.mechanics_ode_scheme,
     num_refinements: int = Defaults.num_refinements,
     set_material: str = Defaults.set_material,
     drug_factors_file: str = Defaults.drug_factors_file,
@@ -105,6 +107,7 @@ def setup_EM_model(
         spring=spring,
         fix_right_plane=fix_right_plane,
         set_material=set_material,
+        mech_scheme=mech_scheme,
     )
 
     return EMState(
@@ -123,6 +126,7 @@ def setup_mechanics_solver(
     traction: typing.Union[dolfin.Constant, float] = None,
     spring: typing.Union[dolfin.Constant, float] = None,
     fix_right_plane: bool = False,
+    mech_scheme: mechanics_model.Scheme = Defaults.mechanics_ode_scheme,
     set_material: str = "",
     linear_solver="mumps",
 ):
@@ -170,8 +174,9 @@ def setup_mechanics_solver(
         XS=coupling.XS_mech,
         XW=coupling.XW_mech,
         mesh=coupling.mech_mesh,
+        scheme=mech_scheme,
     )
-    material = mechanics_model.HolzapfelOgden(
+    material = pulse.HolzapfelOgden(
         active_model=active_model,
         parameters=material_parameters,
     )
@@ -284,6 +289,7 @@ class Runner:
         num_refinements: int = Defaults.num_refinements,
         set_material: str = Defaults.set_material,
         bnd_cond: mechanics_model.BoundaryConditions = Defaults.bnd_cond,
+        mech_scheme: mechanics_model.Scheme = Defaults.mechanics_ode_scheme,
         drug_factors_file: str = Defaults.drug_factors_file,
         popu_factors_file: str = Defaults.popu_factors_file,
         disease_state: str = Defaults.disease_state,
@@ -326,6 +332,7 @@ class Runner:
                 drug_factors_file=drug_factors_file,
                 popu_factors_file=popu_factors_file,
                 disease_state=disease_state,
+                mech_scheme=mech_scheme,
             )
 
         self.coupling: em_model.EMCoupling = coupling
@@ -448,7 +455,6 @@ class Runner:
 
         # Update previous active tension
         self.mech_heart.material.active.update_prev()
-        self.mech_heart.update_lmbda_prev()
         self.coupling.mechanics_to_coupling()
         self.coupling.coupling_to_ep()
 
