@@ -128,6 +128,12 @@ def cli():
     type=str,
     help="Indicate disease state. Default is healthy. ",
 )
+@click.option(
+    "--mech_scheme",
+    default=Defaults.mechanics_ode_scheme,
+    type=click.Choice(mechanics_model.Scheme._member_names_),
+    help="Scheme used to solve the ODEs in the mechanics model",
+)
 def run(
     outdir: utils.PathLike,
     T: float,
@@ -147,6 +153,7 @@ def run(
     drug_factors_file: str,
     popu_factors_file: str,
     disease_state: str,
+    mech_scheme: mechanics_model.Scheme,
 ):
     main(
         outdir=outdir,
@@ -167,6 +174,7 @@ def run(
         drug_factors_file=drug_factors_file,
         popu_factors_file=popu_factors_file,
         disease_state=disease_state,
+        mech_scheme=mech_scheme,
     )
 
 
@@ -202,6 +210,7 @@ def main(
     drug_factors_file: str = Defaults.drug_factors_file,
     popu_factors_file: str = Defaults.popu_factors_file,
     disease_state: str = Defaults.disease_state,
+    mech_scheme: mechanics_model.Scheme = Defaults.mechanics_ode_scheme,
 ):
 
     # Get all arguments and dump them to a json file
@@ -235,6 +244,7 @@ def main(
         popu_factors_file=popu_factors_file,
         disease_state=disease_state,
         outdir=outdir,
+        mech_scheme=mech_scheme,
         reset=not load_state,
     )
 

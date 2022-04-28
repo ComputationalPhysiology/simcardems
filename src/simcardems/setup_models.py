@@ -49,6 +49,7 @@ class Defaults:
     drug_factors_file: str = ""
     popu_factors_file: str = ""
     disease_state: str = "healthy"
+    mechanics_ode_scheme: mechanics_model.Scheme = mechanics_model.Scheme.analytic
 
 
 def default_parameters():
@@ -66,6 +67,7 @@ def setup_EM_model(
     spring: typing.Union[dolfin.Constant, float] = None,
     fix_right_plane: bool = True,
     bnd_cond: mechanics_model.BoundaryConditions = Defaults.bnd_cond,
+    mech_scheme: mechanics_model.Scheme = Defaults.mechanics_ode_scheme,
     num_refinements: int = Defaults.num_refinements,
     set_material: str = Defaults.set_material,
     drug_factors_file: str = Defaults.drug_factors_file,
@@ -105,6 +107,7 @@ def setup_EM_model(
         spring=spring,
         fix_right_plane=fix_right_plane,
         set_material=set_material,
+        mech_scheme=mech_scheme,
     )
 
     return EMState(
@@ -123,6 +126,7 @@ def setup_mechanics_solver(
     traction: typing.Union[dolfin.Constant, float] = None,
     spring: typing.Union[dolfin.Constant, float] = None,
     fix_right_plane: bool = False,
+    mech_scheme: mechanics_model.Scheme = Defaults.mechanics_ode_scheme,
     set_material: str = "",
     linear_solver="mumps",
 ):
@@ -161,19 +165,16 @@ def setup_mechanics_solver(
         b_fs=0.0,
     )
 
-    V = dolfin.FunctionSpace(coupling.mech_mesh, "CG", 1)
     active_model = mechanics_model.LandModel(
         f0=microstructure.f0,
         s0=microstructure.s0,
         n0=microstructure.n0,
         eta=0,
-        lmbda=coupling.lmbda_mech,
-        Zetas=coupling.Zetas_mech,
-        Zetaw=coupling.Zetaw_mech,
         parameters=cell_params,
         XS=coupling.XS_mech,
         XW=coupling.XW_mech,
-        function_space=V,
+        mesh=coupling.mech_mesh,
+        scheme=mech_scheme,
     )
     material = pulse.HolzapfelOgden(
         active_model=active_model,
@@ -205,6 +206,7 @@ def setup_mechanics_solver(
     )
 
     problem.solve()
+    coupling.register_mech_model(problem)
 
     total_dofs = problem.state.function_space().dim()
     logger.info("Mechanics model")
@@ -287,6 +289,7 @@ class Runner:
         num_refinements: int = Defaults.num_refinements,
         set_material: str = Defaults.set_material,
         bnd_cond: mechanics_model.BoundaryConditions = Defaults.bnd_cond,
+        mech_scheme: mechanics_model.Scheme = Defaults.mechanics_ode_scheme,
         drug_factors_file: str = Defaults.drug_factors_file,
         popu_factors_file: str = Defaults.popu_factors_file,
         disease_state: str = Defaults.disease_state,
@@ -329,6 +332,7 @@ class Runner:
                 drug_factors_file=drug_factors_file,
                 popu_factors_file=popu_factors_file,
                 disease_state=disease_state,
+                mech_scheme=mech_scheme,
             )
 
         self.coupling: em_model.EMCoupling = coupling
@@ -425,6 +429,10 @@ class Runner:
         ]:
             self.collector.register(group, name, f)
 
+    @property
+    def dt_mechanics(self) -> float:
+        return float(self._t - self.mech_heart.material.active.t)
+
     def _solve_mechanics_now(self) -> bool:
 
         # Update these states that are needed in the Mechanics solver
@@ -434,9 +442,7 @@ class Runner:
         XW_norm = utils.compute_norm(self.coupling.XW_ep, self._pre_XW)
 
         # dt for the mechanics model should not be larger than 1 ms
-        dt = self._t - self.mech_heart.material.active.t
-
-        return (XS_norm + XW_norm >= 0.1) or dt > 0.990
+        return (XS_norm + XW_norm >= 0.1) or self.dt_mechanics > 0.1
 
     def _pre_mechanics_solve(self) -> None:
         self._preXS_assigner.assign(self._pre_XS, utils.sub_function(self._vs, 40))
@@ -446,14 +452,42 @@ class Runner:
         self.mech_heart.material.active.update_time(self._t)
 
     def _post_mechanics_solve(self) -> None:
-        self.coupling.mechanics_to_coupling()
+
         # Update previous active tension
         self.mech_heart.material.active.update_prev()
+        self.coupling.mechanics_to_coupling()
         self.coupling.coupling_to_ep()
 
     def _solve_mechanics(self):
         self._pre_mechanics_solve()
         self.mech_heart.solve()
+        # converged = False
+
+        # current_t = float(self.mech_heart.material.active.t)
+        # target_t = self._t
+        # dt = self.dt_mechanics
+        # while not converged:
+        #     t = current_t + dt
+        #     self.mech_heart.material.active.update_time(t)
+        #     try:
+        #         self.mech_heart.solve()
+        #     except pulse.mechanicsproblem.SolverDidNotConverge:
+        #         logger.warning(f"Failed to solve mechanics problem with dt={dt}")
+        #         dt /= 2
+        #         logger.warning(f"Try with dt={dt}")
+        #         if dt < 1e-6:
+        #             logger.warning("dt is too small. Good bye")
+        #             raise
+
+        #     else:
+        #         if abs(t - target_t) < 1e-12:
+        #             # We have reached the target
+        #             converged = True
+        #         # Update dt so that we hit the target next time
+        #         current_t = t
+        #         dt = target_t - t
+        #         self.mech_heart.material.active.update_prev()
+
         self._post_mechanics_solve()
 
     def solve(
