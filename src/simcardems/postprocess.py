@@ -315,8 +315,6 @@ def plot_state_traces(results_file):
                     values[group][name][i] = func(bnd[group].center)
 
     times = np.array(loader.time_stamps, dtype=float)
-    print(times)
-    print(values)
 
     if times[-1] > 4000 and False:
         plot_peaks(
@@ -511,10 +509,11 @@ def save_popu_json(population_folder, num_models):
         dict = {}
         for PoMm in range(1, num_models + 1):
             print(f"Analyzing model {PoMm}")
-            results_file = population_folder.joinpath(f"m{PoMm}/results.h5")
-
+            results_file = population_folder.joinpath("results.h5")
             if not results_file.is_file():
-                raise FileNotFoundError(f"File {results_file} does not exist")
+                results_file = population_folder.joinpath(f"m{PoMm}/results.h5")
+                if not results_file.is_file():
+                    raise FileNotFoundError(f"File {results_file} does not exist")
 
             loader = DataLoader(results_file)
             dict[f"m{PoMm}"] = {
