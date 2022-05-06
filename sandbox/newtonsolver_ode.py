@@ -18,11 +18,19 @@ class Problem(NonlinearProblem):
             bc.apply(A)
 
 class NewtonSolver_ODE(NewtonSolver):
+    def __init__(self):
+        self.petsc_solver = PETScKrylovSolver()
+        NewtonSolver.__init__(self, V.mesh().mpi_comm(),
+        self.petsc_solver, PETScFactory.instance())
     def converged(self, r, p, i):
         self._converged_called = True
         return super(NewtonSolver_ODE, self).converged(r, p, i)
     def solver_setup(self, A, J, p, i):
         self._solver_setup_called = True
+        PETScOptions.set("ksp_type", "cg")
+        PETScOptions.set("ksp_monitor")
+        PETScOptions.set("pc_type", "gamg")
+        self.linear_solver().set_from_options()
         super(NewtonSolver_ODE, self).solver_setup(A, J, p, i)
     def update_solution(self, x, dx, rp, p, i):
         self._update_solution_called = True
@@ -49,10 +57,10 @@ problem = Problem(J, F, bcs)
 x = u.vector()
 
 solver = NewtonSolver_ODE()
-solver.parameters["linear_solver"] = "cg"
-solver.parameters["preconditioner"] = "amg"
-solver.parameters["krylov_solver"]["monitor_convergence"] = True
-solver.parameters["report"] = True
+# solver.parameters["linear_solver"] = "cg"
+# solver.parameters["preconditioner"] = "amg"
+# solver.parameters["krylov_solver"]["monitor_convergence"] = True
+# solver.parameters["report"] = True
 
 # Check that subsequent solutions work and reuse preconditioner
 solver.solve(problem, x)
