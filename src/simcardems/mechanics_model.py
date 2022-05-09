@@ -33,7 +33,6 @@ def _Zeta(Zeta_prev, A, c, dLambda, dt, scheme: Scheme):
     else:
         return Zeta_prev * (1 - c * dt) + A * dLambda
 
-
 class LandModel(pulse.ActiveModel):
     def __init__(
         self,
@@ -240,13 +239,13 @@ class MechanicsProblem(pulse.MechanicsProblem):
         u, p = dolfin.split(self.state)
 
         # Some mechanical quantities
-        F = dolfin.variable(pulse.DeformationGradient(u))
-        J = pulse.Jacobian(F)
+        self._F = dolfin.variable(pulse.DeformationGradient(u))
+        self._J = pulse.Jacobian(self._F)
         dx = self.geometry.dx
 
         internal_energy = self.material.strain_energy(
-            F,
-        ) + self.material.compressibility(p, J)
+            self._F,
+        ) + self.material.compressibility(p, self._J)
 
         self._virtual_work = dolfin.derivative(
             internal_energy * dx,
@@ -262,13 +261,119 @@ class MechanicsProblem(pulse.MechanicsProblem):
         )
         self._init_solver()
 
+    def _init_solver(self):
+        self._problem = pulse.NonlinearProblem(
+            J=self._jacobian,
+            F=self._virtual_work,
+            bcs=self._dirichlet_bc,
+        )
+        self.solver = MechanicsNewtonSolver_ODE(
+            self._problem,
+            self.state,
+            parameters=self.solver_parameters,
+        )
+
     def solve(self):
         self._init_forms()
-        return super().solve()
+        newton_iteration, newton_converged = self.solver.solve()
+        # DEBUGGING
+        getattr(self.solver, "check_overloads_called", None)
+        return newton_iteration, newton_converged
 
     def update_lmbda_prev(self):
         self.lmbda_prev.assign(dolfin.project(self.lmbda, self.lmbda_space))
 
+class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
+
+    def __init__(
+        self,
+        problem: pulse.NonlinearProblem,
+        state,
+        parameters=None,
+    ):
+        dolfin.PETScOptions.clear()
+        # self.update_parameters(parameters)
+        self._problem = problem
+        self._state = state
+        self._parameters = parameters
+
+        self.petsc_solver = dolfin.PETScKrylovSolver()
+        dolfin.NewtonSolver.__init__(self, self._state.function_space().mesh().mpi_comm(),
+                                     self.petsc_solver, dolfin.PETScFactory.instance())
+
+    @staticmethod
+    def default_solver_parameters():
+        return {
+            "petsc": {
+                "ksp_type": "preonly",
+                "pc_type": "lu",
+                "pc_factor_mat_solver_type": "mumps",
+                "mat_mumps_icntl_33": 0,
+            },
+            "verbose": True,
+            # Not used (yet)
+            # "linear_solver": "mumps",
+            # "preconditioner": "lu",
+            # "error_on_nonconvergence": False,
+            # "relative_tolerance": 1e-5,
+            # "absolute_tolerance": 1e-5,
+            # "maximum_iterations": 20,
+            # "report": False,
+            # "krylov_solver": {
+            #     "absolute_tolerance": 1e-13,
+            #     "relative_tolerance": 1e-13,
+            #     "maximum_iterations": 1000,
+            #     "monitor_convergence": False,
+            # },
+            # "lu_solver": {"report": False, "symmetric": False, "verbose": False},
+        }
+        
+    def converged(self, r, p, i):
+        self._converged_called = True
+        return super(MechanicsNewtonSolver_ODE, self).converged(r, p, i)
+    def solver_setup(self, A, J, p, i):
+        self._solver_setup_called = True
+        params = MechanicsNewtonSolver_ODE.default_solver_parameters()
+        # FIXME
+        #ps = self.linear_solver().default_parameters()
+        petsc = params.pop("petsc")
+        for k, v in petsc.items():
+            if v is not None:
+                dolfin.PETScOptions.set(k, v)
+        # Here set the other default params
+        self.verbose = params.pop("verbose", False)
+        if self.verbose:
+            dolfin.PETScOptions.set("ksp_monitor")
+            dolfin.PETScOptions.set("log_view")
+            #dolfin.PETScOptions.set("ksp_view")
+            dolfin.PETScOptions.set("pc_view")
+            dolfin.PETScOptions.set("mat_superlu_dist_statprint", True)
+            # ps["lu_solver"]["report"] = True
+            # ps["lu_solver"]["verbose"] = True
+            # ps["report"] = True
+            # ps["krylov_solver"]["monitor_convergence"] = True
+        self.linear_solver().set_from_options()
+
+        super(MechanicsNewtonSolver_ODE, self).solver_setup(A, J, p, i)
+    def update_solution(self, x, dx, rp, p, i):
+        self._update_solution_called = True
+        print("Let's solve the ODEs!")
+        # FIXME
+        #Zetas, Zetaw = self._solve_ode(self._F)
+        #self.Zetas.assign(dolfin.project(Zetas, self.function_space))
+        #self.Zetaw.assign(dolfin.project(Zetaw, self.function_space))
+        super(MechanicsNewtonSolver_ODE, self).update_solution(x, dx, rp, p, i)
+    def solve(self):
+        self._solve_called = True
+        return super(MechanicsNewtonSolver_ODE, self).solve(self._problem, self._state.vector())
+
+    # DEBUGGING
+    # This is just to check if we are using the overloaded functions
+    def check_overloads_called(self):
+        assert getattr(self, "_converged_called", False)
+        assert getattr(self, "_solver_setup_called", False)
+        assert getattr(self, "_update_solution_called", False)
+        assert getattr(self, "_solve_called", False)
 
 class RigidMotionProblem(MechanicsProblem):
     boundary_condition = BoundaryConditions.rigid
@@ -297,13 +402,13 @@ class RigidMotionProblem(MechanicsProblem):
         q, v, z = dolfin.split(self.state_test)
 
         # Some mechanical quantities
-        F = dolfin.variable(pulse.DeformationGradient(u))
-        J = pulse.Jacobian(F)
+        self._F = dolfin.variable(pulse.DeformationGradient(u))
+        self._J = pulse.Jacobian(self._F)
         dx = self.geometry.dx
 
         internal_energy = self.material.strain_energy(
-            F,
-        ) + self.material.compressibility(p, J)
+            self._F,
+        ) + self.material.compressibility(p, self._J)
 
         self._virtual_work = dolfin.derivative(
             internal_energy * dx,
@@ -334,7 +439,7 @@ class RigidMotionProblem(MechanicsProblem):
             F=self._virtual_work,
             bcs=[],
         )
-        self.solver = pulse.NonlinearSolver(
+        self.solver = MechanicsNewtonSolver_ODE(
             self._problem,
             self.state,
             parameters=self.solver_parameters,

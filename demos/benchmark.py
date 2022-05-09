@@ -201,8 +201,8 @@ def postprocess():
 
 
 def main():
-    # run_benchmark()
-    postprocess()
+    run_benchmark()
+    # postprocess()
 
 
 if __name__ == "__main__":
