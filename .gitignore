@@ -1,5 +1,20 @@
 demos/results/
+*.pvd
+*.vtu
 *.DS_Store
+*.vscode
+*.json
+demos/release_test.md
+demos/release_test_results/
+demos/results_simple_demo/
+demos/simple_demo.md
+docs/CONTRIBUTING.md
+docs/source/CONTRIBUTING.md
+docs/source/release_test.md
+docs/source/simple_demo.md
+test_outdir/
+docs/source/modules.rst
+docs/source/simcardems.rst
 # Created by https://www.toptal.com/developers/gitignore/api/python,visualstudiocode
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,visualstudiocode
 

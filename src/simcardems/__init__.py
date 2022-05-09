@@ -8,10 +8,12 @@ from . import cli
 from . import datacollector
 from . import em_model
 from . import ep_model
+from . import geometry
 from . import mechanics_model
 from . import ORdmm_Land
 from . import postprocess
 from . import save_load_functions
+from . import setup_models
 from . import utils
 from .datacollector import DataCollector
 from .datacollector import DataLoader
@@ -19,6 +21,8 @@ from .em_model import EMCoupling
 from .mechanics_model import LandModel
 from .mechanics_model import MechanicsProblem
 from .mechanics_model import RigidMotionProblem
+from .setup_models import default_parameters
+from .setup_models import Runner
 from .version import __version__
 
 
@@ -62,6 +66,7 @@ __all__ = [
     "mechanics_model",
     "ORdmm_Land",
     "postprocess",
+    "geometry",
     "save_load_functions",
     "utils",
     "cli",
@@ -71,5 +76,8 @@ __all__ = [
     "EMCoupling",
     "DataCollector",
     "DataLoader",
+    "setup_models",
+    "Runner",
+    "default_parameters",
     "__version__",
 ]

@@ -1,6 +1,8 @@
+from enum import Enum
 from pathlib import Path
 from typing import Dict
 from typing import List
+from typing import Union
 
 import dolfin
 from dolfin import FiniteElement  # noqa: F401
@@ -13,6 +15,11 @@ from .save_load_functions import h5pyfile
 logger = utils.getLogger(__name__)
 
 
+class DataGroups(str, Enum):
+    ep = "ep"
+    mechanics = "mechanics"
+
+
 class DataCollector:
     def __init__(self, outdir, mech_mesh, ep_mesh, reset_state=True) -> None:
         self.outdir = Path(outdir)
@@ -21,15 +28,21 @@ class DataCollector:
 
         if reset_state:
             utils.remove_file(self._results_file)
+
+        self._times_stamps = set()
         if not self._results_file.is_file():
             with dolfin.HDF5File(self.comm, self.results_file, "w") as h5file:
                 h5file.write(mech_mesh, "/mechanics/mesh")
                 h5file.write(ep_mesh, "/ep/mesh")
 
-        self._xdmffiles: Dict[str, Dict[str, dolfin.XDMFFile]] = {
-            "ep": {},
-            "mechanics": {},
-        }
+        else:
+
+            try:
+                with h5pyfile(self._results_file, "r") as f:
+                    self._times_stamps = set(f["ep"]["V"].keys())
+            except KeyError:
+                pass
+
         self._functions: Dict[str, Dict[str, dolfin.Function]] = {
             "ep": {},
             "mechanics": {},
@@ -49,25 +62,21 @@ class DataCollector:
             logger.warning(
                 f"Warning: {name} in group {group} is allready registered - overwriting",
             )
-        self._xdmffiles[group][name] = dolfin.XDMFFile(
-            self.comm,
-            self.outdir.joinpath(f"{group}_{name}.xdmf").as_posix(),
-        )
         self._functions[group][name] = f
 
     @property
     def names(self) -> Dict[str, List[str]]:
         return {k: list(v.keys()) for k, v in self._functions.items()}
 
-    def store(self, t):
-        logger.debug(f"Store results at time {t:.2f}")
-        for group, names in self.names.items():
-            logger.debug(f"Save xdmffile for group {group}")
-            for name in names:
-                logger.debug(f"Save {name}")
-                f = self._functions[group][name]
-                xdmf = self._xdmffiles[group][name]
-                xdmf.write(f, t)
+    def store(self, t: float) -> None:
+
+        t_str = f"{t:.2f}"
+        logger.debug(f"Store results at time {t_str}")
+        if f"{t_str}" in self._times_stamps:
+            logger.info(f"Time stamp {t_str} allready exist in file")
+            return
+
+        self._times_stamps.add(t_str)
 
         with dolfin.HDF5File(self.comm, self.results_file, "a") as h5file:
             for group, names in self.names.items():
@@ -75,12 +84,12 @@ class DataCollector:
                 for name in names:
                     logger.debug(f"Save {name}")
                     f = self._functions[group][name]
-                    h5file.write(f, f"{group}/{name}/{t:.2f}")
+                    h5file.write(f, f"{group}/{name}/{t_str}")
 
 
 class DataLoader:
     def __init__(self, h5name) -> None:
-        self._h5file = None
+
         self._h5name = Path(h5name)
         if not self._h5name.is_file():
             raise FileNotFoundError(f"File {h5name} does not exist")
@@ -92,9 +101,9 @@ class DataLoader:
             if not ("ep" in h5file and "mesh" in h5file["ep"]):
                 raise ValueError("No ep mesh in results file. Cannot load data")
             if not ("mechanics" in h5file and "mesh" in h5file["mechanics"]):
-                raise ValueError("No mechancis mesh in results file. Cannot load data")
+                raise ValueError("No mechanics mesh in results file. Cannot load data")
 
-            # Find the remining funcitons
+            # Find the remaining functions
             self.names = {
                 group: [name for name in h5file[group].keys() if name != "mesh"]
                 for group in ["ep", "mechanics"]
@@ -141,24 +150,31 @@ class DataLoader:
 
         self._create_functions()
 
+    @property
+    def size(self) -> int:
+        return len(self.time_stamps)
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({str(self._h5name)})"
+
     def __del__(self):
         if self._h5file is not None:
             self._h5file.close()
 
     def _create_functions(self):
-        self._h5file.read(self.ep_mesh, "/ep/mesh", False)
-        self._h5file.read(self.mech_mesh, "/mechanics/mesh", False)
+        self._h5file.read(self.ep_mesh, "/ep/mesh", True)
+        self._h5file.read(self.mech_mesh, "/mechanics/mesh", True)
 
         self._function_spaces = {}
 
-        for group, singature_dict in self._signatures.items():
+        for group, signature_dict in self._signatures.items():
             mesh = self.ep_mesh if group == "ep" else self.mech_mesh
 
             self._function_spaces.update(
                 {
                     group: {
                         signature: dolfin.FunctionSpace(mesh, eval(signature))
-                        for signature in set(singature_dict.values())
+                        for signature in set(signature_dict.values())
                     },
                 },
             )
@@ -173,13 +189,48 @@ class DataLoader:
             for group, names in self.names.items()
         }
 
-    def get(self, group, name, t):
+    def get(
+        self,
+        group: DataGroups,
+        name: str,
+        t: Union[str, float],
+    ) -> dolfin.Function:
+        """Retrieve the function from the file
+
+        Parameters
+        ----------
+        group : DataGroups
+            The group where the function is stored, either
+            'ep' or 'mechanics'
+        name : str
+            Name of the function
+        t : Union[str, float]
+            Time stamp you want to use. See `DataLoader.time_stamps`
+
+        Returns
+        -------
+        dolfin.Function
+            The function
+
+        Raises
+        ------
+        KeyError
+            If group does not exist in the file
+        KeyError
+            If name does not exist in group
+        KeyError
+            If 't' provided is not among the time stamps
+        """
         if group not in self.names:
             raise KeyError(
                 f"Cannot find group {group} in names, expected of of {self.names.keys()}",
             )
-        if f"{name}" not in self.names[group]:
-            raise KeyError(f"Cannot find name {name} in group {group}")
+
+        names = self.names[group]
+        if f"{name}" not in names:
+            raise KeyError(
+                f"Cannot find name {name} in group {group}. Possible options are {names}",
+            )
 
         if isinstance(t, (int, float)):
             t = f"{t:.2f}"
