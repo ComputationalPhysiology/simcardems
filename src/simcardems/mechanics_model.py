@@ -267,11 +267,13 @@ class MechanicsProblem(pulse.MechanicsProblem):
             F=self._virtual_work,
             bcs=self._dirichlet_bc,
         )
-        self.solver = MechanicsNewtonSolver_ODE(
-            self._problem,
-            self.state,
-            parameters=self.solver_parameters,
-        )
+        self.solver = MechanicsNewtonSolver_ODE(self)
+        # self.solver = MechanicsNewtonSolver_ODE(
+        #     self,
+        #     self._problem,
+        #     self.state,
+        #     parameters=self.solver_parameters,
+        # )
 
     def solve(self):
         self._init_forms()
@@ -287,15 +289,20 @@ class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
 
     def __init__(
         self,
-        problem: pulse.NonlinearProblem,
-        state,
-        parameters=None,
+        mechanics_problem : pulse.MechanicsProblem,
+        # problem: pulse.NonlinearProblem,
+        # state,
+        # parameters=None,
     ):
         dolfin.PETScOptions.clear()
-        # self.update_parameters(parameters)
-        self._problem = problem
-        self._state = state
-        self._parameters = parameters
+        # self.update_parameters(parameters) #FIXME
+        self._mech_problem = mechanics_problem ## Do we need a deep copy here ?
+        self._problem = self._mech_problem._problem
+        self._state = self._mech_problem.state
+        self._parameters = self._mech_problem.solver_parameters
+        # self._problem = problem
+        # self._state = state
+        # self._parameters = parameters
 
         self.petsc_solver = dolfin.PETScKrylovSolver()
         dolfin.NewtonSolver.__init__(self, self._state.function_space().mesh().mpi_comm(),
@@ -327,7 +334,7 @@ class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
             # },
             # "lu_solver": {"report": False, "symmetric": False, "verbose": False},
         }
-        
+
     def converged(self, r, p, i):
         self._converged_called = True
         return super(MechanicsNewtonSolver_ODE, self).converged(r, p, i)
@@ -357,12 +364,18 @@ class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
         super(MechanicsNewtonSolver_ODE, self).solver_setup(A, J, p, i)
     def update_solution(self, x, dx, rp, p, i):
         self._update_solution_called = True
-        print("Let's solve the ODEs!")
-        # FIXME
-        #Zetas, Zetaw = self._solve_ode(self._F)
-        #self.Zetas.assign(dolfin.project(Zetas, self.function_space))
-        #self.Zetaw.assign(dolfin.project(Zetaw, self.function_space))
+
+        # Update x from the dx obtained from linear solver (Newton iteration) :
+        # x = -rp*dx (rp : relax param)
         super(MechanicsNewtonSolver_ODE, self).update_solution(x, dx, rp, p, i)
+
+        #print("NL iteration i = ", i)
+        print("Updating form of MechanicsProblem (from current lmbda, zetas, zetaw, ...)")
+        self._mech_problem.state.vector().set_local(x)
+        self._mech_problem._init_forms()
+        # Re-init this solver with the new problem
+        self.__init__(self._mech_problem)
+
     def solve(self):
         self._solve_called = True
         return super(MechanicsNewtonSolver_ODE, self).solve(self._problem, self._state.vector())
@@ -439,11 +452,12 @@ class RigidMotionProblem(MechanicsProblem):
             F=self._virtual_work,
             bcs=[],
         )
-        self.solver = MechanicsNewtonSolver_ODE(
-            self._problem,
-            self.state,
-            parameters=self.solver_parameters,
-        )
+        self.solver = MechanicsNewtonSolver_ODE(self)
+        # self.solver = MechanicsNewtonSolver_ODE(
+        #     self._problem,
+        #     self.state,
+        #     parameters=self.solver_parameters,
+        # )
 
     def rigid_motion_term(mesh, u, r):
         position = dolfin.SpatialCoordinate(mesh)
