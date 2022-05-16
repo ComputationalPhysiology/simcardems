@@ -372,14 +372,17 @@ class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
 
         # Update x from the dx obtained from linear solver (Newton iteration) :
         # x = -rp*dx (rp : relax param)
+
         super(MechanicsNewtonSolver_ODE, self).update_solution(x, dx, rp, p, i)
 
         # print("Updating form of MechanicsProblem (from current lmbda, zetas, zetaw, ...)")
         self._mech_problem.state.vector().set_local(x)
         self._mech_problem._init_forms()
+        # Recompute Zetas, Zetaw, Ta, lmbda
+        self._mech_problem.material.active.update_prev()
 
-        # Re-init this solver with the new problem
-        self.__init__(self._mech_problem)
+        # Re-init this solver with the new problem (note : done in _init_forms)
+        # self.__init__(self._mech_problem)
 
     def solve(self):
         self._solve_called = True
