@@ -33,6 +33,7 @@ def _Zeta(Zeta_prev, A, c, dLambda, dt, scheme: Scheme):
     else:
         return Zeta_prev * (1 - c * dt) + A * dLambda
 
+
 class LandModel(pulse.ActiveModel):
     def __init__(
         self,
@@ -285,6 +286,7 @@ class MechanicsProblem(pulse.MechanicsProblem):
     def update_lmbda_prev(self):
         self.lmbda_prev.assign(dolfin.project(self.lmbda, self.lmbda_space))
 
+
 class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
 
     def __init__(
@@ -296,7 +298,9 @@ class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
     ):
         dolfin.PETScOptions.clear()
         # self.update_parameters(parameters) #FIXME
-        self._mech_problem = mechanics_problem ## Do we need a deep copy here ?
+
+        # Note : Do wee need a deep copy of mech problem here ?
+        self._mech_problem = mechanics_problem
         self._problem = self._mech_problem._problem
         self._state = self._mech_problem.state
         self._parameters = self._mech_problem.solver_parameters
@@ -338,11 +342,12 @@ class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
     def converged(self, r, p, i):
         self._converged_called = True
         return super(MechanicsNewtonSolver_ODE, self).converged(r, p, i)
+
     def solver_setup(self, A, J, p, i):
         self._solver_setup_called = True
         params = MechanicsNewtonSolver_ODE.default_solver_parameters()
-        # FIXME
-        #ps = self.linear_solver().default_parameters()
+        # FIXME - ps to be updated with params
+        # ps = self.linear_solver().default_parameters()
         petsc = params.pop("petsc")
         for k, v in petsc.items():
             if v is not None:
@@ -352,7 +357,6 @@ class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
         if self.verbose:
             dolfin.PETScOptions.set("ksp_monitor")
             dolfin.PETScOptions.set("log_view")
-            #dolfin.PETScOptions.set("ksp_view")
             dolfin.PETScOptions.set("pc_view")
             dolfin.PETScOptions.set("mat_superlu_dist_statprint", True)
             # ps["lu_solver"]["report"] = True
@@ -362,6 +366,7 @@ class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
         self.linear_solver().set_from_options()
 
         super(MechanicsNewtonSolver_ODE, self).solver_setup(A, J, p, i)
+
     def update_solution(self, x, dx, rp, p, i):
         self._update_solution_called = True
 
@@ -369,10 +374,10 @@ class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
         # x = -rp*dx (rp : relax param)
         super(MechanicsNewtonSolver_ODE, self).update_solution(x, dx, rp, p, i)
 
-        #print("NL iteration i = ", i)
-        print("Updating form of MechanicsProblem (from current lmbda, zetas, zetaw, ...)")
+        # print("Updating form of MechanicsProblem (from current lmbda, zetas, zetaw, ...)")
         self._mech_problem.state.vector().set_local(x)
         self._mech_problem._init_forms()
+
         # Re-init this solver with the new problem
         self.__init__(self._mech_problem)
 
@@ -387,6 +392,7 @@ class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
         assert getattr(self, "_solver_setup_called", False)
         assert getattr(self, "_update_solution_called", False)
         assert getattr(self, "_solve_called", False)
+
 
 class RigidMotionProblem(MechanicsProblem):
     boundary_condition = BoundaryConditions.rigid
