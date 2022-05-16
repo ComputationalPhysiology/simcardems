@@ -32,6 +32,24 @@ def getLogger(name):
 logger = getLogger(__name__)
 
 
+def local_project(v, V, u=None):
+    metadata = {"quadrature_degree": 3, "quadrature_scheme": "default"}
+    dxm = dolfin.dx(metadata=metadata)
+    dv = dolfin.TrialFunction(V)
+    v_ = dolfin.TestFunction(V)
+    a_proj = dolfin.inner(dv, v_) * dxm
+    b_proj = dolfin.inner(v, v_) * dxm
+    solver = dolfin.LocalSolver(a_proj, b_proj)
+    solver.factorize()
+    if u is None:
+        u = dolfin.Function(V)
+        solver.solve_local_rhs(u)
+        return u
+    else:
+        solver.solve_local_rhs(u)
+        return
+
+
 def compute_norm(x, x_prev):
     x_norm = x.vector().norm("l2")
     e = x.vector() - x_prev.vector()
