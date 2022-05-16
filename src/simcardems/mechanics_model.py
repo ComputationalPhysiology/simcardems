@@ -269,12 +269,6 @@ class MechanicsProblem(pulse.MechanicsProblem):
             bcs=self._dirichlet_bc,
         )
         self.solver = MechanicsNewtonSolver_ODE(self)
-        # self.solver = MechanicsNewtonSolver_ODE(
-        #     self,
-        #     self._problem,
-        #     self.state,
-        #     parameters=self.solver_parameters,
-        # )
 
     def solve(self):
         self._init_forms()
@@ -325,21 +319,20 @@ class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
                 "mat_mumps_icntl_33": 0,
             },
             "verbose": True,
-            # Not used (yet)
-            # "linear_solver": "mumps",
-            # "preconditioner": "lu",
-            # "error_on_nonconvergence": False,
-            # "relative_tolerance": 1e-5,
-            # "absolute_tolerance": 1e-5,
-            # "maximum_iterations": 20,
-            # "report": False,
-            # "krylov_solver": {
-            #     "absolute_tolerance": 1e-13,
-            #     "relative_tolerance": 1e-13,
-            #     "maximum_iterations": 1000,
-            #     "monitor_convergence": False,
-            # },
-            # "lu_solver": {"report": False, "symmetric": False, "verbose": False},
+            "linear_solver": "mumps",
+            "preconditioner": "lu",
+            "error_on_nonconvergence": False,
+            "relative_tolerance": 1e-5,
+            "absolute_tolerance": 1e-5,
+            "maximum_iterations": 20,
+            "report": False,
+            "krylov_solver": {
+                "absolute_tolerance": 1e-13,
+                "relative_tolerance": 1e-13,
+                "maximum_iterations": 1000,
+                "monitor_convergence": False,
+            },
+            "lu_solver": {"report": False, "symmetric": False, "verbose": False},
         }
 
     def converged(self, r, p, i):
@@ -349,8 +342,12 @@ class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
     def solver_setup(self, A, J, p, i):
         self._solver_setup_called = True
         params = MechanicsNewtonSolver_ODE.default_solver_parameters()
-        # FIXME - ps to be updated with params
-        # ps = self.linear_solver().default_parameters()
+        for k, v in params.items():
+            if self.parameters.has_parameter(k):
+                self.parameters[k] = v
+            if self.parameters.has_parameter_set(k):
+                for subk, subv in params[k].items():
+                    self.parameters[k][subk] = subv
         petsc = params.pop("petsc")
         for k, v in petsc.items():
             if v is not None:
@@ -362,10 +359,10 @@ class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
             dolfin.PETScOptions.set("log_view")
             dolfin.PETScOptions.set("pc_view")
             dolfin.PETScOptions.set("mat_superlu_dist_statprint", True)
-            # ps["lu_solver"]["report"] = True
-            # ps["lu_solver"]["verbose"] = True
-            # ps["report"] = True
-            # ps["krylov_solver"]["monitor_convergence"] = True
+            self.parameters["lu_solver"]["report"] = True
+            self.parameters["lu_solver"]["verbose"] = True
+            self.parameters["report"] = True
+            self.parameters["krylov_solver"]["monitor_convergence"] = True
         self.linear_solver().set_from_options()
 
         super(MechanicsNewtonSolver_ODE, self).solver_setup(A, J, p, i)
@@ -464,11 +461,6 @@ class RigidMotionProblem(MechanicsProblem):
             bcs=[],
         )
         self.solver = MechanicsNewtonSolver_ODE(self)
-        # self.solver = MechanicsNewtonSolver_ODE(
-        #     self._problem,
-        #     self.state,
-        #     parameters=self.solver_parameters,
-        # )
 
     def rigid_motion_term(mesh, u, r):
         position = dolfin.SpatialCoordinate(mesh)
