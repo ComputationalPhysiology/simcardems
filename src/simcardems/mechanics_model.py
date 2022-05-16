@@ -288,10 +288,9 @@ class MechanicsProblem(pulse.MechanicsProblem):
 
 
 class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
-
     def __init__(
         self,
-        mechanics_problem : pulse.MechanicsProblem,
+        mechanics_problem: pulse.MechanicsProblem,
         # problem: pulse.NonlinearProblem,
         # state,
         # parameters=None,
@@ -309,8 +308,12 @@ class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
         # self._parameters = parameters
 
         self.petsc_solver = dolfin.PETScKrylovSolver()
-        dolfin.NewtonSolver.__init__(self, self._state.function_space().mesh().mpi_comm(),
-                                     self.petsc_solver, dolfin.PETScFactory.instance())
+        dolfin.NewtonSolver.__init__(
+            self,
+            self._state.function_space().mesh().mpi_comm(),
+            self.petsc_solver,
+            dolfin.PETScFactory.instance(),
+        )
 
     @staticmethod
     def default_solver_parameters():
@@ -383,7 +386,9 @@ class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
 
     def solve(self):
         self._solve_called = True
-        return super(MechanicsNewtonSolver_ODE, self).solve(self._problem, self._state.vector())
+        return super(MechanicsNewtonSolver_ODE, self).solve(
+            self._problem, self._state.vector()
+        )
 
     # DEBUGGING
     # This is just to check if we are using the overloaded functions
