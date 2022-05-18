@@ -80,7 +80,7 @@ class LandModel(pulse.ActiveModel):
 
         self.V_cg1 = dolfin.FunctionSpace(mesh, "CG", 1)
         self.Ta_current = dolfin.Function(self.function_space, name="Ta")
-        self.Ta_current_cg1 = dolfin.Function(self.function_space, name="Ta")
+        self.Ta_current_cg1 = dolfin.Function(self.V_cg1, name="Ta")
 
     @property
     def dLambda(self):
