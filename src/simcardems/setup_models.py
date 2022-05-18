@@ -433,7 +433,7 @@ class Runner:
             ("ep", "V", self._v),
             ("ep", "Ca", self._Ca),
             ("mechanics", "lmbda", self.coupling.lmbda_mech),
-            ("mechanics", "Ta", self.mech_heart.material.active.Ta_current),
+            ("mechanics", "Ta", self.mech_heart.material.active.Ta_current_cg1),
         ]:
             self.collector.register(group, name, f)
 

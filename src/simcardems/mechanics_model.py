@@ -77,7 +77,9 @@ class LandModel(pulse.ActiveModel):
         if Zetaw is not None:
             self.Zetaw_prev.assign(Zetaw)
 
+        self.V_cg1 = dolfin.FunctionSpace(mesh, "CG", 1)
         self.Ta_current = dolfin.Function(self.function_space, name="Ta")
+        self.Ta_current_cg1 = dolfin.Function(self.function_space, name="Ta")
 
     @property
     def dLambda(self):
@@ -193,10 +195,7 @@ class LandModel(pulse.ActiveModel):
                 form_compiler_parameters={"representation": "quadrature"},
             ),
         )
-        # utils.local_project(self.Zetas, self.function_space, self.Zetas_prev)
-        # utils.local_project(self.Zetaw, self.function_space, self.Zetaw_prev)
-        # utils.local_project(self.Ta, self.function_space, self.Ta_current)
-        # utils.local_project(self.lmbda, self.function_space, self.lmbda_prev)
+        utils.local_project(self.Ta_current, self.V_cg1, self.Ta_current_cg1)
 
     @property
     def Ta(self):
