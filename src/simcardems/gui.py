@@ -344,7 +344,7 @@ class Simulation:
             st.info(f"Directory '{outdir}' does not exist. Creating...")
             outdir.mkdir(parents=True)
         else:
-            st.info(f"Directory '{outdir}' allready exist")
+            st.info(f"Directory '{outdir}' already exist")
         return T, save_freq, outdir
 
 
