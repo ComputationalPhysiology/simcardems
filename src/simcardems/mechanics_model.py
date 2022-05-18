@@ -23,6 +23,7 @@ class Scheme(str, Enum):
 
 
 def _Zeta(Zeta_prev, A, c, dLambda, dt, scheme: Scheme):
+
     if scheme == Scheme.analytic:
         return Zeta_prev * dolfin.exp(-c * dt) + (A * dLambda / c * dt) * (
             1 - dolfin.exp(-c * dt)
@@ -63,13 +64,16 @@ class LandModel(pulse.ActiveModel):
         self._scheme = scheme
 
         self._Ta = dolfin.Constant(0.0)
+        self._dLambda = dolfin.Function(self.function_space)
         self.lmbda_prev = dolfin.Function(self.function_space)
         self.lmbda = dolfin.Function(self.function_space)
 
+        self._Zetas = dolfin.Function(self.function_space)
         self.Zetas_prev = dolfin.Function(self.function_space)
         if Zetas is not None:
             self.Zetas_prev.assign(Zetas)
 
+        self._Zetaw = dolfin.Function(self.function_space)
         self.Zetaw_prev = dolfin.Function(self.function_space)
         if Zetaw is not None:
             self.Zetaw_prev.assign(Zetaw)
@@ -78,7 +82,8 @@ class LandModel(pulse.ActiveModel):
 
     @property
     def dLambda(self):
-        return self.lmbda - self.lmbda_prev
+        self._dLambda.vector()[:] = self.lmbda.vector() - self.lmbda_prev.vector()
+        return self._dLambda
 
     @property
     def Aw(self):
@@ -133,27 +138,33 @@ class LandModel(pulse.ActiveModel):
             / (rs * scale_popu_rs)
         )
 
-    @property
-    def Zetas(self):
-        return _Zeta(
-            self.Zetas_prev,
+    def update_Zetas(self):
+        self._Zetas.vector()[:] = _Zeta(
+            self.Zetas_prev.vector(),
             self.As,
             self.cs,
-            self.dLambda,
+            self.dLambda.vector(),
+            self.dt,
+            self._scheme,
+        )
+
+    @property
+    def Zetas(self):
+        return self._Zetas
+
+    def update_Zetaw(self):
+        self._Zetaw.vector()[:] = _Zeta(
+            self.Zetaw_prev.vector(),
+            self.Aw,
+            self.cw,
+            self.dLambda.vector(),
             self.dt,
             self._scheme,
         )
 
     @property
     def Zetaw(self):
-        return _Zeta(
-            self.Zetaw_prev,
-            self.Aw,
-            self.cw,
-            self.dLambda,
-            self.dt,
-            self._scheme,
-        )
+        return self._Zetaw
 
     @property
     def dt(self):
@@ -174,10 +185,16 @@ class LandModel(pulse.ActiveModel):
         self._t.assign(dolfin.Constant(t))
 
     def update_prev(self):
-        self.Zetas_prev.assign(dolfin.project(self.Zetas, self.function_space))
-        self.Zetaw_prev.assign(dolfin.project(self.Zetaw, self.function_space))
-        self.Ta_current.assign(dolfin.project(self.Ta, self.function_space))
-        self.lmbda_prev.assign(dolfin.project(self.lmbda, self.function_space))
+        self.Zetas_prev.vector()[:] = self.Zetas.vector()
+        self.Zetaw_prev.vector()[:] = self.Zetaw.vector()
+        self.lmbda_prev.vector()[:] = self.lmbda.vector()
+        self.Ta_current.assign(
+            dolfin.project(
+                self.Ta,
+                self.function_space,
+                form_compiler_parameters={"representation": "quadrature"},
+            ),
+        )
         # utils.local_project(self.Zetas, self.function_space, self.Zetas_prev)
         # utils.local_project(self.Zetaw, self.function_space, self.Zetaw_prev)
         # utils.local_project(self.Ta, self.function_space, self.Ta_current)
@@ -211,7 +228,15 @@ class LandModel(pulse.ActiveModel):
 
         C = F.T * F
         f = F * self.f0
-        self.lmbda = dolfin.sqrt(f**2)
+        self.lmbda.assign(
+            dolfin.project(
+                dolfin.sqrt(f**2),
+                self.function_space,
+                form_compiler_parameters={"representation": "quadrature"},
+            ),
+        )
+        self.update_Zetas()
+        self.update_Zetaw()
 
         return pulse.material.active_model.Wactive_transversally(
             Ta=self.Ta,
@@ -272,7 +297,7 @@ class MechanicsProblem(pulse.MechanicsProblem):
         return super().solve()
 
     def update_lmbda_prev(self):
-        self.lmbda_prev.assign(dolfin.project(self.lmbda, self.lmbda_space))
+        self.lmbda_prev.vector()[:] = self.lmbda.vector()
 
 
 class RigidMotionProblem(MechanicsProblem):
