@@ -1,8 +1,12 @@
 import logging as _logging
+import warnings as _warnings
 
 import daiquiri as _daiquiri
 import dolfin as _dolfin
 import pulse as _pulse
+from ffc.quadrature.deprecation import (
+    QuadratureRepresentationDeprecationWarning as _QuadratureRepresentationDeprecationWarning,
+)
 
 from . import cli
 from . import datacollector
@@ -57,8 +61,9 @@ _dolfin.parameters["form_compiler"]["cpp_optimize"] = True
 flags = ["-O3", "-ffast-math", "-march=native"]
 _dolfin.parameters["form_compiler"]["cpp_optimize_flags"] = " ".join(flags)
 _dolfin.parameters["form_compiler"]["quadrature_degree"] = 3
-_dolfin.parameters["form_compiler"]["representation"] = "quadrature"
+_dolfin.parameters["form_compiler"]["representation"] = "uflacs"
 
+_warnings.simplefilter("once", _QuadratureRepresentationDeprecationWarning)
 
 __all__ = [
     "datacollector",
