@@ -10,7 +10,6 @@ from . import utils
 
 logger = utils.getLogger(__name__)
 
-
 class BoundaryConditions(str, Enum):
     dirichlet = "dirichlet"
     rigid = "rigid"
@@ -313,13 +312,15 @@ class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
     def default_solver_parameters():
         return {
             "petsc": {
-                "ksp_type": "preonly",
+                #"ksp_type": "preonly",
+                "ksp_type": "gmres",
                 "pc_type": "lu",
                 "pc_factor_mat_solver_type": "mumps",
                 "mat_mumps_icntl_33": 0,
             },
             "verbose": True,
-            "linear_solver": "mumps",
+            #"linear_solver": "mumps",
+            "linear_solver": "gmres",
             "preconditioner": "lu",
             "error_on_nonconvergence": False,
             "relative_tolerance": 1e-5,
@@ -355,13 +356,13 @@ class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
         # Here set the other default params
         self.verbose = params.pop("verbose", False)
         if self.verbose:
-            dolfin.PETScOptions.set("ksp_monitor")
+            dolfin.set_log_level(dolfin.LogLevel.INFO)
             dolfin.PETScOptions.set("log_view")
             dolfin.PETScOptions.set("pc_view")
+            dolfin.PETScOptions.set("ksp_monitor_true_residual")
             dolfin.PETScOptions.set("mat_superlu_dist_statprint", True)
             self.parameters["lu_solver"]["report"] = True
             self.parameters["lu_solver"]["verbose"] = True
-            self.parameters["report"] = True
             self.parameters["krylov_solver"]["monitor_convergence"] = True
         self.linear_solver().set_from_options()
 
@@ -372,10 +373,9 @@ class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
 
         # Update x from the dx obtained from linear solver (Newton iteration) :
         # x = -rp*dx (rp : relax param)
-
         super(MechanicsNewtonSolver_ODE, self).update_solution(x, dx, rp, p, i)
 
-        # print("Updating form of MechanicsProblem (from current lmbda, zetas, zetaw, ...)")
+        # Updating form of MechanicsProblem (from current lmbda, zetas, zetaw, ...)
         self._mech_problem.state.vector().set_local(x)
         self._mech_problem._init_forms()
         # Recompute Zetas, Zetaw, Ta, lmbda

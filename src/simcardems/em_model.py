@@ -18,6 +18,9 @@ class EMCoupling:
         self.V_mech = dolfin.FunctionSpace(self.mech_mesh, "CG", 1)
         self.XS_mech = dolfin.Function(self.V_mech, name="XS_mech")
         self.XW_mech = dolfin.Function(self.V_mech, name="XW_mech")
+        self.lmbda_mech = dolfin.Function(self.V_mech, name="lambda_mech")
+        self.Zetas_mech = dolfin.Function(self.V_mech, name="Zetas_mech")
+        self.Zetaw_mech = dolfin.Function(self.V_mech, name="Zetaw_mech")
 
         self.V_ep = dolfin.FunctionSpace(self.ep_mesh, "CG", 1)
         self.XS_ep = dolfin.Function(self.V_ep, name="XS_ep")

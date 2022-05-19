@@ -139,13 +139,14 @@ def run_benchmark():
         s0=microstructure.s0,
         n0=microstructure.n0,
         eta=0,
-        lmbda=coupling.lmbda_mech,
-        Zetas=coupling.Zetas_mech,
-        Zetaw=coupling.Zetaw_mech,
+        #lmbda=coupling.lmbda_mech,
+        #Zetas=coupling.Zetas_mech,
+        #Zetaw=coupling.Zetaw_mech,
         parameters=solver.ode_solver._model.parameters(),
         XS=coupling.XS_mech,
         XW=coupling.XW_mech,
         function_space=V,
+        mesh=coupling.mech_mesh,
     )
     material = pulse.HolzapfelOgden(
         active_model=active_model,
