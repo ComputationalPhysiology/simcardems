@@ -10,6 +10,7 @@ from . import utils
 
 logger = utils.getLogger(__name__)
 
+
 class BoundaryConditions(str, Enum):
     dirichlet = "dirichlet"
     rigid = "rigid"
@@ -312,14 +313,14 @@ class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
     def default_solver_parameters():
         return {
             "petsc": {
-                #"ksp_type": "preonly",
+                # "ksp_type": "preonly",
                 "ksp_type": "gmres",
                 "pc_type": "lu",
                 "pc_factor_mat_solver_type": "mumps",
                 "mat_mumps_icntl_33": 0,
             },
             "verbose": True,
-            #"linear_solver": "mumps",
+            # "linear_solver": "mumps",
             "linear_solver": "gmres",
             "preconditioner": "lu",
             "error_on_nonconvergence": False,
