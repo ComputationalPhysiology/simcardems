@@ -381,3 +381,8 @@ Zetaw
 zk
 zmax
 zmin
+dolfin
+matplotlib
+allreduce
+transversally
+datacollector

@@ -52,7 +52,8 @@ class LandModel(pulse.ActiveModel):
     ):
         super().__init__(f0=f0, s0=s0, n0=n0)
         self._eta = eta
-        self.function_space = dolfin.FunctionSpace(mesh, "CG", 1)
+        # self.function_space = dolfin.FunctionSpace(mesh, "CG", 1)
+        self.function_space = pulse.QuadratureSpace(mesh, degree=3, dim=1)
 
         self.XS = XS
         self.XW = XW
@@ -177,6 +178,10 @@ class LandModel(pulse.ActiveModel):
         self.Zetaw_prev.assign(dolfin.project(self.Zetaw, self.function_space))
         self.Ta_current.assign(dolfin.project(self.Ta, self.function_space))
         self.lmbda_prev.assign(dolfin.project(self.lmbda, self.function_space))
+        # utils.local_project(self.Zetas, self.function_space, self.Zetas_prev)
+        # utils.local_project(self.Zetaw, self.function_space, self.Zetaw_prev)
+        # utils.local_project(self.Ta, self.function_space, self.Ta_current)
+        # utils.local_project(self.lmbda, self.function_space, self.lmbda_prev)
 
     @property
     def Ta(self):
@@ -482,7 +487,8 @@ class RigidMotionProblem(MechanicsProblem):
 
 def setup_microstructure(mesh):
     logger.debug("Set up microstructure")
-    V_f = dolfin.VectorFunctionSpace(mesh, "DG", 1)
+    # V_f = dolfin.VectorFunctionSpace(mesh, "DG", 1)
+    V_f = pulse.QuadratureSpace(mesh, degree=3, dim=3)
     f0 = dolfin.interpolate(
         dolfin.Expression(("1.0", "0.0", "0.0"), degree=1, cell=mesh.ufl_cell()),
         V_f,
@@ -501,7 +507,7 @@ def setup_microstructure(mesh):
 
 def float_to_constant(x: typing.Union[dolfin.Constant, float]) -> dolfin.Constant:
     """Convert float to a dolfin constant.
-    If value is allready a constant, do nothing.
+    If value is already a constant, do nothing.
 
     Parameters
     ----------
