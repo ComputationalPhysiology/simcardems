@@ -384,6 +384,13 @@ class Runner:
         self._vs = self.ep_solver.solution_fields()[1]
         self._v, self._v_assigner = utils.setup_assigner(self._vs, 0)
         self._Ca, self._Ca_assigner = utils.setup_assigner(self._vs, 45)
+        self._XS, self._XS_assigner = utils.setup_assigner(self._vs, 40)
+        self._XW, self._XW_assigner = utils.setup_assigner(self._vs, 41)
+        self._CaTrpn, self._CaTrpn_assigner = utils.setup_assigner(self._vs, 42)
+        self._TmB, self._TmB_assigner = utils.setup_assigner(self._vs, 43)
+        self._Cd, self._Cd_assigner = utils.setup_assigner(self._vs, 44)
+        self._Zetas, self._Zetas_assigner = utils.setup_assigner(self._vs, 47)
+        self._Zetaw, self._Zetaw_assigner = utils.setup_assigner(self._vs, 48)
 
         self._pre_XS, self._preXS_assigner = utils.setup_assigner(self._vs, 40)
         self._pre_XW, self._preXW_assigner = utils.setup_assigner(self._vs, 41)
@@ -404,6 +411,13 @@ class Runner:
     def _assign_ep(self):
         self._v_assigner.assign(self._v, utils.sub_function(self._vs, 0))
         self._Ca_assigner.assign(self._Ca, utils.sub_function(self._vs, 45))
+        self._XS_assigner.assign(self._XS, utils.sub_function(self._vs, 40))
+        self._XW_assigner.assign(self._XW, utils.sub_function(self._vs, 41))
+        self._CaTrpn_assigner.assign(self._CaTrpn, utils.sub_function(self._vs, 42))
+        self._TmB_assigner.assign(self._TmB, utils.sub_function(self._vs, 43))
+        self._Cd_assigner.assign(self._Cd, utils.sub_function(self._vs, 44))
+        self._Zetas_assigner.assign(self._Zetas, utils.sub_function(self._vs, 47))
+        self._Zetaw_assigner.assign(self._Zetaw, utils.sub_function(self._vs, 48))
 
     def store(self):
         # Assign u, v and Ca for postprocessing
@@ -426,6 +440,17 @@ class Runner:
             ("ep", "Ca", self._Ca),
             ("mechanics", "lmbda", self.coupling.lmbda_mech),
             ("mechanics", "Ta", self.mech_heart.material.active.Ta_current),
+            ("ep", "XS", self._XS),
+            ("ep", "XW", self._XW),
+            ("ep", "CaTrpn", self._CaTrpn),
+            ("ep", "TmB", self._TmB),
+            ("ep", "Cd", self._Cd),
+            ("ep", "Zetas", self._Zetas),
+            ("ep", "Zetaw", self._Zetaw),
+            ("mechanics", "Zetas_mech", self.coupling.Zetas_mech),
+            ("mechanics", "Zetaw_mech", self.coupling.Zetaw_mech),
+            ("mechanics", "XS_mech", self.coupling.XS_mech),
+            ("mechanics", "XW_mech", self.coupling.XW_mech),
         ]:
             self.collector.register(group, name, f)
 
@@ -442,7 +467,8 @@ class Runner:
         XW_norm = utils.compute_norm(self.coupling.XW_ep, self._pre_XW)
 
         # dt for the mechanics model should not be larger than 1 ms
-        return (XS_norm + XW_norm >= 0.1) or self.dt_mechanics > 0.1
+        # return (XS_norm + XW_norm >= 0.05) #or self.dt_mechanics > 0.1
+        return True  # self._t <= 10.0 or max(self.coupling.XS_ep.vector()) >= 0.0005 or max(self.coupling.XW_ep.vector()) >= 0.002
 
     def _pre_mechanics_solve(self) -> None:
         self._preXS_assigner.assign(self._pre_XS, utils.sub_function(self._vs, 40))

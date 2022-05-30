@@ -283,6 +283,7 @@ def plot_peaks(fname, data, threshold):
 
 def plot_state_traces(results_file):
     fig, ax = plt.subplots(2, 2, figsize=(10, 8), sharex=True)
+    fig2, ax2 = plt.subplots(2, 4, figsize=(10, 8), sharex=True)
     results_file = Path(results_file)
     if not results_file.is_file():
         raise FileNotFoundError(f"File {results_file} does not exist")
@@ -292,7 +293,10 @@ def plot_state_traces(results_file):
     loader = DataLoader(results_file)
     bnd = {"ep": Boundary(loader.ep_mesh), "mechanics": Boundary(loader.mech_mesh)}
 
-    all_names = {"mechanics": ["lmbda", "Ta"], "ep": ["V", "Ca"]}
+    all_names = {
+        "mechanics": ["lmbda", "Ta", "Zetas_mech", "Zetaw_mech", "XS_mech", "XW_mech"],
+        "ep": ["V", "Ca", "XS", "XW", "CaTrpn", "TmB", "Cd", "Zetas", "Zetaw"],
+    }
 
     values = {
         group: {name: np.zeros(len(loader.time_stamps)) for name in names}
@@ -345,6 +349,64 @@ def plot_state_traces(results_file):
         ],
     )
     fig.savefig(outdir.joinpath("state_traces.png"), dpi=300)
+
+    ax2[0, 0].plot(times, values["ep"]["XS"], linestyle="solid", color="blue")
+    ax2[0, 0].plot(
+        times,
+        values["mechanics"]["XS_mech"],
+        linestyle="dotted",
+        color="orange",
+    )
+    ax2[0, 1].plot(times, values["ep"]["CaTrpn"], linestyle="solid", color="blue")
+    ax2[0, 2].plot(times, values["ep"]["TmB"], linestyle="solid", color="blue")
+    ax2[0, 3].plot(times, values["ep"]["Zetas"], linestyle="solid", color="blue")
+    ax2[0, 3].plot(
+        times,
+        values["mechanics"]["Zetas_mech"],
+        linestyle="dotted",
+        color="orange",
+    )
+    ax2[1, 0].plot(times, values["ep"]["XW"], linestyle="solid", color="blue")
+    ax2[1, 0].plot(
+        times,
+        values["mechanics"]["XW_mech"],
+        linestyle="dotted",
+        color="orange",
+    )
+    ax2[1, 1].plot(times, values["ep"]["Cd"], linestyle="solid", color="blue")
+    ax2[1, 3].plot(times, values["ep"]["Zetaw"], linestyle="solid", color="blue")
+    ax2[1, 3].plot(
+        times,
+        values["mechanics"]["Zetaw_mech"],
+        linestyle="dotted",
+        color="orange",
+    )
+
+    ax2[0, 0].set_title("XS")
+    ax2[0, 1].set_title("CaTrpn")
+    ax2[0, 2].set_title("TmB")
+    ax2[0, 3].set_title("Zetas")
+    ax2[1, 0].set_title("XW")
+    ax2[1, 1].set_title("Cd")
+    # ax2[1, 2].set_title("")
+    ax2[1, 3].set_title("Zetaw")
+    for axi in ax2.flatten():
+        axi.grid()
+        if False:
+            axi.set_xlim([0, 5000])
+    ax2[1, 0].set_xlabel("Time [ms]")
+    ax2[1, 1].set_xlabel("Time [ms]")
+    ax2[1, 2].set_xlabel("Time [ms]")
+    ax2[1, 3].set_xlabel("Time [ms]")
+
+    fig2.savefig(outdir.joinpath("state_mech_traces.png"), dpi=300)
+
+    fig3 = plt.figure()
+    ax3 = fig3.add_subplot(1, 1, 1)
+    ax3.set_title("Time")
+    ax3.plot(times)
+    ax3.set_ylabel("time (ms)")
+    fig3.savefig(outdir.joinpath("times.png"))
 
 
 def make_xdmffiles(results_file):
@@ -523,6 +585,13 @@ def save_popu_json(population_folder, num_models):
                 "Ta": [],
                 "lmbda": [],
                 "u": [],
+                "XS": [],
+                "XW": [],
+                "CaTrpn": [],
+                "TmB": [],
+                "Cd": [],
+                "Zetas": [],
+                "Zetaw": [],
             }
 
             # Save times to dictionary
@@ -533,7 +602,10 @@ def save_popu_json(population_folder, num_models):
                 "mechanics": Boundary(loader.mech_mesh),
             }
 
-            all_names = {"mechanics": ["lmbda", "Ta", "u"], "ep": ["V", "Ca"]}
+            all_names = {
+                "mechanics": ["lmbda", "Ta", "u"],
+                "ep": ["V", "Ca", "XS", "XW", "CaTrpn", "TmB", "Cd", "Zetas", "Zetaw"],
+            }
 
             # Fill arrays with data from file
             for i, t in enumerate(loader.time_stamps):
