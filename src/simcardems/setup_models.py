@@ -505,6 +505,7 @@ class Runner:
         # Store initial state
         self._t = self._t0
         self.mech_heart.material.active.t = self._t0
+        self.store()
 
         for (i, (t0, self._t)) in enumerate(pbar):
 
@@ -528,7 +529,7 @@ class Runner:
                 self.store()
 
             # Store state every 5 beats
-            if i > 0 and i % int(5000 / self._dt) == 0:
+            if (i + 1) > 0 and i % int(5000 / self._dt) == 0:
                 io.save_state(
                     self._state_path.parent.joinpath(
                         f"state_{int(i*self._dt/1000)}beat.h5",
