@@ -463,8 +463,8 @@ class Runner:
         # Update these states that are needed in the Mechanics solver
         self.coupling.ep_to_coupling()
 
-        XS_norm = utils.compute_norm(self.coupling.XS_ep, self._pre_XS)
-        XW_norm = utils.compute_norm(self.coupling.XW_ep, self._pre_XW)
+        # XS_norm = utils.compute_norm(self.coupling.XS_ep, self._pre_XS)
+        # XW_norm = utils.compute_norm(self.coupling.XW_ep, self._pre_XW)
 
         # dt for the mechanics model should not be larger than 1 ms
         # return (XS_norm + XW_norm >= 0.05) #or self.dt_mechanics > 0.1
