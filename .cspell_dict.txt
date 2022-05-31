@@ -381,3 +381,13 @@ Zetaw
 zk
 zmax
 zmin
+allclose
+datacollector
+cellmodel
+timestep
+mechanicsproblem
+preconditioner
+dolfin
+matplotlib
+allreduce
+transversally

@@ -23,6 +23,7 @@ from .mechanics_model import MechanicsProblem
 from .mechanics_model import RigidMotionProblem
 from .setup_models import default_parameters
 from .setup_models import Runner
+from .setup_models import TimeStepper
 from .version import __version__
 
 
@@ -80,4 +81,5 @@ __all__ = [
     "Runner",
     "default_parameters",
     "__version__",
+    "TimeStepper",
 ]

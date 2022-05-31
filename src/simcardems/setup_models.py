@@ -302,7 +302,6 @@ class Runner:
             return
 
         self._state_path = Path(outdir).joinpath("state.h5")
-
         if not reset and self._state_path.is_file():
             # Load state
             logger.info("Load previously saved state")
@@ -334,7 +333,6 @@ class Runner:
                 disease_state=disease_state,
                 mech_scheme=mech_scheme,
             )
-
         self.coupling: em_model.EMCoupling = coupling
         self.ep_solver: cbcbeat.SplittingSolver = ep_solver
         self.mech_heart: mechanics_model.MechanicsProblem = mech_heart
@@ -359,6 +357,15 @@ class Runner:
         self._state_path = Path(outdir).joinpath("state.h5")
         self._setup_datacollector()
 
+    @property
+    def t(self) -> float:
+        if self._time_stepper is None:
+            raise RuntimeError("Please create a time stepper before solving")
+        return self._time_stepper.t
+
+    def create_time_stepper(self, T: float, use_ns: bool = True) -> None:
+        self._time_stepper = TimeStepper(t0=self._t0, T=T, dt=self._dt, use_ns=True)
+
     @classmethod
     def from_models(
         cls,
@@ -381,6 +388,7 @@ class Runner:
         return obj
 
     def _setup_assigners(self):
+        self._time_stepper = None
         self._vs = self.ep_solver.solution_fields()[1]
         self._v, self._v_assigner = utils.setup_assigner(self._vs, 0)
         self._Ca, self._Ca_assigner = utils.setup_assigner(self._vs, 45)
@@ -409,7 +417,7 @@ class Runner:
         # Assign u, v and Ca for postprocessing
         self._assign_displacement()
         self._assign_ep()
-        self.collector.store(self._t)
+        self.collector.store(TimeStepper.ns2ms(self.t))
 
     def _setup_datacollector(self):
         from .datacollector import DataCollector
@@ -430,8 +438,8 @@ class Runner:
             self.collector.register(group, name, f)
 
     @property
-    def dt_mechanics(self) -> float:
-        return float(self._t - self.mech_heart.material.active.t)
+    def dt_mechanics(self):
+        return TimeStepper.ns2ms(float(self.t - self.mech_heart.material.active.t))
 
     def _solve_mechanics_now(self) -> bool:
 
@@ -449,7 +457,7 @@ class Runner:
         self._preXW_assigner.assign(self._pre_XW, utils.sub_function(self._vs, 41))
 
         self.coupling.coupling_to_mechanics()
-        self.mech_heart.material.active.update_time(self._t)
+        self.mech_heart.material.active.update_time(self.t)
 
     def _post_mechanics_solve(self) -> None:
 
@@ -500,25 +508,25 @@ class Runner:
             raise RuntimeError("Please set the output directory")
 
         save_it = int(save_freq / self._dt)
-        pbar = create_progressbar(t0=self._t0, T=T, dt=self._dt, hpc=hpc)
+        self.create_time_stepper(T, use_ns=True)
+        pbar = create_progressbar(time_stepper=self._time_stepper, hpc=hpc)
 
         # Store initial state
-        self._t = self._t0
-        self.mech_heart.material.active.t = self._t0
-        self.store()
+        five_beats = TimeStepper.ms2ns(5000.0) / self._time_stepper.dt
+        beat_nr = 1
+        self.mech_heart.material.active.start_time(self.t)
 
-        for (i, (t0, self._t)) in enumerate(pbar):
-
-            logger.debug(f"Solve EP model at step {i} from {t0} to {self._t}")
+        for (i, (t0, t)) in enumerate(pbar):
+            logger.debug(f"Solve EP model at step {i} from {t0} to {t}")
 
             # Solve EP model
-            self.ep_solver.step((t0, self._t))
+            self.ep_solver.step((TimeStepper.ns2ms(t0), TimeStepper.ns2ms(t)))
 
             if self._solve_mechanics_now():
                 logger.debug(
                     f"Solve mechanics model at step {i} from \
-                        {self.mech_heart.material.active.t} to {self._t} with timestep \
-                        {self._t-self.mech_heart.material.active.t}",
+                        {self.mech_heart.material.active.t} to {self.t} with timestep \
+                        {self.dt_mechanics}",
                 )
                 self._solve_mechanics()
 
@@ -529,18 +537,19 @@ class Runner:
                 self.store()
 
             # Store state every 5 beats
-            if (i + 1) > 0 and i % int(5000 / self._dt) == 0:
+            if (i + 1) > 0 and i % five_beats == 0:
                 io.save_state(
                     self._state_path.parent.joinpath(
-                        f"state_{int(i*self._dt/1000)}beat.h5",
+                        f"state_{beat_nr}beat.h5",
                     ),
                     solver=self.ep_solver,
                     mech_heart=self.mech_heart,
                     coupling=self.coupling,
                     dt=self._dt,
                     bnd_cond=self._bnd_cond,
-                    t0=self._t,
+                    t0=TimeStepper.ns2ms(self.t),
                 )
+                beat_nr += 1
 
         io.save_state(
             self._state_path,
@@ -549,7 +558,7 @@ class Runner:
             coupling=self.coupling,
             dt=self._dt,
             bnd_cond=self._bnd_cond,
-            t0=self._t,
+            t0=TimeStepper.ns2ms(self.t),
         )
 
 
@@ -564,16 +573,117 @@ class _tqdm:
         return iter(self._iterable)
 
 
+class TimeStepper:
+    def __init__(
+        self,
+        *,
+        t0: float,
+        T: float,
+        dt: float,
+        use_ns: bool = True,
+    ) -> None:
+        """Initialize time stepper
+
+        Parameters
+        ----------
+        t0 : float
+            Start time in milliseconds
+        T : float
+            End time in milliseconds
+        dt : float
+            Time step
+        use_ns : bool, optional
+            Whether to return the time in nanoseconds, by default True
+        """
+
+        self._use_ns = use_ns
+
+        if use_ns:
+            self.t0 = TimeStepper.ms2ns(t0)
+            self.T = TimeStepper.ms2ns(T)
+            self.dt = TimeStepper.ms2ns(dt)
+        else:
+            self.t0 = t0
+            self.T = T
+            self.dt = dt
+
+        self.reset()
+
+    def reset(self):
+        self.t = self.t0
+
+    @property
+    def T(self) -> float:
+        return self._T
+
+    @T.setter
+    def T(self, T: float) -> None:
+        if self.t0 >= T:
+            raise ValueError("Start time has to be lower than end time")
+        self._T = T
+
+    @property
+    def dt(self) -> float:
+        return self._dt
+
+    @dt.setter
+    def dt(self, dt: float) -> None:
+        dt = min(self.T - self.t0, dt)
+        self._dt = dt
+
+    @property
+    def total_steps(self) -> int:
+        return round((self.T - self.t0) / self.dt)
+
+    def __iter__(self):
+        if self.T is None:
+            raise RuntimeError("Please assign an end time to time stepper")
+        while self.t < self.T:
+
+            prev_t = self.t
+            self.t = min(self.t + self.dt, self.T)
+            yield prev_t, self.t
+
+    @staticmethod
+    def ns2ms(t: float) -> float:
+        """Convert nanoseconds to milliseconds
+
+        Parameters
+        ----------
+        t : float
+            The time in nanoseconds
+
+        Returns
+        -------
+        float
+            Time in milliseconds
+        """
+        return t * 1e-6
+
+    @staticmethod
+    def ms2ns(t: float) -> float:
+        """Convert from milliseconds to nanoseconds
+
+        Parameters
+        ----------
+        t : float
+            Time in milliseconds
+
+        Returns
+        -------
+        float
+            Time in nanoseconds
+        """
+        return int(t * 1e6)
+
+
 def create_progressbar(
-    t0: float = 0,
-    T: float = Defaults.T,
-    dt: float = Defaults.dt,
+    time_stepper: TimeStepper,
     hpc: bool = Defaults.hpc,
 ):
-    time_stepper = cbcbeat.utils.TimeStepper((t0, T), dt, annotate=False)
     if hpc:
         # Turn off progressbar
-        pbar = _tqdm(time_stepper, total=round((T - t0) / dt))
+        pbar = _tqdm(time_stepper, total=time_stepper.total_steps)
     else:
-        pbar = tqdm(time_stepper, total=round((T - t0) / dt))
+        pbar = tqdm(time_stepper, total=time_stepper.total_steps)
     return pbar

@@ -57,11 +57,10 @@ class LandModel(pulse.ActiveModel):
         self.XS = XS
         self.XW = XW
         self._parameters = parameters
-        self.t = dolfin.Constant(0.0)
-        self._t_prev = dolfin.Constant(0.0)
+        self._t = 0.0
+        self._t_prev = 0.0
         self._scheme = scheme
 
-        self._Ta = dolfin.Constant(0.0)
         self.lmbda_prev = dolfin.Function(self.function_space)
         self.lmbda = dolfin.Function(self.function_space)
 
@@ -155,22 +154,22 @@ class LandModel(pulse.ActiveModel):
         )
 
     @property
-    def dt(self):
-        return self.t - self._t_prev
+    def dt(self) -> float:
+        from .setup_models import TimeStepper
+
+        return TimeStepper.ns2ms(self.t - self._t_prev)
 
     @property
-    def t(self) -> dolfin.Constant:
+    def t(self) -> float:
         return self._t
 
-    @t.setter
-    def t(self, t: typing.Union[float, dolfin.Constant]) -> None:
-        if isinstance(t, (int, float)):
-            t = dolfin.Constant(t)
+    def start_time(self, t):
+        self._t_prev = t
         self._t = t
 
     def update_time(self, t):
-        self._t_prev.assign(self.t)
-        self._t.assign(dolfin.Constant(t))
+        self._t_prev = self.t
+        self._t = t
 
     def update_prev(self):
         self.Zetas_prev.assign(dolfin.project(self.Zetas, self.function_space))
@@ -375,7 +374,7 @@ def setup_microstructure(mesh):
 
 def float_to_constant(x: typing.Union[dolfin.Constant, float]) -> dolfin.Constant:
     """Convert float to a dolfin constant.
-    If value is allready a constant, do nothing.
+    If value is already a constant, do nothing.
 
     Parameters
     ----------

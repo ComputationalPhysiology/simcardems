@@ -5,6 +5,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 from simcardems import Runner
+from simcardems import TimeStepper
 
 
 @pytest.mark.slow
@@ -48,3 +49,13 @@ def test_runner_load_state_with_new_parameters():
     drug_factors_file.unlink()
     popu_factors_file.unlink()
     shutil.rmtree(outdir)
+
+
+def test_time_stepper_ns():
+    time_stepper = TimeStepper(t0=0, T=0.2, dt=0.1, use_ns=True)
+    assert np.allclose(tuple(time_stepper), ((0, 100000000), (100000000, 200000000)))
+
+
+def test_time_stepper_s():
+    time_stepper = TimeStepper(t0=0, T=0.2, dt=0.1, use_ns=False)
+    assert np.allclose(tuple(time_stepper), ((0, 0.1), (0.1, 0.2)))
