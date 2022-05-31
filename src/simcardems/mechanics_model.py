@@ -216,7 +216,45 @@ class LandModel(pulse.ActiveModel):
         )
 
 
-class MechanicsProblem(pulse.MechanicsProblem):
+class ContinuationBasedMechanicsProblem(pulse.MechanicsProblem):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.old_states = []
+        self.old_controls = []
+
+    def solve(self):
+        self._init_forms()
+        return super().solve()
+
+    def solve_for_control(self, control):
+        """Solve with a continuation step for
+        better initial guess for the Newton solver
+        """
+        if len(self.old_states) < 2:
+            self.solve()
+        else:
+            # Find a better initial guess for the solver
+            c0, c1 = self.old_controls
+            s0, s1 = self.old_states
+
+            delta = pulse.iterate.get_delta(
+                control,
+                c0,
+                c1,
+            )
+            self.state.vector().zero()
+            self.state.vector().axpy(1.0 - delta, s0.vector())
+            self.state.vector().axpy(delta, s1.vector())
+            self.solve()
+
+            self.old_controls = [c1]
+            self.old_states = [s1]
+
+        self.old_states.append(self.state.copy(deepcopy=True))
+        self.old_controls.append(control.copy(deepcopy=True))
+
+
+class MechanicsProblem(ContinuationBasedMechanicsProblem):
     boundary_condition = BoundaryConditions.dirichlet
 
     def _init_spaces(self):
@@ -261,10 +299,6 @@ class MechanicsProblem(pulse.MechanicsProblem):
             dolfin.TrialFunction(self.state_space),
         )
         self._init_solver()
-
-    def solve(self):
-        self._init_forms()
-        return super().solve()
 
     def update_lmbda_prev(self):
         self.lmbda_prev.assign(dolfin.project(self.lmbda, self.lmbda_space))
@@ -375,7 +409,7 @@ def setup_microstructure(mesh):
 
 def float_to_constant(x: typing.Union[dolfin.Constant, float]) -> dolfin.Constant:
     """Convert float to a dolfin constant.
-    If value is allready a constant, do nothing.
+    If value is already a constant, do nothing.
 
     Parameters
     ----------
