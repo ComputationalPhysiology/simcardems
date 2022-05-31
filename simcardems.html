@@ -705,7 +705,7 @@ membrane potential).</p>
 <dt class="sig sig-object py" id="simcardems.geometry.BaseGeometry">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">simcardems.geometry.</span></span><span class="sig-name descname"><span class="pre">BaseGeometry</span></span><a class="reference internal" href="_modules/simcardems/geometry.html#BaseGeometry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.geometry.BaseGeometry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
-<p>Abstact geometry base class</p>
+<p>Abstract geometry base class</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="simcardems.geometry.BaseGeometry.ep_mesh">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ep_mesh</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dolfin.cpp.mesh.Mesh</span></em><a class="headerlink" href="#simcardems.geometry.BaseGeometry.ep_mesh" title="Permalink to this definition">¶</a></dt>
@@ -916,6 +916,16 @@ membrane potential).</p>
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="simcardems.mechanics_model.LandModel.update_Zetas">
+<span class="sig-name descname"><span class="pre">update_Zetas</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/mechanics_model.html#LandModel.update_Zetas"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.mechanics_model.LandModel.update_Zetas" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simcardems.mechanics_model.LandModel.update_Zetaw">
+<span class="sig-name descname"><span class="pre">update_Zetaw</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/mechanics_model.html#LandModel.update_Zetaw"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.mechanics_model.LandModel.update_Zetaw" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="simcardems.mechanics_model.LandModel.update_prev">
 <span class="sig-name descname"><span class="pre">update_prev</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/mechanics_model.html#LandModel.update_prev"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.mechanics_model.LandModel.update_prev" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -993,7 +1003,7 @@ membrane potential).</p>
 <dt class="sig sig-object py" id="simcardems.mechanics_model.float_to_constant">
 <span class="sig-prename descclassname"><span class="pre">simcardems.mechanics_model.</span></span><span class="sig-name descname"><span class="pre">float_to_constant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">dolfin.function.constant.Constant</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dolfin.function.constant.Constant</span></span></span><a class="reference internal" href="_modules/simcardems/mechanics_model.html#float_to_constant"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.mechanics_model.float_to_constant" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert float to a dolfin constant.
-If value is allready a constant, do nothing.</p>
+If value is already a constant, do nothing.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>x</strong> (<em>Union</em><em>[</em><em>dolfin.Constant</em><em>, </em><em>float</em><em>]</em>) – The value to be converted</p>
@@ -1524,6 +1534,11 @@ If deemed appropriate, the record may be modified in-place.</p>
 <dd></dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="simcardems.utils.local_project">
+<span class="sig-prename descclassname"><span class="pre">simcardems.utils.</span></span><span class="sig-name descname"><span class="pre">local_project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">V</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/utils.html#local_project"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.utils.local_project" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="simcardems.utils.print_mesh_info">
 <span class="sig-prename descclassname"><span class="pre">simcardems.utils.</span></span><span class="sig-name descname"><span class="pre">print_mesh_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_dofs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/utils.html#print_mesh_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.utils.print_mesh_info" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -1719,6 +1734,16 @@ If deemed appropriate, the record may be modified in-place.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="simcardems.LandModel.t">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">t</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dolfin.function.constant.Constant</span></em><a class="headerlink" href="#simcardems.LandModel.t" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simcardems.LandModel.update_Zetas">
+<span class="sig-name descname"><span class="pre">update_Zetas</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/mechanics_model.html#LandModel.update_Zetas"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.LandModel.update_Zetas" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simcardems.LandModel.update_Zetaw">
+<span class="sig-name descname"><span class="pre">update_Zetaw</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/mechanics_model.html#LandModel.update_Zetaw"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.LandModel.update_Zetaw" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">

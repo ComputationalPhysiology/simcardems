@@ -316,7 +316,7 @@
 
         <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">group</span><span class="p">]:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Warning: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> in group </span><span class="si">{</span><span class="n">group</span><span class="si">}</span><span class="s2"> is allready registered - overwriting&quot;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;Warning: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> in group </span><span class="si">{</span><span class="n">group</span><span class="si">}</span><span class="s2"> is already registered - overwriting&quot;</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_functions</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span></div>
 
@@ -329,7 +329,7 @@
         <span class="n">t_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">t</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Store results at time </span><span class="si">{</span><span class="n">t_str</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">t_str</span><span class="si">}</span><span class="s2">&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_times_stamps</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Time stamp </span><span class="si">{</span><span class="n">t_str</span><span class="si">}</span><span class="s2"> allready exist in file&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Time stamp </span><span class="si">{</span><span class="n">t_str</span><span class="si">}</span><span class="s2"> already exist in file&quot;</span><span class="p">)</span>
             <span class="k">return</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_times_stamps</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">t_str</span><span class="p">)</span>

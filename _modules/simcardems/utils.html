@@ -288,6 +288,24 @@
 <span class="n">logger</span> <span class="o">=</span> <span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
+<div class="viewcode-block" id="local_project"><a class="viewcode-back" href="../../simcardems.html#simcardems.utils.local_project">[docs]</a><span class="k">def</span> <span class="nf">local_project</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">u</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;quadrature_degree&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;quadrature_scheme&quot;</span><span class="p">:</span> <span class="s2">&quot;default&quot;</span><span class="p">}</span>
+    <span class="n">dxm</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">dx</span><span class="p">(</span><span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">)</span>
+    <span class="n">dv</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">TrialFunction</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+    <span class="n">v_</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">TestFunction</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+    <span class="n">a_proj</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">dv</span><span class="p">,</span> <span class="n">v_</span><span class="p">)</span> <span class="o">*</span> <span class="n">dxm</span>
+    <span class="n">b_proj</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">v_</span><span class="p">)</span> <span class="o">*</span> <span class="n">dxm</span>
+    <span class="n">solver</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">LocalSolver</span><span class="p">(</span><span class="n">a_proj</span><span class="p">,</span> <span class="n">b_proj</span><span class="p">)</span>
+    <span class="n">solver</span><span class="o">.</span><span class="n">factorize</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">u</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+        <span class="n">solver</span><span class="o">.</span><span class="n">solve_local_rhs</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">u</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">solver</span><span class="o">.</span><span class="n">solve_local_rhs</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+        <span class="k">return</span></div>
+
+
 <div class="viewcode-block" id="compute_norm"><a class="viewcode-back" href="../../simcardems.html#simcardems.utils.compute_norm">[docs]</a><span class="k">def</span> <span class="nf">compute_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x_prev</span><span class="p">):</span>
     <span class="n">x_norm</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="s2">&quot;l2&quot;</span><span class="p">)</span>
     <span class="n">e</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span> <span class="o">-</span> <span class="n">x_prev</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span>
