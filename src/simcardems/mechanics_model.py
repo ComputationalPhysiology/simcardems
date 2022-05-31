@@ -162,6 +162,7 @@ class LandModel(pulse.ActiveModel):
             self._scheme,
         )
 
+    @property
     def Zetaw(self):
         return self._Zetaw
 
