@@ -520,16 +520,21 @@ class Runner:
         self.mech_heart.material.active.start_time(self.t)
 
         for (i, (t0, t)) in enumerate(pbar):
-            logger.debug(f"Solve EP model at step {i} from {t0} to {t}")
+            logger.debug(
+                f"Solve EP model at step {i} from {TimeStepper.ns2ms(t0):.2f} ms to {TimeStepper.ns2ms(t):.2f} ms",
+            )
 
             # Solve EP model
             self.ep_solver.step((TimeStepper.ns2ms(t0), TimeStepper.ns2ms(t)))
 
             if self._solve_mechanics_now():
                 logger.debug(
-                    f"Solve mechanics model at step {i} from \
-                        {self.mech_heart.material.active.t} to {self.t} with timestep \
-                        {self.dt_mechanics}",
+                    (
+                        f"Solve mechanics model at step {i} from "
+                        f"{TimeStepper.ns2ms(self.mech_heart.material.active.t):.2f} ms"
+                        f" to {TimeStepper.ns2ms(self.t):.2f} ms with timestep "
+                        f"{self.dt_mechanics:.5f} ms"
+                    ),
                 )
                 self._solve_mechanics()
 
