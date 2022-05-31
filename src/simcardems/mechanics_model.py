@@ -319,22 +319,28 @@ class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
                 "pc_factor_mat_solver_type": "mumps",
                 "mat_mumps_icntl_33": 0,
             },
-            "verbose": True,
+            "newton_verbose": True,
+            "ksp_verbose": False,
             # "linear_solver": "mumps",
             "linear_solver": "gmres",
-            "preconditioner": "lu",
+            # "preconditioner": "lu",
             "error_on_nonconvergence": False,
             "relative_tolerance": 1e-5,
             "absolute_tolerance": 1e-5,
             "maximum_iterations": 20,
             "report": False,
+            # },
             "krylov_solver": {
                 "absolute_tolerance": 1e-13,
                 "relative_tolerance": 1e-13,
                 "maximum_iterations": 1000,
                 "monitor_convergence": False,
             },
-            "lu_solver": {"report": False, "symmetric": False, "verbose": False},
+            "lu_solver": {
+                "report": False,
+                "symmetric": False,
+                "verbose": False
+            },
         }
 
     def converged(self, r, p, i):
@@ -355,16 +361,16 @@ class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
             if v is not None:
                 dolfin.PETScOptions.set(k, v)
         # Here set the other default params
-        self.verbose = params.pop("verbose", False)
-        if self.verbose:
+        self.newton_verbose = params.pop("newton_verbose", False)
+        self.ksp_verbose = params.pop("ksp_verbose", False)
+        if self.newton_verbose:
             dolfin.set_log_level(dolfin.LogLevel.INFO)
-            dolfin.PETScOptions.set("log_view")
-            dolfin.PETScOptions.set("pc_view")
-            dolfin.PETScOptions.set("ksp_monitor_true_residual")
-            dolfin.PETScOptions.set("mat_superlu_dist_statprint", True)
+            self.parameters["report"] = True
+        if self.ksp_verbose:
             self.parameters["lu_solver"]["report"] = True
             self.parameters["lu_solver"]["verbose"] = True
             self.parameters["krylov_solver"]["monitor_convergence"] = True
+            dolfin.PETScOptions.set("ksp_monitor_true_residual")
         self.linear_solver().set_from_options()
 
         super(MechanicsNewtonSolver_ODE, self).solver_setup(A, J, p, i)
