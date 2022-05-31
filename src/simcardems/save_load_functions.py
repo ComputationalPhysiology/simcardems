@@ -154,7 +154,7 @@ def load_state(
         if "geometry_params" in h5file:
             geometry_params = h5_to_dict(h5file["geometry_params"])
         else:
-            # For backwards compatability
+            # For backwards compatibility
             warnings.warn(
                 (
                     f"Unable to find 'geometry_params' in result file {path}. "
