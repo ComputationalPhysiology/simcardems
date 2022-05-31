@@ -53,7 +53,6 @@ class LandModel(pulse.ActiveModel):
     ):
         super().__init__(f0=f0, s0=s0, n0=n0)
         self._eta = eta
-
         self.function_space = pulse.QuadratureSpace(mesh, degree=3, dim=1)
 
         self.XS = XS
