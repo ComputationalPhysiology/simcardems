@@ -230,9 +230,7 @@ class ContinuationBasedMechanicsProblem(pulse.MechanicsProblem):
         """Solve with a continuation step for
         better initial guess for the Newton solver
         """
-        if len(self.old_states) < 2:
-            self.solve()
-        else:
+        if len(self.old_states) >= 2:
             # Find a better initial guess for the solver
             c0, c1 = self.old_controls
             s0, s1 = self.old_states
@@ -245,10 +243,10 @@ class ContinuationBasedMechanicsProblem(pulse.MechanicsProblem):
             self.state.vector().zero()
             self.state.vector().axpy(1.0 - delta, s0.vector())
             self.state.vector().axpy(delta, s1.vector())
-            self.solve()
-
             self.old_controls = [c1]
             self.old_states = [s1]
+
+        self.solve()
 
         self.old_states.append(self.state.copy(deepcopy=True))
         self.old_controls.append(control.copy(deepcopy=True))
