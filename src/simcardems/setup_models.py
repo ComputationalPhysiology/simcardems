@@ -512,8 +512,11 @@ class Runner:
         pbar = create_progressbar(time_stepper=self._time_stepper, hpc=hpc)
 
         # Store initial state
-        five_beats = TimeStepper.ms2ns(5000.0) / self._time_stepper.dt
-        beat_nr = 1
+        save_state_every_n_beat = 5  # Save state every fifth beat
+        five_beats = (
+            TimeStepper.ms2ns(save_state_every_n_beat * 1000.0) / self._time_stepper.dt
+        )
+        beat_nr = 0
         self.mech_heart.material.active.start_time(self.t)
 
         for (i, (t0, t)) in enumerate(pbar):
@@ -537,7 +540,7 @@ class Runner:
                 self.store()
 
             # Store state every 5 beats
-            if (i + 1) > 0 and i % five_beats == 0:
+            if (i + 1) > 0 and (i + 1) % five_beats == 0:
                 io.save_state(
                     self._state_path.parent.joinpath(
                         f"state_{beat_nr}beat.h5",
@@ -549,7 +552,7 @@ class Runner:
                     bnd_cond=self._bnd_cond,
                     t0=TimeStepper.ns2ms(self.t),
                 )
-                beat_nr += 1
+                beat_nr += save_state_every_n_beat
 
         io.save_state(
             self._state_path,
