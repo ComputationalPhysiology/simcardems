@@ -282,24 +282,13 @@ class MechanicsProblem(pulse.MechanicsProblem):
 
 
 class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
-    def __init__(
-        self,
-        mechanics_problem: pulse.MechanicsProblem,
-        # problem: pulse.NonlinearProblem,
-        # state,
-        # parameters=None,
-    ):
+    def __init__(self, mechanics_problem: pulse.MechanicsProblem):
         dolfin.PETScOptions.clear()
-        # self.update_parameters(parameters) #FIXME
 
-        # Note : Do wee need a deep copy of mech problem here ?
         self._mech_problem = mechanics_problem
         self._problem = self._mech_problem._problem
         self._state = self._mech_problem.state
         self._parameters = self._mech_problem.solver_parameters
-        # self._problem = problem
-        # self._state = state
-        # self._parameters = parameters
 
         self.petsc_solver = dolfin.PETScKrylovSolver()
         dolfin.NewtonSolver.__init__(
@@ -336,15 +325,16 @@ class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
                 "maximum_iterations": 1000,
                 "monitor_convergence": False,
             },
-            "lu_solver": {
-                "report": False,
-                "symmetric": False,
-                "verbose": False
-            },
+            "lu_solver": {"report": False, "symmetric": False, "verbose": False},
         }
 
     def converged(self, r, p, i):
         self._converged_called = True
+        # Print residual (iteration 0) to file:
+        if i == 0:
+            residual0 = r.norm("l2")
+            with open("residual0.txt", "a") as rfile:
+                rfile.write(str(residual0) + "\n")
         return super(MechanicsNewtonSolver_ODE, self).converged(r, p, i)
 
     def solver_setup(self, A, J, p, i):

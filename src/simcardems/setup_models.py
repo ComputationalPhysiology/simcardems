@@ -463,8 +463,8 @@ class Runner:
         # Update these states that are needed in the Mechanics solver
         self.coupling.ep_to_coupling()
 
-        XS_norm = utils.compute_norm(self.coupling.XS_ep, self._pre_XS)
-        XW_norm = utils.compute_norm(self.coupling.XW_ep, self._pre_XW)
+        # XS_norm = utils.compute_norm(self.coupling.XS_ep, self._pre_XS)
+        # XW_norm = utils.compute_norm(self.coupling.XW_ep, self._pre_XW)
 
         # dt for the mechanics model should not be larger than 1 ms
         # return (XS_norm + XW_norm >= 0.05) #or self.dt_mechanics > 0.1
@@ -525,6 +525,12 @@ class Runner:
         if not hasattr(self, "_outdir"):
             raise RuntimeError("Please set the output directory")
 
+        # Truncate residual0 file if exists
+        if Path("residual0.txt").is_file():
+            fr = open("residual0.txt", "w")
+            fr.truncate(0)
+            fr.close()
+
         save_it = int(save_freq / self._dt)
         pbar = create_progressbar(t0=self._t0, T=T, dt=self._dt, hpc=hpc)
 
@@ -576,6 +582,12 @@ class Runner:
             bnd_cond=self._bnd_cond,
             t0=self._t,
         )
+
+        # Copy residual0 file to output dir (if exists)
+        if Path("residual0.txt").is_file():
+            Path(self._outdir.joinpath(f"residual0.txt")).write_text(
+                Path("residual0.txt").read_text()
+            )
 
 
 class _tqdm:
