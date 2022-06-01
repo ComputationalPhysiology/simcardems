@@ -357,18 +357,24 @@
         <li><a href="simcardems.html#simcardems.EMCoupling.coupling_to_ep">(simcardems.EMCoupling method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="simcardems.html#simcardems.em_model.EMCoupling.coupling_to_mechanics">coupling_to_mechanics() (simcardems.em_model.EMCoupling method)</a>
 
       <ul>
         <li><a href="simcardems.html#simcardems.EMCoupling.coupling_to_mechanics">(simcardems.EMCoupling method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="simcardems.html#simcardems.geometry.create_boxmesh">create_boxmesh() (in module simcardems.geometry)</a>
 </li>
       <li><a href="simcardems.html#simcardems.setup_models.create_progressbar">create_progressbar() (in module simcardems.setup_models)</a>
 </li>
+      <li><a href="simcardems.html#simcardems.Runner.create_time_stepper">create_time_stepper() (simcardems.Runner method)</a>
+
+      <ul>
+        <li><a href="simcardems.html#simcardems.setup_models.Runner.create_time_stepper">(simcardems.setup_models.Runner method)</a>
+</li>
+      </ul></li>
       <li><a href="simcardems.html#simcardems.LandModel.cs">cs (simcardems.LandModel property)</a>
 
       <ul>
@@ -417,10 +423,10 @@
 </li>
       <li><a href="simcardems.html#simcardems.ep_model.define_conductivity_tensor">define_conductivity_tensor() (in module simcardems.ep_model)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="simcardems.html#simcardems.save_load_functions.dict_to_h5">dict_to_h5() (in module simcardems.save_load_functions)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="simcardems.html#simcardems.mechanics_model.BoundaryConditions.dirichlet">dirichlet (simcardems.mechanics_model.BoundaryConditions attribute)</a>
 </li>
       <li><a href="simcardems.html#simcardems.setup_models.Defaults.disease_state">disease_state (simcardems.setup_models.Defaults attribute)</a>
@@ -439,6 +445,10 @@
         <li><a href="simcardems.html#simcardems.mechanics_model.LandModel.dt">(simcardems.mechanics_model.LandModel property)</a>
 </li>
         <li><a href="simcardems.html#simcardems.setup_models.Defaults.dt">(simcardems.setup_models.Defaults attribute)</a>
+</li>
+        <li><a href="simcardems.html#simcardems.setup_models.TimeStepper.dt">(simcardems.setup_models.TimeStepper property)</a>
+</li>
+        <li><a href="simcardems.html#simcardems.TimeStepper.dt">(simcardems.TimeStepper property)</a>
 </li>
       </ul></li>
       <li><a href="simcardems.html#simcardems.Runner.dt_mechanics">dt_mechanics (simcardems.Runner property)</a>
@@ -655,8 +665,6 @@
       </ul></li>
       <li><a href="simcardems.html#simcardems.ORdmm_Land.Min">Min() (in module simcardems.ORdmm_Land)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     module
 
@@ -690,8 +698,16 @@
         <li><a href="simcardems.html#module-simcardems.version">simcardems.version</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="simcardems.html#simcardems.utils.MPIFilt">MPIFilt (class in simcardems.utils)</a>
 </li>
+      <li><a href="simcardems.html#simcardems.setup_models.TimeStepper.ms2ns">ms2ns() (simcardems.setup_models.TimeStepper static method)</a>
+
+      <ul>
+        <li><a href="simcardems.html#simcardems.TimeStepper.ms2ns">(simcardems.TimeStepper static method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -714,16 +730,22 @@
 </li>
       <li><a href="simcardems.html#simcardems.postprocess.Boundary.node_E">node_E (simcardems.postprocess.Boundary property)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="simcardems.html#simcardems.postprocess.Boundary.node_F">node_F (simcardems.postprocess.Boundary property)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="simcardems.html#simcardems.postprocess.Boundary.node_G">node_G (simcardems.postprocess.Boundary property)</a>
 </li>
       <li><a href="simcardems.html#simcardems.postprocess.Boundary.node_H">node_H (simcardems.postprocess.Boundary property)</a>
 </li>
       <li><a href="simcardems.html#simcardems.postprocess.Boundary.nodes">nodes() (simcardems.postprocess.Boundary static method)</a>
 </li>
+      <li><a href="simcardems.html#simcardems.setup_models.TimeStepper.ns2ms">ns2ms() (simcardems.setup_models.TimeStepper static method)</a>
+
+      <ul>
+        <li><a href="simcardems.html#simcardems.TimeStepper.ns2ms">(simcardems.TimeStepper static method)</a>
+</li>
+      </ul></li>
       <li><a href="simcardems.html#simcardems.geometry.BaseGeometry.num_refinements">num_refinements (simcardems.geometry.BaseGeometry attribute)</a>
 
       <ul>
@@ -810,6 +832,12 @@
       </ul></li>
       <li><a href="simcardems.html#simcardems.utils.remove_file">remove_file() (in module simcardems.utils)</a>
 </li>
+      <li><a href="simcardems.html#simcardems.setup_models.TimeStepper.reset">reset() (simcardems.setup_models.TimeStepper method)</a>
+
+      <ul>
+        <li><a href="simcardems.html#simcardems.TimeStepper.reset">(simcardems.TimeStepper method)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="simcardems.html#simcardems.DataCollector.results_file">results_file (simcardems.DataCollector property)</a>
@@ -1006,6 +1034,12 @@
 </li>
       <li><a href="simcardems.html#simcardems.setup_models.Defaults.spring">spring (simcardems.setup_models.Defaults attribute)</a>
 </li>
+      <li><a href="simcardems.html#simcardems.LandModel.start_time">start_time() (simcardems.LandModel method)</a>
+
+      <ul>
+        <li><a href="simcardems.html#simcardems.mechanics_model.LandModel.start_time">(simcardems.mechanics_model.LandModel method)</a>
+</li>
+      </ul></li>
       <li><a href="simcardems.html#simcardems.postprocess.stats">stats() (in module simcardems.postprocess)</a>
 </li>
       <li><a href="simcardems.html#simcardems.DataCollector.store">store() (simcardems.DataCollector method)</a>
@@ -1031,9 +1065,19 @@
       <ul>
         <li><a href="simcardems.html#simcardems.mechanics_model.LandModel.t">(simcardems.mechanics_model.LandModel property)</a>
 </li>
+        <li><a href="simcardems.html#simcardems.Runner.t">(simcardems.Runner property)</a>
+</li>
       </ul></li>
       <li><a href="simcardems.html#simcardems.setup_models.Defaults.T">T (simcardems.setup_models.Defaults attribute)</a>
 </li>
+      <li><a href="simcardems.html#simcardems.setup_models.Runner.t">t (simcardems.setup_models.Runner property)</a>
+</li>
+      <li><a href="simcardems.html#simcardems.setup_models.TimeStepper.T">T (simcardems.setup_models.TimeStepper property)</a>
+
+      <ul>
+        <li><a href="simcardems.html#simcardems.TimeStepper.T">(simcardems.TimeStepper property)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="simcardems.html#simcardems.setup_models.EMState.t0">t0 (simcardems.setup_models.EMState attribute)</a>
@@ -1042,6 +1086,18 @@
 
       <ul>
         <li><a href="simcardems.html#simcardems.mechanics_model.LandModel.Ta">(simcardems.mechanics_model.LandModel property)</a>
+</li>
+      </ul></li>
+      <li><a href="simcardems.html#simcardems.TimeStepper">TimeStepper (class in simcardems)</a>
+
+      <ul>
+        <li><a href="simcardems.html#simcardems.setup_models.TimeStepper">(class in simcardems.setup_models)</a>
+</li>
+      </ul></li>
+      <li><a href="simcardems.html#simcardems.setup_models.TimeStepper.total_steps">total_steps (simcardems.setup_models.TimeStepper property)</a>
+
+      <ul>
+        <li><a href="simcardems.html#simcardems.TimeStepper.total_steps">(simcardems.TimeStepper property)</a>
 </li>
       </ul></li>
       <li><a href="simcardems.html#simcardems.setup_models.Defaults.traction">traction (simcardems.setup_models.Defaults attribute)</a>
