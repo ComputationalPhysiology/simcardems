@@ -1,5 +1,7 @@
 import json
 import warnings
+from cgitb import grey
+from genericpath import isfile
 from pathlib import Path
 
 import ap_features as apf
@@ -348,7 +350,6 @@ def plot_state_traces(results_file):
             max(1.1, max(values["mechanics"]["lmbda"][1:])),
         ],
     )
-    fig.savefig(outdir.joinpath("state_traces.png"), dpi=300)
 
     ax2[0, 0].plot(times, values["ep"]["XS"], linestyle="solid", color="blue")
     ax2[0, 0].plot(
@@ -399,14 +400,45 @@ def plot_state_traces(results_file):
     ax2[1, 2].set_xlabel("Time [ms]")
     ax2[1, 3].set_xlabel("Time [ms]")
 
-    fig2.savefig(outdir.joinpath("state_mech_traces.png"), dpi=300)
+    # If there is a residual0.txt file: load and plot these results
+    if outdir.joinpath("residual0.txt").is_file():
+        residual = np.loadtxt(outdir.joinpath("residual0.txt")) * 10000
 
-    fig3 = plt.figure()
-    ax3 = fig3.add_subplot(1, 1, 1)
-    ax3.set_title("Time")
-    ax3.plot(times)
-    ax3.set_ylabel("time (ms)")
-    fig3.savefig(outdir.joinpath("times.png"))
+        dt = 0.05
+        times_dt = np.arange(times[0] - dt, times[-1] + dt, dt)
+
+        ax00r = ax[0, 0].twinx()
+        ax00r.plot(times_dt, residual, "--", color="grey", label="Newton residual")
+        ax01r = ax[0, 1].twinx()
+        ax01r.plot(times_dt, residual, "--", color="grey", label="Newton residual")
+        ax01r.set_ylabel("Newton residual (*e4)")
+        ax10r = ax[1, 0].twinx()
+        ax10r.plot(times_dt, residual, "--", color="grey", label="Newton residual")
+        ax11r = ax[1, 1].twinx()
+        ax11r.plot(times_dt, residual, "--", color="grey", label="Newton residual")
+        ax11r.set_ylabel("Newton residual (*e4)")
+        fig.tight_layout()
+
+        ax200r = ax2[0, 0].twinx()
+        ax200r.plot(times_dt, residual, "--", color="grey", label="Newton residual")
+        ax201r = ax2[0, 1].twinx()
+        ax201r.plot(times_dt, residual, "--", color="grey", label="Newton residual")
+        ax202r = ax2[0, 2].twinx()
+        ax202r.plot(times_dt, residual, "--", color="grey", label="Newton residual")
+        ax203r = ax2[0, 3].twinx()
+        ax203r.plot(times_dt, residual, "--", color="grey", label="Newton residual")
+        ax203r.set_ylabel("Newton residual (*e4)")
+        ax210r = ax2[1, 0].twinx()
+        ax210r.plot(times_dt, residual, "--", color="grey", label="Newton residual")
+        ax211r = ax2[1, 1].twinx()
+        ax211r.plot(times_dt, residual, "--", color="grey", label="Newton residual")
+        ax213r = ax2[1, 3].twinx()
+        ax213r.plot(times_dt, residual, "--", color="grey", label="Newton residual")
+        ax213r.set_ylabel("Newton residual (*e4)")
+        fig2.tight_layout()
+
+    fig.savefig(outdir.joinpath("state_traces.png"), dpi=300)
+    fig2.savefig(outdir.joinpath("state_mech_traces.png"), dpi=300)
 
 
 def make_xdmffiles(results_file):
