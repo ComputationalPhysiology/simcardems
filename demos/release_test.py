@@ -53,7 +53,7 @@ class ReleaseRunner(simcardems.Runner):
         self.Lx = self.coupling.geometry.lx
 
     def _post_mechanics_solve(self) -> None:
-        if self._t >= self._T_release:
+        if self.t >= self._T_release:
             print("Release")
             pulse.iterate.iterate(self.mech_heart, self.pre_stretch, -0.02 * self.Lx)
         return super()._post_mechanics_solve()
