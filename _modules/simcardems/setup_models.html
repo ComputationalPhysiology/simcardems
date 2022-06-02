@@ -797,7 +797,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">ep_solver</span><span class="o">.</span><span class="n">vs_</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ep_solver</span><span class="o">.</span><span class="n">vs</span><span class="p">)</span>
 
             <span class="c1"># Store every &#39;save_freq&#39; ms</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">save_it</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="n">save_it</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">()</span>
 
             <span class="c1"># Store state every 5 beats</span>
