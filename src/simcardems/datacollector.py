@@ -60,7 +60,7 @@ class DataCollector:
 
         if name in self.names[group]:
             logger.warning(
-                f"Warning: {name} in group {group} is allready registered - overwriting",
+                f"Warning: {name} in group {group} is already registered - overwriting",
             )
         self._functions[group][name] = f
 
@@ -73,7 +73,7 @@ class DataCollector:
         t_str = f"{t:.2f}"
         logger.debug(f"Store results at time {t_str}")
         if f"{t_str}" in self._times_stamps:
-            logger.info(f"Time stamp {t_str} allready exist in file")
+            logger.info(f"Time stamp {t_str} already exist in file")
             return
 
         self._times_stamps.add(t_str)

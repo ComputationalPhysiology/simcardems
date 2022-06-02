@@ -45,7 +45,7 @@ def create_boxmesh(Lx, Ly, Lz, dx=0.5, refinements=0):
 
 
 class BaseGeometry(abc.ABC):
-    """Abstact geometry base class"""
+    """Abstract geometry base class"""
 
     num_refinements: int = 0
     mechanics_mesh: dolfin.Mesh

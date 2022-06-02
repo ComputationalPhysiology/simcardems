@@ -1502,7 +1502,7 @@ class ORdmm_Land(CardiacCellModel):
         JdiffK = 0.5 * kss - 0.5 * ki
         Jdiff = 5.0 * cass - 5.0 * cai
 
-        # Expressions for the ryanodione receptor component
+        # Expressions for the ryanodine receptor component
         a_rel = 0.5 * bt
         Jrel_inf = (
             -ICaL
