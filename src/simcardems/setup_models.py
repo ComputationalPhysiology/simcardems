@@ -494,7 +494,7 @@ class Runner:
 
     def _solve_mechanics(self):
         self._pre_mechanics_solve()
-        self.mech_heart.solve()
+        self.mech_heart.solve_for_control(self.coupling.XS_ep)
         # converged = False
 
         # current_t = float(self.mech_heart.material.active.t)

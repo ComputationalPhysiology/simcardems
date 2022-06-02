@@ -243,7 +243,49 @@ class LandModel(pulse.ActiveModel):
         )
 
 
-class MechanicsProblem(pulse.MechanicsProblem):
+class ContinuationBasedMechanicsProblem(pulse.MechanicsProblem):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.old_states = []
+        self.old_controls = []
+
+    def solve(self):
+        self._init_forms()
+        return super().solve()
+
+    def solve_for_control(self, control, tol=1e-5):
+        """Solve with a continuation step for
+        better initial guess for the Newton solver
+        """
+        if len(self.old_states) >= 2:
+            # Find a better initial guess for the solver
+            c0, c1 = self.old_controls
+            s0, s1 = self.old_states
+
+            denominator = dolfin.assemble((c1 - c0) ** 2 * dolfin.dx)
+
+            if denominator > tol:
+                numerator = dolfin.assemble((control - c0) ** 2 * dolfin.dx)
+                delta = numerator / denominator
+                self.state.vector().zero()
+                self.state.vector().axpy(1.0 - delta, s0.vector())
+                self.state.vector().axpy(delta, s1.vector())
+
+                # Keep track of the newest state
+                self.old_controls = [c1]
+                self.old_states = [s1]
+            else:
+                # Keep track of the old state
+                self.old_controls = [c0]
+                self.old_states = [s0]
+
+        self.solve()
+
+        self.old_states.append(self.state.copy(deepcopy=True))
+        self.old_controls.append(control.copy(deepcopy=True))
+
+
+class MechanicsProblem(ContinuationBasedMechanicsProblem):
     boundary_condition = BoundaryConditions.dirichlet
 
     def _init_spaces(self):
