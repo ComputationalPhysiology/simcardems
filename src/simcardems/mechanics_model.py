@@ -253,7 +253,7 @@ class ContinuationBasedMechanicsProblem(pulse.MechanicsProblem):
         self._init_forms()
         return super().solve()
 
-    def solve_for_control(self, control):
+    def solve_for_control(self, control, tol=1e-5):
         """Solve with a continuation step for
         better initial guess for the Newton solver
         """
@@ -262,16 +262,22 @@ class ContinuationBasedMechanicsProblem(pulse.MechanicsProblem):
             c0, c1 = self.old_controls
             s0, s1 = self.old_states
 
-            delta = pulse.iterate.get_delta(
-                control,
-                c0,
-                c1,
-            )
-            self.state.vector().zero()
-            self.state.vector().axpy(1.0 - delta, s0.vector())
-            self.state.vector().axpy(delta, s1.vector())
-            self.old_controls = [c1]
-            self.old_states = [s1]
+            denominator = dolfin.assemble((c1 - c0) ** 2 * dolfin.dx)
+
+            if denominator > tol:
+                numerator = dolfin.assemble((control - c0) ** 2 * dolfin.dx)
+                delta = numerator / denominator
+                self.state.vector().zero()
+                self.state.vector().axpy(1.0 - delta, s0.vector())
+                self.state.vector().axpy(delta, s1.vector())
+
+                # Keep track of the newest state
+                self.old_controls = [c1]
+                self.old_states = [s1]
+            else:
+                # Keep track of the old state
+                self.old_controls = [c0]
+                self.old_states = [s0]
 
         self.solve()
 
