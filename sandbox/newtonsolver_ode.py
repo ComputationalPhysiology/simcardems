@@ -23,7 +23,10 @@ class NewtonSolver_ODE(NewtonSolver):
     def __init__(self):
         self.petsc_solver = PETScKrylovSolver()
         NewtonSolver.__init__(
-            self, V.mesh().mpi_comm(), self.petsc_solver, PETScFactory.instance(),
+            self,
+            V.mesh().mpi_comm(),
+            self.petsc_solver,
+            PETScFactory.instance(),
         )
 
     def converged(self, r, p, i):
