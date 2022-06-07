@@ -465,7 +465,6 @@ class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
 
     def solve(self):
         self._solve_called = True
-        # breakpoint()
         return super().solve(self._problem, self._state.vector())
 
     # DEBUGGING
@@ -541,7 +540,12 @@ class RigidMotionProblem(MechanicsProblem):
             F=self._virtual_work,
             bcs=[],
         )
-        self.solver = MechanicsNewtonSolver_ODE(self)
+        self.solver = MechanicsNewtonSolver_ODE(
+            problem=self._problem,
+            state=self.state,
+            update_cb=self.material.active.update_prev,
+            parameters=self.solver_parameters,
+        )
 
     def rigid_motion_term(mesh, u, r):
         position = dolfin.SpatialCoordinate(mesh)
