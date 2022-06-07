@@ -426,3 +426,7 @@ nonconvergence
 krylov
 subk
 subv
+linestyle
+loadtxt
+arange
+twinx

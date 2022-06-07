@@ -1,29 +1,31 @@
-from dolfin import *
+import dolfin
 
 
-class Problem(NonlinearProblem):
+class Problem(dolfin.NonlinearProblem):
     def __init__(self, J, F, bcs):
         self.bilinear_form = J
         self.linear_form = F
         self.bcs = bcs
-        NonlinearProblem.__init__(self)
+        super().__init__()
 
     def F(self, b, x):
-        assemble(self.linear_form, tensor=b)
+        dolfin.assemble(self.linear_form, tensor=b)
         for bc in self.bcs:
             bc.apply(b, x)
 
     def J(self, A, x):
-        assemble(self.bilinear_form, tensor=A)
+        dolfin.assemble(self.bilinear_form, tensor=A)
         for bc in self.bcs:
             bc.apply(A)
 
 
-class NewtonSolver_ODE(NewtonSolver):
+class NewtonSolver_ODE(dolfin.NewtonSolver):
     def __init__(self):
-        self.petsc_solver = PETScKrylovSolver()
-        NewtonSolver.__init__(
-            self, V.mesh().mpi_comm(), self.petsc_solver, PETScFactory.instance(),
+        self.petsc_solver = dolfin.PETScKrylovSolver()
+        super().__init__(
+            V.mesh().mpi_comm(),
+            self.petsc_solver,
+            dolfin.PETScFactory.instance(),
         )
 
     def converged(self, r, p, i):
@@ -32,9 +34,9 @@ class NewtonSolver_ODE(NewtonSolver):
 
     def solver_setup(self, A, J, p, i):
         self._solver_setup_called = True
-        PETScOptions.set("ksp_type", "cg")
-        PETScOptions.set("ksp_monitor")
-        PETScOptions.set("pc_type", "gamg")
+        dolfin.PETScOptions.set("ksp_type", "cg")
+        dolfin.PETScOptions.set("ksp_monitor")
+        dolfin.PETScOptions.set("pc_type", "gamg")
         self.linear_solver().set_from_options()
         super(NewtonSolver_ODE, self).solver_setup(A, J, p, i)
 
@@ -50,16 +52,19 @@ class NewtonSolver_ODE(NewtonSolver):
         assert getattr(self, "_update_solution_called", False)
 
 
-mesh = UnitSquareMesh(32, 32)
+mesh = dolfin.UnitSquareMesh(32, 32)
 
-V = FunctionSpace(mesh, "CG", 1)
-g = Constant(1.0)
-bcs = [DirichletBC(V, g, "near(x[0], 1.0) and on_boundary")]
-u = Function(V)
-v = TestFunction(V)
-f = Expression("x[0]*sin(x[1])", degree=2)
-F = inner((1 + u**2) * grad(u), grad(v)) * dx - f * v * dx
-J = derivative(F, u)
+V = dolfin.FunctionSpace(mesh, "CG", 1)
+g = dolfin.Constant(1.0)
+bcs = [dolfin.DirichletBC(V, g, "near(x[0], 1.0) and on_boundary")]
+u = dolfin.Function(V)
+v = dolfin.TestFunction(V)
+f = dolfin.Expression("x[0]*sin(x[1])", degree=2)
+F = (
+    dolfin.inner((1 + u**2) * dolfin.grad(u), dolfin.grad(v)) * dolfin.dx
+    - f * v * dolfin.dx
+)
+J = dolfin.derivative(F, u)
 
 problem = Problem(J, F, bcs)
 x = u.vector()
