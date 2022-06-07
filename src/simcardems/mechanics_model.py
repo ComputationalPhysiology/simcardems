@@ -260,14 +260,15 @@ class ContinuationBasedMechanicsProblem(pulse.MechanicsProblem):
         """Solve with a continuation step for
         better initial guess for the Newton solver
         """
-        if len(self.old_states) >= 2:
+        if len(self.old_controls) >= 2:
             # Find a better initial guess for the solver
             c0, c1 = self.old_controls
             s0, s1 = self.old_states
 
             denominator = dolfin.assemble((c1 - c0) ** 2 * dolfin.dx)
+            max_denom = self.geometry.mesh.mpi_comm().allreduce(denominator, op=MPI.MAX)
 
-            if denominator > tol:
+            if max_denom > tol:
                 numerator = dolfin.assemble((control - c0) ** 2 * dolfin.dx)
                 delta = numerator / denominator
                 self.state.vector().zero()
@@ -284,7 +285,7 @@ class ContinuationBasedMechanicsProblem(pulse.MechanicsProblem):
 
         self.solve()
 
-        self.old_states.append(self.state.copy(deepcopy=True))
+        self.old_states.append(self.state.copy())
         self.old_controls.append(control.copy(deepcopy=True))
 
 
@@ -465,7 +466,9 @@ class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
 
     def solve(self):
         self._solve_called = True
-        return super().solve(self._problem, self._state.vector())
+        ret = super().solve(self._problem, self._state.vector())
+        self._state.vector().apply("insert")
+        return ret
 
     # DEBUGGING
     # This is just to check if we are using the overloaded functions
