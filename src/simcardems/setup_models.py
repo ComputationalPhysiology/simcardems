@@ -129,6 +129,10 @@ def setup_mechanics_solver(
     mech_scheme: mechanics_model.Scheme = Defaults.mechanics_ode_scheme,
     set_material: str = "",
     linear_solver="mumps",
+    Zetas_prev=None,
+    Zetaw_prev=None,
+    lmbda_prev=None,
+    state_prev=None,
 ):
     """Setup mechanics model with dirichlet boundary conditions or rigid motion."""
     logger.info("Set up mechanics model")
@@ -175,7 +179,11 @@ def setup_mechanics_solver(
         XW=coupling.XW_mech,
         mesh=coupling.mech_mesh,
         scheme=mech_scheme,
+        Zetas=Zetas_prev,
+        Zetaw=Zetaw_prev,
+        lmbda=lmbda_prev,
     )
+
     material = pulse.HolzapfelOgden(
         active_model=active_model,
         parameters=material_parameters,
@@ -204,6 +212,9 @@ def setup_mechanics_solver(
         bcs,
         solver_parameters={"linear_solver": linear_solver, "verbose": verbose},
     )
+
+    if state_prev is not None:
+        problem.state.assign(state_prev)
 
     problem.solve()
     coupling.register_mech_model(problem)
@@ -603,7 +614,7 @@ class Runner:
 
         # Copy residual0 file to output dir (if exists)
         if Path("residual0.txt").is_file():
-            Path(self._outdir.joinpath("residual0.txt")).write_text(
+            Path(self._outdir).joinpath("residual0.txt").write_text(
                 Path("residual0.txt").read_text(),
             )
 

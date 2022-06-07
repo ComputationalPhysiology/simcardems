@@ -223,11 +223,12 @@ def load_state(
         coupling=coupling,
         bnd_cond=bnd_cond_dict[state_params["bnd_cond"]],
         cell_params=solver.ode_solver._model.parameters(),
+        Zetas_prev=Zetas_prev,
+        Zetaw_prev=Zetaw_prev,
+        lmbda_prev=lmbda_prev,
+        state_prev=mech_state,
     )
-    mech_heart.state.assign(mech_state)
-    mech_heart.material.active.Zetas_prev.assign(Zetas_prev)
-    mech_heart.material.active.Zetaw_prev.assign(Zetaw_prev)
-    mech_heart.material.active.lmbda_prev.assign(lmbda_prev)
+
     coupling.coupling_to_mechanics()
 
     return setup_models.EMState(
