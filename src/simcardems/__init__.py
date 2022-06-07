@@ -58,7 +58,7 @@ for module in ["matplotlib", "h5py", "FFC", "UFL"]:
 
 
 _dolfin.parameters["form_compiler"]["cpp_optimize"] = True
-flags = ["-O3", "-ffast-math", "-march=native"]
+flags = ["-O3", "-ffast-math"]
 _dolfin.parameters["form_compiler"]["cpp_optimize_flags"] = " ".join(flags)
 _dolfin.parameters["form_compiler"]["quadrature_degree"] = 3
 _dolfin.parameters["form_compiler"]["representation"] = "uflacs"

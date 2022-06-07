@@ -44,6 +44,7 @@ class LandModel(pulse.ActiveModel):
         mesh,
         Zetas=None,
         Zetaw=None,
+        lmbda=None,
         f0=None,
         s0=None,
         n0=None,
@@ -64,6 +65,8 @@ class LandModel(pulse.ActiveModel):
 
         self._dLambda = dolfin.Function(self.function_space)
         self.lmbda_prev = dolfin.Function(self.function_space)
+        if lmbda is not None:
+            self.lmbda_prev = lmbda
         self.lmbda = dolfin.Function(self.function_space)
 
         self._Zetas = dolfin.Function(self.function_space)
@@ -257,14 +260,15 @@ class ContinuationBasedMechanicsProblem(pulse.MechanicsProblem):
         """Solve with a continuation step for
         better initial guess for the Newton solver
         """
-        if len(self.old_states) >= 2:
+        if len(self.old_controls) >= 2:
             # Find a better initial guess for the solver
             c0, c1 = self.old_controls
             s0, s1 = self.old_states
 
             denominator = dolfin.assemble((c1 - c0) ** 2 * dolfin.dx)
+            max_denom = self.geometry.mesh.mpi_comm().allreduce(denominator, op=MPI.MAX)
 
-            if denominator > tol:
+            if max_denom > tol:
                 numerator = dolfin.assemble((control - c0) ** 2 * dolfin.dx)
                 delta = numerator / denominator
                 self.state.vector().zero()
@@ -281,7 +285,7 @@ class ContinuationBasedMechanicsProblem(pulse.MechanicsProblem):
 
         self.solve()
 
-        self.old_states.append(self.state.copy(deepcopy=True))
+        self.old_states.append(self.state.copy())
         self.old_controls.append(control.copy(deepcopy=True))
 
 
@@ -337,7 +341,12 @@ class MechanicsProblem(ContinuationBasedMechanicsProblem):
             F=self._virtual_work,
             bcs=self._dirichlet_bc,
         )
-        self.solver = MechanicsNewtonSolver_ODE(self)
+        self.solver = MechanicsNewtonSolver_ODE(
+            problem=self._problem,
+            state=self.state,
+            update_cb=self.material.active.update_prev,
+            parameters=self.solver_parameters,
+        )
 
     def solve(self):
         self._init_forms()
@@ -351,17 +360,22 @@ class MechanicsProblem(ContinuationBasedMechanicsProblem):
 
 
 class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
-    def __init__(self, mechanics_problem: pulse.MechanicsProblem):
+    def __init__(
+        self,
+        problem: pulse.NonlinearProblem,
+        state: dolfin.Function,
+        update_cb,
+        parameters=None,
+    ):
         dolfin.PETScOptions.clear()
 
-        self._mech_problem = mechanics_problem
-        self._problem = self._mech_problem._problem
-        self._state = self._mech_problem.state
-        self._parameters = self._mech_problem.solver_parameters
+        self._problem = problem
+        self._state = state
+        self._update_cb = update_cb
+        self._parameters = parameters
 
         self.petsc_solver = dolfin.PETScKrylovSolver()
-        dolfin.NewtonSolver.__init__(
-            self,
+        super().__init__(
             self._state.function_space().mesh().mpi_comm(),
             self.petsc_solver,
             dolfin.PETScFactory.instance(),
@@ -404,7 +418,7 @@ class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
             residual0 = r.norm("l2")
             with open("residual0.txt", "a") as rfile:
                 rfile.write(str(residual0) + "\n")
-        return super(MechanicsNewtonSolver_ODE, self).converged(r, p, i)
+        return super().converged(r, p, i)
 
     def solver_setup(self, A, J, p, i):
         self._solver_setup_called = True
@@ -432,30 +446,29 @@ class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
             dolfin.PETScOptions.set("ksp_monitor_true_residual")
         self.linear_solver().set_from_options()
 
-        super(MechanicsNewtonSolver_ODE, self).solver_setup(A, J, p, i)
+        super().solver_setup(A, J, p, i)
 
     def update_solution(self, x, dx, rp, p, i):
         self._update_solution_called = True
 
         # Update x from the dx obtained from linear solver (Newton iteration) :
         # x = -rp*dx (rp : relax param)
-        super(MechanicsNewtonSolver_ODE, self).update_solution(x, dx, rp, p, i)
+        super().update_solution(x, dx, rp, p, i)
 
         # Updating form of MechanicsProblem (from current lmbda, zetas, zetaw, ...)
-        self._mech_problem.state.vector().set_local(x)
-        self._mech_problem._init_forms()
+        self._state.vector().set_local(x)
+        # self._mech_problem._init_forms()
         # Recompute Zetas, Zetaw, Ta, lmbda
-        self._mech_problem.material.active.update_prev()
-
+        # self._mech_problem.material.active.update_prev()
+        self._update_cb()
         # Re-init this solver with the new problem (note : done in _init_forms)
         # self.__init__(self._mech_problem)
 
     def solve(self):
         self._solve_called = True
-        return super(MechanicsNewtonSolver_ODE, self).solve(
-            self._problem,
-            self._state.vector(),
-        )
+        ret = super().solve(self._problem, self._state.vector())
+        self._state.vector().apply("insert")
+        return ret
 
     # DEBUGGING
     # This is just to check if we are using the overloaded functions
@@ -530,7 +543,12 @@ class RigidMotionProblem(MechanicsProblem):
             F=self._virtual_work,
             bcs=[],
         )
-        self.solver = MechanicsNewtonSolver_ODE(self)
+        self.solver = MechanicsNewtonSolver_ODE(
+            problem=self._problem,
+            state=self.state,
+            update_cb=self.material.active.update_prev,
+            parameters=self.solver_parameters,
+        )
 
     def rigid_motion_term(mesh, u, r):
         position = dolfin.SpatialCoordinate(mesh)
