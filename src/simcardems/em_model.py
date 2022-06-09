@@ -75,9 +75,30 @@ class EMCoupling:
         logger.debug("Interpolate EP")
         # print("Zetas = ", self.Zetas_mech.vector().get_local())
         # print("Zetaw = ", self.Zetaw_mech.vector().get_local())
-        utils.local_project(self.lmbda_mech_quad, self.V_mech, self.lmbda_mech)
-        utils.local_project(self.Zetas_mech_quad, self.V_mech, self.Zetas_mech)
-        utils.local_project(self.Zetaw_mech_quad, self.V_mech, self.Zetaw_mech)
+        self.lmbda_mech.assign(
+            dolfin.project(
+                self.lmbda_mech_quad,
+                self.V_mech,
+                form_compiler_parameters={"representation": "quadrature"},
+            ),
+        )
+        self.Zetas_mech.assign(
+            dolfin.project(
+                self.Zetas_mech_quad,
+                self.V_mech,
+                form_compiler_parameters={"representation": "quadrature"},
+            ),
+        )
+        self.Zetaw_mech.assign(
+            dolfin.project(
+                self.Zetaw_mech_quad,
+                self.V_mech,
+                form_compiler_parameters={"representation": "quadrature"},
+            ),
+        )
+        # utils.local_project(self.lmbda_mech_quad, self.V_mech, self.lmbda_mech)
+        # utils.local_project(self.Zetas_mech_quad, self.V_mech, self.Zetas_mech)
+        # utils.local_project(self.Zetaw_mech_quad, self.V_mech, self.Zetaw_mech)
         self.lmbda_ep.assign(dolfin.interpolate(self.lmbda_mech, self.V_ep))
         self.Zetas_ep.assign(dolfin.interpolate(self.Zetas_mech, self.V_ep))
         self.Zetaw_ep.assign(dolfin.interpolate(self.Zetaw_mech, self.V_ep))

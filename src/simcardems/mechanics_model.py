@@ -195,7 +195,13 @@ class LandModel(pulse.ActiveModel):
                 form_compiler_parameters={"representation": "quadrature"},
             ),
         )
-        utils.local_project(self.Ta_current, self.V_cg1, self.Ta_current_cg1)
+        self.Ta_current_cg1.assign(
+            dolfin.project(
+                self.Ta,
+                self.V_cg1,
+                form_compiler_parameters={"representation": "quadrature"},
+            ),
+        )
 
     @property
     def Ta(self):
