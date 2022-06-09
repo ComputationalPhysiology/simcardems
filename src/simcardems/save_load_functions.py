@@ -228,6 +228,7 @@ def load_state(
     mech_heart.material.active.Zetas_prev.assign(Zetas_prev)
     mech_heart.material.active.Zetaw_prev.assign(Zetaw_prev)
     mech_heart.material.active.lmbda_prev.assign(lmbda_prev)
+    coupling.mechanics_to_coupling()
     coupling.coupling_to_mechanics()
 
     return setup_models.EMState(
