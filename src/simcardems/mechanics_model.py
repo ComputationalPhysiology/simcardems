@@ -285,7 +285,7 @@ class ContinuationBasedMechanicsProblem(pulse.MechanicsProblem):
 
         self.solve()
 
-        self.old_states.append(self.state.copy())
+        self.old_states.append(self.state.copy(deepcopy=True))
         self.old_controls.append(control.copy(deepcopy=True))
 
 
