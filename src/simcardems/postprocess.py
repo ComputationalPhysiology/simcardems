@@ -402,40 +402,58 @@ def plot_state_traces(results_file):
     ax2[1, 3].set_xlabel("Time [ms]")
 
     # If there is a residual0.txt file: load and plot these results
-    if outdir.joinpath("residual0.txt").is_file():
-        residual = np.loadtxt(outdir.joinpath("residual0.txt")) * 10000
+    if outdir.joinpath("residual.txt").is_file():
+        residual0 = np.loadtxt(outdir.joinpath("residual.txt"), usecols=0) * 10000
 
+        residual_file = open(outdir.joinpath("residual.txt"),"r")
+        residual_data = residual_file.readlines()
+        residualN = []
+        for line in residual_data:
+            residualN.append(line.strip().split("\t")[-1])
+        residual_file.close()
+
+        # Back to initial dt and time points
         dt = 0.05
-        times_dt = np.arange(times[0] - dt, times[-1] + dt, dt)
+        times_dt = np.arange(times[0], times[0] + residual0.size*dt, dt)
 
         ax00r = ax[0, 0].twinx()
-        ax00r.plot(times_dt, residual, "--", color="grey", label="Newton residual")
+        # ax00r.plot(times_dt, residual0, "--", color="grey", label="Newton residual0")
+        ax00r.plot(times_dt, residualN, "--", color="lightcoral", label="Newton residualN")
+        ax00r.yaxis.set_ticks([min(residualN), max(residualN)])
         ax01r = ax[0, 1].twinx()
-        ax01r.plot(times_dt, residual, "--", color="grey", label="Newton residual")
-        ax01r.set_ylabel("Newton residual (*e4)")
+        # ax01r.plot(times_dt, residual0, "--", color="grey", label="Newton residual0")
+        # ax01r.set_ylabel("Newton residual 0 (*e4)")
+        ax01r.plot(times_dt, residualN, "--", color="lightcoral", label="Newton residualN")
+        ax01r.yaxis.set_ticks([min(residualN), max(residualN)])
+        ax01r.set_ylabel("Newton residual N")
         ax10r = ax[1, 0].twinx()
-        ax10r.plot(times_dt, residual, "--", color="grey", label="Newton residual")
+        # ax10r.plot(times_dt, residual0, "--", color="grey", label="Newton residual0")
+        ax10r.plot(times_dt, residualN, "--", color="lightcoral", label="Newton residualN")
+        ax10r.yaxis.set_ticks([min(residualN), max(residualN)])
         ax11r = ax[1, 1].twinx()
-        ax11r.plot(times_dt, residual, "--", color="grey", label="Newton residual")
-        ax11r.set_ylabel("Newton residual (*e4)")
+        # ax11r.plot(times_dt, residual0, "--", color="grey", label="Newton residual")
+        # ax11r.set_ylabel("Newton residual 0 (*e4)")
+        ax11r.plot(times_dt, residualN, "--", color="lightcoral", label="Newton residualN")
+        ax11r.yaxis.set_ticks([min(residualN), max(residualN)])
+        ax11r.set_ylabel("Newton residual N")
         fig.tight_layout()
 
         ax200r = ax2[0, 0].twinx()
-        ax200r.plot(times_dt, residual, "--", color="grey", label="Newton residual")
+        ax200r.plot(times_dt, residual0, "--", color="grey", label="Newton residual")
         ax201r = ax2[0, 1].twinx()
-        ax201r.plot(times_dt, residual, "--", color="grey", label="Newton residual")
+        ax201r.plot(times_dt, residual0, "--", color="grey", label="Newton residual")
         ax202r = ax2[0, 2].twinx()
-        ax202r.plot(times_dt, residual, "--", color="grey", label="Newton residual")
+        ax202r.plot(times_dt, residual0, "--", color="grey", label="Newton residual")
         ax203r = ax2[0, 3].twinx()
-        ax203r.plot(times_dt, residual, "--", color="grey", label="Newton residual")
-        ax203r.set_ylabel("Newton residual (*e4)")
+        ax203r.plot(times_dt, residual0, "--", color="grey", label="Newton residual")
+        ax203r.set_ylabel("Newton residual 0 (*e4)")
         ax210r = ax2[1, 0].twinx()
-        ax210r.plot(times_dt, residual, "--", color="grey", label="Newton residual")
+        ax210r.plot(times_dt, residual0, "--", color="grey", label="Newton residual")
         ax211r = ax2[1, 1].twinx()
-        ax211r.plot(times_dt, residual, "--", color="grey", label="Newton residual")
+        ax211r.plot(times_dt, residual0, "--", color="grey", label="Newton residual")
         ax213r = ax2[1, 3].twinx()
-        ax213r.plot(times_dt, residual, "--", color="grey", label="Newton residual")
-        ax213r.set_ylabel("Newton residual (*e4)")
+        ax213r.plot(times_dt, residual0, "--", color="grey", label="Newton residual")
+        ax213r.set_ylabel("Newton residual 0 (*e4)")
         fig2.tight_layout()
 
     fig.savefig(outdir.joinpath("state_traces.png"), dpi=300)

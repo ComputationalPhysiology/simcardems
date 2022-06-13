@@ -545,11 +545,11 @@ class Runner:
             raise RuntimeError("Please set the output directory")
 
         # Truncate residual0 file if exists
-        if Path("residual0.txt").is_file():
-            fr = open("residual0.txt", "w")
+        if Path("residual.txt").is_file():
+            fr = open("residual.txt", "w")
             fr.truncate(0)
             fr.close()
-
+            
         save_it = int(save_freq / self._dt)
         self.create_time_stepper(T, use_ns=True)
         pbar = create_progressbar(time_stepper=self._time_stepper, hpc=hpc)
@@ -602,6 +602,13 @@ class Runner:
                 )
                 beat_nr += save_state_every_n_beat
 
+            # Residual file : End of line after each time step
+            if Path("residual.txt").is_file():
+                fr = open("residual.txt", "a")
+                fr.write("\n")
+                fr.close()
+
+
         io.save_state(
             self._state_path,
             solver=self.ep_solver,
@@ -612,12 +619,13 @@ class Runner:
             t0=TimeStepper.ns2ms(self.t),
         )
 
-        # Copy residual0 file to output dir (if exists)
-        if Path("residual0.txt").is_file():
-            Path(self._outdir).joinpath("residual0.txt").write_text(
-                Path("residual0.txt").read_text(),
+        # Copy residual file to output dir (if exists)
+        if Path("residual.txt").is_file():
+            Path(self._outdir).joinpath(f"residual.txt").write_text(
+                Path("residual.txt").read_text()
             )
 
+            
 
 class _tqdm:
     def __init__(self, iterable, *args, **kwargs):
