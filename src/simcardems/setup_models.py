@@ -549,7 +549,7 @@ class Runner:
             fr = open("residual.txt", "w")
             fr.truncate(0)
             fr.close()
-            
+
         save_it = int(save_freq / self._dt)
         self.create_time_stepper(T, use_ns=True)
         pbar = create_progressbar(time_stepper=self._time_stepper, hpc=hpc)
@@ -608,7 +608,6 @@ class Runner:
                 fr.write("\n")
                 fr.close()
 
-
         io.save_state(
             self._state_path,
             solver=self.ep_solver,
@@ -622,10 +621,9 @@ class Runner:
         # Copy residual file to output dir (if exists)
         if Path("residual.txt").is_file():
             Path(self._outdir).joinpath(f"residual.txt").write_text(
-                Path("residual.txt").read_text()
+                Path("residual.txt").read_text(),
             )
 
-            
 
 class _tqdm:
     def __init__(self, iterable, *args, **kwargs):
