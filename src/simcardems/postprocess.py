@@ -419,28 +419,44 @@ def plot_state_traces(results_file):
         ax00r = ax[0, 0].twinx()
         # ax00r.plot(times_dt, residual0, "--", color="grey", label="Newton residual0")
         ax00r.plot(
-            times_dt, residualN, "--", color="lightcoral", label="Newton residualN",
+            times_dt,
+            residualN,
+            "--",
+            color="lightcoral",
+            label="Newton residualN",
         )
         ax00r.yaxis.set_ticks([min(residualN), max(residualN)])
         ax01r = ax[0, 1].twinx()
         # ax01r.plot(times_dt, residual0, "--", color="grey", label="Newton residual0")
         # ax01r.set_ylabel("Newton residual 0 (*e4)")
         ax01r.plot(
-            times_dt, residualN, "--", color="lightcoral", label="Newton residualN",
+            times_dt,
+            residualN,
+            "--",
+            color="lightcoral",
+            label="Newton residualN",
         )
         ax01r.yaxis.set_ticks([min(residualN), max(residualN)])
         ax01r.set_ylabel("Newton residual N")
         ax10r = ax[1, 0].twinx()
         # ax10r.plot(times_dt, residual0, "--", color="grey", label="Newton residual0")
         ax10r.plot(
-            times_dt, residualN, "--", color="lightcoral", label="Newton residualN",
+            times_dt,
+            residualN,
+            "--",
+            color="lightcoral",
+            label="Newton residualN",
         )
         ax10r.yaxis.set_ticks([min(residualN), max(residualN)])
         ax11r = ax[1, 1].twinx()
         # ax11r.plot(times_dt, residual0, "--", color="grey", label="Newton residual")
         # ax11r.set_ylabel("Newton residual 0 (*e4)")
         ax11r.plot(
-            times_dt, residualN, "--", color="lightcoral", label="Newton residualN",
+            times_dt,
+            residualN,
+            "--",
+            color="lightcoral",
+            label="Newton residualN",
         )
         ax11r.yaxis.set_ticks([min(residualN), max(residualN)])
         ax11r.set_ylabel("Newton residual N")
