@@ -621,7 +621,7 @@ class Runner:
         # Copy residual file to output dir (if exists)
         if Path("residual.txt").is_file():
             Path(self._outdir).joinpath(f"residual.txt").write_text(
-                Path("residual.txt").read_text()
+                Path("residual.txt").read_text(),
             )
 
 
