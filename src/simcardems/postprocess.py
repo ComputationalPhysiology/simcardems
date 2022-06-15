@@ -401,9 +401,9 @@ def plot_state_traces(results_file):
     ax2[1, 2].set_xlabel("Time [ms]")
     ax2[1, 3].set_xlabel("Time [ms]")
 
-    # If there is a residual0.txt file: load and plot these results
+    # If there is a residual.txt file: load and plot these results
     if outdir.joinpath("residual.txt").is_file():
-        residual0 = np.loadtxt(outdir.joinpath("residual.txt"), usecols=0) * 10000
+        residual0 = np.loadtxt(outdir.joinpath("residual.txt"), usecols=0)
 
         residual_file = open(outdir.joinpath("residual.txt"), "r")
         residual_data = residual_file.readlines()
@@ -417,7 +417,6 @@ def plot_state_traces(results_file):
         times_dt = np.arange(times[0], times[0] + residual0.size * dt, dt)
 
         ax00r = ax[0, 0].twinx()
-        # ax00r.plot(times_dt, residual0, "--", color="grey", label="Newton residual0")
         ax00r.plot(
             times_dt,
             residualN,
@@ -427,8 +426,6 @@ def plot_state_traces(results_file):
         )
         ax00r.yaxis.set_ticks([min(residualN), max(residualN)])
         ax01r = ax[0, 1].twinx()
-        # ax01r.plot(times_dt, residual0, "--", color="grey", label="Newton residual0")
-        # ax01r.set_ylabel("Newton residual 0 (*e4)")
         ax01r.plot(
             times_dt,
             residualN,
@@ -439,7 +436,6 @@ def plot_state_traces(results_file):
         ax01r.yaxis.set_ticks([min(residualN), max(residualN)])
         ax01r.set_ylabel("Newton residual N")
         ax10r = ax[1, 0].twinx()
-        # ax10r.plot(times_dt, residual0, "--", color="grey", label="Newton residual0")
         ax10r.plot(
             times_dt,
             residualN,
@@ -449,8 +445,6 @@ def plot_state_traces(results_file):
         )
         ax10r.yaxis.set_ticks([min(residualN), max(residualN)])
         ax11r = ax[1, 1].twinx()
-        # ax11r.plot(times_dt, residual0, "--", color="grey", label="Newton residual")
-        # ax11r.set_ylabel("Newton residual 0 (*e4)")
         ax11r.plot(
             times_dt,
             residualN,
@@ -470,18 +464,29 @@ def plot_state_traces(results_file):
         ax202r.plot(times_dt, residual0, "--", color="grey", label="Newton residual")
         ax203r = ax2[0, 3].twinx()
         ax203r.plot(times_dt, residual0, "--", color="grey", label="Newton residual")
-        ax203r.set_ylabel("Newton residual 0 (*e4)")
+        ax203r.set_ylabel("Newton residual 0")
         ax210r = ax2[1, 0].twinx()
         ax210r.plot(times_dt, residual0, "--", color="grey", label="Newton residual")
         ax211r = ax2[1, 1].twinx()
         ax211r.plot(times_dt, residual0, "--", color="grey", label="Newton residual")
         ax213r = ax2[1, 3].twinx()
         ax213r.plot(times_dt, residual0, "--", color="grey", label="Newton residual")
-        ax213r.set_ylabel("Newton residual 0 (*e4)")
+        ax213r.set_ylabel("Newton residual 0")
         fig2.tight_layout()
 
-    fig.savefig(outdir.joinpath("state_traces.png"), dpi=300)
-    fig2.savefig(outdir.joinpath("state_mech_traces.png"), dpi=300)
+        # Create and save figure with Newton residual of first and last iteration
+        figNR, axNR = plt.subplots(1, 1)
+        axNRr = axNR.twinx()
+        axNR.plot(times_dt, residual0, color="grey", label="First res")
+        axNRr.plot(times_dt, residualN, color="lightcoral", label="Last residual")
+        axNR.set_xlabel("Time (ms)")
+        axNR.set_ylabel("Residual 1st Newton iter.")
+        axNRr.set_ylabel("Residual last Newton iter.")
+        figNR.tight_layout()
+        figNR.savefig(outdir.joinpath("NewtonResidual.png"), dpi=300)
+
+    fig.savefig(outdir.joinpath("state_traces_center.png"), dpi=300)
+    fig2.savefig(outdir.joinpath("state_mech_traces_center.png"), dpi=300)
 
 
 def make_xdmffiles(results_file):
@@ -497,9 +502,12 @@ def make_xdmffiles(results_file):
                 outdir.joinpath(f"{group}_{name}.xdmf").as_posix(),
             )
             logger.info(f"Save {name}")
-            for t in tqdm.tqdm(loader.time_stamps):
-                f = loader.get(group, name, t)
-                xdmf.write(f, float(t))
+            try:
+                for t in tqdm.tqdm(loader.time_stamps):
+                    f = loader.get(group, name, t)
+                    xdmf.write(f, float(t))
+            except RuntimeError:
+                logger.info(f"Could not save {name}")
 
 
 def plot_population(dict, outdir, num_models, reset_time=True):
