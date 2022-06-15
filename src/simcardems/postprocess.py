@@ -409,7 +409,7 @@ def plot_state_traces(results_file):
         residual_data = residual_file.readlines()
         residualN = []
         for line in residual_data:
-            residualN.append(line.strip().split("\t")[-1])
+            residualN.append(float(line.strip().split("\t")[-1]))
         residual_file.close()
 
         # Back to initial dt and time points
@@ -482,7 +482,9 @@ def plot_state_traces(results_file):
         axNR.set_xlabel("Time (ms)")
         axNR.set_ylabel("Residual 1st Newton iter.")
         axNRr.set_ylabel("Residual last Newton iter.")
-        figNR.tight_layout()
+        axNR.legend(loc="upper left")
+        axNRr.legend(loc="upper right")
+        # figNR.tight_layout()
         figNR.savefig(outdir.joinpath("NewtonResidual.png"), dpi=300)
 
     fig.savefig(outdir.joinpath("state_traces_center.png"), dpi=300)
