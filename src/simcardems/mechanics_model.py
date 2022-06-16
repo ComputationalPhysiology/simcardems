@@ -657,6 +657,8 @@ def setup_diriclet_bc(
     # Define domain to apply dirichlet boundary conditions
     left = dolfin.CompiledSubDomain("near(x[0], 0) && on_boundary")
     right = dolfin.CompiledSubDomain("near(x[0], Lx) && on_boundary", Lx=Lx)
+    leftback = dolfin.CompiledSubDomain("near(x[0], 0) && near(x[2], 0)")
+    leftbottom = dolfin.CompiledSubDomain("near(x[0], 0) && near(x[1], 0)")
 
     boundary_markers = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim() - 1)
     boundary_markers.set_all(0)
@@ -665,6 +667,10 @@ def setup_diriclet_bc(
     left.mark(boundary_markers, left_marker)
     right_marker = 2
     right.mark(boundary_markers, right_marker)
+    leftback_marker = 3
+    leftback.mark(boundary_markers, leftback_marker)
+    leftbottom_marker = 4
+    leftbottom.mark(boundary_markers, leftbottom_marker)
 
     marker_functions = pulse.MarkerFunctions(ffun=boundary_markers)
 
@@ -674,9 +680,21 @@ def setup_diriclet_bc(
         # BC with fixing left size
         bcs = [
             dolfin.DirichletBC(
-                W.sub(0),
-                dolfin.Constant((0.0, 0.0, 0.0)),
+                W.sub(0).sub(0),  # u_x
+                dolfin.Constant(0.0),
                 left,
+            ),
+            dolfin.DirichletBC(
+                W.sub(0).sub(1),  # u_y
+                dolfin.Constant(0.0),
+                leftbottom,
+                method="pointwise",
+            ),
+            dolfin.DirichletBC(
+                W.sub(0).sub(2),  # u_z
+                dolfin.Constant(0.0),
+                leftback,
+                method="pointwise",
             ),
         ]
 

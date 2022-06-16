@@ -430,3 +430,6 @@ linestyle
 loadtxt
 arange
 twinx
+pointwise
+leftbottom
+leftback
