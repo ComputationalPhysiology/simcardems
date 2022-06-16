@@ -414,10 +414,11 @@ class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
     def converged(self, r, p, i):
         self._converged_called = True
 
-        # Print all residuals
-        residual = r.norm("l2")
-        with open("residual.txt", "a") as rfile:
-            rfile.write(str(residual) + "\t")
+        if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
+            # Print all residuals
+            residual = r.norm("l2")
+            with open("residual.txt", "a") as rfile:
+                rfile.write(str(residual) + "\t")
 
         return super().converged(r, p, i)
 
