@@ -42,7 +42,7 @@ class Defaults:
     pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None
     traction: typing.Union[dolfin.Constant, float] = None
     spring: typing.Union[dolfin.Constant, float] = None
-    fix_right_plane: bool = True
+    fix_right_plane: bool = False
     loglevel = logging.INFO
     num_refinements: int = 1
     set_material: str = ""
