@@ -603,7 +603,10 @@ class Runner:
                 beat_nr += save_state_every_n_beat
 
             # Residual file : End of line after each time step
-            if Path("residual.txt").is_file() and dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
+            if (
+                Path("residual.txt").is_file()
+                and dolfin.MPI.rank(dolfin.MPI.comm_world) == 0
+            ):
                 fr = open("residual.txt", "a")
                 fr.write("\n")
                 fr.close()
