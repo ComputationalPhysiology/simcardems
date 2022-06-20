@@ -661,6 +661,8 @@ def setup_diriclet_bc(
     right = dolfin.CompiledSubDomain("near(x[0], Lx) && on_boundary", Lx=Lx)
     leftback = dolfin.CompiledSubDomain("near(x[0], 0) && near(x[2], 0)")
     leftbottom = dolfin.CompiledSubDomain("near(x[0], 0) && near(x[1], 0)")
+    rightback = dolfin.CompiledSubDomain("near(x[0], Lx) && near(x[2], 0) && on_boundary", Lx=Lx)
+    rightbottom = dolfin.CompiledSubDomain("near(x[0], Lx) && near(x[1], 0) && on_boundary", Lx=Lx)
 
     boundary_markers = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim() - 1)
     boundary_markers.set_all(0)
@@ -704,14 +706,16 @@ def setup_diriclet_bc(
             bcs.extend(
                 [
                     dolfin.DirichletBC(
-                        W.sub(0).sub(1),  # Second component of u, i.e u_y
-                        dolfin.Constant(0.0),  # should be kept fixed
-                        right,  # in this region
+                        W.sub(0).sub(1), #u_y
+                        dolfin.Constant(0.0),
+                        rightbottom,
+                        method="pointwise",
                     ),
                     dolfin.DirichletBC(
-                        W.sub(0).sub(2),  # Third component of u, i.e u_z
-                        dolfin.Constant(0.0),  # should be kept fixed
-                        right,  # in this region
+                        W.sub(0).sub(2), #u_z
+                        dolfin.Constant(0.0),
+                        rightback,
+                        method="pointwise",
                     ),
                 ],
             )
