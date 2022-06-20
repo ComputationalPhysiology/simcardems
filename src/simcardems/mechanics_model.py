@@ -613,7 +613,7 @@ def setup_diriclet_bc(
     fix_right_plane: bool = False,
 ) -> typing.Tuple[pulse.BoundaryConditions, pulse.MarkerFunctions]:
     """Completely fix the left side of the mesh in the x-direction (i.e the side with the
-    lowest x-values), fix points at x=0 & y=0 in y-direction, fix points at x=0 & z=0 in 
+    lowest x-values), fix points at x=0 & y=0 in y-direction, fix points at x=0 & z=0 in
     z-direction and apply some boundary condition to the right side.
 
 
@@ -661,8 +661,12 @@ def setup_diriclet_bc(
     right = dolfin.CompiledSubDomain("near(x[0], Lx) && on_boundary", Lx=Lx)
     leftback = dolfin.CompiledSubDomain("near(x[0], 0) && near(x[2], 0)")
     leftbottom = dolfin.CompiledSubDomain("near(x[0], 0) && near(x[1], 0)")
-    rightback = dolfin.CompiledSubDomain("near(x[0], Lx) && near(x[2], 0) && on_boundary", Lx=Lx)
-    rightbottom = dolfin.CompiledSubDomain("near(x[0], Lx) && near(x[1], 0) && on_boundary", Lx=Lx)
+    rightback = dolfin.CompiledSubDomain(
+        "near(x[0], Lx) && near(x[2], 0) && on_boundary", Lx=Lx,
+    )
+    rightbottom = dolfin.CompiledSubDomain(
+        "near(x[0], Lx) && near(x[1], 0) && on_boundary", Lx=Lx,
+    )
 
     boundary_markers = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim() - 1)
     boundary_markers.set_all(0)
@@ -706,13 +710,13 @@ def setup_diriclet_bc(
             bcs.extend(
                 [
                     dolfin.DirichletBC(
-                        W.sub(0).sub(1), #u_y
+                        W.sub(0).sub(1),  # u_y
                         dolfin.Constant(0.0),
                         rightbottom,
                         method="pointwise",
                     ),
                     dolfin.DirichletBC(
-                        W.sub(0).sub(2), #u_z
+                        W.sub(0).sub(2),  # u_z
                         dolfin.Constant(0.0),
                         rightback,
                         method="pointwise",
