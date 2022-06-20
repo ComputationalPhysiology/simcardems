@@ -610,10 +610,11 @@ def setup_diriclet_bc(
     pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
     traction: typing.Union[dolfin.Constant, float] = None,
     spring: typing.Union[dolfin.Constant, float] = None,
-    fix_right_plane: bool = True,
+    fix_right_plane: bool = False,
 ) -> typing.Tuple[pulse.BoundaryConditions, pulse.MarkerFunctions]:
-    """Completely fix the left side of the mesh (i.e the side with the
-    lowest x-values) and apply some boundary condition to the right side.
+    """Completely fix the left side of the mesh in the x-direction (i.e the side with the
+    lowest x-values), fix points at x=0 & y=0 in y-direction, fix points at x=0 & z=0 in 
+    z-direction and apply some boundary condition to the right side.
 
 
     Parameters
