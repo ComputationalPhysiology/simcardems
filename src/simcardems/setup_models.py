@@ -268,7 +268,7 @@ def setup_ep_solver(
     ep_heart = ep_model.setup_ep_model(cellmodel, coupling.ep_mesh)
     timer = dolfin.Timer("SplittingSolver: setup")
 
-    solver = cbcbeat.SplittingSolver(ep_heart, ps)
+    solver = cbcbeat.SplittingSolver(ep_heart, params=ps)
 
     timer.stop()
     # Extract the solution fields and set the initial conditions

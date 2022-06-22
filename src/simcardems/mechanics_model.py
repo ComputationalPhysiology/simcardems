@@ -374,12 +374,37 @@ class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
         self._update_cb = update_cb
         self._parameters = parameters
 
+        # Initializing Newton solver (parent class)
         self.petsc_solver = dolfin.PETScKrylovSolver()
         super().__init__(
             self._state.function_space().mesh().mpi_comm(),
             self.petsc_solver,
             dolfin.PETScFactory.instance(),
         )
+
+        # Setting default parameters
+        params = MechanicsNewtonSolver_ODE.default_solver_parameters()
+        for k, v in params.items():
+            if self.parameters.has_parameter(k):
+                self.parameters[k] = v
+            if self.parameters.has_parameter_set(k):
+                for subk, subv in params[k].items():
+                    self.parameters[k][subk] = subv
+        petsc = params.pop("petsc")
+        for k, v in petsc.items():
+            if v is not None:
+                dolfin.PETScOptions.set(k, v)
+        self.newton_verbose = params.pop("newton_verbose", False)
+        self.ksp_verbose = params.pop("ksp_verbose", False)
+        if self.newton_verbose:
+            dolfin.set_log_level(dolfin.LogLevel.INFO)
+            self.parameters["report"] = True
+        if self.ksp_verbose:
+            self.parameters["lu_solver"]["report"] = True
+            self.parameters["lu_solver"]["verbose"] = True
+            self.parameters["krylov_solver"]["monitor_convergence"] = True
+            dolfin.PETScOptions.set("ksp_monitor_true_residual")
+        self.linear_solver().set_from_options()
 
     @staticmethod
     def default_solver_parameters():
@@ -395,7 +420,6 @@ class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
             "ksp_verbose": False,
             # "linear_solver": "mumps",
             "linear_solver": "gmres",
-            # "preconditioner": "lu",
             "error_on_nonconvergence": True,
             "relative_tolerance": 1e-5,
             "absolute_tolerance": 1e-5,
@@ -403,8 +427,8 @@ class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
             "report": False,
             # },
             "krylov_solver": {
-                "absolute_tolerance": 1e-13,
-                "relative_tolerance": 1e-13,
+                "absolute_tolerance": 1e-10,
+                "relative_tolerance": 1e-10,
                 "maximum_iterations": 1000,
                 "monitor_convergence": False,
             },
@@ -424,30 +448,6 @@ class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
 
     def solver_setup(self, A, J, p, i):
         self._solver_setup_called = True
-        params = MechanicsNewtonSolver_ODE.default_solver_parameters()
-        for k, v in params.items():
-            if self.parameters.has_parameter(k):
-                self.parameters[k] = v
-            if self.parameters.has_parameter_set(k):
-                for subk, subv in params[k].items():
-                    self.parameters[k][subk] = subv
-        petsc = params.pop("petsc")
-        for k, v in petsc.items():
-            if v is not None:
-                dolfin.PETScOptions.set(k, v)
-        # Here set the other default params
-        self.newton_verbose = params.pop("newton_verbose", False)
-        self.ksp_verbose = params.pop("ksp_verbose", False)
-        if self.newton_verbose:
-            dolfin.set_log_level(dolfin.LogLevel.INFO)
-            self.parameters["report"] = True
-        if self.ksp_verbose:
-            self.parameters["lu_solver"]["report"] = True
-            self.parameters["lu_solver"]["verbose"] = True
-            self.parameters["krylov_solver"]["monitor_convergence"] = True
-            dolfin.PETScOptions.set("ksp_monitor_true_residual")
-        self.linear_solver().set_from_options()
-
         super().solver_setup(A, J, p, i)
 
     def update_solution(self, x, dx, rp, p, i):
@@ -662,10 +662,12 @@ def setup_diriclet_bc(
     leftback = dolfin.CompiledSubDomain("near(x[0], 0) && near(x[2], 0)")
     leftbottom = dolfin.CompiledSubDomain("near(x[0], 0) && near(x[1], 0)")
     rightback = dolfin.CompiledSubDomain(
-        "near(x[0], Lx) && near(x[2], 0) && on_boundary", Lx=Lx,
+        "near(x[0], Lx) && near(x[2], 0) && on_boundary",
+        Lx=Lx,
     )
     rightbottom = dolfin.CompiledSubDomain(
-        "near(x[0], Lx) && near(x[1], 0) && on_boundary", Lx=Lx,
+        "near(x[0], Lx) && near(x[1], 0) && on_boundary",
+        Lx=Lx,
     )
 
     boundary_markers = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim() - 1)

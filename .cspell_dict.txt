@@ -80,6 +80,7 @@ Knai0
 Knao
 Knao0
 Knap
+Krylov
 Kxkur
 L
 Lssp
@@ -129,6 +130,7 @@ amp
 anca
 ap
 apidoc
+arange
 argmin
 assp
 atol
@@ -213,6 +215,7 @@ gammas
 gammasu
 gammaw
 gammawu
+gmres
 gotran
 h5pyfile
 hL
@@ -226,6 +229,7 @@ iF
 iFp
 iS
 iSp
+icntl
 infp
 isacs
 j
@@ -252,6 +256,7 @@ kna1
 kna2
 kna3
 ko
+krylov
 kss
 ktrpn
 ku
@@ -259,8 +264,12 @@ kuw
 kws
 labelsize
 lambda_max
+leftback
+leftbottom
 linalg
+linestyle
 lmbda
+loadtxt
 loglevel
 m
 mL
@@ -282,6 +291,7 @@ nca
 nconv
 nestedkey
 neumann
+nonconvergence
 ntm
 ntrpn
 outdir
@@ -295,9 +305,11 @@ permodel
 petsc
 phi
 plotly
+pointwise
 popu
 postprocess
 preconditioner
+preonly
 pypi
 pyplot
 pytest
@@ -306,6 +318,8 @@ qna
 rad
 relp
 repolarisation
+rightback
+rightbottom
 rint
 rs
 rtol
@@ -366,6 +380,8 @@ silico
 simcardems
 splittingsolver
 streamlit
+subk
+subv
 sundnes
 superlu
 testgroup
@@ -383,6 +399,7 @@ transmembrane
 transversally
 trpnmax
 ttplmbda
+twinx
 txrf
 txrs
 uflacs
@@ -418,18 +435,3 @@ zca
 zk
 zmax
 zmin
-Krylov
-preonly
-gmres
-icntl
-nonconvergence
-krylov
-subk
-subv
-linestyle
-loadtxt
-arange
-twinx
-pointwise
-leftbottom
-leftback
