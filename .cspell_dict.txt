@@ -266,6 +266,7 @@ labelsize
 lambda_max
 leftback
 leftbottom
+lightcoral
 linalg
 linestyle
 lmbda
@@ -404,6 +405,7 @@ txrf
 txrs
 uflacs
 undiseased
+usecols
 v
 vcell
 vffrt
@@ -427,6 +429,7 @@ xrs
 xrss
 xs1
 xs2
+yaxis
 ylabel
 ylim
 ymax
