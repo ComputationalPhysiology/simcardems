@@ -10,10 +10,10 @@ import simcardems
     [
         (None, None, None, True, (0, 0, 0)),
         (None, None, None, False, (0, 0, 0)),
-        (None, -10.0, None, True, (0.212255133, 0, 0)),
-        (None, -10.0, None, False, (0.18904154, 0.00844048, 0.00844048)),
-        (0.1, None, None, True, (0.1, 0, 0)),
-        (0.1, None, None, False, (0.1, 0.00167563, 0.00167563)),
+        (None, -10.0, None, True, (0, 0, 0)),
+        (None, -10.0, None, False, (0.21933731, -0.04719835, -0.04719835)),
+        (0.1, None, None, True, (0.1, -0.02326871, -0.02326871)),
+        (0.1, None, None, False, (0.1, -0.02326871, -0.02326871)),
         (None, None, 100, False, (0, 0, 0)),
     ],
 )
@@ -60,14 +60,14 @@ def test_boundary_conditions(
 @pytest.mark.parametrize(
     "pre_stretch, traction, spring, fix_right_plane, expected_u",
     [
-        (None, None, None, True, (-0.127991400, 0, 0)),
-        (None, None, None, False, (-0.13287112, -0.00569607, -0.00569607)),
+        (None, None, None, True, (0, 0, 0)),
+        (None, None, None, False, (-0.15656733, 0.04443344, 0.04443344)),
         (None, -10.0, None, True, (0.0, 0, 0)),
         (None, -10.0, None, False, (0.0, 0.0, 0.0)),
-        (0.1, None, None, True, (0.1, 0, 0)),
-        (0.1, None, None, False, (0.1, 0.00109546, 0.00109546)),
-        (None, None, 100, True, (-0.0560217556, 0, 0)),
-        (None, None, 100, False, (-0.05774309, -0.00017687, -0.00017687)),
+        (0.1, None, None, True, (0.1, -0.02326871, -0.02326871)),
+        (0.1, None, None, False, (0.1, -0.02326871, -0.02326871)),
+        (None, None, 100, True, (0, 0, 0)),
+        (None, None, 100, False, (-0.0615345, 0.00249483, 0.00249483)),
     ],
 )
 def test_boundary_conditions_activation(
@@ -108,7 +108,7 @@ def test_boundary_conditions_activation(
     pulse.iterate.iterate(problem, Ta, 10.0)
 
     U, P = problem.state.split(deepcopy=True)
-
+    print(U(1.0, 0.5, 0.5))
     assert np.isclose(U(1.0, 0.5, 0.5), expected_u, rtol=1e-5).all()
 
 

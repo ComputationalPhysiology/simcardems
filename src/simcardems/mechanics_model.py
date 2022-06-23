@@ -712,6 +712,11 @@ def setup_diriclet_bc(
             bcs.extend(
                 [
                     dolfin.DirichletBC(
+                        W.sub(0).sub(0),  # u_x
+                        dolfin.Constant(0.0),
+                        right,
+                    ),
+                    dolfin.DirichletBC(
                         W.sub(0).sub(1),  # u_y
                         dolfin.Constant(0.0),
                         rightbottom,
