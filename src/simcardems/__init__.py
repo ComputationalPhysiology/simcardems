@@ -13,7 +13,9 @@ from . import datacollector
 from . import em_model
 from . import ep_model
 from . import geometry
+from . import land_model
 from . import mechanics_model
+from . import newton_solver
 from . import ORdmm_Land
 from . import postprocess
 from . import save_load_functions
@@ -22,9 +24,10 @@ from . import utils
 from .datacollector import DataCollector
 from .datacollector import DataLoader
 from .em_model import EMCoupling
-from .mechanics_model import LandModel
+from .land_model import LandModel
 from .mechanics_model import MechanicsProblem
 from .mechanics_model import RigidMotionProblem
+from .newton_solver import MechanicsNewtonSolver_ODE
 from .setup_models import default_parameters
 from .setup_models import Runner
 from .setup_models import TimeStepper
@@ -87,4 +90,7 @@ __all__ = [
     "default_parameters",
     "__version__",
     "TimeStepper",
+    "land_model",
+    "newton_solver",
+    "MechanicsNewtonSolver_ODE",
 ]

@@ -11,6 +11,7 @@ from tqdm import tqdm
 from . import em_model
 from . import ep_model
 from . import geometry
+from . import land_model
 from . import mechanics_model
 from . import save_load_functions as io
 from . import utils
@@ -49,7 +50,7 @@ class Defaults:
     drug_factors_file: str = ""
     popu_factors_file: str = ""
     disease_state: str = "healthy"
-    mechanics_ode_scheme: mechanics_model.Scheme = mechanics_model.Scheme.analytic
+    mechanics_ode_scheme: land_model.Scheme = land_model.Scheme.analytic
 
 
 def default_parameters():
@@ -67,7 +68,7 @@ def setup_EM_model(
     spring: typing.Union[dolfin.Constant, float] = None,
     fix_right_plane: bool = Defaults.fix_right_plane,
     bnd_cond: mechanics_model.BoundaryConditions = Defaults.bnd_cond,
-    mech_scheme: mechanics_model.Scheme = Defaults.mechanics_ode_scheme,
+    mech_scheme: land_model.Scheme = Defaults.mechanics_ode_scheme,
     num_refinements: int = Defaults.num_refinements,
     set_material: str = Defaults.set_material,
     drug_factors_file: str = Defaults.drug_factors_file,
@@ -126,7 +127,7 @@ def setup_mechanics_solver(
     traction: typing.Union[dolfin.Constant, float] = None,
     spring: typing.Union[dolfin.Constant, float] = None,
     fix_right_plane: bool = Defaults.fix_right_plane,
-    mech_scheme: mechanics_model.Scheme = Defaults.mechanics_ode_scheme,
+    mech_scheme: land_model.Scheme = Defaults.mechanics_ode_scheme,
     set_material: str = "",
     linear_solver="mumps",
     Zetas_prev=None,
@@ -169,7 +170,7 @@ def setup_mechanics_solver(
         b_fs=0.0,
     )
 
-    active_model = mechanics_model.LandModel(
+    active_model = land_model.LandModel(
         f0=microstructure.f0,
         s0=microstructure.s0,
         n0=microstructure.n0,
@@ -300,7 +301,7 @@ class Runner:
         num_refinements: int = Defaults.num_refinements,
         set_material: str = Defaults.set_material,
         bnd_cond: mechanics_model.BoundaryConditions = Defaults.bnd_cond,
-        mech_scheme: mechanics_model.Scheme = Defaults.mechanics_ode_scheme,
+        mech_scheme: land_model.Scheme = Defaults.mechanics_ode_scheme,
         drug_factors_file: str = Defaults.drug_factors_file,
         popu_factors_file: str = Defaults.popu_factors_file,
         disease_state: str = Defaults.disease_state,

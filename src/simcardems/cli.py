@@ -5,6 +5,7 @@ from pathlib import Path
 import click
 import dolfin
 
+from . import land_model
 from . import mechanics_model
 from . import postprocess as post
 from . import utils
@@ -131,7 +132,7 @@ def cli():
 @click.option(
     "--mech_scheme",
     default=Defaults.mechanics_ode_scheme,
-    type=click.Choice(mechanics_model.Scheme._member_names_),
+    type=click.Choice(land_model.Scheme._member_names_),
     help="Scheme used to solve the ODEs in the mechanics model",
 )
 def run(
@@ -153,7 +154,7 @@ def run(
     drug_factors_file: str,
     popu_factors_file: str,
     disease_state: str,
-    mech_scheme: mechanics_model.Scheme,
+    mech_scheme: land_model.Scheme,
 ):
     main(
         outdir=outdir,
@@ -210,7 +211,7 @@ def main(
     drug_factors_file: str = Defaults.drug_factors_file,
     popu_factors_file: str = Defaults.popu_factors_file,
     disease_state: str = Defaults.disease_state,
-    mech_scheme: mechanics_model.Scheme = Defaults.mechanics_ode_scheme,
+    mech_scheme: land_model.Scheme = Defaults.mechanics_ode_scheme,
 ):
 
     # Get all arguments and dump them to a json file
