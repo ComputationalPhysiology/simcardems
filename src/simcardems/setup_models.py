@@ -60,6 +60,7 @@ def setup_EM_model(config: Config):
         fix_right_plane=config.fix_right_plane,
         set_material=config.set_material,
         mechanics_ode_scheme=config.mechanics_ode_scheme,
+        use_custom_newton_solver=config.mechanics_use_custom_newton_solver,
     )
 
     return EMState(
@@ -81,6 +82,7 @@ def setup_mechanics_solver(
     mechanics_ode_scheme: land_model.Scheme = Config.mechanics_ode_scheme,
     set_material: str = "",
     linear_solver="mumps",
+    use_custom_newton_solver: bool = Config.mechanics_use_custom_newton_solver,
     Zetas_prev=None,
     Zetaw_prev=None,
     lmbda_prev=None,
@@ -163,6 +165,7 @@ def setup_mechanics_solver(
         material,
         bcs,
         solver_parameters={"linear_solver": linear_solver, "verbose": verbose},
+        use_custom_newton_solver=use_custom_newton_solver,
     )
 
     if state_prev is not None:

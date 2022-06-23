@@ -41,6 +41,7 @@ class Config:
     ep_theta: float = 0.5
     linear_mechanics_solver: str = "mumps"
     mechanics_use_continuation: bool = False
+    mechanics_use_custom_newton_solver: bool = False
 
 
 def default_parameters():

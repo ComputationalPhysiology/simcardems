@@ -30,6 +30,7 @@ from .em_model import EMCoupling
 from .land_model import LandModel
 from .mechanics_model import MechanicsProblem
 from .mechanics_model import RigidMotionProblem
+from .newton_solver import MechanicsNewtonSolver
 from .newton_solver import MechanicsNewtonSolver_ODE
 from .setup_models import Runner
 from .setup_models import TimeStepper
@@ -95,6 +96,7 @@ __all__ = [
     "land_model",
     "newton_solver",
     "MechanicsNewtonSolver_ODE",
+    "MechanicsNewtonSolver",
     "config",
     "Config",
 ]

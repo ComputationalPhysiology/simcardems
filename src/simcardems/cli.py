@@ -141,6 +141,12 @@ def cli():
     type=bool,
     help="Use continuation based mechanics solver",
 )
+@click.option(
+    "--mechanics-use-custom-newton-solver",
+    default=Config.mechanics_use_custom_newton_solver,
+    type=bool,
+    help="Use custom newton solver and solve ODEs at each Newton iteration",
+)
 def run(
     outdir: utils.PathLike,
     T: float,
@@ -162,6 +168,7 @@ def run(
     disease_state: str,
     mechanics_ode_scheme: land_model.Scheme,
     mechanics_use_continuation: bool,
+    mechanics_use_custom_newton_solver: bool,
 ):
 
     config = Config(
@@ -185,6 +192,7 @@ def run(
         disease_state=disease_state,
         mechanics_ode_scheme=mechanics_ode_scheme,
         mechanics_use_continuation=mechanics_use_continuation,
+        mechanics_use_custom_newton_solver=mechanics_use_custom_newton_solver,
     )
     main(config=config)
 

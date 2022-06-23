@@ -2,14 +2,13 @@ import dolfin
 import pulse
 
 
-class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
+class MechanicsNewtonSolver(dolfin.NewtonSolver):
     def __init__(
         self,
         problem: pulse.NonlinearProblem,
         state: dolfin.Function,
-        update_cb,
+        update_cb=None,
         parameters=None,
-        debug: bool = False,
     ):
         dolfin.PETScOptions.clear()
         self._problem = problem
@@ -96,6 +95,22 @@ class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
         self._solver_setup_called = True
         super().solver_setup(A, J, p, i)
 
+    def solve(self):
+        self._solve_called = True
+        ret = super().solve(self._problem, self._state.vector())
+        self._state.vector().apply("insert")
+        return ret
+
+    # DEBUGGING
+    # This is just to check if we are using the overloaded functions
+    def check_overloads_called(self):
+        assert getattr(self, "_converged_called", False)
+        assert getattr(self, "_solver_setup_called", False)
+        assert getattr(self, "_update_solution_called", False)
+        assert getattr(self, "_solve_called", False)
+
+
+class MechanicsNewtonSolver_ODE(MechanicsNewtonSolver):
     def update_solution(self, x, dx, rp, p, i):
         self._update_solution_called = True
 
@@ -111,18 +126,3 @@ class MechanicsNewtonSolver_ODE(dolfin.NewtonSolver):
         self._update_cb()
         # Re-init this solver with the new problem (note : done in _init_forms)
         # self.__init__(self._mech_problem)
-
-    def solve(self):
-        self._solve_called = True
-        ret = super().solve(self._problem, self._state.vector())
-        self._state.vector().apply("insert")
-        return ret
-
-    # DEBUGGING
-    # This is just to check if we are using the overloaded functions
-    def check_overloads_called(self):
-        if self.debug:
-            assert getattr(self, "_converged_called", False)
-            assert getattr(self, "_solver_setup_called", False)
-            assert getattr(self, "_update_solution_called", False)
-            assert getattr(self, "_solve_called", False)
