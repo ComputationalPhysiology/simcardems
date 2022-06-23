@@ -9,6 +9,7 @@ from ffc.quadrature.deprecation import (
 )
 
 from . import cli
+from . import config
 from . import datacollector
 from . import em_model
 from . import ep_model
@@ -21,14 +22,16 @@ from . import postprocess
 from . import save_load_functions
 from . import setup_models
 from . import utils
+from .config import Config
+from .config import default_parameters
 from .datacollector import DataCollector
 from .datacollector import DataLoader
 from .em_model import EMCoupling
 from .land_model import LandModel
 from .mechanics_model import MechanicsProblem
 from .mechanics_model import RigidMotionProblem
+from .newton_solver import MechanicsNewtonSolver
 from .newton_solver import MechanicsNewtonSolver_ODE
-from .setup_models import default_parameters
 from .setup_models import Runner
 from .setup_models import TimeStepper
 from .version import __version__
@@ -93,4 +96,7 @@ __all__ = [
     "land_model",
     "newton_solver",
     "MechanicsNewtonSolver_ODE",
+    "MechanicsNewtonSolver",
+    "config",
+    "Config",
 ]

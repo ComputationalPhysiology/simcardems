@@ -6,6 +6,7 @@ import pulse
 from mpi4py import MPI
 
 from . import utils
+from .newton_solver import MechanicsNewtonSolver
 from .newton_solver import MechanicsNewtonSolver_ODE
 
 
@@ -19,6 +20,7 @@ class BoundaryConditions(str, Enum):
 
 class ContinuationBasedMechanicsProblem(pulse.MechanicsProblem):
     def __init__(self, *args, **kwargs):
+        self._use_custom_newton_solver = kwargs.pop("use_custom_newton_solver", False)
         super().__init__(*args, **kwargs)
         self.old_states = []
         self.old_controls = []
@@ -112,7 +114,13 @@ class MechanicsProblem(ContinuationBasedMechanicsProblem):
             F=self._virtual_work,
             bcs=self._dirichlet_bc,
         )
-        self.solver = MechanicsNewtonSolver_ODE(
+
+        if self._use_custom_newton_solver:
+            cls = MechanicsNewtonSolver_ODE
+        else:
+            cls = MechanicsNewtonSolver
+
+        self.solver = cls(
             problem=self._problem,
             state=self.state,
             update_cb=self.material.active.update_prev,
@@ -150,6 +158,7 @@ class RigidMotionProblem(MechanicsProblem):
 
     def _handle_bcs(self, bcs, bcs_parameters):
         self.bcs = pulse.BoundaryConditions()
+        self._dirichlet_bc = []
 
     def _init_forms(self):
         # Displacement and hydrostatic_pressure; 3rd space for rigid motion component
@@ -187,19 +196,6 @@ class RigidMotionProblem(MechanicsProblem):
             dolfin.TrialFunction(self.state_space),
         )
         self._init_solver()
-
-    def _init_solver(self):
-        self._problem = pulse.NonlinearProblem(
-            J=self._jacobian,
-            F=self._virtual_work,
-            bcs=[],
-        )
-        self.solver = MechanicsNewtonSolver_ODE(
-            problem=self._problem,
-            state=self.state,
-            update_cb=self.material.active.update_prev,
-            parameters=self.solver_parameters,
-        )
 
     def rigid_motion_term(mesh, u, r):
         position = dolfin.SpatialCoordinate(mesh)
