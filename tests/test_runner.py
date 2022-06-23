@@ -4,6 +4,7 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from simcardems import Config
 from simcardems import Runner
 from simcardems import TimeStepper
 
@@ -20,7 +21,7 @@ def test_runner_load_state_with_new_parameters():
     outdir = Path("runner_load_state_with_new_parameters")
     if outdir.exists():
         shutil.rmtree(outdir)
-    runner = Runner(outdir=outdir, lx=1, ly=1, lz=1, dx=1)
+    runner = Runner(Config(outdir=outdir, lx=1, ly=1, lz=1, dx=1))
     runner.solve(0.02)
 
     drug_factors_file = Path("drug_factors_file.json")
@@ -32,10 +33,12 @@ def test_runner_load_state_with_new_parameters():
     popu_factors_file.write_text(json.dumps(popu_factors))
 
     runner2 = Runner(
-        outdir=outdir,
-        drug_factors_file=drug_factors_file,
-        popu_factors_file=popu_factors_file,
-        reset=False,
+        Config(
+            outdir=outdir,
+            drug_factors_file=drug_factors_file,
+            popu_factors_file=popu_factors_file,
+            load_state=True,
+        ),
     )
     assert np.isclose(
         runner2.ep_solver.ode_solver._model.parameters()["scale_drug_INa"],

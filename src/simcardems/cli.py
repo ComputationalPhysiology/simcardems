@@ -187,7 +187,7 @@ def run_json(path):
     with open(path, "r") as json_file:
         data = json.load(json_file)
 
-    main(**data)
+    main(Config(**data))
 
 
 def main(config: typing.Optional[Config]):
