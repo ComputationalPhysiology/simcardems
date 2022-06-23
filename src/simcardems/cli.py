@@ -130,10 +130,16 @@ def cli():
     help="Indicate disease state. Default is healthy. ",
 )
 @click.option(
-    "--mechanics_ode_scheme",
+    "--mechanics-ode-scheme",
     default=Config.mechanics_ode_scheme,
     type=click.Choice(land_model.Scheme._member_names_),
     help="Scheme used to solve the ODEs in the mechanics model",
+)
+@click.option(
+    "--mechanics-use-continuation",
+    default=Config.mechanics_use_continuation,
+    type=bool,
+    help="Use continuation based mechanics solver",
 )
 def run(
     outdir: utils.PathLike,
@@ -155,6 +161,7 @@ def run(
     popu_factors_file: str,
     disease_state: str,
     mechanics_ode_scheme: land_model.Scheme,
+    mechanics_use_continuation: bool,
 ):
 
     config = Config(
@@ -177,6 +184,7 @@ def run(
         popu_factors_file=popu_factors_file,
         disease_state=disease_state,
         mechanics_ode_scheme=mechanics_ode_scheme,
+        mechanics_use_continuation=mechanics_use_continuation,
     )
     main(config=config)
 

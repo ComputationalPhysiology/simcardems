@@ -40,6 +40,7 @@ class Config:
     ep_preconditioner: str = "sor"
     ep_theta: float = 0.5
     linear_mechanics_solver: str = "mumps"
+    mechanics_use_continuation: bool = False
 
 
 def default_parameters():
