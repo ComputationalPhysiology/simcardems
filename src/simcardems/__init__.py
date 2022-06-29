@@ -9,23 +9,29 @@ from ffc.quadrature.deprecation import (
 )
 
 from . import cli
+from . import config
 from . import datacollector
 from . import em_model
 from . import ep_model
 from . import geometry
+from . import land_model
 from . import mechanics_model
+from . import newton_solver
 from . import ORdmm_Land
 from . import postprocess
 from . import save_load_functions
 from . import setup_models
 from . import utils
+from .config import Config
+from .config import default_parameters
 from .datacollector import DataCollector
 from .datacollector import DataLoader
 from .em_model import EMCoupling
-from .mechanics_model import LandModel
+from .land_model import LandModel
 from .mechanics_model import MechanicsProblem
 from .mechanics_model import RigidMotionProblem
-from .setup_models import default_parameters
+from .newton_solver import MechanicsNewtonSolver
+from .newton_solver import MechanicsNewtonSolver_ODE
 from .setup_models import Runner
 from .setup_models import TimeStepper
 from .version import __version__
@@ -58,7 +64,7 @@ for module in ["matplotlib", "h5py", "FFC", "UFL"]:
 
 
 _dolfin.parameters["form_compiler"]["cpp_optimize"] = True
-flags = ["-O3", "-ffast-math", "-march=native"]
+flags = ["-O3", "-ffast-math"]
 _dolfin.parameters["form_compiler"]["cpp_optimize_flags"] = " ".join(flags)
 _dolfin.parameters["form_compiler"]["quadrature_degree"] = 3
 _dolfin.parameters["form_compiler"]["representation"] = "uflacs"
@@ -87,4 +93,10 @@ __all__ = [
     "default_parameters",
     "__version__",
     "TimeStepper",
+    "land_model",
+    "newton_solver",
+    "MechanicsNewtonSolver_ODE",
+    "MechanicsNewtonSolver",
+    "config",
+    "Config",
 ]

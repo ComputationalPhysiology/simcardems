@@ -11,9 +11,11 @@ from tqdm import tqdm
 from . import em_model
 from . import ep_model
 from . import geometry
+from . import land_model
 from . import mechanics_model
 from . import save_load_functions as io
 from . import utils
+from .config import Config
 from .ORdmm_Land import ORdmm_Land as CellModel
 
 logger = utils.getLogger(__name__)
@@ -24,90 +26,41 @@ EMState = namedtuple(
 )
 
 
-class Defaults:
-    outdir: utils.PathLike = "results"
-    T: float = 1000
-    dx: float = 0.2
-    dt: float = 0.05
-    bnd_cond: mechanics_model.BoundaryConditions = (
-        mechanics_model.BoundaryConditions.dirichlet
-    )
-    load_state: bool = False
-    cell_init_file: utils.PathLike = ""
-    hpc: bool = False
-    lx: float = 2.0
-    ly: float = 0.7
-    lz: float = 0.3
-    save_freq: int = 1
-    pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None
-    traction: typing.Union[dolfin.Constant, float] = None
-    spring: typing.Union[dolfin.Constant, float] = None
-    fix_right_plane: bool = True
-    loglevel = logging.INFO
-    num_refinements: int = 1
-    set_material: str = ""
-    drug_factors_file: str = ""
-    popu_factors_file: str = ""
-    disease_state: str = "healthy"
-    mechanics_ode_scheme: mechanics_model.Scheme = mechanics_model.Scheme.analytic
-
-
-def default_parameters():
-    return {k: v for k, v in Defaults.__dict__.items() if not k.startswith("_")}
-
-
-def setup_EM_model(
-    lx: float = Defaults.lx,
-    ly: float = Defaults.ly,
-    lz: float = Defaults.lz,
-    dx: float = Defaults.dx,
-    dt: float = Defaults.dt,
-    pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
-    traction: typing.Union[dolfin.Constant, float] = None,
-    spring: typing.Union[dolfin.Constant, float] = None,
-    fix_right_plane: bool = True,
-    bnd_cond: mechanics_model.BoundaryConditions = Defaults.bnd_cond,
-    mech_scheme: mechanics_model.Scheme = Defaults.mechanics_ode_scheme,
-    num_refinements: int = Defaults.num_refinements,
-    set_material: str = Defaults.set_material,
-    drug_factors_file: str = Defaults.drug_factors_file,
-    popu_factors_file: str = Defaults.popu_factors_file,
-    disease_state: str = Defaults.disease_state,
-    cell_init_file: utils.PathLike = Defaults.cell_init_file,
-):
+def setup_EM_model(config: Config):
 
     geo = geometry.SlabGeometry(
-        lx=lx,
-        ly=ly,
-        lz=lz,
-        dx=dx,
-        num_refinements=num_refinements,
+        lx=config.lx,
+        ly=config.ly,
+        lz=config.lz,
+        dx=config.dx,
+        num_refinements=config.num_refinements,
     )
 
     coupling = em_model.EMCoupling(geo)
 
     # Set-up solver and time it
     solver = setup_ep_solver(
-        dt=dt,
+        dt=config.dt,
         coupling=coupling,
-        cell_init_file=cell_init_file,
-        drug_factors_file=drug_factors_file,
-        popu_factors_file=popu_factors_file,
-        disease_state=disease_state,
+        cell_init_file=config.cell_init_file,
+        drug_factors_file=config.drug_factors_file,
+        popu_factors_file=config.popu_factors_file,
+        disease_state=config.disease_state,
     )
 
     coupling.register_ep_model(solver)
 
     mech_heart = setup_mechanics_solver(
         coupling=coupling,
-        bnd_cond=bnd_cond,
+        bnd_cond=config.bnd_cond,
         cell_params=solver.ode_solver._model.parameters(),
-        pre_stretch=pre_stretch,
-        traction=traction,
-        spring=spring,
-        fix_right_plane=fix_right_plane,
-        set_material=set_material,
-        mech_scheme=mech_scheme,
+        pre_stretch=config.pre_stretch,
+        traction=config.traction,
+        spring=config.spring,
+        fix_right_plane=config.fix_right_plane,
+        set_material=config.set_material,
+        mechanics_ode_scheme=config.mechanics_ode_scheme,
+        use_custom_newton_solver=config.mechanics_use_custom_newton_solver,
     )
 
     return EMState(
@@ -125,10 +78,15 @@ def setup_mechanics_solver(
     pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
     traction: typing.Union[dolfin.Constant, float] = None,
     spring: typing.Union[dolfin.Constant, float] = None,
-    fix_right_plane: bool = False,
-    mech_scheme: mechanics_model.Scheme = Defaults.mechanics_ode_scheme,
+    fix_right_plane: bool = Config.fix_right_plane,
+    mechanics_ode_scheme: land_model.Scheme = Config.mechanics_ode_scheme,
     set_material: str = "",
     linear_solver="mumps",
+    use_custom_newton_solver: bool = Config.mechanics_use_custom_newton_solver,
+    Zetas_prev=None,
+    Zetaw_prev=None,
+    lmbda_prev=None,
+    state_prev=None,
 ):
     """Setup mechanics model with dirichlet boundary conditions or rigid motion."""
     logger.info("Set up mechanics model")
@@ -165,7 +123,7 @@ def setup_mechanics_solver(
         b_fs=0.0,
     )
 
-    active_model = mechanics_model.LandModel(
+    active_model = land_model.LandModel(
         f0=microstructure.f0,
         s0=microstructure.s0,
         n0=microstructure.n0,
@@ -174,8 +132,12 @@ def setup_mechanics_solver(
         XS=coupling.XS_mech,
         XW=coupling.XW_mech,
         mesh=coupling.mech_mesh,
-        scheme=mech_scheme,
+        scheme=mechanics_ode_scheme,
+        Zetas=Zetas_prev,
+        Zetaw=Zetaw_prev,
+        lmbda=lmbda_prev,
     )
+
     material = pulse.HolzapfelOgden(
         active_model=active_model,
         parameters=material_parameters,
@@ -203,7 +165,11 @@ def setup_mechanics_solver(
         material,
         bcs,
         solver_parameters={"linear_solver": linear_solver, "verbose": verbose},
+        use_custom_newton_solver=use_custom_newton_solver,
     )
+
+    if state_prev is not None:
+        problem.state.assign(state_prev)
 
     problem.solve()
     coupling.register_mech_model(problem)
@@ -218,15 +184,15 @@ def setup_mechanics_solver(
 def setup_ep_solver(
     dt,
     coupling,
-    scheme="GRL1",
-    theta=0.5,
-    preconditioner="sor",
+    scheme=Config.ep_ode_scheme,
+    theta=Config.ep_theta,
+    preconditioner=Config.ep_preconditioner,
     cell_params=None,
     cell_inits=None,
     cell_init_file=None,
     drug_factors_file=None,
     popu_factors_file=None,
-    disease_state="healthy",
+    disease_state=Config.disease_state,
 ):
     ps = ep_model.setup_splitting_solver_parameters(
         theta=theta,
@@ -257,7 +223,7 @@ def setup_ep_solver(
     ep_heart = ep_model.setup_ep_model(cellmodel, coupling.ep_mesh)
     timer = dolfin.Timer("SplittingSolver: setup")
 
-    solver = cbcbeat.SplittingSolver(ep_heart, ps)
+    solver = cbcbeat.SplittingSolver(ep_heart, params=ps)
 
     timer.stop()
     # Extract the solution fields and set the initial conditions
@@ -274,78 +240,61 @@ def setup_ep_solver(
 class Runner:
     def __init__(
         self,
-        outdir: utils.PathLike = Defaults.outdir,
-        *,
-        dx: float = Defaults.dx,
-        dt: float = Defaults.dt,
-        cell_init_file: utils.PathLike = Defaults.cell_init_file,
-        lx: float = Defaults.lx,
-        ly: float = Defaults.ly,
-        lz: float = Defaults.lz,
-        pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
-        traction: typing.Union[dolfin.Constant, float] = None,
-        spring: typing.Union[dolfin.Constant, float] = None,
-        fix_right_plane: bool = True,
-        num_refinements: int = Defaults.num_refinements,
-        set_material: str = Defaults.set_material,
-        bnd_cond: mechanics_model.BoundaryConditions = Defaults.bnd_cond,
-        mech_scheme: mechanics_model.Scheme = Defaults.mechanics_ode_scheme,
-        drug_factors_file: str = Defaults.drug_factors_file,
-        popu_factors_file: str = Defaults.popu_factors_file,
-        disease_state: str = Defaults.disease_state,
-        reset: bool = True,
+        config: typing.Optional[Config] = None,
         empty: bool = False,
         **kwargs,
     ) -> None:
 
+        if config is None:
+            config = Config()
+
+        self._config = config
+
         if empty:
             return
 
-        self._state_path = Path(outdir).joinpath("state.h5")
+        self._state_path = Path(config.outdir).joinpath("state.h5")
+        reset = not config.load_state
         if not reset and self._state_path.is_file():
             # Load state
             logger.info("Load previously saved state")
             coupling, ep_solver, mech_heart, t0 = io.load_state(
                 self._state_path,
-                drug_factors_file,
-                popu_factors_file,
-                disease_state,
+                config.drug_factors_file,
+                config.popu_factors_file,
+                config.disease_state,
             )
         else:
             logger.info("Create a new state")
             # Create a new state
-            coupling, ep_solver, mech_heart, t0 = setup_EM_model(
-                dx=dx,
-                dt=dt,
-                bnd_cond=bnd_cond,
-                cell_init_file=cell_init_file,
-                lx=lx,
-                ly=ly,
-                lz=lz,
-                pre_stretch=pre_stretch,
-                spring=spring,
-                traction=traction,
-                fix_right_plane=fix_right_plane,
-                num_refinements=num_refinements,
-                set_material=set_material,
-                drug_factors_file=drug_factors_file,
-                popu_factors_file=popu_factors_file,
-                disease_state=disease_state,
-                mech_scheme=mech_scheme,
-            )
+            coupling, ep_solver, mech_heart, t0 = setup_EM_model(config)
         self.coupling: em_model.EMCoupling = coupling
         self.ep_solver: cbcbeat.SplittingSolver = ep_solver
         self.mech_heart: mechanics_model.MechanicsProblem = mech_heart
         self._t0: float = t0
 
         self._reset = reset
-        self._dt = dt
-        self._bnd_cond = bnd_cond
 
         self._setup_assigners()
-        self.outdir = outdir
+        self.outdir = config.outdir
 
         logger.info(f"Starting at t0={self._t0}")
+
+    @property
+    def _dt(self):
+        return self._config.dt
+
+    @_dt.setter
+    def _dt(self, value):
+        self._config.dt = value
+
+    @property
+    def _bnd_cond(self):
+        return self._config.bnd_cond
+
+    @_bnd_cond.setter
+    def _bnd_cond(self, value):
+        self._config.bnd_cond = value
 
     @property
     def outdir(self):
@@ -392,6 +341,13 @@ class Runner:
         self._vs = self.ep_solver.solution_fields()[1]
         self._v, self._v_assigner = utils.setup_assigner(self._vs, 0)
         self._Ca, self._Ca_assigner = utils.setup_assigner(self._vs, 45)
+        self._XS, self._XS_assigner = utils.setup_assigner(self._vs, 40)
+        self._XW, self._XW_assigner = utils.setup_assigner(self._vs, 41)
+        self._CaTrpn, self._CaTrpn_assigner = utils.setup_assigner(self._vs, 42)
+        self._TmB, self._TmB_assigner = utils.setup_assigner(self._vs, 43)
+        self._Cd, self._Cd_assigner = utils.setup_assigner(self._vs, 44)
+        self._Zetas, self._Zetas_assigner = utils.setup_assigner(self._vs, 47)
+        self._Zetaw, self._Zetaw_assigner = utils.setup_assigner(self._vs, 48)
 
         self._pre_XS, self._preXS_assigner = utils.setup_assigner(self._vs, 40)
         self._pre_XW, self._preXW_assigner = utils.setup_assigner(self._vs, 41)
@@ -412,6 +368,13 @@ class Runner:
     def _assign_ep(self):
         self._v_assigner.assign(self._v, utils.sub_function(self._vs, 0))
         self._Ca_assigner.assign(self._Ca, utils.sub_function(self._vs, 45))
+        self._XS_assigner.assign(self._XS, utils.sub_function(self._vs, 40))
+        self._XW_assigner.assign(self._XW, utils.sub_function(self._vs, 41))
+        self._CaTrpn_assigner.assign(self._CaTrpn, utils.sub_function(self._vs, 42))
+        self._TmB_assigner.assign(self._TmB, utils.sub_function(self._vs, 43))
+        self._Cd_assigner.assign(self._Cd, utils.sub_function(self._vs, 44))
+        self._Zetas_assigner.assign(self._Zetas, utils.sub_function(self._vs, 47))
+        self._Zetaw_assigner.assign(self._Zetaw, utils.sub_function(self._vs, 48))
 
     def store(self):
         # Assign u, v and Ca for postprocessing
@@ -433,7 +396,18 @@ class Runner:
             ("ep", "V", self._v),
             ("ep", "Ca", self._Ca),
             ("mechanics", "lmbda", self.coupling.lmbda_mech),
-            ("mechanics", "Ta", self.mech_heart.material.active.Ta_current_cg1),
+            ("mechanics", "Ta", self.mech_heart.material.active.Ta_current),
+            ("ep", "XS", self._XS),
+            ("ep", "XW", self._XW),
+            ("ep", "CaTrpn", self._CaTrpn),
+            ("ep", "TmB", self._TmB),
+            ("ep", "Cd", self._Cd),
+            ("ep", "Zetas", self._Zetas),
+            ("ep", "Zetaw", self._Zetaw),
+            ("mechanics", "Zetas_mech", self.coupling.Zetas_mech),
+            ("mechanics", "Zetaw_mech", self.coupling.Zetaw_mech),
+            ("mechanics", "XS_mech", self.coupling.XS_mech),
+            ("mechanics", "XW_mech", self.coupling.XW_mech),
         ]:
             self.collector.register(group, name, f)
 
@@ -446,11 +420,12 @@ class Runner:
         # Update these states that are needed in the Mechanics solver
         self.coupling.ep_to_coupling()
 
-        XS_norm = utils.compute_norm(self.coupling.XS_ep, self._pre_XS)
-        XW_norm = utils.compute_norm(self.coupling.XW_ep, self._pre_XW)
+        # XS_norm = utils.compute_norm(self.coupling.XS_ep, self._pre_XS)
+        # XW_norm = utils.compute_norm(self.coupling.XW_ep, self._pre_XW)
 
         # dt for the mechanics model should not be larger than 1 ms
-        return (XS_norm + XW_norm >= 0.1) or self.dt_mechanics > 0.1
+        # return (XS_norm + XW_norm >= 0.05) #or self.dt_mechanics > 0.1
+        return True  # self._t <= 10.0 or max(self.coupling.XS_ep.vector()) >= 0.0005 or max(self.coupling.XW_ep.vector()) >= 0.002
 
     def _pre_mechanics_solve(self) -> None:
         self._preXS_assigner.assign(self._pre_XS, utils.sub_function(self._vs, 40))
@@ -468,7 +443,10 @@ class Runner:
 
     def _solve_mechanics(self):
         self._pre_mechanics_solve()
-        self.mech_heart.solve()
+        if self._config.mechanics_use_continuation:
+            self.mech_heart.solve_for_control(self.coupling.XS_ep)
+        else:
+            self.mech_heart.solve()
         # converged = False
 
         # current_t = float(self.mech_heart.material.active.t)
@@ -500,12 +478,18 @@ class Runner:
 
     def solve(
         self,
-        T: float = Defaults.T,
-        save_freq: int = Defaults.save_freq,
-        hpc: bool = Defaults.hpc,
+        T: float = Config.T,
+        save_freq: int = Config.save_freq,
+        hpc: bool = Config.hpc,
     ):
         if not hasattr(self, "_outdir"):
             raise RuntimeError("Please set the output directory")
+
+        # Truncate residual0 file if exists
+        if Path("residual.txt").is_file():
+            fr = open("residual.txt", "w")
+            fr.truncate(0)
+            fr.close()
 
         save_it = int(save_freq / self._dt)
         self.create_time_stepper(T, use_ns=True)
@@ -559,6 +543,15 @@ class Runner:
                 )
                 beat_nr += save_state_every_n_beat
 
+            # Residual file : End of line after each time step
+            if (
+                Path("residual.txt").is_file()
+                and dolfin.MPI.rank(dolfin.MPI.comm_world) == 0
+            ):
+                fr = open("residual.txt", "a")
+                fr.write("\n")
+                fr.close()
+
         io.save_state(
             self._state_path,
             solver=self.ep_solver,
@@ -568,6 +561,12 @@ class Runner:
             bnd_cond=self._bnd_cond,
             t0=TimeStepper.ns2ms(self.t),
         )
+
+        # Copy residual file to output dir (if exists)
+        if Path("residual.txt").is_file():
+            Path(self._outdir).joinpath("residual.txt").write_text(
+                Path("residual.txt").read_text(),
+            )
 
 
 class _tqdm:
@@ -687,7 +686,7 @@ class TimeStepper:
 
 def create_progressbar(
     time_stepper: TimeStepper,
-    hpc: bool = Defaults.hpc,
+    hpc: bool = Config.hpc,
 ):
     if hpc:
         # Turn off progressbar

@@ -5,10 +5,11 @@ from pathlib import Path
 import click
 import dolfin
 
+from . import land_model
 from . import mechanics_model
 from . import postprocess as post
 from . import utils
-from .setup_models import Defaults
+from .config import Config
 from .setup_models import Runner
 from .version import __version__
 
@@ -25,73 +26,73 @@ def cli():
 @click.option(
     "-o",
     "--outdir",
-    default=Defaults.outdir,
+    default=Config.outdir,
     type=click.Path(writable=True, resolve_path=True),
     help="Output directory",
 )
-@click.option("--dt", default=Defaults.dt, type=float, help="Time step")
+@click.option("--dt", default=Config.dt, type=float, help="Time step")
 @click.option(
     "-T",
     "--end-time",
     "T",
-    default=Defaults.T,
+    default=Config.T,
     type=float,
     help="End-time of simulation",
 )
 @click.option(
     "-n",
     "--num_refinements",
-    default=Defaults.num_refinements,
+    default=Config.num_refinements,
     type=int,
     help="Number of refinements of for the mesh using in the EP model",
 )
 @click.option(
     "--save_freq",
-    default=Defaults.save_freq,
+    default=Config.save_freq,
     type=int,
     help="Set frequency of saving results to file",
 )
 @click.option(
     "--set_material",
-    default=Defaults.set_material,
+    default=Config.set_material,
     type=str,
     help="Choose material properties for mechanics model (default is HolzapfelOgden, option is Guccione",
 )
-@click.option("-dx", default=Defaults.dx, type=float, help="Spatial discretization")
+@click.option("-dx", default=Config.dx, type=float, help="Spatial discretization")
 @click.option(
     "-lx",
-    default=Defaults.lx,
+    default=Config.lx,
     type=float,
     help="Size of mesh in x-direction",
 )
 @click.option(
     "-ly",
-    default=Defaults.ly,
+    default=Config.ly,
     type=float,
     help="Size of mesh in y-direction",
 )
 @click.option(
     "-lz",
-    default=Defaults.lz,
+    default=Config.lz,
     type=float,
     help="Size of mesh in z-direction",
 )
 @click.option(
     "--bnd_cond",
-    default=Defaults.bnd_cond,
+    default=Config.bnd_cond,
     type=click.Choice(mechanics_model.BoundaryConditions._member_names_),
     help="Boundary conditions for the mechanics problem",
 )
 @click.option(
     "--load_state",
     is_flag=True,
-    default=Defaults.load_state,
+    default=Config.load_state,
     help="If load existing state if exists, otherwise create a new state",
 )
 @click.option(
     "-IC",
     "--cell_init_file",
-    default=Defaults.cell_init_file,
+    default=Config.cell_init_file,
     type=str,
     help=(
         "Path to file containing initial conditions (json or h5 file). "
@@ -100,39 +101,51 @@ def cli():
 )
 @click.option(
     "--loglevel",
-    default=Defaults.loglevel,
+    default=Config.loglevel,
     type=int,
     help="How much printing. DEBUG: 10, INFO:20 (default), WARNING: 30",
 )
 @click.option(
     "--hpc",
     is_flag=True,
-    default=Defaults.hpc,
+    default=Config.hpc,
     help="Indicate if simulations runs on hpc. This turns off the progress bar.",
 )
 @click.option(
     "--drug_factors_file",
-    default=Defaults.drug_factors_file,
+    default=Config.drug_factors_file,
     type=str,
     help="Set drugs scaling factors (json file)",
 )
 @click.option(
     "--popu_factors_file",
-    default=Defaults.popu_factors_file,
+    default=Config.popu_factors_file,
     type=str,
     help="Set population scaling factors (json file)",
 )
 @click.option(
     "--disease_state",
-    default=Defaults.disease_state,
+    default=Config.disease_state,
     type=str,
     help="Indicate disease state. Default is healthy. ",
 )
 @click.option(
-    "--mech_scheme",
-    default=Defaults.mechanics_ode_scheme,
-    type=click.Choice(mechanics_model.Scheme._member_names_),
+    "--mechanics-ode-scheme",
+    default=Config.mechanics_ode_scheme,
+    type=click.Choice(land_model.Scheme._member_names_),
     help="Scheme used to solve the ODEs in the mechanics model",
+)
+@click.option(
+    "--mechanics-use-continuation",
+    default=Config.mechanics_use_continuation,
+    type=bool,
+    help="Use continuation based mechanics solver",
+)
+@click.option(
+    "--mechanics-use-custom-newton-solver",
+    default=Config.mechanics_use_custom_newton_solver,
+    type=bool,
+    help="Use custom newton solver and solve ODEs at each Newton iteration",
 )
 def run(
     outdir: utils.PathLike,
@@ -153,9 +166,12 @@ def run(
     drug_factors_file: str,
     popu_factors_file: str,
     disease_state: str,
-    mech_scheme: mechanics_model.Scheme,
+    mechanics_ode_scheme: land_model.Scheme,
+    mechanics_use_continuation: bool,
+    mechanics_use_custom_newton_solver: bool,
 ):
-    main(
+
+    config = Config(
         outdir=outdir,
         T=T,
         dx=dx,
@@ -174,8 +190,11 @@ def run(
         drug_factors_file=drug_factors_file,
         popu_factors_file=popu_factors_file,
         disease_state=disease_state,
-        mech_scheme=mech_scheme,
+        mechanics_ode_scheme=mechanics_ode_scheme,
+        mechanics_use_continuation=mechanics_use_continuation,
+        mechanics_use_custom_newton_solver=mechanics_use_custom_newton_solver,
     )
+    main(config=config)
 
 
 @click.command("run-json")
@@ -184,38 +203,17 @@ def run_json(path):
     with open(path, "r") as json_file:
         data = json.load(json_file)
 
-    main(**data)
+    main(Config(**data))
 
 
-def main(
-    outdir: utils.PathLike = Defaults.outdir,
-    T: float = Defaults.T,
-    dx: float = Defaults.dx,
-    dt: float = Defaults.dt,
-    cell_init_file: utils.PathLike = Defaults.cell_init_file,
-    lx: float = Defaults.lx,
-    ly: float = Defaults.ly,
-    lz: float = Defaults.lz,
-    pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
-    traction: typing.Union[dolfin.Constant, float] = None,
-    spring: typing.Union[dolfin.Constant, float] = None,
-    fix_right_plane: bool = True,
-    num_refinements: int = Defaults.num_refinements,
-    set_material: str = Defaults.set_material,
-    bnd_cond: mechanics_model.BoundaryConditions = Defaults.bnd_cond,
-    load_state: bool = Defaults.load_state,
-    hpc: bool = Defaults.hpc,
-    save_freq: int = Defaults.save_freq,
-    loglevel: int = Defaults.loglevel,
-    drug_factors_file: str = Defaults.drug_factors_file,
-    popu_factors_file: str = Defaults.popu_factors_file,
-    disease_state: str = Defaults.disease_state,
-    mech_scheme: mechanics_model.Scheme = Defaults.mechanics_ode_scheme,
-):
+def main(config: typing.Optional[Config]):
+
+    if config is None:
+        config = Config()
 
     # Get all arguments and dump them to a json file
-    info_dict = locals()
-    outdir = Path(outdir)
+    info_dict = config.__dict__
+    outdir = Path(config.outdir)
     outdir.mkdir(exist_ok=True)
     with open(outdir.joinpath("parameters.json"), "w") as f:
         json.dump(info_dict, f)
@@ -223,32 +221,12 @@ def main(
     # Disable warnings
     from . import set_log_level
 
-    set_log_level(loglevel)
-    dolfin.set_log_level(loglevel + 10)  # TODO: Make it possible to set this?
+    set_log_level(config.loglevel)
+    dolfin.set_log_level(config.loglevel + 10)  # TODO: Make it possible to set this?
 
-    runner = Runner(
-        dx=dx,
-        dt=dt,
-        bnd_cond=bnd_cond,
-        cell_init_file=cell_init_file,
-        lx=lx,
-        ly=ly,
-        lz=lz,
-        pre_stretch=pre_stretch,
-        spring=spring,
-        traction=traction,
-        fix_right_plane=fix_right_plane,
-        num_refinements=num_refinements,
-        set_material=set_material,
-        drug_factors_file=drug_factors_file,
-        popu_factors_file=popu_factors_file,
-        disease_state=disease_state,
-        outdir=outdir,
-        mech_scheme=mech_scheme,
-        reset=not load_state,
-    )
+    runner = Runner(config=config)
 
-    runner.solve(T=T, save_freq=save_freq, hpc=hpc)
+    runner.solve(T=config.T, save_freq=config.save_freq, hpc=config.hpc)
 
 
 @click.command("postprocess")

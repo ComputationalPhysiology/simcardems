@@ -283,6 +283,7 @@ def plot_peaks(fname, data, threshold):
 
 def plot_state_traces(results_file):
     fig, ax = plt.subplots(2, 2, figsize=(10, 8), sharex=True)
+    fig2, ax2 = plt.subplots(2, 4, figsize=(10, 8), sharex=True)
     results_file = Path(results_file)
     if not results_file.is_file():
         raise FileNotFoundError(f"File {results_file} does not exist")
@@ -292,7 +293,10 @@ def plot_state_traces(results_file):
     loader = DataLoader(results_file)
     bnd = {"ep": Boundary(loader.ep_mesh), "mechanics": Boundary(loader.mech_mesh)}
 
-    all_names = {"mechanics": ["lmbda", "Ta"], "ep": ["V", "Ca"]}
+    all_names = {
+        "mechanics": ["lmbda", "Ta", "Zetas_mech", "Zetaw_mech", "XS_mech", "XW_mech"],
+        "ep": ["V", "Ca", "XS", "XW", "CaTrpn", "TmB", "Cd", "Zetas", "Zetaw"],
+    }
 
     values = {
         group: {name: np.zeros(len(loader.time_stamps)) for name in names}
@@ -347,7 +351,144 @@ def plot_state_traces(results_file):
             max(1.1, max(values["mechanics"]["lmbda"][1:])),
         ],
     )
-    fig.savefig(outdir.joinpath("state_traces.png"), dpi=300)
+
+    ax2[0, 0].plot(times, values["ep"]["XS"], linestyle="solid", color="blue")
+    ax2[0, 0].plot(
+        times,
+        values["mechanics"]["XS_mech"],
+        linestyle="dotted",
+        color="orange",
+    )
+    ax2[0, 1].plot(times, values["ep"]["CaTrpn"], linestyle="solid", color="blue")
+    ax2[0, 2].plot(times, values["ep"]["TmB"], linestyle="solid", color="blue")
+    ax2[0, 3].plot(times, values["ep"]["Zetas"], linestyle="solid", color="blue")
+    ax2[0, 3].plot(
+        times,
+        values["mechanics"]["Zetas_mech"],
+        linestyle="dotted",
+        color="orange",
+    )
+    ax2[1, 0].plot(times, values["ep"]["XW"], linestyle="solid", color="blue")
+    ax2[1, 0].plot(
+        times,
+        values["mechanics"]["XW_mech"],
+        linestyle="dotted",
+        color="orange",
+    )
+    ax2[1, 1].plot(times, values["ep"]["Cd"], linestyle="solid", color="blue")
+    ax2[1, 3].plot(times, values["ep"]["Zetaw"], linestyle="solid", color="blue")
+    ax2[1, 3].plot(
+        times,
+        values["mechanics"]["Zetaw_mech"],
+        linestyle="dotted",
+        color="orange",
+    )
+
+    ax2[0, 0].set_title("XS")
+    ax2[0, 1].set_title("CaTrpn")
+    ax2[0, 2].set_title("TmB")
+    ax2[0, 3].set_title("Zetas")
+    ax2[1, 0].set_title("XW")
+    ax2[1, 1].set_title("Cd")
+    # ax2[1, 2].set_title("")
+    ax2[1, 3].set_title("Zetaw")
+    for axi in ax2.flatten():
+        axi.grid()
+        if False:
+            axi.set_xlim([0, 5000])
+    ax2[1, 0].set_xlabel("Time [ms]")
+    ax2[1, 1].set_xlabel("Time [ms]")
+    ax2[1, 2].set_xlabel("Time [ms]")
+    ax2[1, 3].set_xlabel("Time [ms]")
+
+    # If there is a residual.txt file: load and plot these results
+    if outdir.joinpath("residual.txt").is_file():
+        residual0 = np.loadtxt(outdir.joinpath("residual.txt"), usecols=0)
+
+        residual_file = open(outdir.joinpath("residual.txt"), "r")
+        residual_data = residual_file.readlines()
+        residualN = []
+        for line in residual_data:
+            residualN.append(float(line.strip().split("\t")[-1]))
+        residual_file.close()
+
+        # Back to initial dt and time points
+        dt = 0.05
+        times_dt = np.arange(times[0], times[0] + residual0.size * dt, dt)
+
+        ax00r = ax[0, 0].twinx()
+        ax00r.plot(
+            times_dt,
+            residualN,
+            "--",
+            color="lightcoral",
+            label="Newton residualN",
+        )
+        ax00r.yaxis.set_ticks([min(residualN), max(residualN)])
+        ax01r = ax[0, 1].twinx()
+        ax01r.plot(
+            times_dt,
+            residualN,
+            "--",
+            color="lightcoral",
+            label="Newton residualN",
+        )
+        ax01r.yaxis.set_ticks([min(residualN), max(residualN)])
+        ax01r.set_ylabel("Newton residual N")
+        ax10r = ax[1, 0].twinx()
+        ax10r.plot(
+            times_dt,
+            residualN,
+            "--",
+            color="lightcoral",
+            label="Newton residualN",
+        )
+        ax10r.yaxis.set_ticks([min(residualN), max(residualN)])
+        ax11r = ax[1, 1].twinx()
+        ax11r.plot(
+            times_dt,
+            residualN,
+            "--",
+            color="lightcoral",
+            label="Newton residualN",
+        )
+        ax11r.yaxis.set_ticks([min(residualN), max(residualN)])
+        ax11r.set_ylabel("Newton residual N")
+        fig.tight_layout()
+
+        ax200r = ax2[0, 0].twinx()
+        ax200r.plot(times_dt, residual0, "--", color="grey", label="Newton residual")
+        ax201r = ax2[0, 1].twinx()
+        ax201r.plot(times_dt, residual0, "--", color="grey", label="Newton residual")
+        ax202r = ax2[0, 2].twinx()
+        ax202r.plot(times_dt, residual0, "--", color="grey", label="Newton residual")
+        ax203r = ax2[0, 3].twinx()
+        ax203r.plot(times_dt, residual0, "--", color="grey", label="Newton residual")
+        ax203r.set_ylabel("Newton residual 0")
+        ax210r = ax2[1, 0].twinx()
+        ax210r.plot(times_dt, residual0, "--", color="grey", label="Newton residual")
+        ax211r = ax2[1, 1].twinx()
+        ax211r.plot(times_dt, residual0, "--", color="grey", label="Newton residual")
+        ax213r = ax2[1, 3].twinx()
+        ax213r.plot(times_dt, residual0, "--", color="grey", label="Newton residual")
+        ax213r.set_ylabel("Newton residual 0")
+        fig2.tight_layout()
+
+        # Create and save figure with Newton residual of first and last iteration
+        figNR, axNR = plt.subplots(1, 1)
+        axNRr = axNR.twinx()
+        axNR.plot(times_dt, residual0, color="grey", label="First res")
+        axNRr.plot(times_dt, residualN, color="lightcoral", label="Last residual")
+        axNR.set_xlabel("Time (ms)")
+        axNR.set_ylabel("Residual 1st Newton iter.")
+        axNRr.set_ylabel("Residual last Newton iter.")
+        axNR.legend(loc="upper left")
+        axNRr.legend(loc="upper right")
+        # figNR.tight_layout()
+        figNR.savefig(outdir.joinpath("NewtonResidual.png"), dpi=300)
+
+    fig.savefig(outdir.joinpath("state_traces_center.png"), dpi=300)
+    fig2.savefig(outdir.joinpath("state_mech_traces_center.png"), dpi=300)
 
 
 def make_xdmffiles(results_file):
@@ -363,9 +504,12 @@ def make_xdmffiles(results_file):
                 outdir.joinpath(f"{group}_{name}.xdmf").as_posix(),
             )
             logger.info(f"Save {name}")
-            for t in tqdm.tqdm(loader.time_stamps):
-                f = loader.get(group, name, t)
-                xdmf.write(f, float(t))
+            try:
+                for t in tqdm.tqdm(loader.time_stamps):
+                    f = loader.get(group, name, t)
+                    xdmf.write(f, float(t))
+            except RuntimeError:
+                logger.info(f"Could not save {name}")
 
 
 def plot_population(dict, outdir, num_models, reset_time=True):
@@ -526,6 +670,13 @@ def save_popu_json(population_folder, num_models):
                 "Ta": [],
                 "lmbda": [],
                 "u": [],
+                "XS": [],
+                "XW": [],
+                "CaTrpn": [],
+                "TmB": [],
+                "Cd": [],
+                "Zetas": [],
+                "Zetaw": [],
             }
 
             # Save times to dictionary
@@ -536,7 +687,10 @@ def save_popu_json(population_folder, num_models):
                 "mechanics": Boundary(loader.mech_mesh),
             }
 
-            all_names = {"mechanics": ["lmbda", "Ta", "u"], "ep": ["V", "Ca"]}
+            all_names = {
+                "mechanics": ["lmbda", "Ta", "u"],
+                "ep": ["V", "Ca", "XS", "XW", "CaTrpn", "TmB", "Cd", "Zetas", "Zetaw"],
+            }
 
             # Fill arrays with data from file
             for i, t in enumerate(loader.time_stamps):

@@ -84,11 +84,16 @@ def test_save_and_load_state(
         cell_params=cell_params,
     )
 
-    # Save some non-zero values
-    t0 = 1.0
-    ep_solver.vs.vector()[:] = 1.0
-    ep_solver.vs_.vector()[:] = 1.0
-    mech_heart.state.vector()[:] = 1.0
+    runner = simcardems.setup_models.Runner.from_models(
+        coupling=coupling,
+        ep_solver=ep_solver,
+        mech_heart=mech_heart,
+    )
+    runner.outdir = "dummy_folder"
+
+    t0 = 0.0
+    t1 = 0.2
+    runner.solve(t1)
 
     # Translate these value to the coupling object
     coupling.ep_to_coupling()
@@ -157,13 +162,16 @@ def test_load_state_with_new_parameters_uses_new_parameters(
         cell_params=cell_params,
     )
 
-    # Save some non-zero values
-    t0 = 1.0
-    ep_solver.vs.vector()[:] = 1.0
-    ep_solver.vs_.vector()[:] = 1.0
-    coupling.XS_mech.vector()[:] = 1.0
-    coupling.XW_mech.vector()[:] = 1.0
-    mech_heart.state.vector()[:] = 1.0
+    # Save some non-zero values - just run the model
+    runner = simcardems.setup_models.Runner.from_models(
+        coupling=coupling,
+        ep_solver=ep_solver,
+        mech_heart=mech_heart,
+    )
+    runner.outdir = "dummy_folder"
+
+    t0 = 0.2
+    runner.solve(t0)
 
     slf.save_state(
         dummyfile,
