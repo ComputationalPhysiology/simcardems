@@ -259,247 +259,66 @@
 
 <span class="kn">import</span> <span class="nn">dolfin</span>
 <span class="kn">import</span> <span class="nn">pulse</span>
-<span class="kn">import</span> <span class="nn">ufl</span>
 <span class="kn">from</span> <span class="nn">mpi4py</span> <span class="kn">import</span> <span class="n">MPI</span>
 
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">utils</span>
+<span class="kn">from</span> <span class="nn">.newton_solver</span> <span class="kn">import</span> <span class="n">MechanicsNewtonSolver</span>
+<span class="kn">from</span> <span class="nn">.newton_solver</span> <span class="kn">import</span> <span class="n">MechanicsNewtonSolver_ODE</span>
+
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="BoundaryConditions"><a class="viewcode-back" href="../../simcardems.html#simcardems.mechanics_model.BoundaryConditions">[docs]</a><span class="k">class</span> <span class="nc">BoundaryConditions</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+<div class="viewcode-block" id="BoundaryConditions"><a class="viewcode-back" href="../../simcardems.html#simcardems.config.BoundaryConditions">[docs]</a><span class="k">class</span> <span class="nc">BoundaryConditions</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
     <span class="n">dirichlet</span> <span class="o">=</span> <span class="s2">&quot;dirichlet&quot;</span>
     <span class="n">rigid</span> <span class="o">=</span> <span class="s2">&quot;rigid&quot;</span></div>
 
 
-<div class="viewcode-block" id="Scheme"><a class="viewcode-back" href="../../simcardems.html#simcardems.mechanics_model.Scheme">[docs]</a><span class="k">class</span> <span class="nc">Scheme</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
-    <span class="n">fd</span> <span class="o">=</span> <span class="s2">&quot;fd&quot;</span>
-    <span class="n">bd</span> <span class="o">=</span> <span class="s2">&quot;bd&quot;</span>
-    <span class="n">analytic</span> <span class="o">=</span> <span class="s2">&quot;analytic&quot;</span></div>
+<div class="viewcode-block" id="ContinuationBasedMechanicsProblem"><a class="viewcode-back" href="../../simcardems.html#simcardems.config.ContinuationBasedMechanicsProblem">[docs]</a><span class="k">class</span> <span class="nc">ContinuationBasedMechanicsProblem</span><span class="p">(</span><span class="n">pulse</span><span class="o">.</span><span class="n">MechanicsProblem</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_use_custom_newton_solver</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;use_custom_newton_solver&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">old_states</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">old_controls</span> <span class="o">=</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="ContinuationBasedMechanicsProblem.solve"><a class="viewcode-back" href="../../simcardems.html#simcardems.config.ContinuationBasedMechanicsProblem.solve">[docs]</a>    <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_forms</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ContinuationBasedMechanicsProblem.solve_for_control"><a class="viewcode-back" href="../../simcardems.html#simcardems.config.ContinuationBasedMechanicsProblem.solve_for_control">[docs]</a>    <span class="k">def</span> <span class="nf">solve_for_control</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">control</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Solve with a continuation step for</span>
+<span class="sd">        better initial guess for the Newton solver</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">old_controls</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="c1"># Find a better initial guess for the solver</span>
+            <span class="n">c0</span><span class="p">,</span> <span class="n">c1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">old_controls</span>
+            <span class="n">s0</span><span class="p">,</span> <span class="n">s1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">old_states</span>
+
+            <span class="n">denominator</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">assemble</span><span class="p">((</span><span class="n">c1</span> <span class="o">-</span> <span class="n">c0</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">dx</span><span class="p">)</span>
+            <span class="n">max_denom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">mpi_comm</span><span class="p">()</span><span class="o">.</span><span class="n">allreduce</span><span class="p">(</span><span class="n">denominator</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="n">MPI</span><span class="o">.</span><span class="n">MAX</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">max_denom</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">:</span>
+                <span class="n">numerator</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">assemble</span><span class="p">((</span><span class="n">control</span> <span class="o">-</span> <span class="n">c0</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">dx</span><span class="p">)</span>
+                <span class="n">delta</span> <span class="o">=</span> <span class="n">numerator</span> <span class="o">/</span> <span class="n">denominator</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">zero</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">axpy</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">delta</span><span class="p">,</span> <span class="n">s0</span><span class="o">.</span><span class="n">vector</span><span class="p">())</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">axpy</span><span class="p">(</span><span class="n">delta</span><span class="p">,</span> <span class="n">s1</span><span class="o">.</span><span class="n">vector</span><span class="p">())</span>
+
+                <span class="c1"># Keep track of the newest state</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">old_controls</span> <span class="o">=</span> <span class="p">[</span><span class="n">c1</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">old_states</span> <span class="o">=</span> <span class="p">[</span><span class="n">s1</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Keep track of the old state</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">old_controls</span> <span class="o">=</span> <span class="p">[</span><span class="n">c0</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">old_states</span> <span class="o">=</span> <span class="p">[</span><span class="n">s0</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">old_states</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">deepcopy</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">old_controls</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">control</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">deepcopy</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span></div></div>
 
 
-<span class="k">def</span> <span class="nf">_Zeta</span><span class="p">(</span><span class="n">Zeta_prev</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">dLambda</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">scheme</span><span class="p">:</span> <span class="n">Scheme</span><span class="p">):</span>
-
-    <span class="k">if</span> <span class="n">scheme</span> <span class="o">==</span> <span class="n">Scheme</span><span class="o">.</span><span class="n">analytic</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">Zeta_prev</span> <span class="o">*</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">c</span> <span class="o">*</span> <span class="n">dt</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">A</span> <span class="o">*</span> <span class="n">dLambda</span> <span class="o">/</span> <span class="n">c</span> <span class="o">*</span> <span class="n">dt</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span>
-            <span class="mi">1</span> <span class="o">-</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">c</span> <span class="o">*</span> <span class="n">dt</span><span class="p">)</span>
-        <span class="p">)</span>
-
-    <span class="k">elif</span> <span class="n">scheme</span> <span class="o">==</span> <span class="n">Scheme</span><span class="o">.</span><span class="n">bd</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">Zeta_prev</span> <span class="o">+</span> <span class="n">A</span> <span class="o">*</span> <span class="n">dLambda</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">c</span> <span class="o">*</span> <span class="n">dt</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">Zeta_prev</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">c</span> <span class="o">*</span> <span class="n">dt</span><span class="p">)</span> <span class="o">+</span> <span class="n">A</span> <span class="o">*</span> <span class="n">dLambda</span>
-
-
-<div class="viewcode-block" id="LandModel"><a class="viewcode-back" href="../../simcardems.html#simcardems.mechanics_model.LandModel">[docs]</a><span class="k">class</span> <span class="nc">LandModel</span><span class="p">(</span><span class="n">pulse</span><span class="o">.</span><span class="n">ActiveModel</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">XS</span><span class="p">,</span>
-        <span class="n">XW</span><span class="p">,</span>
-        <span class="n">parameters</span><span class="p">,</span>
-        <span class="n">mesh</span><span class="p">,</span>
-        <span class="n">Zetas</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">Zetaw</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">f0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">s0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">n0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">eta</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-        <span class="n">scheme</span><span class="p">:</span> <span class="n">Scheme</span> <span class="o">=</span> <span class="n">Scheme</span><span class="o">.</span><span class="n">analytic</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-    <span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">f0</span><span class="o">=</span><span class="n">f0</span><span class="p">,</span> <span class="n">s0</span><span class="o">=</span><span class="n">s0</span><span class="p">,</span> <span class="n">n0</span><span class="o">=</span><span class="n">n0</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_eta</span> <span class="o">=</span> <span class="n">eta</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">function_space</span> <span class="o">=</span> <span class="n">pulse</span><span class="o">.</span><span class="n">QuadratureSpace</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">degree</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">XS</span> <span class="o">=</span> <span class="n">XS</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">XW</span> <span class="o">=</span> <span class="n">XW</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span> <span class="o">=</span> <span class="n">parameters</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_t</span> <span class="o">=</span> <span class="mf">0.0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_t_prev</span> <span class="o">=</span> <span class="mf">0.0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_scheme</span> <span class="o">=</span> <span class="n">scheme</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">_dLambda</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">function_space</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">lmbda_prev</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">function_space</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">lmbda</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">function_space</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">_Zetas</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">function_space</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Zetas_prev</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">function_space</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">Zetas</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Zetas_prev</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">Zetas</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">_Zetaw</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">function_space</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Zetaw_prev</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">function_space</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">Zetaw</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Zetaw_prev</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">Zetaw</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">V_cg1</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">FunctionSpace</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="s2">&quot;CG&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Ta_current</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">function_space</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Ta&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Ta_current_cg1</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">V_cg1</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Ta&quot;</span><span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">dLambda</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_dLambda</span><span class="o">.</span><span class="n">vector</span><span class="p">()[:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lmbda</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">lmbda_prev</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dLambda</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">Aw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">Tot_A</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;Tot_A&quot;</span><span class="p">]</span>
-        <span class="n">rs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;rs&quot;</span><span class="p">]</span>
-        <span class="n">rw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;rw&quot;</span><span class="p">]</span>
-        <span class="n">scale_popu_rw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;scale_popu_rw&quot;</span><span class="p">]</span>
-        <span class="n">scale_popu_rs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;scale_popu_rs&quot;</span><span class="p">]</span>
-        <span class="k">return</span> <span class="p">(</span>
-            <span class="n">Tot_A</span>
-            <span class="o">*</span> <span class="n">rs</span>
-            <span class="o">*</span> <span class="n">scale_popu_rs</span>
-            <span class="o">/</span> <span class="p">(</span><span class="n">rs</span> <span class="o">*</span> <span class="n">scale_popu_rs</span> <span class="o">+</span> <span class="n">rw</span> <span class="o">*</span> <span class="n">scale_popu_rw</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">rs</span> <span class="o">*</span> <span class="n">scale_popu_rs</span><span class="p">)))</span>
-        <span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">As</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">Aw</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">cw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">phi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;phi&quot;</span><span class="p">]</span>
-        <span class="n">kuw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;kuw&quot;</span><span class="p">]</span>
-        <span class="n">rw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;rw&quot;</span><span class="p">]</span>
-
-        <span class="n">scale_popu_kuw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;scale_popu_kuw&quot;</span><span class="p">]</span>
-        <span class="n">scale_popu_rw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;scale_popu_rw&quot;</span><span class="p">]</span>
-        <span class="k">return</span> <span class="p">(</span>
-            <span class="n">kuw</span>
-            <span class="o">*</span> <span class="n">scale_popu_kuw</span>
-            <span class="o">*</span> <span class="n">phi</span>
-            <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">rw</span> <span class="o">*</span> <span class="n">scale_popu_rw</span><span class="p">))</span>
-            <span class="o">/</span> <span class="p">(</span><span class="n">rw</span> <span class="o">*</span> <span class="n">scale_popu_rw</span><span class="p">)</span>
-        <span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">cs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">phi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;phi&quot;</span><span class="p">]</span>
-        <span class="n">kws</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;kws&quot;</span><span class="p">]</span>
-        <span class="n">rs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;rs&quot;</span><span class="p">]</span>
-        <span class="n">rw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;rw&quot;</span><span class="p">]</span>
-        <span class="n">scale_popu_kws</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;scale_popu_kws&quot;</span><span class="p">]</span>
-        <span class="n">scale_popu_rw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;scale_popu_rw&quot;</span><span class="p">]</span>
-        <span class="n">scale_popu_rs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;scale_popu_rs&quot;</span><span class="p">]</span>
-        <span class="k">return</span> <span class="p">(</span>
-            <span class="n">kws</span>
-            <span class="o">*</span> <span class="n">scale_popu_kws</span>
-            <span class="o">*</span> <span class="n">phi</span>
-            <span class="o">*</span> <span class="n">rw</span>
-            <span class="o">*</span> <span class="n">scale_popu_rw</span>
-            <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">rs</span> <span class="o">*</span> <span class="n">scale_popu_rs</span><span class="p">))</span>
-            <span class="o">/</span> <span class="p">(</span><span class="n">rs</span> <span class="o">*</span> <span class="n">scale_popu_rs</span><span class="p">)</span>
-        <span class="p">)</span>
-
-<div class="viewcode-block" id="LandModel.update_Zetas"><a class="viewcode-back" href="../../simcardems.html#simcardems.mechanics_model.LandModel.update_Zetas">[docs]</a>    <span class="k">def</span> <span class="nf">update_Zetas</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_Zetas</span><span class="o">.</span><span class="n">vector</span><span class="p">()[:]</span> <span class="o">=</span> <span class="n">_Zeta</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Zetas_prev</span><span class="o">.</span><span class="n">vector</span><span class="p">(),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">As</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">cs</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">dLambda</span><span class="o">.</span><span class="n">vector</span><span class="p">(),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_scheme</span><span class="p">,</span>
-        <span class="p">)</span></div>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">Zetas</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Zetas</span>
-
-<div class="viewcode-block" id="LandModel.update_Zetaw"><a class="viewcode-back" href="../../simcardems.html#simcardems.mechanics_model.LandModel.update_Zetaw">[docs]</a>    <span class="k">def</span> <span class="nf">update_Zetaw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_Zetaw</span><span class="o">.</span><span class="n">vector</span><span class="p">()[:]</span> <span class="o">=</span> <span class="n">_Zeta</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Zetaw_prev</span><span class="o">.</span><span class="n">vector</span><span class="p">(),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Aw</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">cw</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">dLambda</span><span class="o">.</span><span class="n">vector</span><span class="p">(),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_scheme</span><span class="p">,</span>
-        <span class="p">)</span></div>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">Zetaw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Zetaw</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">.setup_models</span> <span class="kn">import</span> <span class="n">TimeStepper</span>
-
-        <span class="k">return</span> <span class="n">TimeStepper</span><span class="o">.</span><span class="n">ns2ms</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_t_prev</span><span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">t</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_t</span>
-
-<div class="viewcode-block" id="LandModel.start_time"><a class="viewcode-back" href="../../simcardems.html#simcardems.mechanics_model.LandModel.start_time">[docs]</a>    <span class="k">def</span> <span class="nf">start_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_t_prev</span> <span class="o">=</span> <span class="n">t</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_t</span> <span class="o">=</span> <span class="n">t</span></div>
-
-<div class="viewcode-block" id="LandModel.update_time"><a class="viewcode-back" href="../../simcardems.html#simcardems.mechanics_model.LandModel.update_time">[docs]</a>    <span class="k">def</span> <span class="nf">update_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_t_prev</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_t</span> <span class="o">=</span> <span class="n">t</span></div>
-
-<div class="viewcode-block" id="LandModel.update_prev"><a class="viewcode-back" href="../../simcardems.html#simcardems.mechanics_model.LandModel.update_prev">[docs]</a>    <span class="k">def</span> <span class="nf">update_prev</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Zetas_prev</span><span class="o">.</span><span class="n">vector</span><span class="p">()[:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Zetas</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Zetaw_prev</span><span class="o">.</span><span class="n">vector</span><span class="p">()[:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Zetaw</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">lmbda_prev</span><span class="o">.</span><span class="n">vector</span><span class="p">()[:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lmbda</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Ta_current</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span>
-            <span class="n">dolfin</span><span class="o">.</span><span class="n">project</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">Ta</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">function_space</span><span class="p">,</span>
-                <span class="n">form_compiler_parameters</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;representation&quot;</span><span class="p">:</span> <span class="s2">&quot;quadrature&quot;</span><span class="p">},</span>
-            <span class="p">),</span>
-        <span class="p">)</span>
-        <span class="n">utils</span><span class="o">.</span><span class="n">local_project</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Ta_current</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">V_cg1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ta_current_cg1</span><span class="p">)</span></div>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">Ta</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">Tref</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;Tref&quot;</span><span class="p">]</span>
-        <span class="n">rs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;rs&quot;</span><span class="p">]</span>
-        <span class="n">scale_popu_Tref</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;scale_popu_Tref&quot;</span><span class="p">]</span>
-        <span class="n">scale_popu_rs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;scale_popu_rs&quot;</span><span class="p">]</span>
-        <span class="n">Beta0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;Beta0&quot;</span><span class="p">]</span>
-
-        <span class="n">_min</span> <span class="o">=</span> <span class="n">ufl</span><span class="o">.</span><span class="n">min_value</span>
-        <span class="n">_max</span> <span class="o">=</span> <span class="n">ufl</span><span class="o">.</span><span class="n">max_value</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lmbda</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
-            <span class="n">_min</span> <span class="o">=</span> <span class="nb">min</span>
-            <span class="n">_max</span> <span class="o">=</span> <span class="nb">max</span>
-        <span class="n">lmbda</span> <span class="o">=</span> <span class="n">_min</span><span class="p">(</span><span class="mf">1.2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lmbda</span><span class="p">)</span>
-        <span class="n">h_lambda_prima</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">Beta0</span> <span class="o">*</span> <span class="p">(</span><span class="n">lmbda</span> <span class="o">+</span> <span class="n">_min</span><span class="p">(</span><span class="n">lmbda</span><span class="p">,</span> <span class="mf">0.87</span><span class="p">)</span> <span class="o">-</span> <span class="mf">1.87</span><span class="p">)</span>
-        <span class="n">h_lambda</span> <span class="o">=</span> <span class="n">_max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">h_lambda_prima</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="p">(</span>
-            <span class="n">h_lambda</span>
-            <span class="o">*</span> <span class="p">(</span><span class="n">Tref</span> <span class="o">*</span> <span class="n">scale_popu_Tref</span> <span class="o">/</span> <span class="p">(</span><span class="n">rs</span> <span class="o">*</span> <span class="n">scale_popu_rs</span><span class="p">))</span>
-            <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">XS</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Zetas</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">XW</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Zetaw</span><span class="p">)</span>
-        <span class="p">)</span>
-
-<div class="viewcode-block" id="LandModel.Wactive"><a class="viewcode-back" href="../../simcardems.html#simcardems.mechanics_model.LandModel.Wactive">[docs]</a>    <span class="k">def</span> <span class="nf">Wactive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Active stress energy&quot;&quot;&quot;</span>
-
-        <span class="n">C</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">F</span>
-        <span class="n">f</span> <span class="o">=</span> <span class="n">F</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">f0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">lmbda</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span>
-            <span class="n">dolfin</span><span class="o">.</span><span class="n">project</span><span class="p">(</span>
-                <span class="n">dolfin</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">f</span><span class="o">**</span><span class="mi">2</span><span class="p">),</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">function_space</span><span class="p">,</span>
-                <span class="n">form_compiler_parameters</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;representation&quot;</span><span class="p">:</span> <span class="s2">&quot;quadrature&quot;</span><span class="p">},</span>
-            <span class="p">),</span>
-        <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">update_Zetas</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">update_Zetaw</span><span class="p">()</span>
-
-        <span class="k">return</span> <span class="n">pulse</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">active_model</span><span class="o">.</span><span class="n">Wactive_transversally</span><span class="p">(</span>
-            <span class="n">Ta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Ta</span><span class="p">,</span>
-            <span class="n">C</span><span class="o">=</span><span class="n">C</span><span class="p">,</span>
-            <span class="n">f0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">f0</span><span class="p">,</span>
-            <span class="n">eta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">eta</span><span class="p">,</span>
-        <span class="p">)</span></div></div>
-
-
-<div class="viewcode-block" id="MechanicsProblem"><a class="viewcode-back" href="../../simcardems.html#simcardems.mechanics_model.MechanicsProblem">[docs]</a><span class="k">class</span> <span class="nc">MechanicsProblem</span><span class="p">(</span><span class="n">pulse</span><span class="o">.</span><span class="n">MechanicsProblem</span><span class="p">):</span>
+<div class="viewcode-block" id="MechanicsProblem"><a class="viewcode-back" href="../../simcardems.html#simcardems.config.MechanicsProblem">[docs]</a><span class="k">class</span> <span class="nc">MechanicsProblem</span><span class="p">(</span><span class="n">ContinuationBasedMechanicsProblem</span><span class="p">):</span>
     <span class="n">boundary_condition</span> <span class="o">=</span> <span class="n">BoundaryConditions</span><span class="o">.</span><span class="n">dirichlet</span>
 
     <span class="k">def</span> <span class="nf">_init_spaces</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -523,13 +342,13 @@
         <span class="n">u</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>
 
         <span class="c1"># Some mechanical quantities</span>
-        <span class="n">F</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">variable</span><span class="p">(</span><span class="n">pulse</span><span class="o">.</span><span class="n">DeformationGradient</span><span class="p">(</span><span class="n">u</span><span class="p">))</span>
-        <span class="n">J</span> <span class="o">=</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Jacobian</span><span class="p">(</span><span class="n">F</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_F</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">variable</span><span class="p">(</span><span class="n">pulse</span><span class="o">.</span><span class="n">DeformationGradient</span><span class="p">(</span><span class="n">u</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_J</span> <span class="o">=</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Jacobian</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_F</span><span class="p">)</span>
         <span class="n">dx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">dx</span>
 
         <span class="n">internal_energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">strain_energy</span><span class="p">(</span>
-            <span class="n">F</span><span class="p">,</span>
-        <span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">compressibility</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">J</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_F</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">compressibility</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_J</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_virtual_work</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">derivative</span><span class="p">(</span>
             <span class="n">internal_energy</span> <span class="o">*</span> <span class="n">dx</span><span class="p">,</span>
@@ -545,15 +364,37 @@
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_init_solver</span><span class="p">()</span>
 
-<div class="viewcode-block" id="MechanicsProblem.solve"><a class="viewcode-back" href="../../simcardems.html#simcardems.mechanics_model.MechanicsProblem.solve">[docs]</a>    <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_init_forms</span><span class="p">()</span>
-        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span></div>
+    <span class="k">def</span> <span class="nf">_init_solver</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_problem</span> <span class="o">=</span> <span class="n">pulse</span><span class="o">.</span><span class="n">NonlinearProblem</span><span class="p">(</span>
+            <span class="n">J</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_jacobian</span><span class="p">,</span>
+            <span class="n">F</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_virtual_work</span><span class="p">,</span>
+            <span class="n">bcs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dirichlet_bc</span><span class="p">,</span>
+        <span class="p">)</span>
 
-<div class="viewcode-block" id="MechanicsProblem.update_lmbda_prev"><a class="viewcode-back" href="../../simcardems.html#simcardems.mechanics_model.MechanicsProblem.update_lmbda_prev">[docs]</a>    <span class="k">def</span> <span class="nf">update_lmbda_prev</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_custom_newton_solver</span><span class="p">:</span>
+            <span class="bp">cls</span> <span class="o">=</span> <span class="n">MechanicsNewtonSolver_ODE</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">cls</span> <span class="o">=</span> <span class="n">MechanicsNewtonSolver</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">problem</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_problem</span><span class="p">,</span>
+            <span class="n">state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span>
+            <span class="n">update_cb</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">active</span><span class="o">.</span><span class="n">update_prev</span><span class="p">,</span>
+            <span class="n">parameters</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">solver_parameters</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="MechanicsProblem.solve"><a class="viewcode-back" href="../../simcardems.html#simcardems.config.MechanicsProblem.solve">[docs]</a>    <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_forms</span><span class="p">()</span>
+        <span class="n">newton_iteration</span><span class="p">,</span> <span class="n">newton_converged</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+        <span class="c1"># DEBUGGING</span>
+        <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="p">,</span> <span class="s2">&quot;check_overloads_called&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">newton_iteration</span><span class="p">,</span> <span class="n">newton_converged</span></div>
+
+<div class="viewcode-block" id="MechanicsProblem.update_lmbda_prev"><a class="viewcode-back" href="../../simcardems.html#simcardems.config.MechanicsProblem.update_lmbda_prev">[docs]</a>    <span class="k">def</span> <span class="nf">update_lmbda_prev</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lmbda_prev</span><span class="o">.</span><span class="n">vector</span><span class="p">()[:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lmbda</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span></div></div>
 
 
-<div class="viewcode-block" id="RigidMotionProblem"><a class="viewcode-back" href="../../simcardems.html#simcardems.mechanics_model.RigidMotionProblem">[docs]</a><span class="k">class</span> <span class="nc">RigidMotionProblem</span><span class="p">(</span><span class="n">MechanicsProblem</span><span class="p">):</span>
+<div class="viewcode-block" id="RigidMotionProblem"><a class="viewcode-back" href="../../simcardems.html#simcardems.config.RigidMotionProblem">[docs]</a><span class="k">class</span> <span class="nc">RigidMotionProblem</span><span class="p">(</span><span class="n">MechanicsProblem</span><span class="p">):</span>
     <span class="n">boundary_condition</span> <span class="o">=</span> <span class="n">BoundaryConditions</span><span class="o">.</span><span class="n">rigid</span>
 
     <span class="k">def</span> <span class="nf">_init_spaces</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -573,6 +414,7 @@
 
     <span class="k">def</span> <span class="nf">_handle_bcs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bcs</span><span class="p">,</span> <span class="n">bcs_parameters</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bcs</span> <span class="o">=</span> <span class="n">pulse</span><span class="o">.</span><span class="n">BoundaryConditions</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dirichlet_bc</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="k">def</span> <span class="nf">_init_forms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Displacement and hydrostatic_pressure; 3rd space for rigid motion component</span>
@@ -580,13 +422,13 @@
         <span class="n">q</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state_test</span><span class="p">)</span>
 
         <span class="c1"># Some mechanical quantities</span>
-        <span class="n">F</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">variable</span><span class="p">(</span><span class="n">pulse</span><span class="o">.</span><span class="n">DeformationGradient</span><span class="p">(</span><span class="n">u</span><span class="p">))</span>
-        <span class="n">J</span> <span class="o">=</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Jacobian</span><span class="p">(</span><span class="n">F</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_F</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">variable</span><span class="p">(</span><span class="n">pulse</span><span class="o">.</span><span class="n">DeformationGradient</span><span class="p">(</span><span class="n">u</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_J</span> <span class="o">=</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Jacobian</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_F</span><span class="p">)</span>
         <span class="n">dx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">dx</span>
 
         <span class="n">internal_energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">strain_energy</span><span class="p">(</span>
-            <span class="n">F</span><span class="p">,</span>
-        <span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">compressibility</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">J</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_F</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">compressibility</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_J</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_virtual_work</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">derivative</span><span class="p">(</span>
             <span class="n">internal_energy</span> <span class="o">*</span> <span class="n">dx</span><span class="p">,</span>
@@ -611,19 +453,7 @@
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_init_solver</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">_init_solver</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_problem</span> <span class="o">=</span> <span class="n">pulse</span><span class="o">.</span><span class="n">NonlinearProblem</span><span class="p">(</span>
-            <span class="n">J</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_jacobian</span><span class="p">,</span>
-            <span class="n">F</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_virtual_work</span><span class="p">,</span>
-            <span class="n">bcs</span><span class="o">=</span><span class="p">[],</span>
-        <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">solver</span> <span class="o">=</span> <span class="n">pulse</span><span class="o">.</span><span class="n">NonlinearSolver</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_problem</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span>
-            <span class="n">parameters</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">solver_parameters</span><span class="p">,</span>
-        <span class="p">)</span>
-
-<div class="viewcode-block" id="RigidMotionProblem.rigid_motion_term"><a class="viewcode-back" href="../../simcardems.html#simcardems.mechanics_model.RigidMotionProblem.rigid_motion_term">[docs]</a>    <span class="k">def</span> <span class="nf">rigid_motion_term</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span>
+<div class="viewcode-block" id="RigidMotionProblem.rigid_motion_term"><a class="viewcode-back" href="../../simcardems.html#simcardems.config.RigidMotionProblem.rigid_motion_term">[docs]</a>    <span class="k">def</span> <span class="nf">rigid_motion_term</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span>
         <span class="n">position</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">SpatialCoordinate</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
         <span class="n">RM</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span>
@@ -637,7 +467,7 @@
         <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">dolfin</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">zi</span><span class="p">)</span> <span class="o">*</span> <span class="n">r</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">dx</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">zi</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">RM</span><span class="p">))</span></div></div>
 
 
-<div class="viewcode-block" id="setup_microstructure"><a class="viewcode-back" href="../../simcardems.html#simcardems.mechanics_model.setup_microstructure">[docs]</a><span class="k">def</span> <span class="nf">setup_microstructure</span><span class="p">(</span><span class="n">mesh</span><span class="p">):</span>
+<div class="viewcode-block" id="setup_microstructure"><a class="viewcode-back" href="../../simcardems.html#simcardems.config.setup_microstructure">[docs]</a><span class="k">def</span> <span class="nf">setup_microstructure</span><span class="p">(</span><span class="n">mesh</span><span class="p">):</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Set up microstructure&quot;</span><span class="p">)</span>
     <span class="c1"># V_f = dolfin.VectorFunctionSpace(mesh, &quot;DG&quot;, 1)</span>
     <span class="n">V_f</span> <span class="o">=</span> <span class="n">pulse</span><span class="o">.</span><span class="n">QuadratureSpace</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">degree</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
@@ -657,7 +487,7 @@
     <span class="k">return</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">(</span><span class="n">f0</span><span class="o">=</span><span class="n">f0</span><span class="p">,</span> <span class="n">s0</span><span class="o">=</span><span class="n">s0</span><span class="p">,</span> <span class="n">n0</span><span class="o">=</span><span class="n">n0</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="float_to_constant"><a class="viewcode-back" href="../../simcardems.html#simcardems.mechanics_model.float_to_constant">[docs]</a><span class="k">def</span> <span class="nf">float_to_constant</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">:</span>
+<div class="viewcode-block" id="float_to_constant"><a class="viewcode-back" href="../../simcardems.html#simcardems.config.float_to_constant">[docs]</a><span class="k">def</span> <span class="nf">float_to_constant</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Convert float to a dolfin constant.</span>
 <span class="sd">    If value is already a constant, do nothing.</span>
 
@@ -676,15 +506,16 @@
     <span class="k">return</span> <span class="n">x</span></div>
 
 
-<div class="viewcode-block" id="setup_diriclet_bc"><a class="viewcode-back" href="../../simcardems.html#simcardems.mechanics_model.setup_diriclet_bc">[docs]</a><span class="k">def</span> <span class="nf">setup_diriclet_bc</span><span class="p">(</span>
+<div class="viewcode-block" id="setup_diriclet_bc"><a class="viewcode-back" href="../../simcardems.html#simcardems.config.setup_diriclet_bc">[docs]</a><span class="k">def</span> <span class="nf">setup_diriclet_bc</span><span class="p">(</span>
     <span class="n">mesh</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">,</span>
     <span class="n">pre_stretch</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">traction</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">spring</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">fix_right_plane</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">fix_right_plane</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="n">pulse</span><span class="o">.</span><span class="n">BoundaryConditions</span><span class="p">,</span> <span class="n">pulse</span><span class="o">.</span><span class="n">MarkerFunctions</span><span class="p">]:</span>
-    <span class="sd">&quot;&quot;&quot;Completely fix the left side of the mesh (i.e the side with the</span>
-<span class="sd">    lowest x-values) and apply some boundary condition to the right side.</span>
+    <span class="sd">&quot;&quot;&quot;Completely fix the left side of the mesh in the x-direction (i.e the side with the</span>
+<span class="sd">    lowest x-values), fix points at x=0 &amp; y=0 in y-direction, fix points at x=0 &amp; z=0 in</span>
+<span class="sd">    z-direction and apply some boundary condition to the right side.</span>
 
 
 <span class="sd">    Parameters</span>
@@ -729,6 +560,16 @@
     <span class="c1"># Define domain to apply dirichlet boundary conditions</span>
     <span class="n">left</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">CompiledSubDomain</span><span class="p">(</span><span class="s2">&quot;near(x[0], 0) &amp;&amp; on_boundary&quot;</span><span class="p">)</span>
     <span class="n">right</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">CompiledSubDomain</span><span class="p">(</span><span class="s2">&quot;near(x[0], Lx) &amp;&amp; on_boundary&quot;</span><span class="p">,</span> <span class="n">Lx</span><span class="o">=</span><span class="n">Lx</span><span class="p">)</span>
+    <span class="n">leftback</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">CompiledSubDomain</span><span class="p">(</span><span class="s2">&quot;near(x[0], 0) &amp;&amp; near(x[2], 0)&quot;</span><span class="p">)</span>
+    <span class="n">leftbottom</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">CompiledSubDomain</span><span class="p">(</span><span class="s2">&quot;near(x[0], 0) &amp;&amp; near(x[1], 0)&quot;</span><span class="p">)</span>
+    <span class="n">rightback</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">CompiledSubDomain</span><span class="p">(</span>
+        <span class="s2">&quot;near(x[0], Lx) &amp;&amp; near(x[2], 0) &amp;&amp; on_boundary&quot;</span><span class="p">,</span>
+        <span class="n">Lx</span><span class="o">=</span><span class="n">Lx</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">rightbottom</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">CompiledSubDomain</span><span class="p">(</span>
+        <span class="s2">&quot;near(x[0], Lx) &amp;&amp; near(x[1], 0) &amp;&amp; on_boundary&quot;</span><span class="p">,</span>
+        <span class="n">Lx</span><span class="o">=</span><span class="n">Lx</span><span class="p">,</span>
+    <span class="p">)</span>
 
     <span class="n">boundary_markers</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">(</span><span class="s2">&quot;size_t&quot;</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">mesh</span><span class="o">.</span><span class="n">topology</span><span class="p">()</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
     <span class="n">boundary_markers</span><span class="o">.</span><span class="n">set_all</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
@@ -737,6 +578,10 @@
     <span class="n">left</span><span class="o">.</span><span class="n">mark</span><span class="p">(</span><span class="n">boundary_markers</span><span class="p">,</span> <span class="n">left_marker</span><span class="p">)</span>
     <span class="n">right_marker</span> <span class="o">=</span> <span class="mi">2</span>
     <span class="n">right</span><span class="o">.</span><span class="n">mark</span><span class="p">(</span><span class="n">boundary_markers</span><span class="p">,</span> <span class="n">right_marker</span><span class="p">)</span>
+    <span class="n">leftback_marker</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">leftback</span><span class="o">.</span><span class="n">mark</span><span class="p">(</span><span class="n">boundary_markers</span><span class="p">,</span> <span class="n">leftback_marker</span><span class="p">)</span>
+    <span class="n">leftbottom_marker</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">leftbottom</span><span class="o">.</span><span class="n">mark</span><span class="p">(</span><span class="n">boundary_markers</span><span class="p">,</span> <span class="n">leftbottom_marker</span><span class="p">)</span>
 
     <span class="n">marker_functions</span> <span class="o">=</span> <span class="n">pulse</span><span class="o">.</span><span class="n">MarkerFunctions</span><span class="p">(</span><span class="n">ffun</span><span class="o">=</span><span class="n">boundary_markers</span><span class="p">)</span>
 
@@ -746,9 +591,21 @@
         <span class="c1"># BC with fixing left size</span>
         <span class="n">bcs</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">dolfin</span><span class="o">.</span><span class="n">DirichletBC</span><span class="p">(</span>
-                <span class="n">W</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
-                <span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)),</span>
+                <span class="n">W</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>  <span class="c1"># u_x</span>
+                <span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="mf">0.0</span><span class="p">),</span>
                 <span class="n">left</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">dolfin</span><span class="o">.</span><span class="n">DirichletBC</span><span class="p">(</span>
+                <span class="n">W</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>  <span class="c1"># u_y</span>
+                <span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="mf">0.0</span><span class="p">),</span>
+                <span class="n">leftbottom</span><span class="p">,</span>
+                <span class="n">method</span><span class="o">=</span><span class="s2">&quot;pointwise&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">dolfin</span><span class="o">.</span><span class="n">DirichletBC</span><span class="p">(</span>
+                <span class="n">W</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>  <span class="c1"># u_z</span>
+                <span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="mf">0.0</span><span class="p">),</span>
+                <span class="n">leftback</span><span class="p">,</span>
+                <span class="n">method</span><span class="o">=</span><span class="s2">&quot;pointwise&quot;</span><span class="p">,</span>
             <span class="p">),</span>
         <span class="p">]</span>
 
@@ -756,14 +613,21 @@
             <span class="n">bcs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
                 <span class="p">[</span>
                     <span class="n">dolfin</span><span class="o">.</span><span class="n">DirichletBC</span><span class="p">(</span>
-                        <span class="n">W</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>  <span class="c1"># Second component of u, i.e u_y</span>
-                        <span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="mf">0.0</span><span class="p">),</span>  <span class="c1"># should be kept fixed</span>
-                        <span class="n">right</span><span class="p">,</span>  <span class="c1"># in this region</span>
+                        <span class="n">W</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>  <span class="c1"># u_x</span>
+                        <span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="mf">0.0</span><span class="p">),</span>
+                        <span class="n">right</span><span class="p">,</span>
                     <span class="p">),</span>
                     <span class="n">dolfin</span><span class="o">.</span><span class="n">DirichletBC</span><span class="p">(</span>
-                        <span class="n">W</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>  <span class="c1"># Third component of u, i.e u_z</span>
-                        <span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="mf">0.0</span><span class="p">),</span>  <span class="c1"># should be kept fixed</span>
-                        <span class="n">right</span><span class="p">,</span>  <span class="c1"># in this region</span>
+                        <span class="n">W</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>  <span class="c1"># u_y</span>
+                        <span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="mf">0.0</span><span class="p">),</span>
+                        <span class="n">rightbottom</span><span class="p">,</span>
+                        <span class="n">method</span><span class="o">=</span><span class="s2">&quot;pointwise&quot;</span><span class="p">,</span>
+                    <span class="p">),</span>
+                    <span class="n">dolfin</span><span class="o">.</span><span class="n">DirichletBC</span><span class="p">(</span>
+                        <span class="n">W</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>  <span class="c1"># u_z</span>
+                        <span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="mf">0.0</span><span class="p">),</span>
+                        <span class="n">rightback</span><span class="p">,</span>
+                        <span class="n">method</span><span class="o">=</span><span class="s2">&quot;pointwise&quot;</span><span class="p">,</span>
                     <span class="p">),</span>
                 <span class="p">],</span>
             <span class="p">)</span>

@@ -261,10 +261,11 @@
 <span class="kn">import</span> <span class="nn">click</span>
 <span class="kn">import</span> <span class="nn">dolfin</span>
 
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">land_model</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">mechanics_model</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">postprocess</span> <span class="k">as</span> <span class="n">post</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">utils</span>
-<span class="kn">from</span> <span class="nn">.setup_models</span> <span class="kn">import</span> <span class="n">Defaults</span>
+<span class="kn">from</span> <span class="nn">.config</span> <span class="kn">import</span> <span class="n">Config</span>
 <span class="kn">from</span> <span class="nn">.setup_models</span> <span class="kn">import</span> <span class="n">Runner</span>
 <span class="kn">from</span> <span class="nn">.version</span> <span class="kn">import</span> <span class="n">__version__</span>
 
@@ -281,73 +282,73 @@
 <span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
     <span class="s2">&quot;-o&quot;</span><span class="p">,</span>
     <span class="s2">&quot;--outdir&quot;</span><span class="p">,</span>
-    <span class="n">default</span><span class="o">=</span><span class="n">Defaults</span><span class="o">.</span><span class="n">outdir</span><span class="p">,</span>
+    <span class="n">default</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">outdir</span><span class="p">,</span>
     <span class="nb">type</span><span class="o">=</span><span class="n">click</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">writable</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">resolve_path</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
     <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Output directory&quot;</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;--dt&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">Defaults</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Time step&quot;</span><span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;--dt&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Time step&quot;</span><span class="p">)</span>
 <span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
     <span class="s2">&quot;-T&quot;</span><span class="p">,</span>
     <span class="s2">&quot;--end-time&quot;</span><span class="p">,</span>
     <span class="s2">&quot;T&quot;</span><span class="p">,</span>
-    <span class="n">default</span><span class="o">=</span><span class="n">Defaults</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
+    <span class="n">default</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
     <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
     <span class="n">help</span><span class="o">=</span><span class="s2">&quot;End-time of simulation&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
     <span class="s2">&quot;-n&quot;</span><span class="p">,</span>
     <span class="s2">&quot;--num_refinements&quot;</span><span class="p">,</span>
-    <span class="n">default</span><span class="o">=</span><span class="n">Defaults</span><span class="o">.</span><span class="n">num_refinements</span><span class="p">,</span>
+    <span class="n">default</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">num_refinements</span><span class="p">,</span>
     <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
     <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Number of refinements of for the mesh using in the EP model&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
     <span class="s2">&quot;--save_freq&quot;</span><span class="p">,</span>
-    <span class="n">default</span><span class="o">=</span><span class="n">Defaults</span><span class="o">.</span><span class="n">save_freq</span><span class="p">,</span>
+    <span class="n">default</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">save_freq</span><span class="p">,</span>
     <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
     <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Set frequency of saving results to file&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
     <span class="s2">&quot;--set_material&quot;</span><span class="p">,</span>
-    <span class="n">default</span><span class="o">=</span><span class="n">Defaults</span><span class="o">.</span><span class="n">set_material</span><span class="p">,</span>
+    <span class="n">default</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">set_material</span><span class="p">,</span>
     <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
     <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Choose material properties for mechanics model (default is HolzapfelOgden, option is Guccione&quot;</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;-dx&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">Defaults</span><span class="o">.</span><span class="n">dx</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Spatial discretization&quot;</span><span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;-dx&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">dx</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Spatial discretization&quot;</span><span class="p">)</span>
 <span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
     <span class="s2">&quot;-lx&quot;</span><span class="p">,</span>
-    <span class="n">default</span><span class="o">=</span><span class="n">Defaults</span><span class="o">.</span><span class="n">lx</span><span class="p">,</span>
+    <span class="n">default</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">lx</span><span class="p">,</span>
     <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
     <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Size of mesh in x-direction&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
     <span class="s2">&quot;-ly&quot;</span><span class="p">,</span>
-    <span class="n">default</span><span class="o">=</span><span class="n">Defaults</span><span class="o">.</span><span class="n">ly</span><span class="p">,</span>
+    <span class="n">default</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">ly</span><span class="p">,</span>
     <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
     <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Size of mesh in y-direction&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
     <span class="s2">&quot;-lz&quot;</span><span class="p">,</span>
-    <span class="n">default</span><span class="o">=</span><span class="n">Defaults</span><span class="o">.</span><span class="n">lz</span><span class="p">,</span>
+    <span class="n">default</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">lz</span><span class="p">,</span>
     <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
     <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Size of mesh in z-direction&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
     <span class="s2">&quot;--bnd_cond&quot;</span><span class="p">,</span>
-    <span class="n">default</span><span class="o">=</span><span class="n">Defaults</span><span class="o">.</span><span class="n">bnd_cond</span><span class="p">,</span>
+    <span class="n">default</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">bnd_cond</span><span class="p">,</span>
     <span class="nb">type</span><span class="o">=</span><span class="n">click</span><span class="o">.</span><span class="n">Choice</span><span class="p">(</span><span class="n">mechanics_model</span><span class="o">.</span><span class="n">BoundaryConditions</span><span class="o">.</span><span class="n">_member_names_</span><span class="p">),</span>
     <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Boundary conditions for the mechanics problem&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
     <span class="s2">&quot;--load_state&quot;</span><span class="p">,</span>
     <span class="n">is_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">default</span><span class="o">=</span><span class="n">Defaults</span><span class="o">.</span><span class="n">load_state</span><span class="p">,</span>
+    <span class="n">default</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">load_state</span><span class="p">,</span>
     <span class="n">help</span><span class="o">=</span><span class="s2">&quot;If load existing state if exists, otherwise create a new state&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
     <span class="s2">&quot;-IC&quot;</span><span class="p">,</span>
     <span class="s2">&quot;--cell_init_file&quot;</span><span class="p">,</span>
-    <span class="n">default</span><span class="o">=</span><span class="n">Defaults</span><span class="o">.</span><span class="n">cell_init_file</span><span class="p">,</span>
+    <span class="n">default</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">cell_init_file</span><span class="p">,</span>
     <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
     <span class="n">help</span><span class="o">=</span><span class="p">(</span>
         <span class="s2">&quot;Path to file containing initial conditions (json or h5 file). &quot;</span>
@@ -356,39 +357,51 @@
 <span class="p">)</span>
 <span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
     <span class="s2">&quot;--loglevel&quot;</span><span class="p">,</span>
-    <span class="n">default</span><span class="o">=</span><span class="n">Defaults</span><span class="o">.</span><span class="n">loglevel</span><span class="p">,</span>
+    <span class="n">default</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">loglevel</span><span class="p">,</span>
     <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
     <span class="n">help</span><span class="o">=</span><span class="s2">&quot;How much printing. DEBUG: 10, INFO:20 (default), WARNING: 30&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
     <span class="s2">&quot;--hpc&quot;</span><span class="p">,</span>
     <span class="n">is_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">default</span><span class="o">=</span><span class="n">Defaults</span><span class="o">.</span><span class="n">hpc</span><span class="p">,</span>
+    <span class="n">default</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">hpc</span><span class="p">,</span>
     <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Indicate if simulations runs on hpc. This turns off the progress bar.&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
     <span class="s2">&quot;--drug_factors_file&quot;</span><span class="p">,</span>
-    <span class="n">default</span><span class="o">=</span><span class="n">Defaults</span><span class="o">.</span><span class="n">drug_factors_file</span><span class="p">,</span>
+    <span class="n">default</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">drug_factors_file</span><span class="p">,</span>
     <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
     <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Set drugs scaling factors (json file)&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
     <span class="s2">&quot;--popu_factors_file&quot;</span><span class="p">,</span>
-    <span class="n">default</span><span class="o">=</span><span class="n">Defaults</span><span class="o">.</span><span class="n">popu_factors_file</span><span class="p">,</span>
+    <span class="n">default</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">popu_factors_file</span><span class="p">,</span>
     <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
     <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Set population scaling factors (json file)&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
     <span class="s2">&quot;--disease_state&quot;</span><span class="p">,</span>
-    <span class="n">default</span><span class="o">=</span><span class="n">Defaults</span><span class="o">.</span><span class="n">disease_state</span><span class="p">,</span>
+    <span class="n">default</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">disease_state</span><span class="p">,</span>
     <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
     <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Indicate disease state. Default is healthy. &quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
-    <span class="s2">&quot;--mech_scheme&quot;</span><span class="p">,</span>
-    <span class="n">default</span><span class="o">=</span><span class="n">Defaults</span><span class="o">.</span><span class="n">mechanics_ode_scheme</span><span class="p">,</span>
-    <span class="nb">type</span><span class="o">=</span><span class="n">click</span><span class="o">.</span><span class="n">Choice</span><span class="p">(</span><span class="n">mechanics_model</span><span class="o">.</span><span class="n">Scheme</span><span class="o">.</span><span class="n">_member_names_</span><span class="p">),</span>
+    <span class="s2">&quot;--mechanics-ode-scheme&quot;</span><span class="p">,</span>
+    <span class="n">default</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">mechanics_ode_scheme</span><span class="p">,</span>
+    <span class="nb">type</span><span class="o">=</span><span class="n">click</span><span class="o">.</span><span class="n">Choice</span><span class="p">(</span><span class="n">land_model</span><span class="o">.</span><span class="n">Scheme</span><span class="o">.</span><span class="n">_member_names_</span><span class="p">),</span>
     <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Scheme used to solve the ODEs in the mechanics model&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
+    <span class="s2">&quot;--mechanics-use-continuation&quot;</span><span class="p">,</span>
+    <span class="n">default</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">mechanics_use_continuation</span><span class="p">,</span>
+    <span class="nb">type</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span>
+    <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Use continuation based mechanics solver&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
+    <span class="s2">&quot;--mechanics-use-custom-newton-solver&quot;</span><span class="p">,</span>
+    <span class="n">default</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">mechanics_use_custom_newton_solver</span><span class="p">,</span>
+    <span class="nb">type</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span>
+    <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Use custom newton solver and solve ODEs at each Newton iteration&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="k">def</span> <span class="nf">run</span><span class="p">(</span>
     <span class="n">outdir</span><span class="p">:</span> <span class="n">utils</span><span class="o">.</span><span class="n">PathLike</span><span class="p">,</span>
@@ -409,9 +422,12 @@
     <span class="n">drug_factors_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">popu_factors_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">disease_state</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">mech_scheme</span><span class="p">:</span> <span class="n">mechanics_model</span><span class="o">.</span><span class="n">Scheme</span><span class="p">,</span>
+    <span class="n">mechanics_ode_scheme</span><span class="p">:</span> <span class="n">land_model</span><span class="o">.</span><span class="n">Scheme</span><span class="p">,</span>
+    <span class="n">mechanics_use_continuation</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">mechanics_use_custom_newton_solver</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
 <span class="p">):</span>
-    <span class="n">main</span><span class="p">(</span>
+
+    <span class="n">config</span> <span class="o">=</span> <span class="n">Config</span><span class="p">(</span>
         <span class="n">outdir</span><span class="o">=</span><span class="n">outdir</span><span class="p">,</span>
         <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">,</span>
         <span class="n">dx</span><span class="o">=</span><span class="n">dx</span><span class="p">,</span>
@@ -430,8 +446,11 @@
         <span class="n">drug_factors_file</span><span class="o">=</span><span class="n">drug_factors_file</span><span class="p">,</span>
         <span class="n">popu_factors_file</span><span class="o">=</span><span class="n">popu_factors_file</span><span class="p">,</span>
         <span class="n">disease_state</span><span class="o">=</span><span class="n">disease_state</span><span class="p">,</span>
-        <span class="n">mech_scheme</span><span class="o">=</span><span class="n">mech_scheme</span><span class="p">,</span>
+        <span class="n">mechanics_ode_scheme</span><span class="o">=</span><span class="n">mechanics_ode_scheme</span><span class="p">,</span>
+        <span class="n">mechanics_use_continuation</span><span class="o">=</span><span class="n">mechanics_use_continuation</span><span class="p">,</span>
+        <span class="n">mechanics_use_custom_newton_solver</span><span class="o">=</span><span class="n">mechanics_use_custom_newton_solver</span><span class="p">,</span>
     <span class="p">)</span>
+    <span class="n">main</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
 
 
 <span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;run-json&quot;</span><span class="p">)</span>
@@ -440,38 +459,17 @@
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">json_file</span><span class="p">:</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">json_file</span><span class="p">)</span>
 
-    <span class="n">main</span><span class="p">(</span><span class="o">**</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">main</span><span class="p">(</span><span class="n">Config</span><span class="p">(</span><span class="o">**</span><span class="n">data</span><span class="p">))</span>
 
 
-<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../simcardems.html#simcardems.cli.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span>
-    <span class="n">outdir</span><span class="p">:</span> <span class="n">utils</span><span class="o">.</span><span class="n">PathLike</span> <span class="o">=</span> <span class="n">Defaults</span><span class="o">.</span><span class="n">outdir</span><span class="p">,</span>
-    <span class="n">T</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Defaults</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
-    <span class="n">dx</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Defaults</span><span class="o">.</span><span class="n">dx</span><span class="p">,</span>
-    <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Defaults</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
-    <span class="n">cell_init_file</span><span class="p">:</span> <span class="n">utils</span><span class="o">.</span><span class="n">PathLike</span> <span class="o">=</span> <span class="n">Defaults</span><span class="o">.</span><span class="n">cell_init_file</span><span class="p">,</span>
-    <span class="n">lx</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Defaults</span><span class="o">.</span><span class="n">lx</span><span class="p">,</span>
-    <span class="n">ly</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Defaults</span><span class="o">.</span><span class="n">ly</span><span class="p">,</span>
-    <span class="n">lz</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Defaults</span><span class="o">.</span><span class="n">lz</span><span class="p">,</span>
-    <span class="n">pre_stretch</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">traction</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">spring</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">fix_right_plane</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n">num_refinements</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Defaults</span><span class="o">.</span><span class="n">num_refinements</span><span class="p">,</span>
-    <span class="n">set_material</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Defaults</span><span class="o">.</span><span class="n">set_material</span><span class="p">,</span>
-    <span class="n">bnd_cond</span><span class="p">:</span> <span class="n">mechanics_model</span><span class="o">.</span><span class="n">BoundaryConditions</span> <span class="o">=</span> <span class="n">Defaults</span><span class="o">.</span><span class="n">bnd_cond</span><span class="p">,</span>
-    <span class="n">load_state</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">Defaults</span><span class="o">.</span><span class="n">load_state</span><span class="p">,</span>
-    <span class="n">hpc</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">Defaults</span><span class="o">.</span><span class="n">hpc</span><span class="p">,</span>
-    <span class="n">save_freq</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Defaults</span><span class="o">.</span><span class="n">save_freq</span><span class="p">,</span>
-    <span class="n">loglevel</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Defaults</span><span class="o">.</span><span class="n">loglevel</span><span class="p">,</span>
-    <span class="n">drug_factors_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Defaults</span><span class="o">.</span><span class="n">drug_factors_file</span><span class="p">,</span>
-    <span class="n">popu_factors_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Defaults</span><span class="o">.</span><span class="n">popu_factors_file</span><span class="p">,</span>
-    <span class="n">disease_state</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Defaults</span><span class="o">.</span><span class="n">disease_state</span><span class="p">,</span>
-    <span class="n">mech_scheme</span><span class="p">:</span> <span class="n">mechanics_model</span><span class="o">.</span><span class="n">Scheme</span> <span class="o">=</span> <span class="n">Defaults</span><span class="o">.</span><span class="n">mechanics_ode_scheme</span><span class="p">,</span>
-<span class="p">):</span>
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../simcardems.html#simcardems.cli.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">Config</span><span class="p">]):</span>
+
+    <span class="k">if</span> <span class="n">config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">Config</span><span class="p">()</span>
 
     <span class="c1"># Get all arguments and dump them to a json file</span>
-    <span class="n">info_dict</span> <span class="o">=</span> <span class="nb">locals</span><span class="p">()</span>
-    <span class="n">outdir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">outdir</span><span class="p">)</span>
+    <span class="n">info_dict</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="vm">__dict__</span>
+    <span class="n">outdir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">outdir</span><span class="p">)</span>
     <span class="n">outdir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">outdir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;parameters.json&quot;</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">info_dict</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
@@ -479,32 +477,12 @@
     <span class="c1"># Disable warnings</span>
     <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">set_log_level</span>
 
-    <span class="n">set_log_level</span><span class="p">(</span><span class="n">loglevel</span><span class="p">)</span>
-    <span class="n">dolfin</span><span class="o">.</span><span class="n">set_log_level</span><span class="p">(</span><span class="n">loglevel</span> <span class="o">+</span> <span class="mi">10</span><span class="p">)</span>  <span class="c1"># TODO: Make it possible to set this?</span>
+    <span class="n">set_log_level</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">loglevel</span><span class="p">)</span>
+    <span class="n">dolfin</span><span class="o">.</span><span class="n">set_log_level</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">loglevel</span> <span class="o">+</span> <span class="mi">10</span><span class="p">)</span>  <span class="c1"># TODO: Make it possible to set this?</span>
 
-    <span class="n">runner</span> <span class="o">=</span> <span class="n">Runner</span><span class="p">(</span>
-        <span class="n">dx</span><span class="o">=</span><span class="n">dx</span><span class="p">,</span>
-        <span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span>
-        <span class="n">bnd_cond</span><span class="o">=</span><span class="n">bnd_cond</span><span class="p">,</span>
-        <span class="n">cell_init_file</span><span class="o">=</span><span class="n">cell_init_file</span><span class="p">,</span>
-        <span class="n">lx</span><span class="o">=</span><span class="n">lx</span><span class="p">,</span>
-        <span class="n">ly</span><span class="o">=</span><span class="n">ly</span><span class="p">,</span>
-        <span class="n">lz</span><span class="o">=</span><span class="n">lz</span><span class="p">,</span>
-        <span class="n">pre_stretch</span><span class="o">=</span><span class="n">pre_stretch</span><span class="p">,</span>
-        <span class="n">spring</span><span class="o">=</span><span class="n">spring</span><span class="p">,</span>
-        <span class="n">traction</span><span class="o">=</span><span class="n">traction</span><span class="p">,</span>
-        <span class="n">fix_right_plane</span><span class="o">=</span><span class="n">fix_right_plane</span><span class="p">,</span>
-        <span class="n">num_refinements</span><span class="o">=</span><span class="n">num_refinements</span><span class="p">,</span>
-        <span class="n">set_material</span><span class="o">=</span><span class="n">set_material</span><span class="p">,</span>
-        <span class="n">drug_factors_file</span><span class="o">=</span><span class="n">drug_factors_file</span><span class="p">,</span>
-        <span class="n">popu_factors_file</span><span class="o">=</span><span class="n">popu_factors_file</span><span class="p">,</span>
-        <span class="n">disease_state</span><span class="o">=</span><span class="n">disease_state</span><span class="p">,</span>
-        <span class="n">outdir</span><span class="o">=</span><span class="n">outdir</span><span class="p">,</span>
-        <span class="n">mech_scheme</span><span class="o">=</span><span class="n">mech_scheme</span><span class="p">,</span>
-        <span class="n">reset</span><span class="o">=</span><span class="ow">not</span> <span class="n">load_state</span><span class="p">,</span>
-    <span class="p">)</span>
+    <span class="n">runner</span> <span class="o">=</span> <span class="n">Runner</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
 
-    <span class="n">runner</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">,</span> <span class="n">save_freq</span><span class="o">=</span><span class="n">save_freq</span><span class="p">,</span> <span class="n">hpc</span><span class="o">=</span><span class="n">hpc</span><span class="p">)</span></div>
+    <span class="n">runner</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">T</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">save_freq</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">save_freq</span><span class="p">,</span> <span class="n">hpc</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">hpc</span><span class="p">)</span></div>
 
 
 <span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;postprocess&quot;</span><span class="p">)</span>

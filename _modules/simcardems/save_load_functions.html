@@ -479,11 +479,12 @@
         <span class="n">coupling</span><span class="o">=</span><span class="n">coupling</span><span class="p">,</span>
         <span class="n">bnd_cond</span><span class="o">=</span><span class="n">bnd_cond_dict</span><span class="p">[</span><span class="n">state_params</span><span class="p">[</span><span class="s2">&quot;bnd_cond&quot;</span><span class="p">]],</span>
         <span class="n">cell_params</span><span class="o">=</span><span class="n">solver</span><span class="o">.</span><span class="n">ode_solver</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span>
+        <span class="n">Zetas_prev</span><span class="o">=</span><span class="n">Zetas_prev</span><span class="p">,</span>
+        <span class="n">Zetaw_prev</span><span class="o">=</span><span class="n">Zetaw_prev</span><span class="p">,</span>
+        <span class="n">lmbda_prev</span><span class="o">=</span><span class="n">lmbda_prev</span><span class="p">,</span>
+        <span class="n">state_prev</span><span class="o">=</span><span class="n">mech_state</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">mech_heart</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">mech_state</span><span class="p">)</span>
-    <span class="n">mech_heart</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">active</span><span class="o">.</span><span class="n">Zetas_prev</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">Zetas_prev</span><span class="p">)</span>
-    <span class="n">mech_heart</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">active</span><span class="o">.</span><span class="n">Zetaw_prev</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">Zetaw_prev</span><span class="p">)</span>
-    <span class="n">mech_heart</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">active</span><span class="o">.</span><span class="n">lmbda_prev</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">lmbda_prev</span><span class="p">)</span>
+
     <span class="n">coupling</span><span class="o">.</span><span class="n">coupling_to_mechanics</span><span class="p">()</span>
 
     <span class="k">return</span> <span class="n">setup_models</span><span class="o">.</span><span class="n">EMState</span><span class="p">(</span>

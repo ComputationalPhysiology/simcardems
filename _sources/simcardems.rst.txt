@@ -20,6 +20,14 @@ simcardems.cli module
    :undoc-members:
    :show-inheritance:
 
+simcardems.config module
+------------------------
+
+.. automodule:: simcardems.config
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 simcardems.datacollector module
 -------------------------------
 
@@ -60,10 +68,26 @@ simcardems.gui module
    :undoc-members:
    :show-inheritance:
 
+simcardems.land\_model module
+-----------------------------
+
+.. automodule:: simcardems.land_model
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 simcardems.mechanics\_model module
 ----------------------------------
 
 .. automodule:: simcardems.mechanics_model
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+simcardems.newton\_solver module
+--------------------------------
+
+.. automodule:: simcardems.newton_solver
    :members:
    :undoc-members:
    :show-inheritance:
