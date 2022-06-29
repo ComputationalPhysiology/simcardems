@@ -600,7 +600,7 @@ class TimeStepper:
         T: float,
         dt: float,
         use_ns: bool = True,
-        st_progress=typing.Any,
+        st_progress: typing.Any = None,
     ) -> None:
         """Initialize time stepper
 
@@ -667,7 +667,7 @@ class TimeStepper:
             prev_t = self.t
             self.t = min(self.t + self.dt, self.T)
             self.step += 1
-            if self._st_progress:
+            if self._st_progress is not None:
                 self._st_progress.progress(self.step / self.total_steps)
             yield prev_t, self.t
 
