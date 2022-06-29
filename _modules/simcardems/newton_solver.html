@@ -309,8 +309,8 @@
     <span class="k">def</span> <span class="nf">default_solver_parameters</span><span class="p">():</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;petsc&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="c1"># &quot;ksp_type&quot;: &quot;preonly&quot;,</span>
-                <span class="s2">&quot;ksp_type&quot;</span><span class="p">:</span> <span class="s2">&quot;gmres&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;ksp_type&quot;</span><span class="p">:</span> <span class="s2">&quot;preonly&quot;</span><span class="p">,</span>
+                <span class="c1"># &quot;ksp_type&quot;: &quot;gmres&quot;,</span>
                 <span class="s2">&quot;pc_type&quot;</span><span class="p">:</span> <span class="s2">&quot;lu&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;pc_factor_mat_solver_type&quot;</span><span class="p">:</span> <span class="s2">&quot;mumps&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;mat_mumps_icntl_33&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
@@ -318,8 +318,8 @@
             <span class="s2">&quot;newton_verbose&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s2">&quot;ksp_verbose&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s2">&quot;debug&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
-            <span class="c1"># &quot;linear_solver&quot;: &quot;mumps&quot;,</span>
-            <span class="s2">&quot;linear_solver&quot;</span><span class="p">:</span> <span class="s2">&quot;gmres&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;linear_solver&quot;</span><span class="p">:</span> <span class="s2">&quot;mumps&quot;</span><span class="p">,</span>
+            <span class="c1"># &quot;linear_solver&quot;: &quot;gmres&quot;,</span>
             <span class="s2">&quot;error_on_nonconvergence&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
             <span class="s2">&quot;relative_tolerance&quot;</span><span class="p">:</span> <span class="mf">1e-5</span><span class="p">,</span>
             <span class="s2">&quot;absolute_tolerance&quot;</span><span class="p">:</span> <span class="mf">1e-5</span><span class="p">,</span>
