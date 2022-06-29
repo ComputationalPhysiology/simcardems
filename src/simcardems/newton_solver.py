@@ -53,8 +53,8 @@ class MechanicsNewtonSolver(dolfin.NewtonSolver):
     def default_solver_parameters():
         return {
             "petsc": {
-                # "ksp_type": "preonly",
-                "ksp_type": "gmres",
+                "ksp_type": "preonly",
+                # "ksp_type": "gmres",
                 "pc_type": "lu",
                 "pc_factor_mat_solver_type": "mumps",
                 "mat_mumps_icntl_33": 0,
@@ -62,8 +62,8 @@ class MechanicsNewtonSolver(dolfin.NewtonSolver):
             "newton_verbose": False,
             "ksp_verbose": False,
             "debug": False,
-            # "linear_solver": "mumps",
-            "linear_solver": "gmres",
+            "linear_solver": "mumps",
+            # "linear_solver": "gmres",
             "error_on_nonconvergence": True,
             "relative_tolerance": 1e-5,
             "absolute_tolerance": 1e-5,
