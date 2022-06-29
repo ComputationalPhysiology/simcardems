@@ -312,8 +312,19 @@ class Runner:
             raise RuntimeError("Please create a time stepper before solving")
         return self._time_stepper.t
 
-    def create_time_stepper(self, T: float, use_ns: bool = True) -> None:
-        self._time_stepper = TimeStepper(t0=self._t0, T=T, dt=self._dt, use_ns=True)
+    def create_time_stepper(
+        self,
+        T: float,
+        use_ns: bool = True,
+        st_progress: typing.Any = None,
+    ) -> None:
+        self._time_stepper = TimeStepper(
+            t0=self._t0,
+            T=T,
+            dt=self._dt,
+            use_ns=True,
+            st_progress=st_progress,
+        )
 
     @classmethod
     def from_models(
@@ -481,6 +492,7 @@ class Runner:
         T: float = Config.T,
         save_freq: int = Config.save_freq,
         hpc: bool = Config.hpc,
+        st_progress: typing.Any = None,
     ):
         if not hasattr(self, "_outdir"):
             raise RuntimeError("Please set the output directory")
@@ -492,7 +504,7 @@ class Runner:
             fr.close()
 
         save_it = int(save_freq / self._dt)
-        self.create_time_stepper(T, use_ns=True)
+        self.create_time_stepper(T, use_ns=True, st_progress=st_progress)
         pbar = create_progressbar(time_stepper=self._time_stepper, hpc=hpc)
 
         # Store initial state
@@ -588,6 +600,7 @@ class TimeStepper:
         T: float,
         dt: float,
         use_ns: bool = True,
+        st_progress=typing.Any,
     ) -> None:
         """Initialize time stepper
 
@@ -601,9 +614,12 @@ class TimeStepper:
             Time step
         use_ns : bool, optional
             Whether to return the time in nanoseconds, by default True
+        st_progress:
+            Streamlit progress bar
         """
 
         self._use_ns = use_ns
+        self._st_progress = st_progress
 
         if use_ns:
             self.t0 = TimeStepper.ms2ns(t0)
@@ -618,6 +634,7 @@ class TimeStepper:
 
     def reset(self):
         self.t = self.t0
+        self.step = 0
 
     @property
     def T(self) -> float:
@@ -649,6 +666,9 @@ class TimeStepper:
 
             prev_t = self.t
             self.t = min(self.t + self.dt, self.T)
+            self.step += 1
+            if self._st_progress:
+                self._st_progress.progress(self.step / self.total_steps)
             yield prev_t, self.t
 
     @staticmethod
