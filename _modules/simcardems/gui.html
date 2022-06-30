@@ -273,11 +273,16 @@
 
 
 <span class="kn">import</span> <span class="nn">simcardems</span>
+<span class="kn">import</span> <span class="nn">mpi4py</span>
 
 <span class="kn">import</span> <span class="nn">pulse</span>
 <span class="kn">import</span> <span class="nn">hashlib</span>
 
 <span class="n">simcardems_folder</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;simcardems&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="return_none"><a class="viewcode-back" href="../../simcardems.html#simcardems.gui.return_none">[docs]</a><span class="k">def</span> <span class="nf">return_none</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
 
 
 <div class="viewcode-block" id="about"><a class="viewcode-back" href="../../simcardems.html#simcardems.gui.about">[docs]</a><span class="k">def</span> <span class="nf">about</span><span class="p">():</span>
@@ -297,7 +302,7 @@
 
 <div class="viewcode-block" id="Postprocess"><a class="viewcode-back" href="../../simcardems.html#simcardems.gui.Postprocess">[docs]</a><span class="k">class</span> <span class="nc">Postprocess</span><span class="p">:</span>
 <div class="viewcode-block" id="Postprocess.load_data"><a class="viewcode-back" href="../../simcardems.html#simcardems.gui.Postprocess.load_data">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">load_data</span><span class="p">(</span><span class="n">outdir</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">load_data</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="n">node</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">):</span>
 
         <span class="n">loader</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">outdir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;results.h5&quot;</span><span class="p">))</span>
         <span class="n">bnd</span> <span class="o">=</span> <span class="p">{</span>
@@ -317,18 +322,26 @@
                 <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
                     <span class="n">func</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
                     <span class="n">dof_coords</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">function_space</span><span class="p">()</span><span class="o">.</span><span class="n">tabulate_dof_coordinates</span><span class="p">()</span>
+                    <span class="c1"># Find the closest dof</span>
                     <span class="n">dof</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span>
                         <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span>
-                            <span class="n">dof_coords</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">bnd</span><span class="p">[</span><span class="n">group</span><span class="p">]</span><span class="o">.</span><span class="n">center</span><span class="p">),</span>
+                            <span class="n">dof_coords</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">bnd</span><span class="p">[</span><span class="n">group</span><span class="p">],</span> <span class="n">node</span><span class="p">)),</span>
                             <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                         <span class="p">),</span>
                     <span class="p">)</span>
-                    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">dof_coords</span><span class="p">[</span><span class="n">dof</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">bnd</span><span class="p">[</span><span class="n">group</span><span class="p">]</span><span class="o">.</span><span class="n">center</span><span class="p">))</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+
+                    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span>
+                        <span class="n">dof_coords</span><span class="p">[</span><span class="n">dof</span><span class="p">],</span>
+                        <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">bnd</span><span class="p">[</span><span class="n">group</span><span class="p">],</span> <span class="n">node</span><span class="p">)),</span>
+                    <span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
                         <span class="c1"># If we have a dof at the center - evaluation at dof (cheaper)</span>
                         <span class="n">values</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="n">name</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">get_local</span><span class="p">()[</span><span class="n">dof</span><span class="p">]</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="c1"># Otherwise, evaluation at center coordinates</span>
-                        <span class="n">values</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="n">name</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">bnd</span><span class="p">[</span><span class="n">group</span><span class="p">]</span><span class="o">.</span><span class="n">center</span><span class="p">)</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="n">values</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="n">name</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">bnd</span><span class="p">[</span><span class="n">group</span><span class="p">],</span> <span class="n">node</span><span class="p">))</span>
+                        <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
+                            <span class="n">values</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="n">name</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">get_local</span><span class="p">()[</span><span class="n">dof</span><span class="p">]</span>
 
         <span class="n">times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">loader</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">times</span><span class="p">,</span> <span class="n">values</span></div>
@@ -397,7 +410,7 @@
         <span class="n">st</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Please select a node&quot;</span><span class="p">)</span>
         <span class="k">return</span>
 
-    <span class="n">times</span><span class="p">,</span> <span class="n">values</span> <span class="o">=</span> <span class="n">Postprocess</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">outdir</span><span class="p">)</span>
+    <span class="n">times</span><span class="p">,</span> <span class="n">values</span> <span class="o">=</span> <span class="n">Postprocess</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="n">node</span><span class="o">=</span><span class="n">selected_node</span><span class="p">)</span>
     <span class="n">fig</span> <span class="o">=</span> <span class="n">Postprocess</span><span class="o">.</span><span class="n">make_figures</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
     <span class="n">st</span><span class="o">.</span><span class="n">pyplot</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
 
@@ -417,19 +430,19 @@
         <span class="n">st</span><span class="o">.</span><span class="n">header</span><span class="p">(</span><span class="s2">&quot;Mesh&quot;</span><span class="p">)</span>
         <span class="n">cols_l_xyz</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">columns</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
         <span class="k">with</span> <span class="n">cols_l_xyz</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-            <span class="n">lx</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">number_input</span><span class="p">(</span><span class="s2">&quot;lx&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">simcardems</span><span class="o">.</span><span class="n">setup_models</span><span class="o">.</span><span class="n">Defaults</span><span class="o">.</span><span class="n">lx</span><span class="p">)</span>
+            <span class="n">lx</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">number_input</span><span class="p">(</span><span class="s2">&quot;lx&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">simcardems</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">lx</span><span class="p">)</span>
         <span class="k">with</span> <span class="n">cols_l_xyz</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
-            <span class="n">ly</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">number_input</span><span class="p">(</span><span class="s2">&quot;ly&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">simcardems</span><span class="o">.</span><span class="n">setup_models</span><span class="o">.</span><span class="n">Defaults</span><span class="o">.</span><span class="n">ly</span><span class="p">)</span>
+            <span class="n">ly</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">number_input</span><span class="p">(</span><span class="s2">&quot;ly&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">simcardems</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">ly</span><span class="p">)</span>
         <span class="k">with</span> <span class="n">cols_l_xyz</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span>
-            <span class="n">lz</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">number_input</span><span class="p">(</span><span class="s2">&quot;lz&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">simcardems</span><span class="o">.</span><span class="n">setup_models</span><span class="o">.</span><span class="n">Defaults</span><span class="o">.</span><span class="n">lz</span><span class="p">)</span>
+            <span class="n">lz</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">number_input</span><span class="p">(</span><span class="s2">&quot;lz&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">simcardems</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">lz</span><span class="p">)</span>
 
         <span class="n">cols_dx_ref</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">columns</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
         <span class="k">with</span> <span class="n">cols_dx_ref</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-            <span class="n">dx</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">number_input</span><span class="p">(</span><span class="s2">&quot;dx&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">simcardems</span><span class="o">.</span><span class="n">setup_models</span><span class="o">.</span><span class="n">Defaults</span><span class="o">.</span><span class="n">dx</span><span class="p">)</span>
+            <span class="n">dx</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">number_input</span><span class="p">(</span><span class="s2">&quot;dx&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">simcardems</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">dx</span><span class="p">)</span>
         <span class="k">with</span> <span class="n">cols_dx_ref</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
             <span class="n">num_refinements</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">number_input</span><span class="p">(</span>
                 <span class="s2">&quot;num_refinements&quot;</span><span class="p">,</span>
-                <span class="n">value</span><span class="o">=</span><span class="n">simcardems</span><span class="o">.</span><span class="n">setup_models</span><span class="o">.</span><span class="n">Defaults</span><span class="o">.</span><span class="n">num_refinements</span><span class="p">,</span>
+                <span class="n">value</span><span class="o">=</span><span class="n">simcardems</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">num_refinements</span><span class="p">,</span>
             <span class="p">)</span>
 
         <span class="k">return</span> <span class="p">{</span>
@@ -448,7 +461,7 @@
         <span class="k">with</span> <span class="n">cols_ep</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
             <span class="n">dt</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">number_input</span><span class="p">(</span>
                 <span class="s2">&quot;dt&quot;</span><span class="p">,</span>
-                <span class="n">value</span><span class="o">=</span><span class="n">simcardems</span><span class="o">.</span><span class="n">setup_models</span><span class="o">.</span><span class="n">Defaults</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
+                <span class="n">value</span><span class="o">=</span><span class="n">simcardems</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
                 <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Time step for EP solver&quot;</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">with</span> <span class="n">cols_ep</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
@@ -520,7 +533,12 @@
         <span class="p">}</span></div>
 
 <div class="viewcode-block" id="Simulation.load_model"><a class="viewcode-back" href="../../simcardems.html#simcardems.gui.Simulation.load_model">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="nd">@st</span><span class="o">.</span><span class="n">cache</span><span class="p">(</span><span class="n">suppress_st_warning</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">allow_output_mutation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">show_spinner</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nd">@st</span><span class="o">.</span><span class="n">cache</span><span class="p">(</span>
+        <span class="n">suppress_st_warning</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">allow_output_mutation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">show_spinner</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">hash_funcs</span><span class="o">=</span><span class="p">{</span><span class="n">mpi4py</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">Op</span><span class="p">:</span> <span class="n">return_none</span><span class="p">},</span>
+    <span class="p">)</span>
     <span class="k">def</span> <span class="nf">load_model</span><span class="p">(</span><span class="n">geometry_args</span><span class="p">,</span> <span class="n">ep_solver_args</span><span class="p">,</span> <span class="n">mechanics_args</span><span class="p">):</span>
 
         <span class="n">st</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Create geometry&quot;</span><span class="p">)</span>
@@ -573,14 +591,14 @@
         <span class="k">with</span> <span class="n">cols_run</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
             <span class="n">T</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">number_input</span><span class="p">(</span>
                 <span class="s2">&quot;T&quot;</span><span class="p">,</span>
-                <span class="n">value</span><span class="o">=</span><span class="n">simcardems</span><span class="o">.</span><span class="n">setup_models</span><span class="o">.</span><span class="n">Defaults</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
+                <span class="n">value</span><span class="o">=</span><span class="n">simcardems</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
                 <span class="n">help</span><span class="o">=</span><span class="s2">&quot;End time&quot;</span><span class="p">,</span>
             <span class="p">)</span>
 
         <span class="k">with</span> <span class="n">cols_run</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
             <span class="n">save_freq</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">number_input</span><span class="p">(</span>
                 <span class="s2">&quot;Save frequency&quot;</span><span class="p">,</span>
-                <span class="n">value</span><span class="o">=</span><span class="n">simcardems</span><span class="o">.</span><span class="n">setup_models</span><span class="o">.</span><span class="n">Defaults</span><span class="o">.</span><span class="n">save_freq</span><span class="p">,</span>
+                <span class="n">value</span><span class="o">=</span><span class="n">simcardems</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">save_freq</span><span class="p">,</span>
                 <span class="n">help</span><span class="o">=</span><span class="s2">&quot;How often to save the results&quot;</span><span class="p">,</span>
             <span class="p">)</span>
 
@@ -609,7 +627,6 @@
     <span class="n">geometry_args</span> <span class="o">=</span> <span class="n">Simulation</span><span class="o">.</span><span class="n">handle_mesh</span><span class="p">()</span>
     <span class="n">ep_solver_args</span> <span class="o">=</span> <span class="n">Simulation</span><span class="o">.</span><span class="n">handle_ep_solver_args</span><span class="p">()</span>
     <span class="n">mechanics_args</span> <span class="o">=</span> <span class="n">Simulation</span><span class="o">.</span><span class="n">handle_mechanics_args</span><span class="p">()</span>
-    <span class="n">mechanics_args</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;dt&quot;</span><span class="p">:</span> <span class="n">ep_solver_args</span><span class="p">[</span><span class="s2">&quot;dt&quot;</span><span class="p">]})</span>
 
     <span class="n">load_model</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">checkbox</span><span class="p">(</span><span class="s2">&quot;Load model&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">load_model</span><span class="p">:</span>
@@ -632,7 +649,8 @@
 
     <span class="k">if</span> <span class="n">st</span><span class="o">.</span><span class="n">button</span><span class="p">(</span><span class="s2">&quot;Run simulation&quot;</span><span class="p">):</span>
         <span class="n">runner</span><span class="o">.</span><span class="n">outdir</span> <span class="o">=</span> <span class="n">outdir</span>
-        <span class="n">runner</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">,</span> <span class="n">save_freq</span><span class="o">=</span><span class="n">save_freq</span><span class="p">)</span>
+        <span class="n">st_progress</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">progress</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">runner</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">,</span> <span class="n">save_freq</span><span class="o">=</span><span class="n">save_freq</span><span class="p">,</span> <span class="n">st_progress</span><span class="o">=</span><span class="n">st_progress</span><span class="p">)</span>
         <span class="n">st</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="s2">&quot;Done!&quot;</span><span class="p">)</span>
 
     <span class="k">return</span></div>
