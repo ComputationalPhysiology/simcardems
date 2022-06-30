@@ -17,11 +17,16 @@ import matplotlib.pyplot as plt
 
 
 import simcardems
+import mpi4py
 
 import pulse
 import hashlib
 
 simcardems_folder = Path.home().joinpath("simcardems")
+
+
+def return_none(*args, **kwargs):
+    return None
 
 
 def about():
@@ -41,7 +46,7 @@ def about():
 
 class Postprocess:
     @staticmethod
-    def load_data(outdir):
+    def load_data(outdir, node="center"):
 
         loader = simcardems.DataLoader(outdir.joinpath("results.h5"))
         bnd = {
@@ -61,18 +66,26 @@ class Postprocess:
                 for name in names:
                     func = loader.get(group, name, t)
                     dof_coords = func.function_space().tabulate_dof_coordinates()
+                    # Find the closest dof
                     dof = np.argmin(
                         np.linalg.norm(
-                            dof_coords - np.array(bnd[group].center),
+                            dof_coords - np.array(getattr(bnd[group], node)),
                             axis=1,
                         ),
                     )
-                    if np.isclose(dof_coords[dof], np.array(bnd[group].center)).all():
+
+                    if np.isclose(
+                        dof_coords[dof],
+                        np.array(getattr(bnd[group], node)),
+                    ).all():
                         # If we have a dof at the center - evaluation at dof (cheaper)
                         values[group][name][i] = func.vector().get_local()[dof]
                     else:
                         # Otherwise, evaluation at center coordinates
-                        values[group][name][i] = func(bnd[group].center)
+                        try:
+                            values[group][name][i] = func(getattr(bnd[group], node))
+                        except RuntimeError:
+                            values[group][name][i] = func.vector().get_local()[dof]
 
         times = np.array(loader.time_stamps, dtype=float)
         return times, values
@@ -141,7 +154,7 @@ def postprocess():
         st.info("Please select a node")
         return
 
-    times, values = Postprocess.load_data(outdir)
+    times, values = Postprocess.load_data(outdir, node=selected_node)
     fig = Postprocess.make_figures(times, values)
     st.pyplot(fig)
 
@@ -161,19 +174,19 @@ class Simulation:
         st.header("Mesh")
         cols_l_xyz = st.columns(3)
         with cols_l_xyz[0]:
-            lx = st.number_input("lx", value=simcardems.setup_models.Defaults.lx)
+            lx = st.number_input("lx", value=simcardems.Config.lx)
         with cols_l_xyz[1]:
-            ly = st.number_input("ly", value=simcardems.setup_models.Defaults.ly)
+            ly = st.number_input("ly", value=simcardems.Config.ly)
         with cols_l_xyz[2]:
-            lz = st.number_input("lz", value=simcardems.setup_models.Defaults.lz)
+            lz = st.number_input("lz", value=simcardems.Config.lz)
 
         cols_dx_ref = st.columns(2)
         with cols_dx_ref[0]:
-            dx = st.number_input("dx", value=simcardems.setup_models.Defaults.dx)
+            dx = st.number_input("dx", value=simcardems.Config.dx)
         with cols_dx_ref[1]:
             num_refinements = st.number_input(
                 "num_refinements",
-                value=simcardems.setup_models.Defaults.num_refinements,
+                value=simcardems.Config.num_refinements,
             )
 
         return {
@@ -192,7 +205,7 @@ class Simulation:
         with cols_ep[0]:
             dt = st.number_input(
                 "dt",
-                value=simcardems.setup_models.Defaults.dt,
+                value=simcardems.Config.dt,
                 help="Time step for EP solver",
             )
         with cols_ep[1]:
@@ -264,7 +277,12 @@ class Simulation:
         }
 
     @staticmethod
-    @st.cache(suppress_st_warning=True, allow_output_mutation=True, show_spinner=True)
+    @st.cache(
+        suppress_st_warning=True,
+        allow_output_mutation=True,
+        show_spinner=True,
+        hash_funcs={mpi4py.MPI.Op: return_none},
+    )
     def load_model(geometry_args, ep_solver_args, mechanics_args):
 
         st.info("Create geometry")
@@ -317,14 +335,14 @@ class Simulation:
         with cols_run[0]:
             T = st.number_input(
                 "T",
-                value=simcardems.setup_models.Defaults.T,
+                value=simcardems.Config.T,
                 help="End time",
             )
 
         with cols_run[1]:
             save_freq = st.number_input(
                 "Save frequency",
-                value=simcardems.setup_models.Defaults.save_freq,
+                value=simcardems.Config.save_freq,
                 help="How often to save the results",
             )
 
@@ -353,7 +371,6 @@ def simulation():
     geometry_args = Simulation.handle_mesh()
     ep_solver_args = Simulation.handle_ep_solver_args()
     mechanics_args = Simulation.handle_mechanics_args()
-    mechanics_args.update({"dt": ep_solver_args["dt"]})
 
     load_model = st.checkbox("Load model")
     if not load_model:
@@ -376,7 +393,8 @@ def simulation():
 
     if st.button("Run simulation"):
         runner.outdir = outdir
-        runner.solve(T=T, save_freq=save_freq)
+        st_progress = st.progress(0)
+        runner.solve(T=T, save_freq=save_freq, st_progress=st_progress)
         st.success("Done!")
 
     return
