@@ -715,9 +715,14 @@ def save_popu_json(population_folder, num_models):
 
                         else:
                             # Otherwise, evaluation at center coordinates
-                            dict[f"m{PoMm}"][name].append(
-                                float(func(bnd[group].center)),
-                            )
+                            try:
+                                dict[f"m{PoMm}"][name].append(
+                                    float(func(bnd[group].center)),
+                                )
+                            except RuntimeError:
+                                dict[f"m{PoMm}"][name].append(
+                                    func.vector().get_local()[dof],
+                                )
 
         # Save entire dict to json file in outdir(=population_folder)
         with open(population_folder.joinpath("output_dict_center.json"), "w") as f:
