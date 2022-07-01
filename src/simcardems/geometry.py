@@ -127,3 +127,8 @@ class SlabGeometry(BaseGeometry):
             "dx": self.dx,
             "num_refinements": self.num_refinements,
         }
+
+
+class Stimulus(abc.ABC):
+    def __init__(self, ep_mesh: dolfin.Mesh) -> None:
+        self._mesh = ep_mesh

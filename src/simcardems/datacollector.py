@@ -1,3 +1,4 @@
+import abc
 from enum import Enum
 from pathlib import Path
 from typing import Dict
@@ -18,6 +19,7 @@ logger = utils.getLogger(__name__)
 class DataGroups(str, Enum):
     ep = "ep"
     mechanics = "mechanics"
+    none = ""
 
 
 class DataCollector:
@@ -87,17 +89,113 @@ class DataCollector:
                     h5file.write(f, f"{group}/{name}/{t_str}")
 
 
-class DataLoader:
+class BaseDataLoader(abc.ABC):
     def __init__(self, h5name) -> None:
 
         self._h5name = Path(h5name)
         if not self._h5name.is_file():
             raise FileNotFoundError(f"File {h5name} does not exist")
 
+        self._load()
+        self._h5file = dolfin.HDF5File(
+            self._mpi_comm(),
+            self._h5name.as_posix(),
+            "r",
+        )
+        self._create_functions()
+
+    @abc.abstractmethod
+    def _load(self):
+        ...
+
+    @abc.abstractmethod
+    def _mpi_comm(self):
+        ...
+
+    @property
+    @abc.abstractmethod
+    def time_stamps(self):
+        ...
+
+    @property
+    @abc.abstractmethod
+    def _h5file(self):
+        ...
+
+    @property
+    def size(self) -> int:
+        return len(self.time_stamps)
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({str(self._h5name)})"
+
+    def __del__(self):
+        if self._h5file is not None:
+            self._h5file.close()
+
+    @abc.abstractmethod
+    def _create_functions(self):
+        ...
+
+    def get(
+        self,
+        group: DataGroups,
+        name: str,
+        t: Union[str, float],
+    ) -> dolfin.Function:
+        """Retrieve the function from the file
+
+        Parameters
+        ----------
+        group : DataGroups
+            The group where the function is stored, either
+            'ep', 'mechanics' or ''
+        name : str
+            Name of the function
+        t : Union[str, float]
+            Time stamp you want to use. See `DataLoader.time_stamps`
+
+        Returns
+        -------
+        dolfin.Function
+            The function
+
+        Raises
+        ------
+        KeyError
+            If group does not exist in the file
+        KeyError
+            If name does not exist in group
+        KeyError
+            If 't' provided is not among the time stamps
+        """
+        if group not in self.names:
+            raise KeyError(
+                f"Cannot find group {group} in names, expected of of {self.names.keys()}",
+            )
+        breakpoint()
+
+        names = self.names[group]
+        if f"{name}" not in names:
+            raise KeyError(
+                f"Cannot find name {name} in group {group}. Possible options are {names}",
+            )
+
+        if isinstance(t, (int, float)):
+            t = f"{t:.2f}"
+        if t not in self.time_stamps:
+            raise KeyError(f"Invalid time stamps {t}")
+
+        func = self._functions[group][name]
+        self._h5file.read(func, f"{group}/{name}/{t}/")
+        return func
+
+
+class DataLoader(BaseDataLoader):
+    def _load(self):
         with h5pyfile(self._h5name) as h5file:
 
             # Check that we have mesh
-
             if not ("ep" in h5file and "mesh" in h5file["ep"]):
                 raise ValueError("No ep mesh in results file. Cannot load data")
             if not ("mechanics" in h5file and "mesh" in h5file["mechanics"]):
@@ -113,7 +211,7 @@ class DataLoader:
 
             # Get time stamps
             all_time_stamps = {
-                "{group}:{name}": sorted(
+                f"{group}:{name}": sorted(
                     list(h5file[group][name].keys()),
                     key=lambda x: float(x),
                 )
@@ -142,24 +240,9 @@ class DataLoader:
 
         self.ep_mesh = dolfin.Mesh()
         self.mech_mesh = dolfin.Mesh()
-        self._h5file = dolfin.HDF5File(
-            self.ep_mesh.mpi_comm(),
-            self._h5name.as_posix(),
-            "r",
-        )
 
-        self._create_functions()
-
-    @property
-    def size(self) -> int:
-        return len(self.time_stamps)
-
-    def __repr__(self):
-        return f"{self.__class__.__name__}({str(self._h5name)})"
-
-    def __del__(self):
-        if self._h5file is not None:
-            self._h5file.close()
+    def _mpi_comm(self):
+        return self.ep_mesh.mpi_comm()
 
     def _create_functions(self):
         self._h5file.read(self.ep_mesh, "/ep/mesh", True)
@@ -240,3 +323,42 @@ class DataLoader:
         func = self._functions[group][name]
         self._h5file.read(func, f"{group}/{name}/{t}/")
         return func
+
+
+class EPDataLoader(BaseDataLoader):
+    def _load(self):
+        with h5pyfile(self._h5name) as h5file:
+            # Check that we have mesh
+            if not "mesh" not in h5file:
+                raise ValueError("No mesh in results file. Cannot load data")
+
+            # Find the remaining functions
+            self.names = [name for name in h5file.keys() if name != "mesh"]
+
+            if len(self.names) == 0:
+                raise ValueError("No functions found in results file")
+
+            # Get time stamps
+            all_time_stamps = {
+                name: sorted(
+                    list(h5file[name].keys()),
+                    key=lambda x: float(x),
+                )
+                for name in self.names
+            }
+
+            # An verify that they are all the same
+            self.time_stamps = all_time_stamps[next(iter(all_time_stamps.keys()))]
+            for name in all_time_stamps.keys():
+                assert self.time_stamps == all_time_stamps[name], name
+
+            if self.time_stamps is None or len(self.time_stamps) == 0:
+                raise ValueError("No time stamps found")
+
+            # Get the signatures - FIXME: Add a check that the signature exist.
+            self._signatures = {
+                name: h5file[name][self.time_stamps[0]].attrs["signature"].decode()
+                for name in self.names
+            }
+
+        self.mesh = dolfin.Mesh()

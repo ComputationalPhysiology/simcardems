@@ -5,12 +5,14 @@ from pathlib import Path
 import click
 import dolfin
 
+from . import geometry
 from . import land_model
 from . import mechanics_model
 from . import postprocess as post
+from . import setup_models
 from . import utils
 from .config import Config
-from .setup_models import Runner
+from .setup_models import TimeStepper
 from .version import __version__
 
 logger = utils.getLogger(__name__)
@@ -224,7 +226,7 @@ def main(config: typing.Optional[Config]):
     set_log_level(config.loglevel)
     dolfin.set_log_level(config.loglevel + 10)  # TODO: Make it possible to set this?
 
-    runner = Runner(config=config)
+    runner = setup_models.Runner(config=config)
 
     runner.solve(T=config.T, save_freq=config.save_freq, hpc=config.hpc)
 
@@ -250,6 +252,12 @@ def main(config: typing.Optional[Config]):
     help="Plot population",
 )
 @click.option("--num_models", default=5, help="Number of models to be analyzed")
+@click.option(
+    "--ep",
+    is_flag=True,
+    default=False,
+    help="Postprocess pure EP results",
+)
 def postprocess(folder, num_models, plot_state_traces, make_xdmf, population):
     folder = Path(folder)
     if plot_state_traces:
@@ -272,7 +280,80 @@ def gui():
     sp.run(["streamlit", "run", gui_path.as_posix()])
 
 
+@click.command("run-ep")
+@click.option("--mesh-file", default="", help="Path to file with mesh")
+@click.option(
+    "-o",
+    "--outdir",
+    default="results_ep",
+    type=click.Path(writable=True, resolve_path=True),
+    help="Output directory",
+)
+@click.option("--dt", default=Config.dt, type=float, help="Time step")
+@click.option(
+    "-T",
+    "--end-time",
+    "T",
+    default=Config.T,
+    type=float,
+    help="End-time of simulation",
+)
+def run_ep(mesh_file, outdir="results_ep", dt=0.05, T=1000):
+
+    if mesh_file == "":
+        # Use some default geometry
+        mesh = geometry.create_boxmesh(Lx=Config.lx, Ly=Config.ly, Lz=Config.lz)
+    else:
+        # Need to figure out a wat to do this
+        raise NotImplementedError
+
+    outdir = Path(outdir)
+
+    solver = setup_models.setup_ep_solver(dt=dt, ep_mesh=mesh)
+
+    (vs_, vs, vur) = solver.solution_fields()
+
+    # Set-up separate potential function for post processing
+    v, v_assigner = utils.setup_assigner(vs, 0)
+    Ca, Ca_assigner = utils.setup_assigner(vs, 45)
+
+    result_filename = outdir / "results.h5"
+
+    def store(t, initial=False):
+        v_assigner.assign(v, vs.sub(0))
+        Ca_assigner.assign(Ca, vs.sub(45))
+
+        file_mode = "w" if initial else "a"
+        with dolfin.HDF5File(
+            mesh.mpi_comm(),
+            result_filename.as_posix(),
+            file_mode,
+        ) as result_file:
+
+            result_file.write(v, "/v", t)
+            result_file.write(Ca, "/Ca", t)
+
+            if initial:
+                result_file.write(mesh, "/mesh")
+
+    t0 = 0.0
+    store(t0, initial=True)
+    time_stepper = TimeStepper(t0=t0, T=T, dt=dt, use_ns=True)
+    pbar = setup_models.create_progressbar(time_stepper=time_stepper, hpc=False)
+
+    for (i, (t0, t)) in enumerate(pbar):
+
+        solver.step((TimeStepper.ns2ms(t0), TimeStepper.ns2ms(t)))
+
+        # Store every 10th step
+        if i % 10 == 0:
+            store(t0)
+
+        solver.vs_.assign(solver.vs)
+
+
 cli.add_command(run)
 cli.add_command(run_json)
 cli.add_command(postprocess)
 cli.add_command(gui)
+cli.add_command(run_ep)

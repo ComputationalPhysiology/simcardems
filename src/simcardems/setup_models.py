@@ -183,7 +183,8 @@ def setup_mechanics_solver(
 
 def setup_ep_solver(
     dt,
-    coupling,
+    coupling=None,
+    ep_mesh=None,
     scheme=Config.ep_ode_scheme,
     theta=Config.ep_theta,
     preconditioner=Config.ep_preconditioner,
@@ -213,14 +214,18 @@ def setup_ep_solver(
         cell_init_file=cell_init_file,
     )
 
-    cell_inits["lmbda"] = coupling.lmbda_ep
-    cell_inits["Zetas"] = coupling.Zetas_ep
-    cell_inits["Zetaw"] = coupling.Zetaw_ep
+    if coupling is not None:
+        cell_inits["lmbda"] = coupling.lmbda_ep
+        cell_inits["Zetas"] = coupling.Zetas_ep
+        cell_inits["Zetaw"] = coupling.Zetaw_ep
+        ep_mesh = coupling.ep_mesh
+    if ep_mesh is None:
+        raise RuntimeError("Need to provide either coupling or mesh to setup_ep_solver")
 
     cellmodel = CellModel(init_conditions=cell_inits, params=cell_params)
 
     # Set-up cardiac model
-    ep_heart = ep_model.setup_ep_model(cellmodel, coupling.ep_mesh)
+    ep_heart = ep_model.setup_ep_model(cellmodel, ep_mesh)
     timer = dolfin.Timer("SplittingSolver: setup")
 
     solver = cbcbeat.SplittingSolver(ep_heart, params=ps)
@@ -233,7 +238,7 @@ def setup_ep_solver(
     # Output some degrees of freedom
     total_dofs = vs.function_space().dim()
     logger.info("EP model")
-    utils.print_mesh_info(coupling.ep_mesh, total_dofs)
+    utils.print_mesh_info(ep_mesh, total_dofs)
     return solver
 
 

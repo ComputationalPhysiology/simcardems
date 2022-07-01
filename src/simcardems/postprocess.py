@@ -11,6 +11,7 @@ import tqdm
 
 from . import utils
 from .datacollector import DataLoader
+from .datacollector import EPDataLoader
 
 logger = utils.getLogger(__name__)
 
