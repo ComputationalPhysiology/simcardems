@@ -147,6 +147,12 @@ def cli():
     type=bool,
     help="Use custom newton solver and solve ODEs at each Newton iteration",
 )
+@click.option(
+    "--pcl",
+    default=Config.PCL,
+    type=float,
+    help="Pacing cycle length",
+)
 def run(
     outdir: utils.PathLike,
     T: float,
@@ -169,6 +175,7 @@ def run(
     mechanics_ode_scheme: land_model.Scheme,
     mechanics_use_continuation: bool,
     mechanics_use_custom_newton_solver: bool,
+    pcl: float,
 ):
 
     config = Config(
@@ -193,6 +200,7 @@ def run(
         mechanics_ode_scheme=mechanics_ode_scheme,
         mechanics_use_continuation=mechanics_use_continuation,
         mechanics_use_custom_newton_solver=mechanics_use_custom_newton_solver,
+        PCL=pcl,
     )
     main(config=config)
 
