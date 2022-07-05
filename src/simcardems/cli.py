@@ -151,7 +151,7 @@ def cli():
     "--pcl",
     default=Config.PCL,
     type=float,
-    help="Pacing cycle length",
+    help="Pacing cycle length (ms)",
 )
 def run(
     outdir: utils.PathLike,
