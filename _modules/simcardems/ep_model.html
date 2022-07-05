@@ -294,7 +294,7 @@
     <span class="k">return</span> <span class="n">M</span></div>
 
 
-<div class="viewcode-block" id="setup_ep_model"><a class="viewcode-back" href="../../simcardems.html#simcardems.ep_model.setup_ep_model">[docs]</a><span class="k">def</span> <span class="nf">setup_ep_model</span><span class="p">(</span><span class="n">cellmodel</span><span class="p">,</span> <span class="n">mesh</span><span class="p">):</span>
+<div class="viewcode-block" id="setup_ep_model"><a class="viewcode-back" href="../../simcardems.html#simcardems.ep_model.setup_ep_model">[docs]</a><span class="k">def</span> <span class="nf">setup_ep_model</span><span class="p">(</span><span class="n">cellmodel</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">PCL</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Set-up cardiac model based on benchmark parameters.&quot;&quot;&quot;</span>
 
     <span class="c1"># Define time</span>
@@ -320,7 +320,7 @@
     <span class="n">cm2mm</span> <span class="o">=</span> <span class="mf">10.0</span>
     <span class="n">factor</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">chi</span> <span class="o">*</span> <span class="n">C_m</span><span class="p">)</span>  <span class="c1"># NB: cbcbeat convention</span>
     <span class="n">amplitude</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">A</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">cm2mm</span><span class="p">)</span> <span class="o">**</span> <span class="mi">3</span>  <span class="c1"># mV/ms</span>
-    <span class="n">PCL</span> <span class="o">=</span> <span class="mi">1000</span>  <span class="c1"># Pacing cycle length [ms]</span>
+
     <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;((std::fmod(time,PCL) &gt;= start) &amp; (std::fmod(time,PCL) &lt;= duration + start)) ? amplitude : 0.0&quot;</span>
 
     <span class="n">I_s</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Expression</span><span class="p">(</span>

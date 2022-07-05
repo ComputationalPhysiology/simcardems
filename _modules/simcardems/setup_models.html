@@ -302,6 +302,7 @@
         <span class="n">drug_factors_file</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">drug_factors_file</span><span class="p">,</span>
         <span class="n">popu_factors_file</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">popu_factors_file</span><span class="p">,</span>
         <span class="n">disease_state</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">disease_state</span><span class="p">,</span>
+        <span class="n">PCL</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">PCL</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">coupling</span><span class="o">.</span><span class="n">register_ep_model</span><span class="p">(</span><span class="n">solver</span><span class="p">)</span>
@@ -449,6 +450,7 @@
     <span class="n">drug_factors_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">popu_factors_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">disease_state</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">disease_state</span><span class="p">,</span>
+    <span class="n">PCL</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">PCL</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="n">ps</span> <span class="o">=</span> <span class="n">ep_model</span><span class="o">.</span><span class="n">setup_splitting_solver_parameters</span><span class="p">(</span>
         <span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">,</span>
@@ -476,7 +478,7 @@
     <span class="n">cellmodel</span> <span class="o">=</span> <span class="n">CellModel</span><span class="p">(</span><span class="n">init_conditions</span><span class="o">=</span><span class="n">cell_inits</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">cell_params</span><span class="p">)</span>
 
     <span class="c1"># Set-up cardiac model</span>
-    <span class="n">ep_heart</span> <span class="o">=</span> <span class="n">ep_model</span><span class="o">.</span><span class="n">setup_ep_model</span><span class="p">(</span><span class="n">cellmodel</span><span class="p">,</span> <span class="n">coupling</span><span class="o">.</span><span class="n">ep_mesh</span><span class="p">)</span>
+    <span class="n">ep_heart</span> <span class="o">=</span> <span class="n">ep_model</span><span class="o">.</span><span class="n">setup_ep_model</span><span class="p">(</span><span class="n">cellmodel</span><span class="p">,</span> <span class="n">coupling</span><span class="o">.</span><span class="n">ep_mesh</span><span class="p">,</span> <span class="n">PCL</span><span class="o">=</span><span class="n">PCL</span><span class="p">)</span>
     <span class="n">timer</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Timer</span><span class="p">(</span><span class="s2">&quot;SplittingSolver: setup&quot;</span><span class="p">)</span>
 
     <span class="n">solver</span> <span class="o">=</span> <span class="n">cbcbeat</span><span class="o">.</span><span class="n">SplittingSolver</span><span class="p">(</span><span class="n">ep_heart</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">ps</span><span class="p">)</span>
@@ -663,7 +665,7 @@
             <span class="p">(</span><span class="s2">&quot;ep&quot;</span><span class="p">,</span> <span class="s2">&quot;V&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_v</span><span class="p">),</span>
             <span class="p">(</span><span class="s2">&quot;ep&quot;</span><span class="p">,</span> <span class="s2">&quot;Ca&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Ca</span><span class="p">),</span>
             <span class="p">(</span><span class="s2">&quot;mechanics&quot;</span><span class="p">,</span> <span class="s2">&quot;lmbda&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">lmbda_mech</span><span class="p">),</span>
-            <span class="p">(</span><span class="s2">&quot;mechanics&quot;</span><span class="p">,</span> <span class="s2">&quot;Ta&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mech_heart</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">active</span><span class="o">.</span><span class="n">Ta_current</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;mechanics&quot;</span><span class="p">,</span> <span class="s2">&quot;Ta&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mech_heart</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">active</span><span class="o">.</span><span class="n">Ta_current_cg1</span><span class="p">),</span>
             <span class="p">(</span><span class="s2">&quot;ep&quot;</span><span class="p">,</span> <span class="s2">&quot;XS&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_XS</span><span class="p">),</span>
             <span class="p">(</span><span class="s2">&quot;ep&quot;</span><span class="p">,</span> <span class="s2">&quot;XW&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_XW</span><span class="p">),</span>
             <span class="p">(</span><span class="s2">&quot;ep&quot;</span><span class="p">,</span> <span class="s2">&quot;CaTrpn&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_CaTrpn</span><span class="p">),</span>
