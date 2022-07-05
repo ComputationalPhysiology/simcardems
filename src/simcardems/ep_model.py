@@ -38,7 +38,7 @@ def define_conductivity_tensor(chi, C_m):
     return M
 
 
-def setup_ep_model(cellmodel, mesh):
+def setup_ep_model(cellmodel, mesh, PCL=1000):
     """Set-up cardiac model based on benchmark parameters."""
 
     # Define time
@@ -64,7 +64,7 @@ def setup_ep_model(cellmodel, mesh):
     cm2mm = 10.0
     factor = 1.0 / (chi * C_m)  # NB: cbcbeat convention
     amplitude = factor * A * (1.0 / cm2mm) ** 3  # mV/ms
-    PCL = 1000  # Pacing cycle length [ms]
+
     s = "((std::fmod(time,PCL) >= start) & (std::fmod(time,PCL) <= duration + start)) ? amplitude : 0.0"
 
     I_s = dolfin.Expression(

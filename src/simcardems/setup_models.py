@@ -46,6 +46,7 @@ def setup_EM_model(config: Config):
         drug_factors_file=config.drug_factors_file,
         popu_factors_file=config.popu_factors_file,
         disease_state=config.disease_state,
+        PCL=config.PCL,
     )
 
     coupling.register_ep_model(solver)
@@ -193,6 +194,7 @@ def setup_ep_solver(
     drug_factors_file=None,
     popu_factors_file=None,
     disease_state=Config.disease_state,
+    PCL=Config.PCL,
 ):
     ps = ep_model.setup_splitting_solver_parameters(
         theta=theta,
@@ -220,7 +222,7 @@ def setup_ep_solver(
     cellmodel = CellModel(init_conditions=cell_inits, params=cell_params)
 
     # Set-up cardiac model
-    ep_heart = ep_model.setup_ep_model(cellmodel, coupling.ep_mesh)
+    ep_heart = ep_model.setup_ep_model(cellmodel, coupling.ep_mesh, PCL=PCL)
     timer = dolfin.Timer("SplittingSolver: setup")
 
     solver = cbcbeat.SplittingSolver(ep_heart, params=ps)
@@ -407,7 +409,7 @@ class Runner:
             ("ep", "V", self._v),
             ("ep", "Ca", self._Ca),
             ("mechanics", "lmbda", self.coupling.lmbda_mech),
-            ("mechanics", "Ta", self.mech_heart.material.active.Ta_current),
+            ("mechanics", "Ta", self.mech_heart.material.active.Ta_current_cg1),
             ("ep", "XS", self._XS),
             ("ep", "XW", self._XW),
             ("ep", "CaTrpn", self._CaTrpn),
