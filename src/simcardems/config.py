@@ -42,6 +42,7 @@ class Config:
     linear_mechanics_solver: str = "mumps"
     mechanics_use_continuation: bool = False
     mechanics_use_custom_newton_solver: bool = False
+    PCL: float = 1000
 
 
 def default_parameters():

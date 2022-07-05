@@ -409,7 +409,8 @@ def plot_state_traces(results_file):
         residual_data = residual_file.readlines()
         residualN = []
         for line in residual_data:
-            residualN.append(float(line.strip().split("\t")[-1]))
+            if line.strip().split("\t")[-1] != "":
+                residualN.append(float(line.strip().split("\t")[-1]))
         residual_file.close()
 
         # Back to initial dt and time points
@@ -424,7 +425,6 @@ def plot_state_traces(results_file):
             color="lightcoral",
             label="Newton residualN",
         )
-        ax00r.yaxis.set_ticks([min(residualN), max(residualN)])
         ax01r = ax[0, 1].twinx()
         ax01r.plot(
             times_dt,
@@ -433,7 +433,6 @@ def plot_state_traces(results_file):
             color="lightcoral",
             label="Newton residualN",
         )
-        ax01r.yaxis.set_ticks([min(residualN), max(residualN)])
         ax01r.set_ylabel("Newton residual N")
         ax10r = ax[1, 0].twinx()
         ax10r.plot(
@@ -443,7 +442,6 @@ def plot_state_traces(results_file):
             color="lightcoral",
             label="Newton residualN",
         )
-        ax10r.yaxis.set_ticks([min(residualN), max(residualN)])
         ax11r = ax[1, 1].twinx()
         ax11r.plot(
             times_dt,
@@ -452,7 +450,6 @@ def plot_state_traces(results_file):
             color="lightcoral",
             label="Newton residualN",
         )
-        ax11r.yaxis.set_ticks([min(residualN), max(residualN)])
         ax11r.set_ylabel("Newton residual N")
         fig.tight_layout()
 
@@ -715,9 +712,14 @@ def save_popu_json(population_folder, num_models):
 
                         else:
                             # Otherwise, evaluation at center coordinates
-                            dict[f"m{PoMm}"][name].append(
-                                float(func(bnd[group].center)),
-                            )
+                            try:
+                                dict[f"m{PoMm}"][name].append(
+                                    float(func(bnd[group].center)),
+                                )
+                            except RuntimeError:
+                                dict[f"m{PoMm}"][name].append(
+                                    func.vector().get_local()[dof],
+                                )
 
         # Save entire dict to json file in outdir(=population_folder)
         with open(population_folder.joinpath("output_dict_center.json"), "w") as f:
