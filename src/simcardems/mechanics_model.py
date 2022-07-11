@@ -258,8 +258,8 @@ def setup_diriclet_bc(
     fix_right_plane: bool = False,
 ) -> typing.Tuple[pulse.BoundaryConditions, pulse.MarkerFunctions]:
     """Completely fix the left side of the mesh in the x-direction (i.e the side with the
-    lowest x-values), fix points at x=0 & y=0 in y-direction, fix points at x=0 & z=0 in
-    z-direction and apply some boundary condition to the right side.
+    lowest x-values), fix the plane with y=0 in the y-direction, fix the plane with
+    z=0 in the z-direction and apply some boundary condition to the right side.
 
 
     Parameters
@@ -304,16 +304,8 @@ def setup_diriclet_bc(
     # Define domain to apply dirichlet boundary conditions
     left = dolfin.CompiledSubDomain("near(x[0], 0) && on_boundary")
     right = dolfin.CompiledSubDomain("near(x[0], Lx) && on_boundary", Lx=Lx)
-    leftback = dolfin.CompiledSubDomain("near(x[0], 0) && near(x[2], 0)")
-    leftbottom = dolfin.CompiledSubDomain("near(x[0], 0) && near(x[1], 0)")
-    rightback = dolfin.CompiledSubDomain(
-        "near(x[0], Lx) && near(x[2], 0) && on_boundary",
-        Lx=Lx,
-    )
-    rightbottom = dolfin.CompiledSubDomain(
-        "near(x[0], Lx) && near(x[1], 0) && on_boundary",
-        Lx=Lx,
-    )
+    plane_y0 = dolfin.CompiledSubDomain("near(x[1], 0) && on_boundary")
+    plane_z0 = dolfin.CompiledSubDomain("near(x[2], 0) && on_boundary")
 
     boundary_markers = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim() - 1)
     boundary_markers.set_all(0)
@@ -322,10 +314,10 @@ def setup_diriclet_bc(
     left.mark(boundary_markers, left_marker)
     right_marker = 2
     right.mark(boundary_markers, right_marker)
-    leftback_marker = 3
-    leftback.mark(boundary_markers, leftback_marker)
-    leftbottom_marker = 4
-    leftbottom.mark(boundary_markers, leftbottom_marker)
+    plane_y0_marker = 3
+    plane_y0.mark(boundary_markers, plane_y0_marker)
+    plane_z0_marker = 4
+    plane_z0.mark(boundary_markers, plane_z0_marker)
 
     marker_functions = pulse.MarkerFunctions(ffun=boundary_markers)
 
@@ -342,14 +334,12 @@ def setup_diriclet_bc(
             dolfin.DirichletBC(
                 W.sub(0).sub(1),  # u_y
                 dolfin.Constant(0.0),
-                leftbottom,
-                method="pointwise",
+                plane_y0,
             ),
             dolfin.DirichletBC(
                 W.sub(0).sub(2),  # u_z
                 dolfin.Constant(0.0),
-                leftback,
-                method="pointwise",
+                plane_z0,
             ),
         ]
 
@@ -360,18 +350,6 @@ def setup_diriclet_bc(
                         W.sub(0).sub(0),  # u_x
                         dolfin.Constant(0.0),
                         right,
-                    ),
-                    dolfin.DirichletBC(
-                        W.sub(0).sub(1),  # u_y
-                        dolfin.Constant(0.0),
-                        rightbottom,
-                        method="pointwise",
-                    ),
-                    dolfin.DirichletBC(
-                        W.sub(0).sub(2),  # u_z
-                        dolfin.Constant(0.0),
-                        rightback,
-                        method="pointwise",
                     ),
                 ],
             )
