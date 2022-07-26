@@ -557,6 +557,12 @@ def stats(y):
     return ave, SD
 
 
+def extract_last_beat(y, time, pacing):
+    allbeats = apf.Beats(y=y, t=time, pacing=pacing)
+    lastbeat = allbeats.beats[-1]
+    return lastbeat.y, lastbeat.t
+
+
 def get_biomarkers(dict, outdir, num_models):
     biomarker_dict = {}
     fig, ax = plt.subplots()
@@ -573,6 +579,33 @@ def get_biomarkers(dict, outdir, num_models):
         inv_lmbda = np.zeros_like(lmbda)
         for i in range(0, len(lmbda)):
             inv_lmbda[i] = 1.0 - lmbda[i]
+
+        # Select only last beat for further analysis
+        onlylastbeat = True
+        if onlylastbeat:
+            logger.info(
+                "Only extracting biomarkers for the last beat of the simulation",
+            )
+            # Create a list with pacing indicators
+            pacing = np.zeros_like(time)
+            for i in range(0, len(pacing)):
+                if time[i] % 1000 <= 0.09 or i == 0:
+                    pacing[i] = 1
+
+            # Overwrite the variables with data from only the last beat
+            V, timelb = extract_last_beat(V, time, pacing)
+            Ca, timelb = extract_last_beat(Ca, time, pacing)
+            Ta, timelb = extract_last_beat(Ta, time, pacing)
+            lmbda, timelb = extract_last_beat(lmbda, time, pacing)
+            u, timelb = extract_last_beat(u, time, pacing)
+            inv_lmbda, timelb = extract_last_beat(inv_lmbda, time, pacing)
+            time = timelb
+
+            figlast, axlast = plt.subplots()
+            axlast.plot(time, V)
+            axlast.set_xlabel("Time (ms)")
+            axlast.set_ylabel("Voltage (mV)")
+            figlast.savefig(outdir.joinpath("AP_lastbeat.png"), dpi=300)
 
         biomarker_dict[f"m{PoMm}"]["maxTa"] = np.max(Ta)
         biomarker_dict[f"m{PoMm}"]["ampTa"] = np.max(Ta) - np.min(Ta)
