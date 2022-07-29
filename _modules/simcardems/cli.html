@@ -409,6 +409,18 @@
     <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
     <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Pacing cycle length (ms)&quot;</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
+    <span class="s2">&quot;--spring&quot;</span><span class="p">,</span>
+    <span class="n">default</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">spring</span><span class="p">,</span>
+    <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+    <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Set value of spring for Robin boundary condition&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
+    <span class="s2">&quot;--traction&quot;</span><span class="p">,</span>
+    <span class="n">default</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">traction</span><span class="p">,</span>
+    <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+    <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Set value of traction for Neumann boundary condition&quot;</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="k">def</span> <span class="nf">run</span><span class="p">(</span>
     <span class="n">outdir</span><span class="p">:</span> <span class="n">utils</span><span class="o">.</span><span class="n">PathLike</span><span class="p">,</span>
     <span class="n">T</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
@@ -432,6 +444,8 @@
     <span class="n">mechanics_use_continuation</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="n">mechanics_use_custom_newton_solver</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="n">pcl</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">spring</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">traction</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
 <span class="p">):</span>
 
     <span class="n">config</span> <span class="o">=</span> <span class="n">Config</span><span class="p">(</span>
@@ -440,6 +454,8 @@
         <span class="n">dx</span><span class="o">=</span><span class="n">dx</span><span class="p">,</span>
         <span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span>
         <span class="n">bnd_cond</span><span class="o">=</span><span class="n">bnd_cond</span><span class="p">,</span>
+        <span class="n">spring</span><span class="o">=</span><span class="n">spring</span><span class="p">,</span>
+        <span class="n">traction</span><span class="o">=</span><span class="n">traction</span><span class="p">,</span>
         <span class="n">load_state</span><span class="o">=</span><span class="n">load_state</span><span class="p">,</span>
         <span class="n">cell_init_file</span><span class="o">=</span><span class="n">cell_init_file</span><span class="p">,</span>
         <span class="n">hpc</span><span class="o">=</span><span class="n">hpc</span><span class="p">,</span>
