@@ -153,6 +153,18 @@ def cli():
     type=float,
     help="Pacing cycle length (ms)",
 )
+@click.option(
+    "--spring",
+    default=Config.spring,
+    type=float,
+    help="Set value of spring for Robin boundary condition",
+)
+@click.option(
+    "--traction",
+    default=Config.traction,
+    type=float,
+    help="Set value of traction for Neumann boundary condition",
+)
 def run(
     outdir: utils.PathLike,
     T: float,
@@ -176,6 +188,8 @@ def run(
     mechanics_use_continuation: bool,
     mechanics_use_custom_newton_solver: bool,
     pcl: float,
+    spring: float,
+    traction: float,
 ):
 
     config = Config(
@@ -184,6 +198,8 @@ def run(
         dx=dx,
         dt=dt,
         bnd_cond=bnd_cond,
+        spring=spring,
+        traction=traction,
         load_state=load_state,
         cell_init_file=cell_init_file,
         hpc=hpc,
