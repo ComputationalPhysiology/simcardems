@@ -11,15 +11,9 @@ from pathlib import Path
 
 import simcardems
 
-
-# Lets grab the default parameter and print them
-#
-
-parameters = simcardems.default_parameters()
-pprint.pprint(parameters)
-
-
-# This will output
+# Default config
+config = simcardems.Config()
+# This will set :
 #
 # ```
 # {'T': 1000,
@@ -45,14 +39,16 @@ pprint.pprint(parameters)
 #  'spring': None,
 #  'traction': None}
 # ```
-#
-# These are the default parameters used for the simulation.
-#
 
+# Overwrite outdir
 outdir = Path("results_simple_demo")
-parameters["outdir"] = outdir
-runner = simcardems.Runner(**parameters)
-runner.solve(T=parameters["T"], save_freq=parameters["save_freq"], hpc=False)
+config.outdir = outdir
+
+# Print current configuration
+pprint.pprint(config.as_dict())
+
+runner = simcardems.Runner(config)
+runner.solve(T=config.T, save_freq=config.save_freq, hpc=False)
 
 
 # This will create the output directory `results_simple_demo` with the following output
