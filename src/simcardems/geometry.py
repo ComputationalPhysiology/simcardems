@@ -1,6 +1,7 @@
 import abc
 from typing import Dict
 from typing import Optional
+from typing import Union
 
 import dolfin
 import numpy as np
@@ -44,16 +45,43 @@ def create_boxmesh(Lx, Ly, Lz, dx=0.5, refinements=0):
     return mesh
 
 
+def create_mesh_marking(mesh, marker_dict, filename=""):
+    # Mark regions of mesh from a dictionary of markers defined as
+    # marker_dict[marker_id] = {"x":(x1,x2), "y":(y1,y2), "z":(z1,z2)}
+
+    marker = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
+    eps = dolfin.DOLFIN_EPS
+    for marker_id in marker_dict:
+        ranges = marker_dict[marker_id]
+        for c in dolfin.cells(mesh):
+            in_xrange = ranges["x"][0] - eps <= c.midpoint().x() <= ranges["x"][1] + eps
+            in_yrange = ranges["y"][0] - eps <= c.midpoint().y() <= ranges["y"][1] + eps
+            in_zrange = ranges["z"][0] - eps <= c.midpoint().z() <= ranges["z"][1] + eps
+            if in_xrange and in_yrange and in_zrange:
+                marker[c] = int(marker_id)
+
+    if filename:
+        marker.rename("cells", "cells")
+        with dolfin.XDMFFile(mesh.mpi_comm(), filename) as file:
+            file.write(marker)
+
+    return marker
+
+
 class BaseGeometry(abc.ABC):
     """Abstract geometry base class"""
 
     num_refinements: int = 0
     mechanics_mesh: dolfin.Mesh
+    _mechanics_marking: dolfin.MeshFunction
 
     @property
     def ep_mesh(self) -> dolfin.Mesh:
         if not hasattr(self, "_ep_mesh"):
             self._ep_mesh = refine_mesh(self.mechanics_mesh, self.num_refinements)
+            if self._mechanics_marking:
+                self._ep_marking = dolfin.adapt(self._mechanics_marking, self._ep_mesh)
+
         return self._ep_mesh
 
     @abc.abstractproperty
@@ -87,6 +115,8 @@ class SlabGeometry(BaseGeometry):
         num_refinements: int = 0,
         mechanics_mesh: Optional[dolfin.Mesh] = None,
         ep_mesh: Optional[dolfin.Mesh] = None,
+        marking: Optional[Union[dict, str]] = None,
+        export_marking: Optional[Union[utils.PathLike, str]] = None,
     ) -> None:
         self.lx = lx
         self.ly = ly
@@ -107,6 +137,22 @@ class SlabGeometry(BaseGeometry):
             # For example we should make sure that num_refinements are correct
             # and the the ep mesh has the same partition as the mechanics mesh
             self._ep_mesh = ep_mesh
+
+        if marking is not None:
+            self._mechanics_marking = dolfin.MeshFunction(
+                "size_t",
+                self.mechanics_mesh,
+                self.mechanics_mesh.topology().dim(),
+            )
+            if isinstance(marking, str):
+                with dolfin.XDMFFile(self.mechanics_mesh.mpi_comm(), marking) as xdmf:
+                    xdmf.read(self._mechanics_marking, "cells")
+            elif isinstance(marking, dict):
+                self._mechanics_marking = create_mesh_marking(
+                    self.mechanics_mesh,
+                    marking,
+                    str(export_marking),
+                )
 
     def __repr__(self) -> str:
         return (

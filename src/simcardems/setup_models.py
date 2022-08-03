@@ -34,6 +34,8 @@ def setup_EM_model(config: Config):
         lz=config.lz,
         dx=config.dx,
         num_refinements=config.num_refinements,
+        marking=config.mesh_marking,
+        export_marking=config.export_marking,
     )
 
     coupling = em_model.EMCoupling(geo)

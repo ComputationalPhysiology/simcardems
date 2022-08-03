@@ -31,6 +31,8 @@ class Config:
     fix_right_plane: bool = False
     loglevel: int = logging.INFO
     num_refinements: int = 1
+    mesh_marking: typing.Optional[typing.Union[dict, str]] = None
+    export_marking: typing.Optional[typing.Union[utils.PathLike, str]] = None
     set_material: str = ""
     drug_factors_file: str = ""
     popu_factors_file: str = ""
@@ -43,6 +45,9 @@ class Config:
     mechanics_use_continuation: bool = False
     mechanics_use_custom_newton_solver: bool = False
     PCL: float = 1000
+
+    def as_dict(self):
+        return {k: v for k, v in self.__dict__.items()}
 
 
 def default_parameters():
