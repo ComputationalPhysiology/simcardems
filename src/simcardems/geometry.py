@@ -79,7 +79,7 @@ class BaseGeometry(abc.ABC):
     def ep_mesh(self) -> dolfin.Mesh:
         if not hasattr(self, "_ep_mesh"):
             self._ep_mesh = refine_mesh(self.mechanics_mesh, self.num_refinements)
-            if self._mechanics_marking:
+            if hasattr(self, "_mechanics_marking"):
                 self._ep_marking = dolfin.adapt(self._mechanics_marking, self._ep_mesh)
 
         return self._ep_mesh
