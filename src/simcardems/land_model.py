@@ -56,6 +56,7 @@ class LandModel(pulse.ActiveModel):
 
         self._dLambda = dolfin.Function(self.function_space)
         self.lmbda_prev = dolfin.Function(self.function_space)
+        self.lmbda_prev.vector()[:] = 1.0
         if lmbda is not None:
             self.lmbda_prev = lmbda
         self.lmbda = dolfin.Function(self.function_space)
