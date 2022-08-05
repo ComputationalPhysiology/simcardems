@@ -121,7 +121,15 @@ def save_state(
 
     bnd_cond_dict = dict([("dirichlet", 0), ("rigid", 1)])
     logger.debug("Save using h5py")
-    dict_to_h5(solver.ode_solver._model.parameters(), path, "ep/cell_params")
+    if coupling.ep_marking:
+        # FIXME : Find a way to save cell parameters as constant
+        # since these will be updated when loading dedicated json file
+        # in load_state function
+        logger.warning(
+            "cell_params are not saved when using heterogeneous tissue",
+        )
+    else:
+        dict_to_h5(solver.ode_solver._model.parameters(), path, "ep/cell_params")
     dict_to_h5(
         coupling.geometry.parameters,
         path,
