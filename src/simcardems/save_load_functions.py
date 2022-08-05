@@ -142,6 +142,7 @@ def load_state(
     path,
     drug_factors_file="",
     popu_factors_file="",
+    heterogeneous_factors_file="",
     disease_state="healthy",
 ):
     logger.debug(f"Load state from path {path}")
@@ -214,6 +215,7 @@ def load_state(
         cell_inits=cell_inits,
         drug_factors_file=drug_factors_file,
         popu_factors_file=popu_factors_file,
+        heterogeneous_factors_file=heterogeneous_factors_file,
         disease_state=disease_state,
     )
     coupling.register_ep_model(solver)

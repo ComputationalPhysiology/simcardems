@@ -36,6 +36,7 @@ class Config:
     set_material: str = ""
     drug_factors_file: str = ""
     popu_factors_file: str = ""
+    heterogeneous_factors_file: str = ""
     disease_state: str = "healthy"
     mechanics_ode_scheme: land_model.Scheme = land_model.Scheme.analytic
     ep_ode_scheme: str = "GRL1"

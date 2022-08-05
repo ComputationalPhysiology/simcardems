@@ -58,6 +58,8 @@ config.export_marking = outdir.joinpath("marking.xdmf")
 # Load slab geometry marking from existing file
 # config.mesh_marking = outdir.joinpath("marking.xdmf")
 
+config.heterogeneous_factors_file = "heterogeneity.json"
+
 # Print current configuration
 pprint.pprint(config.as_dict())
 
