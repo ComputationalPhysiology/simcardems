@@ -223,6 +223,41 @@ def setup_ep_solver(
 
     cellmodel = CellModel(init_conditions=cell_inits, params=cell_params)
 
+    # Update cellmodel in case of heterogeneous tissue
+    if coupling.ep_marking:
+
+        # Read json file containing heterogeneous parameters
+        # json_array[param_name] = {(marker_id1, value1), (marker_id2, value2), ...}
+        # FIXME : Set json_array manually for now
+        json_array = dict()
+        json_array["scale_ICaL"] = {1: 1.02, 2: 1.01}
+        json_array["scale_INaL"] = {1: 2.3, 2: 2.1}
+
+        # Build function with heterogeneous parameters
+        updated_params = dict()
+        for param in json_array.keys():
+
+            param_func = dolfin.Function(
+                dolfin.FunctionSpace(coupling.ep_mesh, "DG", 0),
+            )
+            # Initialize with initial cell_params value everywhere
+            param_func.vector()[:] = cell_params[param]
+            # Update value on the marked cells
+            for (marker_id, value) in json_array[param].items():
+                marked_cells = coupling.ep_marking.where_equal(marker_id)
+                print("marked_cells = ", marked_cells)
+                for c in marked_cells:
+                    param_func.vector()[c] = value
+
+            # DEBUG : Write heterogeneous params to xdmf file
+            filename = Path("heterogeneous_params").joinpath(param + "-function.xdmf")
+            with dolfin.XDMFFile(coupling.ep_mesh.mpi_comm(), str(filename)) as file:
+                file.write(param_func)
+
+            updated_params[param] = param_func
+
+        cellmodel.set_parameters(**updated_params)
+
     # Set-up cardiac model
     ep_heart = ep_model.setup_ep_model(cellmodel, coupling.ep_mesh, PCL=PCL)
     timer = dolfin.Timer("SplittingSolver: setup")

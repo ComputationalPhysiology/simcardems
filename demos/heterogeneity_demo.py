@@ -58,8 +58,6 @@ config.export_marking = outdir.joinpath("marking.xdmf")
 # Load slab geometry marking from existing file
 # config.mesh_marking = outdir.joinpath("marking.xdmf")
 
-# config.num_refinements=2
-
 # Print current configuration
 pprint.pprint(config.as_dict())
 
