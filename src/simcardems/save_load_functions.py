@@ -41,7 +41,16 @@ def dict_to_h5(data, h5name, h5group):
         if h5file.keys() != "":
             # Creating a temporary h5file and copy to initial file to avoid overwriting
             # FIXME : Is there a more elegant way to do this ?
-            with h5pyfile(str(h5name.with_suffix("")) + "_tmp.h5", "w") as h5file_tmp:
+            try:
+                tmp_name = str(h5name.with_suffix("")) + "_tmp.h5"
+            except Exception:
+                pass
+            try:
+                tmp_name = str(os.path.splitext(h5name)[0]) + "_tmp.h5"
+            except Exception:
+                pass
+
+            with h5pyfile(tmp_name, "w") as h5file_tmp:
                 if h5group == "":
                     group = h5file_tmp
                 else:
@@ -145,7 +154,6 @@ def save_state(
         )
         # Saving homogeneous parameters (float, int)
         dict_to_h5(homogeneous_params, path, "ep/cell_params")
-
     else:
         dict_to_h5(solver.ode_solver._model.parameters(), path, "ep/cell_params")
 
