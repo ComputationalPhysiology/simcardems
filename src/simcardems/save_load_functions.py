@@ -44,7 +44,7 @@ def dict_to_h5(data, h5name, h5group):
             if isinstance(h5name, str):
                 tmp_name = str(os.path.splitext(h5name)[0]) + "_tmp.h5"
             elif isinstance(h5name, os.PathLike):
-                tmp_name = str(h5name.with_suffix("")) + "_tmp.h5"
+                tmp_name = h5name.with_name(f"{h5name.stem}_tmp.h5")
             else:
                 logger.error(
                     "dict_to_h5 : h5name has wrong type (supported : str / path)",
