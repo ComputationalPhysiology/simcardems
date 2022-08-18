@@ -30,7 +30,7 @@ repos:
       - id: add-trailing-comma
 
   - repo: https://github.com/asottile/setup-cfg-fmt
-    rev: v1.20.2
+    rev: v2.0.0
     hooks:
       - id: setup-cfg-fmt
 
@@ -40,7 +40,7 @@ repos:
       - id: mypy
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v6.3.2
+    rev: v6.6.0
     hooks:
       - id: cspell
         files: src/|docs/source/(.+).md|docs/source/(.+).rst|tests|README.md
