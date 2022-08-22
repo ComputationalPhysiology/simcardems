@@ -312,6 +312,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_dLambda</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">function_space</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lmbda_prev</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">function_space</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lmbda_prev</span><span class="o">.</span><span class="n">vector</span><span class="p">()[:]</span> <span class="o">=</span> <span class="mf">1.0</span>
         <span class="k">if</span> <span class="n">lmbda</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">lmbda_prev</span> <span class="o">=</span> <span class="n">lmbda</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lmbda</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">function_space</span><span class="p">)</span>
