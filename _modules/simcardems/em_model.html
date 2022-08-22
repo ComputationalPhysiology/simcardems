@@ -303,16 +303,13 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Done registering EP model&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="EMCoupling.register_mech_model"><a class="viewcode-back" href="../../simcardems.html#simcardems.em_model.EMCoupling.register_mech_model">[docs]</a>    <span class="k">def</span> <span class="nf">register_mech_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">solver</span><span class="p">:</span> <span class="n">MechanicsProblem</span><span class="p">):</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Registering EP model&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Registering mech model&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_mech_solver</span> <span class="o">=</span> <span class="n">solver</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">Zetas_mech_quad</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">active</span><span class="o">.</span><span class="n">Zetas_prev</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Zetaw_mech_quad</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">active</span><span class="o">.</span><span class="n">Zetaw_prev</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lmbda_mech_quad</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">active</span><span class="o">.</span><span class="n">lmbda_prev</span>
-        <span class="c1"># self.V = dolfin.FunctionSpace(self.mech_mesh, &quot;DG&quot;, 1)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Zetas_mech</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">V_mech</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Zetaw_mech</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">V_mech</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">lmbda_mech</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">V_mech</span><span class="p">)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">mechanics_to_coupling</span><span class="p">()</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Done registering EP model&quot;</span><span class="p">)</span></div>
 
