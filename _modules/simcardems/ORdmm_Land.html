@@ -1799,7 +1799,15 @@
         <span class="p">)</span> <span class="o">*</span> <span class="n">Acap</span> <span class="o">/</span> <span class="p">(</span><span class="n">F</span> <span class="o">*</span> <span class="n">vmyo</span><span class="p">)</span>
         <span class="n">F_expressions</span><span class="p">[</span><span class="mi">33</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">JdiffNa</span> <span class="o">+</span> <span class="p">(</span><span class="o">-</span><span class="n">ICaNa</span> <span class="o">-</span> <span class="mf">3.0</span> <span class="o">*</span> <span class="n">INaCa_ss</span><span class="p">)</span> <span class="o">*</span> <span class="n">Acap</span> <span class="o">/</span> <span class="p">(</span><span class="n">F</span> <span class="o">*</span> <span class="n">vss</span><span class="p">)</span>
         <span class="n">F_expressions</span><span class="p">[</span><span class="mi">34</span><span class="p">]</span> <span class="o">=</span> <span class="n">JdiffK</span> <span class="o">*</span> <span class="n">vss</span> <span class="o">/</span> <span class="n">vmyo</span> <span class="o">+</span> <span class="p">(</span>
-            <span class="o">-</span><span class="n">Isac_P_k</span> <span class="o">-</span> <span class="n">IK1</span> <span class="o">-</span> <span class="n">IKb</span> <span class="o">-</span> <span class="n">IKr</span> <span class="o">-</span> <span class="n">IKs</span> <span class="o">-</span> <span class="n">Istim</span> <span class="o">-</span> <span class="n">Ito</span> <span class="o">-</span> <span class="n">Isac_P_ns</span> <span class="o">/</span> <span class="mf">3.0</span> <span class="o">+</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">INaK</span>
+            <span class="o">-</span><span class="n">Isac_P_k</span>
+            <span class="o">-</span> <span class="n">IK1</span>
+            <span class="o">-</span> <span class="n">IKb</span>
+            <span class="o">-</span> <span class="n">IKr</span>
+            <span class="o">-</span> <span class="n">IKs</span>
+            <span class="o">-</span> <span class="n">Istim</span>
+            <span class="o">-</span> <span class="n">Ito</span>
+            <span class="o">-</span> <span class="n">Isac_P_ns</span> <span class="o">/</span> <span class="mf">3.0</span>
+            <span class="o">+</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">INaK</span>
         <span class="p">)</span> <span class="o">*</span> <span class="n">Acap</span> <span class="o">/</span> <span class="p">(</span><span class="n">F</span> <span class="o">*</span> <span class="n">vmyo</span><span class="p">)</span>
         <span class="n">F_expressions</span><span class="p">[</span><span class="mi">35</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">JdiffK</span> <span class="o">-</span> <span class="n">Acap</span> <span class="o">*</span> <span class="n">ICaK</span> <span class="o">/</span> <span class="p">(</span><span class="n">F</span> <span class="o">*</span> <span class="n">vss</span><span class="p">)</span>
         <span class="n">Bcass</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span>
@@ -1871,6 +1879,7 @@
                 <span class="o">-</span> <span class="n">rw</span> <span class="o">*</span> <span class="n">scale_popu_rw</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="p">(</span><span class="n">rs</span> <span class="o">*</span> <span class="n">scale_popu_rs</span><span class="p">))</span>
             <span class="p">)</span>
         <span class="p">)</span>
+
         <span class="n">F_expressions</span><span class="p">[</span><span class="mi">42</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">ufl</span><span class="o">.</span><span class="n">conditional</span><span class="p">(</span>
                 <span class="n">ufl</span><span class="o">.</span><span class="n">lt</span><span class="p">(</span><span class="n">ufl</span><span class="o">.</span><span class="n">elem_pow</span><span class="p">(</span><span class="n">CaTrpn</span><span class="p">,</span> <span class="o">-</span><span class="p">(</span><span class="n">ntm</span> <span class="o">*</span> <span class="n">scale_popu_nTm</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">),</span> <span class="mf">100.0</span><span class="p">),</span>
