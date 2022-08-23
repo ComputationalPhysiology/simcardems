@@ -1543,7 +1543,15 @@ class ORdmm_Land(CardiacCellModel):
         ) * Acap / (F * vmyo)
         F_expressions[33] = -JdiffNa + (-ICaNa - 3.0 * INaCa_ss) * Acap / (F * vss)
         F_expressions[34] = JdiffK * vss / vmyo + (
-            -Isac_P_k - IK1 - IKb - IKr - IKs - Istim - Ito - Isac_P_ns / 3.0 + 2.0 * INaK
+            -Isac_P_k
+            - IK1
+            - IKb
+            - IKr
+            - IKs
+            - Istim
+            - Ito
+            - Isac_P_ns / 3.0
+            + 2.0 * INaK
         ) * Acap / (F * vmyo)
         F_expressions[35] = -JdiffK - Acap * ICaK / (F * vss)
         Bcass = 1.0 / (
@@ -1615,6 +1623,7 @@ class ORdmm_Land(CardiacCellModel):
                 - rw * scale_popu_rw * (1.0 - (rs * scale_popu_rs))
             )
         )
+
         F_expressions[42] = (
             ufl.conditional(
                 ufl.lt(ufl.elem_pow(CaTrpn, -(ntm * scale_popu_nTm) / 2.0), 100.0),
