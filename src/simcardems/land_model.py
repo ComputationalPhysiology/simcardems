@@ -17,13 +17,13 @@ def _Zeta(Zeta_prev, A, c, dLambda, dt, scheme: Scheme):
 
     if scheme == Scheme.analytic:
         return Zeta_prev * dolfin.exp(-c * dt) + (A * dLambda / c * dt) * (
-            1 - dolfin.exp(-c * dt)
+            1.0 - dolfin.exp(-c * dt)
         )
 
     elif scheme == Scheme.bd:
-        return Zeta_prev + A * dLambda / (1 + c * dt)
+        return Zeta_prev + A * dLambda / (1.0 + c * dt)
     else:
-        return Zeta_prev * (1 - c * dt) + A * dLambda
+        return Zeta_prev * (1.0 - c * dt) + A * dLambda
 
 
 class LandModel(pulse.ActiveModel):
@@ -91,7 +91,7 @@ class LandModel(pulse.ActiveModel):
             Tot_A
             * rs
             * scale_popu_rs
-            / (rs * scale_popu_rs + rw * scale_popu_rw * (1 - (rs * scale_popu_rs)))
+            / (rs * scale_popu_rs + rw * scale_popu_rw * (1.0 - (rs * scale_popu_rs)))
         )
 
     @property
@@ -110,7 +110,7 @@ class LandModel(pulse.ActiveModel):
             kuw
             * scale_popu_kuw
             * phi
-            * (1 - (rw * scale_popu_rw))
+            * (1.0 - (rw * scale_popu_rw))
             / (rw * scale_popu_rw)
         )
 
@@ -129,7 +129,7 @@ class LandModel(pulse.ActiveModel):
             * phi
             * rw
             * scale_popu_rw
-            * (1 - (rs * scale_popu_rs))
+            * (1.0 - (rs * scale_popu_rs))
             / (rs * scale_popu_rs)
         )
 
@@ -206,13 +206,13 @@ class LandModel(pulse.ActiveModel):
             _min = min
             _max = max
         lmbda = _min(1.2, self.lmbda)
-        h_lambda_prima = 1 + Beta0 * (lmbda + _min(lmbda, 0.87) - 1.87)
+        h_lambda_prima = 1.0 + Beta0 * (lmbda + _min(lmbda, 0.87) - 1.87)
         h_lambda = _max(0, h_lambda_prima)
 
         return (
             h_lambda
             * (Tref * scale_popu_Tref / (rs * scale_popu_rs))
-            * (self.XS * (self.Zetas + 1) + self.XW * self.Zetaw)
+            * (self.XS * (self.Zetas + 1.0) + self.XW * self.Zetaw)
         )
 
     def Wactive(self, F, **kwargs):

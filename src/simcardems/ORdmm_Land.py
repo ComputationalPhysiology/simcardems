@@ -19,11 +19,11 @@ logger = utils.getLogger(__name__)
 
 
 def Max(a, b):
-    return (a + b + abs(a - b)) / Constant(2)
+    return (a + b + abs(a - b)) / Constant(2.0)
 
 
 def Min(a, b):
-    return (a + b - abs(a - b)) / Constant(2)
+    return (a + b - abs(a - b)) / Constant(2.0)
 
 
 def vs_functions_to_dict(vs):
@@ -109,10 +109,10 @@ class ORdmm_Land(CardiacCellModel):
                 ("kws", 0.012),
                 ("mode", 1),
                 ("ntm", 2.4),
-                ("ntrpn", 2),
+                ("ntrpn", 2.0),
                 ("p_a", 2.1),
                 ("p_b", 9.1),
-                ("p_k", 7),
+                ("p_k", 7.0),
                 ("phi", 2.23),
                 ("rs", 0.25),
                 ("rw", 0.5),
@@ -146,7 +146,7 @@ class ORdmm_Land(CardiacCellModel):
                 ("Kxkur", 292.0),
                 ("MgADP", 0.05),
                 ("MgATP", 9.8),
-                ("Pnak", 30),
+                ("Pnak", 30.0),
                 ("delta", -0.155),
                 ("eP", 4.2),
                 ("k1m", 182.4),
@@ -162,7 +162,7 @@ class ORdmm_Land(CardiacCellModel):
                 ("PNab", 3.75e-10),
                 ("PCab", 2.5e-08),
                 ("GpCa", 0.0005),
-                ("Esac_ns", -10),
+                ("Esac_ns", -10.0),
                 ("Gsac_k", 1.097904761904762),
                 ("Gsac_ns", 0.006),
                 ("lambda_max", 1.1),
@@ -634,7 +634,7 @@ class ORdmm_Land(CardiacCellModel):
         )
 
         # Expressions for the INaCa_ss component
-        h1 = 1 + (1 + hna) * nass / kna3
+        h1 = 1.0 + (1.0 + hna) * nass / kna3
         h2 = hna * nass / (kna3 * h1)
         h3 = 1.0 / h1
         h4 = 1.0 + (1 + nass / kna2) * nass / kna1
@@ -764,18 +764,18 @@ class ORdmm_Land(CardiacCellModel):
 
         # Expressions for the Isac (Pueyo)--> ns + k component
         Gsac_ns = 0.006 * scale_drug_Isacns
-        Esac_ns = -10
+        Esac_ns = -10.0
         lambda_max = 1.1
-        Gsac_k = (0.2882 * 800 / 210) * scale_drug_Isack  # Pueyo endo
+        Gsac_k = (0.2882 * 800.0 / 210.0) * scale_drug_Isack  # Pueyo endo
 
         Isac_P_ns = ufl.conditional(
             ufl.lt(lmbda, 1.0),
-            0,
+            0.0,
             Gsac_ns * ((lmbda - 1.0) / (lambda_max - 1.0)) * (v - Esac_ns),
         )
         Isac_P_k = ufl.conditional(
             ufl.lt(lmbda, 1.0),
-            0,
+            0.0,
             Gsac_k
             * ((lmbda - 1.0) / (lambda_max - 1.0))
             * (1.0 / (1.0 + ufl.exp((19.05 - v) / (29.98)))),
@@ -1302,7 +1302,7 @@ class ORdmm_Land(CardiacCellModel):
         # Expressions for the INaCa_i component
         hca = ufl.exp(F * qca * v / (R * T))
         hna = ufl.exp(F * qna * v / (R * T))
-        h1_i = 1 + (1 + hna) * nai / kna3
+        h1_i = 1.0 + (1.0 + hna) * nai / kna3
         h2_i = hna * nai / (kna3 * h1_i)
         h3_i = 1.0 / h1_i
         h4_i = 1.0 + (1 + nai / kna2) * nai / kna1
@@ -1348,7 +1348,7 @@ class ORdmm_Land(CardiacCellModel):
         )
 
         # Expressions for the INaCa_ss component
-        h1 = 1 + (1 + hna) * nass / kna3
+        h1 = 1.0 + (1.0 + hna) * nass / kna3
         h2 = hna * nass / (kna3 * h1)
         h3 = 1.0 / h1
         h4 = 1.0 + (1 + nass / kna2) * nass / kna1
@@ -1478,17 +1478,17 @@ class ORdmm_Land(CardiacCellModel):
 
         # Expressions for the Isac (Pueyo)--> ns + k component
         Gsac_ns = 0.006 * scale_drug_Isacns
-        Esac_ns = -10
+        Esac_ns = -10.0
         lambda_max = 1.1
-        Gsac_k = (0.2882 * 800 / 210) * scale_drug_Isack  # Pueyo endo
+        Gsac_k = (0.2882 * 800.0 / 210.0) * scale_drug_Isack  # Pueyo endo
         Isac_P_ns = ufl.conditional(
             ufl.lt(lmbda, 1.0),
-            0,
+            0.0,
             Gsac_ns * ((lmbda - 1.0) / (lambda_max - 1.0)) * (v - Esac_ns),
         )
         Isac_P_k = ufl.conditional(
             ufl.lt(lmbda, 1.0),
-            0,
+            0.0,
             Gsac_k
             * ((lmbda - 1.0) / (lambda_max - 1.0))
             * (1.0 / (1.0 + ufl.exp((19.05 - v) / (29.98)))),
@@ -1539,11 +1539,11 @@ class ORdmm_Land(CardiacCellModel):
 
         # Expressions for the intracellular concentrations component
         F_expressions[32] = JdiffNa * vss / vmyo + (
-            -INa - INaL - INab - Isac_P_ns / 3 - 3.0 * INaCa_i - 3.0 * INaK
+            -INa - INaL - INab - Isac_P_ns / 3.0 - 3.0 * INaCa_i - 3.0 * INaK
         ) * Acap / (F * vmyo)
         F_expressions[33] = -JdiffNa + (-ICaNa - 3.0 * INaCa_ss) * Acap / (F * vss)
         F_expressions[34] = JdiffK * vss / vmyo + (
-            -Isac_P_k - IK1 - IKb - IKr - IKs - Istim - Ito - Isac_P_ns / 3 + 2.0 * INaK
+            -Isac_P_k - IK1 - IKb - IKr - IKs - Istim - Ito - Isac_P_ns / 3.0 + 2.0 * INaK
         ) * Acap / (F * vmyo)
         F_expressions[35] = -JdiffK - Acap * ICaK / (F * vss)
         Bcass = 1.0 / (
@@ -1562,27 +1562,27 @@ class ORdmm_Land(CardiacCellModel):
 
         # Expressions for the mechanics component
         kwu = -kws * scale_popu_kws + (kuw * scale_popu_kuw) * (
-            -1 + 1.0 / (rw * scale_popu_rw)
+            -1.0 + 1.0 / (rw * scale_popu_rw)
         )
         ksu = (
             kws
             * scale_popu_kws
             * rw
             * scale_popu_rw
-            * (-1 + 1.0 / (rs * scale_popu_rs))
+            * (-1.0 + 1.0 / (rs * scale_popu_rs))
         )
 
         lambda_min12 = ufl.conditional(ufl.lt(lmbda, 1.2), lmbda, 1.2)
-        XS = ufl.conditional(ufl.lt(XS, 0), 0, XS)
-        XW = ufl.conditional(ufl.lt(XW, 0), 0, XW)
+        XS = ufl.conditional(ufl.lt(XS, 0.0), 0.0, XS)
+        XW = ufl.conditional(ufl.lt(XW, 0.0), 0.0, XW)
 
-        XU = 1 - TmB - XS - XW
+        XU = 1.0 - TmB - XS - XW
         gammawu = gammaw * abs(Zetaw)
         # gammasu = gammas*ufl.conditional(ufl.gt(Zetas*(ufl.gt(Zetas, 0)), (-1 -\
         #     Zetas)*(ufl.lt(Zetas, -1))), Zetas*(ufl.gt(Zetas, 0)), (-1 -\
         #     Zetas)*(ufl.lt(Zetas, -1)))
-        zetas1 = Zetas * ufl.conditional(ufl.gt(Zetas, 0), 1, 0)
-        zetas2 = (-1 - Zetas) * ufl.conditional(ufl.lt(Zetas, -1), 1, 0)
+        zetas1 = Zetas * ufl.conditional(ufl.gt(Zetas, 0.0), 1.0, 0.0)
+        zetas2 = (-1.0 - Zetas) * ufl.conditional(ufl.lt(Zetas, -1.0), 1.0, 0.0)
         gammasu = gammas * Max(zetas1, zetas2)
 
         F_expressions[39] = kws * scale_popu_kws * XW - XS * gammasu - XS * ksu
@@ -1593,16 +1593,16 @@ class ORdmm_Land(CardiacCellModel):
             - XW * kwu
         )
         cat50 = cat50_ref * scale_popu_CaT50ref * HF_scaling_cat50_ref + Beta1 * (
-            -1 + lambda_min12
+            -1.0 + lambda_min12
         )
-        CaTrpn = ufl.conditional(ufl.lt(CaTrpn, 0), 0, CaTrpn)
+        CaTrpn = ufl.conditional(ufl.lt(CaTrpn, 0.0), 0.0, CaTrpn)
         F_expressions[41] = (
             ktrpn
             * scale_popu_kTRPN
             * (
                 -CaTrpn
-                + ufl.elem_pow(1000 * cai / cat50, ntrpn * scale_popu_nTRPN)
-                * (1 - CaTrpn)
+                + ufl.elem_pow(1000.0 * cai / cat50, ntrpn * scale_popu_nTRPN)
+                * (1.0 - CaTrpn)
             )
         )
         kb = (
@@ -1610,28 +1610,28 @@ class ORdmm_Land(CardiacCellModel):
             * scale_popu_ku
             * ufl.elem_pow(Trpn50 * scale_popu_TRPN50, (ntm * scale_popu_nTm))
             / (
-                1
+                1.0
                 - (rs * scale_popu_rs)
-                - rw * scale_popu_rw * (1 - (rs * scale_popu_rs))
+                - rw * scale_popu_rw * (1.0 - (rs * scale_popu_rs))
             )
         )
         F_expressions[42] = (
             ufl.conditional(
-                ufl.lt(ufl.elem_pow(CaTrpn, -(ntm * scale_popu_nTm) / 2), 100),
-                ufl.elem_pow(CaTrpn, -(ntm * scale_popu_nTm) / 2),
-                100,
+                ufl.lt(ufl.elem_pow(CaTrpn, -(ntm * scale_popu_nTm) / 2.0), 100.0),
+                ufl.elem_pow(CaTrpn, -(ntm * scale_popu_nTm) / 2.0),
+                100.0,
             )
             * XU
             * kb
             - ku
             * scale_popu_ku
-            * ufl.elem_pow(CaTrpn, (ntm * scale_popu_nTm) / 2)
+            * ufl.elem_pow(CaTrpn, (ntm * scale_popu_nTm) / 2.0)
             * TmB
         )
 
-        C = -1 + lambda_min12
+        C = -1.0 + lambda_min12
         dCd = -Cd + C
-        eta = ufl.conditional(ufl.lt(dCd, 0), etas, etal)
+        eta = ufl.conditional(ufl.lt(dCd, 0.0), etas, etal)
         F_expressions[43] = p_k * (-Cd + C) / eta
         Bcai = 1.0 / (1.0 + cmdnmax * kmcmdn * ufl.elem_pow(kmcmdn + cai, -2.0))
         J_TRPN = trpnmax * F_expressions[41]
@@ -1639,7 +1639,7 @@ class ORdmm_Land(CardiacCellModel):
             -J_TRPN
             + Jdiff * vss / vmyo
             - Jup * vnsr / vmyo
-            + 0.5 * (-ICab - IpCa - Isac_P_ns / 3 + 2.0 * INaCa_i) * Acap / (F * vmyo)
+            + 0.5 * (-ICab - IpCa - Isac_P_ns / 3.0 + 2.0 * INaCa_i) * Acap / (F * vmyo)
         ) * Bcai
 
         # Return results
