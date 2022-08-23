@@ -273,13 +273,13 @@
 
     <span class="k">if</span> <span class="n">scheme</span> <span class="o">==</span> <span class="n">Scheme</span><span class="o">.</span><span class="n">analytic</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">Zeta_prev</span> <span class="o">*</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">c</span> <span class="o">*</span> <span class="n">dt</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">A</span> <span class="o">*</span> <span class="n">dLambda</span> <span class="o">/</span> <span class="n">c</span> <span class="o">*</span> <span class="n">dt</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span>
-            <span class="mi">1</span> <span class="o">-</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">c</span> <span class="o">*</span> <span class="n">dt</span><span class="p">)</span>
+            <span class="mf">1.0</span> <span class="o">-</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">c</span> <span class="o">*</span> <span class="n">dt</span><span class="p">)</span>
         <span class="p">)</span>
 
     <span class="k">elif</span> <span class="n">scheme</span> <span class="o">==</span> <span class="n">Scheme</span><span class="o">.</span><span class="n">bd</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">Zeta_prev</span> <span class="o">+</span> <span class="n">A</span> <span class="o">*</span> <span class="n">dLambda</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">c</span> <span class="o">*</span> <span class="n">dt</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Zeta_prev</span> <span class="o">+</span> <span class="n">A</span> <span class="o">*</span> <span class="n">dLambda</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">c</span> <span class="o">*</span> <span class="n">dt</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">Zeta_prev</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">c</span> <span class="o">*</span> <span class="n">dt</span><span class="p">)</span> <span class="o">+</span> <span class="n">A</span> <span class="o">*</span> <span class="n">dLambda</span>
+        <span class="k">return</span> <span class="n">Zeta_prev</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">c</span> <span class="o">*</span> <span class="n">dt</span><span class="p">)</span> <span class="o">+</span> <span class="n">A</span> <span class="o">*</span> <span class="n">dLambda</span>
 
 
 <div class="viewcode-block" id="LandModel"><a class="viewcode-back" href="../../simcardems.html#simcardems.config.LandModel">[docs]</a><span class="k">class</span> <span class="nc">LandModel</span><span class="p">(</span><span class="n">pulse</span><span class="o">.</span><span class="n">ActiveModel</span><span class="p">):</span>
@@ -347,7 +347,7 @@
             <span class="n">Tot_A</span>
             <span class="o">*</span> <span class="n">rs</span>
             <span class="o">*</span> <span class="n">scale_popu_rs</span>
-            <span class="o">/</span> <span class="p">(</span><span class="n">rs</span> <span class="o">*</span> <span class="n">scale_popu_rs</span> <span class="o">+</span> <span class="n">rw</span> <span class="o">*</span> <span class="n">scale_popu_rw</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">rs</span> <span class="o">*</span> <span class="n">scale_popu_rs</span><span class="p">)))</span>
+            <span class="o">/</span> <span class="p">(</span><span class="n">rs</span> <span class="o">*</span> <span class="n">scale_popu_rs</span> <span class="o">+</span> <span class="n">rw</span> <span class="o">*</span> <span class="n">scale_popu_rw</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="p">(</span><span class="n">rs</span> <span class="o">*</span> <span class="n">scale_popu_rs</span><span class="p">)))</span>
         <span class="p">)</span>
 
     <span class="nd">@property</span>
@@ -366,7 +366,7 @@
             <span class="n">kuw</span>
             <span class="o">*</span> <span class="n">scale_popu_kuw</span>
             <span class="o">*</span> <span class="n">phi</span>
-            <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">rw</span> <span class="o">*</span> <span class="n">scale_popu_rw</span><span class="p">))</span>
+            <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="p">(</span><span class="n">rw</span> <span class="o">*</span> <span class="n">scale_popu_rw</span><span class="p">))</span>
             <span class="o">/</span> <span class="p">(</span><span class="n">rw</span> <span class="o">*</span> <span class="n">scale_popu_rw</span><span class="p">)</span>
         <span class="p">)</span>
 
@@ -385,7 +385,7 @@
             <span class="o">*</span> <span class="n">phi</span>
             <span class="o">*</span> <span class="n">rw</span>
             <span class="o">*</span> <span class="n">scale_popu_rw</span>
-            <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">rs</span> <span class="o">*</span> <span class="n">scale_popu_rs</span><span class="p">))</span>
+            <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="p">(</span><span class="n">rs</span> <span class="o">*</span> <span class="n">scale_popu_rs</span><span class="p">))</span>
             <span class="o">/</span> <span class="p">(</span><span class="n">rs</span> <span class="o">*</span> <span class="n">scale_popu_rs</span><span class="p">)</span>
         <span class="p">)</span>
 
@@ -462,13 +462,13 @@
             <span class="n">_min</span> <span class="o">=</span> <span class="nb">min</span>
             <span class="n">_max</span> <span class="o">=</span> <span class="nb">max</span>
         <span class="n">lmbda</span> <span class="o">=</span> <span class="n">_min</span><span class="p">(</span><span class="mf">1.2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lmbda</span><span class="p">)</span>
-        <span class="n">h_lambda_prima</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">Beta0</span> <span class="o">*</span> <span class="p">(</span><span class="n">lmbda</span> <span class="o">+</span> <span class="n">_min</span><span class="p">(</span><span class="n">lmbda</span><span class="p">,</span> <span class="mf">0.87</span><span class="p">)</span> <span class="o">-</span> <span class="mf">1.87</span><span class="p">)</span>
+        <span class="n">h_lambda_prima</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="n">Beta0</span> <span class="o">*</span> <span class="p">(</span><span class="n">lmbda</span> <span class="o">+</span> <span class="n">_min</span><span class="p">(</span><span class="n">lmbda</span><span class="p">,</span> <span class="mf">0.87</span><span class="p">)</span> <span class="o">-</span> <span class="mf">1.87</span><span class="p">)</span>
         <span class="n">h_lambda</span> <span class="o">=</span> <span class="n">_max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">h_lambda_prima</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="p">(</span>
             <span class="n">h_lambda</span>
             <span class="o">*</span> <span class="p">(</span><span class="n">Tref</span> <span class="o">*</span> <span class="n">scale_popu_Tref</span> <span class="o">/</span> <span class="p">(</span><span class="n">rs</span> <span class="o">*</span> <span class="n">scale_popu_rs</span><span class="p">))</span>
-            <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">XS</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Zetas</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">XW</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Zetaw</span><span class="p">)</span>
+            <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">XS</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Zetas</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">XW</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Zetaw</span><span class="p">)</span>
         <span class="p">)</span>
 
 <div class="viewcode-block" id="LandModel.Wactive"><a class="viewcode-back" href="../../simcardems.html#simcardems.config.LandModel.Wactive">[docs]</a>    <span class="k">def</span> <span class="nf">Wactive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
