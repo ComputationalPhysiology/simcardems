@@ -409,7 +409,7 @@ class Runner:
             ("ep", "V", self._v),
             ("ep", "Ca", self._Ca),
             ("mechanics", "lmbda", self.coupling.lmbda_mech),
-            ("mechanics", "Ta", self.mech_heart.material.active.Ta_current_cg1),
+            ("mechanics", "Ta", self.mech_heart.material.active.Ta_current),
             ("ep", "XS", self._XS),
             ("ep", "XW", self._XW),
             ("ep", "CaTrpn", self._CaTrpn),
@@ -539,8 +539,8 @@ class Runner:
             self.ep_solver.vs_.assign(self.ep_solver.vs)
 
             # Store every 'save_freq' ms
-            if i % save_it == 0:
-                self.store()
+            #if i % save_it == 0:
+            self.store()
 
             # Store state every 5 beats
             if i > 0 and (i + 1) % five_beats == 0:

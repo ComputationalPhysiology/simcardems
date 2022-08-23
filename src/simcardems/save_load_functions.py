@@ -191,7 +191,7 @@ def load_state(
     W = dolfin.FunctionSpace(mech_mesh, eval(mech_signature))
     mech_state = dolfin.Function(W)
 
-    V = pulse.QuadratureSpace(mech_mesh, degree=3, dim=1)
+    V = dolfin.FunctionSpace(mech_mesh, "CG", 1)
     lmbda_prev = dolfin.Function(V, name="lambda")
     Zetas_prev = dolfin.Function(V, name="Zetas")
     Zetaw_prev = dolfin.Function(V, name="Zetaw")

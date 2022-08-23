@@ -45,7 +45,7 @@ class LandModel(pulse.ActiveModel):
     ):
         super().__init__(f0=f0, s0=s0, n0=n0)
         self._eta = eta
-        self.function_space = pulse.QuadratureSpace(mesh, degree=3, dim=1)
+        self.function_space = dolfin.FunctionSpace(mesh, "CG", 1)
 
         self.XS = XS
         self.XW = XW
@@ -71,13 +71,11 @@ class LandModel(pulse.ActiveModel):
         if Zetaw is not None:
             self.Zetaw_prev.assign(Zetaw)
 
-        self.V_cg1 = dolfin.FunctionSpace(mesh, "CG", 1)
         self.Ta_current = dolfin.Function(self.function_space, name="Ta")
-        self.Ta_current_cg1 = dolfin.Function(self.V_cg1, name="Ta")
 
     @property
     def dLambda(self):
-        self._dLambda.vector()[:] = self.lmbda.vector() - self.lmbda_prev.vector()
+        self._dLambda = self.lmbda - self.lmbda_prev
         return self._dLambda
 
     @property
@@ -134,11 +132,11 @@ class LandModel(pulse.ActiveModel):
         )
 
     def update_Zetas(self):
-        self._Zetas.vector()[:] = _Zeta(
-            self.Zetas_prev.vector(),
+        self._Zetas = _Zeta(
+            self.Zetas_prev,
             self.As,
             self.cs,
-            self.dLambda.vector(),
+            self.dLambda,
             self.dt,
             self._scheme,
         )
@@ -148,11 +146,11 @@ class LandModel(pulse.ActiveModel):
         return self._Zetas
 
     def update_Zetaw(self):
-        self._Zetaw.vector()[:] = _Zeta(
-            self.Zetaw_prev.vector(),
+        self._Zetaw = _Zeta(
+            self.Zetaw_prev,
             self.Aw,
             self.cw,
-            self.dLambda.vector(),
+            self.dLambda,
             self.dt,
             self._scheme,
         )
@@ -180,17 +178,10 @@ class LandModel(pulse.ActiveModel):
         self._t = t
 
     def update_prev(self):
-        self.Zetas_prev.vector()[:] = self.Zetas.vector()
-        self.Zetaw_prev.vector()[:] = self.Zetaw.vector()
-        self.lmbda_prev.vector()[:] = self.lmbda.vector()
-        self.Ta_current.assign(
-            dolfin.project(
-                self.Ta,
-                self.function_space,
-                form_compiler_parameters={"representation": "quadrature"},
-            ),
-        )
-        utils.local_project(self.Ta_current, self.V_cg1, self.Ta_current_cg1)
+        self.Zetas_prev = self.Zetas
+        self.Zetaw_prev = self.Zetaw
+        self.lmbda_prev = self.lmbda
+        self.Ta_current = self.Ta
 
     @property
     def Ta(self):
@@ -220,13 +211,7 @@ class LandModel(pulse.ActiveModel):
 
         C = F.T * F
         f = F * self.f0
-        self.lmbda.assign(
-            dolfin.project(
-                dolfin.sqrt(f**2),
-                self.function_space,
-                form_compiler_parameters={"representation": "quadrature"},
-            ),
-        )
+        self.lmbda = dolfin.sqrt(f**2)
         self.update_Zetas()
         self.update_Zetaw()
 
