@@ -539,8 +539,8 @@ class Runner:
             self.ep_solver.vs_.assign(self.ep_solver.vs)
 
             # Store every 'save_freq' ms
-            #if i % save_it == 0:
-            self.store()
+            if i % save_it == 0:
+                self.store()
 
             # Store state every 5 beats
             if i > 0 and (i + 1) % five_beats == 0:
