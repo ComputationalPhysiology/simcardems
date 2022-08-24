@@ -135,7 +135,7 @@ class MechanicsProblem(ContinuationBasedMechanicsProblem):
         return newton_iteration, newton_converged
 
     def update_lmbda_prev(self):
-        self.lmbda_prev = self.lmbda
+        self.lmbda_prev.assign(self.lmbda)
 
 
 class RigidMotionProblem(MechanicsProblem):
