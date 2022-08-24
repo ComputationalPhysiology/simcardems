@@ -1543,7 +1543,15 @@ class ORdmm_Land(CardiacCellModel):
         ) * Acap / (F * vmyo)
         F_expressions[33] = -JdiffNa + (-ICaNa - 3.0 * INaCa_ss) * Acap / (F * vss)
         F_expressions[34] = JdiffK * vss / vmyo + (
-            -Isac_P_k - IK1 - IKb - IKr - IKs - Istim - Ito - Isac_P_ns / 3.0 + 2.0 * INaK
+            -Isac_P_k
+            - IK1
+            - IKb
+            - IKr
+            - IKs
+            - Istim
+            - Ito
+            - Isac_P_ns / 3.0
+            + 2.0 * INaK
         ) * Acap / (F * vmyo)
         F_expressions[35] = -JdiffK - Acap * ICaK / (F * vss)
         Bcass = 1.0 / (
