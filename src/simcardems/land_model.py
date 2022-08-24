@@ -4,8 +4,6 @@ import dolfin
 import pulse
 import ufl
 
-from . import utils
-
 
 class Scheme(str, Enum):
     fd = "fd"
@@ -75,7 +73,7 @@ class LandModel(pulse.ActiveModel):
 
     @property
     def dLambda(self):
-        self._dLambda = self.lmbda - self.lmbda_prev
+        self._dLambda.vector()[:] = self.lmbda.vector() - self.lmbda_prev.vector()
         return self._dLambda
 
     @property
@@ -132,11 +130,11 @@ class LandModel(pulse.ActiveModel):
         )
 
     def update_Zetas(self):
-        self._Zetas = _Zeta(
-            self.Zetas_prev,
+        self._Zetas.vector()[:] = _Zeta(
+            self.Zetas_prev.vector(),
             self.As,
             self.cs,
-            self.dLambda,
+            self.dLambda.vector(),
             self.dt,
             self._scheme,
         )
@@ -146,11 +144,11 @@ class LandModel(pulse.ActiveModel):
         return self._Zetas
 
     def update_Zetaw(self):
-        self._Zetaw = _Zeta(
-            self.Zetaw_prev,
+        self._Zetaw.vector()[:] = _Zeta(
+            self.Zetaw_prev.vector(),
             self.Aw,
             self.cw,
-            self.dLambda,
+            self.dLambda.vector(),
             self.dt,
             self._scheme,
         )
@@ -178,10 +176,10 @@ class LandModel(pulse.ActiveModel):
         self._t = t
 
     def update_prev(self):
-        self.Zetas_prev = self.Zetas
-        self.Zetaw_prev = self.Zetaw
-        self.lmbda_prev = self.lmbda
-        self.Ta_current = self.Ta
+        self.Zetas_prev.vector()[:] = self.Zetas.vector()
+        self.Zetaw_prev.vector()[:] = self.Zetaw.vector()
+        self.lmbda_prev.vector()[:] = self.lmbda.vector()
+        self.Ta_current.assign(dolfin.project(self.Ta, self.function_space))
 
     @property
     def Ta(self):
@@ -211,7 +209,7 @@ class LandModel(pulse.ActiveModel):
 
         C = F.T * F
         f = F * self.f0
-        self.lmbda = dolfin.sqrt(f**2)
+        self.lmbda.assign(dolfin.project(dolfin.sqrt(f**2), self.function_space))
         self.update_Zetas()
         self.update_Zetaw()
 
