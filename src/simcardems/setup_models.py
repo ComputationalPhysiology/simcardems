@@ -265,6 +265,7 @@ class Runner:
                 config.drug_factors_file,
                 config.popu_factors_file,
                 config.disease_state,
+                config.PCL,  # Set bcl from cli
             )
         else:
             logger.info("Create a new state")

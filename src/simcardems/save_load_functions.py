@@ -143,6 +143,7 @@ def load_state(
     drug_factors_file="",
     popu_factors_file="",
     disease_state="healthy",
+    PCL=1000,
 ):
     logger.debug(f"Load state from path {path}")
     path = Path(path)
@@ -215,6 +216,7 @@ def load_state(
         drug_factors_file=drug_factors_file,
         popu_factors_file=popu_factors_file,
         disease_state=disease_state,
+        PCL=PCL,
     )
     coupling.register_ep_model(solver)
     bnd_cond_dict = dict([(0, "dirichlet"), (1, "rigid")])
