@@ -13,9 +13,10 @@ from .newton_solver import MechanicsNewtonSolver_ODE
 logger = utils.getLogger(__name__)
 
 
-class BoundaryConditions(str, Enum):
-    dirichlet = "dirichlet"
-    rigid = "rigid"
+class MechanicsModelType(str, Enum):
+    incompressible = "incompressible"
+    rigid_incompressible = "rigid_incompressible"
+    compressible = "compressible"
 
 
 class ContinuationBasedMechanicsProblem(pulse.MechanicsProblem):
@@ -62,8 +63,34 @@ class ContinuationBasedMechanicsProblem(pulse.MechanicsProblem):
         self.old_controls.append(control.copy(deepcopy=True))
 
 
+class NonlinearProblem(dolfin.NonlinearProblem):
+    def __init__(
+        self,
+        J,
+        F,
+        bcs,
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+        self._J = J
+        self._F = F
+        self.bcs = pulse.utils.enlist(bcs)
+
+    def F(self, b: dolfin.PETScVector, x: dolfin.PETScVector):
+        self.x = x
+
+        dolfin.assemble(self._F, tensor=b)
+        for bc in self.bcs:
+            bc.apply(b, x)
+
+    def J(self, A: dolfin.PETScMatrix, x: dolfin.PETScVector):
+        dolfin.assemble(self._J, tensor=A)
+        for bc in self.bcs:
+            bc.apply(A)
+
+
 class MechanicsProblem(ContinuationBasedMechanicsProblem):
-    boundary_condition = BoundaryConditions.dirichlet
+    model_type = MechanicsModelType.incompressible
 
     def _init_spaces(self):
 
@@ -82,7 +109,7 @@ class MechanicsProblem(ContinuationBasedMechanicsProblem):
         self.state = dolfin.Function(self.state_space, name="state")
         self.state_test = dolfin.TestFunction(self.state_space)
 
-    def _init_forms(self):
+    def _init_forms(self, init_solver=True):
         u, p = dolfin.split(self.state)
 
         # Some mechanical quantities
@@ -106,10 +133,11 @@ class MechanicsProblem(ContinuationBasedMechanicsProblem):
             self.state,
             dolfin.TrialFunction(self.state_space),
         )
-        self._init_solver()
+        if init_solver:
+            self._init_solver()
 
     def _init_solver(self):
-        self._problem = pulse.NonlinearProblem(
+        self._problem = NonlinearProblem(
             J=self._jacobian,
             F=self._virtual_work,
             bcs=self._dirichlet_bc,
@@ -128,7 +156,7 @@ class MechanicsProblem(ContinuationBasedMechanicsProblem):
         )
 
     def solve(self):
-        self._init_forms()
+        self._init_forms(init_solver=False)
         newton_iteration, newton_converged = self.solver.solve()
         # DEBUGGING
         getattr(self.solver, "check_overloads_called", None)
@@ -139,7 +167,7 @@ class MechanicsProblem(ContinuationBasedMechanicsProblem):
 
 
 class RigidMotionProblem(MechanicsProblem):
-    boundary_condition = BoundaryConditions.rigid
+    model_type = MechanicsModelType.rigid_incompressible
 
     def _init_spaces(self):
 
@@ -160,7 +188,7 @@ class RigidMotionProblem(MechanicsProblem):
         self.bcs = pulse.BoundaryConditions()
         self._dirichlet_bc = []
 
-    def _init_forms(self):
+    def _init_forms(self, init_solver=True):
         # Displacement and hydrostatic_pressure; 3rd space for rigid motion component
         p, u, r = dolfin.split(self.state)
         q, v, z = dolfin.split(self.state_test)
@@ -195,7 +223,8 @@ class RigidMotionProblem(MechanicsProblem):
             self.state,
             dolfin.TrialFunction(self.state_space),
         )
-        self._init_solver()
+        if init_solver:
+            self._init_solver()
 
     def rigid_motion_term(mesh, u, r):
         position = dolfin.SpatialCoordinate(mesh)
@@ -211,10 +240,61 @@ class RigidMotionProblem(MechanicsProblem):
         return sum(dolfin.dot(u, zi) * r[i] * dolfin.dx for i, zi in enumerate(RM))
 
 
+class CompressibleMechanicsProblem(MechanicsProblem):
+    model_type = MechanicsModelType.compressible
+
+    def __init__(self, *args, **kwargs):
+        kappa = kwargs.get("kappa", 1e3)
+        self.kappa = dolfin.Constant(kappa)
+        super().__init__(*args, **kwargs)
+
+    def _init_spaces(self):
+
+        mesh = self.geometry.mesh
+
+        element = dolfin.VectorElement("P", mesh.ufl_cell(), 1)
+        self.state_space = dolfin.FunctionSpace(mesh, element)
+
+        self._init_functions()
+
+    def _init_forms(self, init_solver=True):
+        u = self.state
+
+        # Some mechanical quantities
+        self._F = dolfin.variable(pulse.DeformationGradient(u))
+        self._J = pulse.Jacobian(self._F)
+        dx = self.geometry.dx
+
+        # Add penalty term
+        internal_energy = self.material.strain_energy(self._F) + self.kappa * (
+            self._J * dolfin.ln(self._J) - self._J + 1
+        )
+
+        self._virtual_work = dolfin.derivative(
+            internal_energy * dx,
+            self.state,
+            self.state_test,
+        )
+
+        self._set_dirichlet_bc()
+        # external_work = self._external_work(u, v)
+        # if external_work is not None:
+        #     self._virtual_work += external_work
+
+        self._jacobian = dolfin.derivative(
+            self._virtual_work,
+            self.state,
+            dolfin.TrialFunction(self.state_space),
+        )
+
+        if init_solver:
+            self._init_solver()
+
+
 def setup_microstructure(mesh):
     logger.debug("Set up microstructure")
-    # V_f = dolfin.VectorFunctionSpace(mesh, "DG", 1)
-    V_f = pulse.QuadratureSpace(mesh, degree=3, dim=3)
+    V_f = dolfin.VectorFunctionSpace(mesh, "DG", 1)
+    # V_f = pulse.QuadratureSpace(mesh, degree=3, dim=3)
     f0 = dolfin.interpolate(
         dolfin.Expression(("1.0", "0.0", "0.0"), degree=1, cell=mesh.ufl_cell()),
         V_f,
@@ -322,22 +402,23 @@ def setup_diriclet_bc(
     marker_functions = pulse.MarkerFunctions(ffun=boundary_markers)
 
     def dirichlet_bc(W):
-        # W here refers to the state space
+        # W here refers to the state space and V to the displacement space
+        V = W if W.sub(0).num_sub_spaces() == 0 else W.sub(0)
 
         # BC with fixing left size
         bcs = [
             dolfin.DirichletBC(
-                W.sub(0).sub(0),  # u_x
+                V.sub(0),  # u_x
                 dolfin.Constant(0.0),
                 left,
             ),
             dolfin.DirichletBC(
-                W.sub(0).sub(1),  # u_y
+                V.sub(1),  # u_y
                 dolfin.Constant(0.0),
                 plane_y0,
             ),
             dolfin.DirichletBC(
-                W.sub(0).sub(2),  # u_z
+                V.sub(2),  # u_z
                 dolfin.Constant(0.0),
                 plane_z0,
             ),
@@ -347,7 +428,7 @@ def setup_diriclet_bc(
             bcs.extend(
                 [
                     dolfin.DirichletBC(
-                        W.sub(0).sub(0),  # u_x
+                        V.sub(0),  # u_x
                         dolfin.Constant(0.0),
                         right,
                     ),
@@ -357,7 +438,7 @@ def setup_diriclet_bc(
         if pre_stretch is not None:
             bcs.append(
                 dolfin.DirichletBC(
-                    W.sub(0).sub(0),
+                    V.sub(0),
                     float_to_constant(pre_stretch),
                     right,
                 ),

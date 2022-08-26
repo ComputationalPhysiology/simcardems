@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import dolfin
 import pulse
 
@@ -15,7 +17,13 @@ class MechanicsNewtonSolver(dolfin.NewtonSolver):
         self._state = state
         self._update_cb = update_cb
         self._parameters = parameters
+        self._iteration = 0
 
+        self._residual_file = Path("residual.h5")
+        mesh = self._state.function_space().mesh()
+        self._comm = mesh.mpi_comm()
+        with dolfin.HDF5File(self._comm, self._residual_file.as_posix(), "w") as h5file:
+            h5file.write(mesh, "/mesh")
         # Initializing Newton solver (parent class)
         self.petsc_solver = dolfin.PETScKrylovSolver()
         super().__init__(
@@ -59,16 +67,16 @@ class MechanicsNewtonSolver(dolfin.NewtonSolver):
                 "pc_factor_mat_solver_type": "mumps",
                 "mat_mumps_icntl_33": 0,
             },
-            "newton_verbose": False,
-            "ksp_verbose": False,
-            "debug": False,
+            "newton_verbose": True,
+            "ksp_verbose": True,
+            "debug": True,
             "linear_solver": "mumps",
             # "linear_solver": "gmres",
             "error_on_nonconvergence": True,
-            "relative_tolerance": 1e-5,
-            "absolute_tolerance": 1e-5,
+            "relative_tolerance": 1e-10,
+            "absolute_tolerance": 1e-10,
             "maximum_iterations": 20,
-            "report": False,
+            "report": True,
             # },
             "krylov_solver": {
                 "absolute_tolerance": 1e-10,
@@ -83,9 +91,18 @@ class MechanicsNewtonSolver(dolfin.NewtonSolver):
         self._converged_called = True
 
         if self.debug:
+            if i == 0:
+                self._iteration += 1
             if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
                 # Print all residuals
                 residual = r.norm("l2")
+                with dolfin.HDF5File(
+                    self._comm,
+                    self._residual_file.as_posix(),
+                    "a",
+                ) as h5file:
+                    h5file.write(r, f"/{self._iteration}/{i}/residual")
+                    h5file.write(p.x, f"/{self._iteration}/{i}/state")
                 with open("residual.txt", "a") as rfile:
                     rfile.write(str(residual) + "\t")
 

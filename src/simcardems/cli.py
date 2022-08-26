@@ -78,9 +78,9 @@ def cli():
     help="Size of mesh in z-direction",
 )
 @click.option(
-    "--bnd_cond",
-    default=Config.bnd_cond,
-    type=click.Choice(mechanics_model.BoundaryConditions._member_names_),
+    "--mech_model_type",
+    default=Config.mech_model_type,
+    type=click.Choice(mechanics_model.MechanicsModelType._member_names_),
     help="Boundary conditions for the mechanics problem",
 )
 @click.option(
@@ -170,7 +170,7 @@ def run(
     T: float,
     dx: float,
     dt: float,
-    bnd_cond: mechanics_model.BoundaryConditions,
+    mech_model_type: mechanics_model.MechanicsModelType,
     load_state: bool,
     cell_init_file: utils.PathLike,
     hpc: bool,
@@ -197,7 +197,7 @@ def run(
         T=T,
         dx=dx,
         dt=dt,
-        bnd_cond=bnd_cond,
+        mech_model_type=mech_model_type,
         spring=spring,
         traction=traction,
         load_state=load_state,

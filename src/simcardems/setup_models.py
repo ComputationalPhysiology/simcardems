@@ -53,7 +53,7 @@ def setup_EM_model(config: Config):
 
     mech_heart = setup_mechanics_solver(
         coupling=coupling,
-        bnd_cond=config.bnd_cond,
+        mech_model_type=config.mech_model_type,
         cell_params=solver.ode_solver._model.parameters(),
         pre_stretch=config.pre_stretch,
         traction=config.traction,
@@ -74,7 +74,7 @@ def setup_EM_model(config: Config):
 
 def setup_mechanics_solver(
     coupling: em_model.EMCoupling,
-    bnd_cond: mechanics_model.BoundaryConditions,
+    mech_model_type: mechanics_model.MechanicsModelType,
     cell_params,
     pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
     traction: typing.Union[dolfin.Constant, float] = None,
@@ -96,7 +96,10 @@ def setup_mechanics_solver(
 
     marker_functions = None
     bcs = None
-    if bnd_cond == mechanics_model.BoundaryConditions.dirichlet:
+    if mech_model_type in [
+        mechanics_model.MechanicsModelType.incompressible,
+        mechanics_model.MechanicsModelType.compressible,
+    ]:
         bcs, marker_functions = mechanics_model.setup_diriclet_bc(
             mesh=coupling.mech_mesh,
             pre_stretch=pre_stretch,
@@ -156,15 +159,18 @@ def setup_mechanics_solver(
             active_model=active_model,
         )
 
-    Problem = mechanics_model.MechanicsProblem
-    if bnd_cond == mechanics_model.BoundaryConditions.rigid:
+    if mech_model_type == mechanics_model.MechanicsModelType.compressible:
+        Problem = mechanics_model.CompressibleMechanicsProblem
+    elif mech_model_type == mechanics_model.MechanicsModelType.rigid_incompressible:
         Problem = mechanics_model.RigidMotionProblem
+    else:
+        Problem = mechanics_model.MechanicsProblem
 
     verbose = logger.getEffectiveLevel() < logging.INFO
     problem = Problem(
-        geometry,
-        material,
-        bcs,
+        geometry=geometry,
+        material=material,
+        bcs=bcs,
         solver_parameters={"linear_solver": linear_solver, "verbose": verbose},
         use_custom_newton_solver=use_custom_newton_solver,
     )
@@ -291,12 +297,12 @@ class Runner:
         self._config.dt = value
 
     @property
-    def _bnd_cond(self):
-        return self._config.bnd_cond
+    def _mech_model_type(self):
+        return self._config.mech_model_type
 
-    @_bnd_cond.setter
-    def _bnd_cond(self, value):
-        self._config.bnd_cond = value
+    @_mech_model_type.setter
+    def _mech_model_type(self, value):
+        self._config.mech_model_type = value
 
     @property
     def outdir(self):
@@ -345,7 +351,7 @@ class Runner:
 
         obj._reset = reset
         obj._dt = ep_solver.parameters["MonodomainSolver"]["default_timestep"]
-        obj._bnd_cond = mech_heart.boundary_condition
+        obj._mech_model_type = mech_heart.model_type
         obj._setup_assigners()
         return obj
 
@@ -364,19 +370,38 @@ class Runner:
 
         self._pre_XS, self._preXS_assigner = utils.setup_assigner(self._vs, 40)
         self._pre_XW, self._preXW_assigner = utils.setup_assigner(self._vs, 41)
-
-        self._u_subspace_index = 1 if self._bnd_cond == "rigid" else 0
-        self._u, self._u_assigner = utils.setup_assigner(
-            self.mech_heart.state,
-            self._u_subspace_index,
-        )
+        if self._mech_model_type == "compressible":
+            self._u = dolfin.Function(self.mech_heart.state_space)
+            self._u.assign(self.mech_heart.state)
+        else:
+            self._u_subspace_index = (
+                1 if self._mech_model_type == "rigid_incompressible" else 0
+            )
+            self._u, self._u_assigner = utils.setup_assigner(
+                self.mech_heart.state,
+                self._u_subspace_index,
+            )
+            self._p_subspace_index = (
+                2 if self._mech_model_type == "rigid_incompressible" else 1
+            )
+            self._p, self._p_assigner = utils.setup_assigner(
+                self.mech_heart.state,
+                self._p_subspace_index,
+            )
         self._assign_displacement()
 
     def _assign_displacement(self):
-        self._u_assigner.assign(
-            self._u,
-            self.mech_heart.state.sub(self._u_subspace_index),
-        )
+        if self._mech_model_type == "compressible":
+            self._u.assign(self.mech_heart.state)
+        else:
+            self._u_assigner.assign(
+                self._u,
+                self.mech_heart.state.sub(self._u_subspace_index),
+            )
+            self._p_assigner.assign(
+                self._p,
+                self.mech_heart.state.sub(self._p_subspace_index),
+            )
 
     def _assign_ep(self):
         self._v_assigner.assign(self._v, utils.sub_function(self._vs, 0))
@@ -404,12 +429,13 @@ class Runner:
             self.coupling.ep_mesh,
             reset_state=self._reset,
         )
-        for group, name, f in [
+        saved_fields = [
             ("mechanics", "u", self._u),
             ("ep", "V", self._v),
             ("ep", "Ca", self._Ca),
             ("mechanics", "lmbda", self.coupling.lmbda_mech),
             ("mechanics", "Ta", self.mech_heart.material.active.Ta_current_cg1),
+            ("mechanics", "h_lmbda", self.mech_heart.material.active.h_lmbda),
             ("ep", "XS", self._XS),
             ("ep", "XW", self._XW),
             ("ep", "CaTrpn", self._CaTrpn),
@@ -421,7 +447,30 @@ class Runner:
             ("mechanics", "Zetaw_mech", self.coupling.Zetaw_mech),
             ("mechanics", "XS_mech", self.coupling.XS_mech),
             ("mechanics", "XW_mech", self.coupling.XW_mech),
-        ]:
+        ]
+        save_quad_functions = True
+        if save_quad_functions:
+            saved_fields.extend(
+                [
+                    (
+                        "mechanics",
+                        "Ta_quad",
+                        self.mech_heart.material.active.Ta_current,
+                    ),
+                    ("mechanics", "lmbda_quad", self.mech_heart.material.active.lmbda),
+                    (
+                        "mechanics",
+                        "dLambda_quad",
+                        self.mech_heart.material.active.dLambda,
+                    ),
+                    ("mechanics", "Zetas_quad", self.mech_heart.material.active.Zetas),
+                    ("mechanics", "Zetaw_quad", self.mech_heart.material.active.Zetaw),
+                ],
+            )
+        if self._mech_model_type != "compressible":
+            saved_fields.append(("mechanics", "p", self._p))
+
+        for group, name, f in saved_fields:
             self.collector.register(group, name, f)
 
     @property
@@ -501,9 +550,8 @@ class Runner:
 
         # Truncate residual0 file if exists
         if Path("residual.txt").is_file():
-            fr = open("residual.txt", "w")
-            fr.truncate(0)
-            fr.close()
+            with open("residual.txt", "w") as fr:
+                fr.truncate(0)
 
         save_it = int(save_freq / self._dt)
         self.create_time_stepper(T, use_ns=True, st_progress=st_progress)
@@ -552,7 +600,7 @@ class Runner:
                     mech_heart=self.mech_heart,
                     coupling=self.coupling,
                     dt=self._dt,
-                    bnd_cond=self._bnd_cond,
+                    mech_model_type=self._mech_model_type,
                     t0=TimeStepper.ns2ms(self.t),
                 )
                 beat_nr += save_state_every_n_beat
@@ -562,9 +610,8 @@ class Runner:
                 Path("residual.txt").is_file()
                 and dolfin.MPI.rank(dolfin.MPI.comm_world) == 0
             ):
-                fr = open("residual.txt", "a")
-                fr.write("\n")
-                fr.close()
+                with open("residual.txt", "a") as fr:
+                    fr.write("\n")
 
         io.save_state(
             self._state_path,
@@ -572,12 +619,13 @@ class Runner:
             mech_heart=self.mech_heart,
             coupling=self.coupling,
             dt=self._dt,
-            bnd_cond=self._bnd_cond,
+            mech_model_type=self._mech_model_type,
             t0=TimeStepper.ns2ms(self.t),
         )
 
         # Copy residual file to output dir (if exists)
         if Path("residual.txt").is_file():
+            # FIXME: Copy instead of read and write
             Path(self._outdir).joinpath("residual.txt").write_text(
                 Path("residual.txt").read_text(),
             )

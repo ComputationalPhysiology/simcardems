@@ -1,5 +1,6 @@
 import contextlib
 import os
+import typing
 import warnings
 from pathlib import Path
 
@@ -14,9 +15,18 @@ from . import em_model
 from . import geometry
 from . import setup_models
 from . import utils
+from .mechanics_model import MechanicsModelType
 from .ORdmm_Land import vs_functions_to_dict
 
 logger = utils.getLogger(__name__)
+
+
+mech_model_type_dict_rev: typing.Dict[str, int] = dict(
+    map(reversed.__call__, enumerate(MechanicsModelType._member_names_)),
+)
+mech_model_type_dict: typing.Dict[int, str] = dict(
+    enumerate(MechanicsModelType._member_names_),
+)
 
 
 @contextlib.contextmanager
@@ -98,7 +108,7 @@ def save_state(
     mech_heart,
     coupling: em_model.EMCoupling,
     dt=0.02,
-    bnd_cond="dirichlet",
+    mech_model_type="compressible",
     t0=0,
 ):
     path = Path(path)
@@ -119,7 +129,6 @@ def save_state(
         h5file.write(mech_mesh, "/mechanics/mesh")
         h5file.write(mech_heart.state, "/mechanics/state")
 
-    bnd_cond_dict = dict([("dirichlet", 0), ("rigid", 1)])
     logger.debug("Save using h5py")
     dict_to_h5(solver.ode_solver._model.parameters(), path, "ep/cell_params")
     dict_to_h5(
@@ -130,7 +139,7 @@ def save_state(
     dict_to_h5(
         dict(
             dt=dt,
-            bnd_cond=bnd_cond_dict[bnd_cond],
+            mech_model_type=mech_model_type_dict_rev[mech_model_type],
             t0=t0,
         ),
         path,
@@ -217,11 +226,10 @@ def load_state(
         disease_state=disease_state,
     )
     coupling.register_ep_model(solver)
-    bnd_cond_dict = dict([(0, "dirichlet"), (1, "rigid")])
 
     mech_heart = setup_models.setup_mechanics_solver(
         coupling=coupling,
-        bnd_cond=bnd_cond_dict[state_params["bnd_cond"]],
+        mech_model_type=mech_model_type_dict[state_params["mech_model_type"]],
         cell_params=solver.ode_solver._model.parameters(),
         Zetas_prev=Zetas_prev,
         Zetaw_prev=Zetaw_prev,

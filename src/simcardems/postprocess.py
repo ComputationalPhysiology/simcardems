@@ -496,15 +496,20 @@ def make_xdmffiles(results_file):
     for group, names in loader.names.items():
         logger.info(f"Save xdmffile for group {group}")
         for name in names:
-            xdmf = dolfin.XDMFFile(
-                dolfin.MPI.comm_world,
-                outdir.joinpath(f"{group}_{name}.xdmf").as_posix(),
-            )
+            is_quad = "quad" in name
+            fname = outdir.joinpath(f"{group}_{name}.xdmf").as_posix()
+
+            if not is_quad:
+                continue
+                xdmf = dolfin.XDMFFile(dolfin.MPI.comm_world, fname)
             logger.info(f"Save {name}")
             try:
                 for t in tqdm.tqdm(loader.time_stamps):
                     f = loader.get(group, name, t)
-                    xdmf.write(f, float(t))
+                    if is_quad:
+                        quad_to_xdmf(f, fname, str(t))
+                    else:
+                        xdmf.write(f, float(t))
             except RuntimeError:
                 logger.info(f"Could not save {name}")
 
@@ -763,3 +768,9 @@ def save_popu_json(population_folder, num_models):
 
     print("Start analysis of single node results")
     get_biomarkers(dict, population_folder, num_models)
+
+
+def quad_to_xdmf(fun, fname, time):
+    from ldrb import fun_to_xdmf
+
+    return fun_to_xdmf(fun=fun, fname=fname, name=str(time))
