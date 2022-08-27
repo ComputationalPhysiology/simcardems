@@ -298,7 +298,10 @@
     <span class="n">linear_mechanics_solver</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mumps&quot;</span>
     <span class="n">mechanics_use_continuation</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">mechanics_use_custom_newton_solver</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">PCL</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1000</span></div>
+    <span class="n">PCL</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1000</span>
+
+<div class="viewcode-block" id="Config.as_dict"><a class="viewcode-back" href="../../simcardems.html#simcardems.config.Config.as_dict">[docs]</a>    <span class="k">def</span> <span class="nf">as_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span></div></div>
 
 
 <div class="viewcode-block" id="default_parameters"><a class="viewcode-back" href="../../simcardems.html#simcardems.config.default_parameters">[docs]</a><span class="k">def</span> <span class="nf">default_parameters</span><span class="p">():</span>

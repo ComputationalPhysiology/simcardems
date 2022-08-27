@@ -285,28 +285,36 @@
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">simcardems</span>
 </pre></div>
 </div>
-<p>Lets grab the default parameter and print them</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">parameters</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">default_parameters</span><span class="p">()</span>
-<span class="n">pprint</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create configurations with custom output directory</span>
+<span class="n">outdir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;results_simple_demo&quot;</span><span class="p">)</span>
+<span class="n">config</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">Config</span><span class="p">(</span><span class="n">outdir</span><span class="o">=</span><span class="n">outdir</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>This will output</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;T&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
+<p>This will set :</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;PCL&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
+ <span class="s1">&#39;T&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
  <span class="s1">&#39;bnd_cond&#39;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">BoundaryConditions</span><span class="o">.</span><span class="n">dirichlet</span><span class="p">:</span> <span class="s1">&#39;dirichlet&#39;</span><span class="o">&gt;</span><span class="p">,</span>
  <span class="s1">&#39;cell_init_file&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
  <span class="s1">&#39;disease_state&#39;</span><span class="p">:</span> <span class="s1">&#39;healthy&#39;</span><span class="p">,</span>
  <span class="s1">&#39;drug_factors_file&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
  <span class="s1">&#39;dt&#39;</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">,</span>
  <span class="s1">&#39;dx&#39;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span>
- <span class="s1">&#39;fix_right_plane&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+ <span class="s1">&#39;ep_ode_scheme&#39;</span><span class="p">:</span> <span class="s1">&#39;GRL1&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;ep_preconditioner&#39;</span><span class="p">:</span> <span class="s1">&#39;sor&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;ep_theta&#39;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+ <span class="s1">&#39;fix_right_plane&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
  <span class="s1">&#39;hpc&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+ <span class="s1">&#39;linear_mechanics_solver&#39;</span><span class="p">:</span> <span class="s1">&#39;mumps&#39;</span><span class="p">,</span>
  <span class="s1">&#39;load_state&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
  <span class="s1">&#39;loglevel&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
  <span class="s1">&#39;lx&#39;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
  <span class="s1">&#39;ly&#39;</span><span class="p">:</span> <span class="mf">0.7</span><span class="p">,</span>
  <span class="s1">&#39;lz&#39;</span><span class="p">:</span> <span class="mf">0.3</span><span class="p">,</span>
+ <span class="s1">&#39;mechanics_ode_scheme&#39;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">Scheme</span><span class="o">.</span><span class="n">analytic</span><span class="p">:</span> <span class="s1">&#39;analytic&#39;</span><span class="o">&gt;</span><span class="p">,</span>
+ <span class="s1">&#39;mechanics_use_continuation&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+ <span class="s1">&#39;mechanics_use_custom_newton_solver&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
  <span class="s1">&#39;num_refinements&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
- <span class="s1">&#39;outdir&#39;</span><span class="p">:</span> <span class="s1">&#39;results&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;outdir&#39;</span><span class="p">:</span> <span class="n">PosixPath</span><span class="p">(</span><span class="s1">&#39;results_simple_demo&#39;</span><span class="p">),</span>
  <span class="s1">&#39;popu_factors_file&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
  <span class="s1">&#39;pre_stretch&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
  <span class="s1">&#39;save_freq&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
@@ -315,11 +323,12 @@
  <span class="s1">&#39;traction&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
 </pre></div>
 </div>
-<p>These are the default parameters used for the simulation.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">outdir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;results_simple_demo&quot;</span><span class="p">)</span>
-<span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;outdir&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">outdir</span>
-<span class="n">runner</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">Runner</span><span class="p">(</span><span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
-<span class="n">runner</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">T</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;T&quot;</span><span class="p">],</span> <span class="n">save_freq</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;save_freq&quot;</span><span class="p">],</span> <span class="n">hpc</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Print current configuration</span>
+<span class="n">pprint</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">as_dict</span><span class="p">())</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">runner</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">Runner</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+<span class="n">runner</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">T</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">save_freq</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">save_freq</span><span class="p">,</span> <span class="n">hpc</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>This will create the output directory <code class="docutils literal notranslate"><span class="pre">results_simple_demo</span></code> with the following output</p>
