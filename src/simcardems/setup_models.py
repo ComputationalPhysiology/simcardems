@@ -330,7 +330,7 @@ class Runner:
             t0=self._t0,
             T=T,
             dt=self._dt,
-            use_ns=True,
+            use_ns=use_ns,
             st_progress=st_progress,
         )
 
@@ -592,6 +592,7 @@ class Runner:
 
             # Store state every 5 beats
             if i > 0 and (i + 1) % five_beats == 0:
+
                 io.save_state(
                     self._state_path.parent.joinpath(
                         f"state_{beat_nr}beat.h5",

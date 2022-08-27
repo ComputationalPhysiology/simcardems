@@ -76,11 +76,11 @@ def test_save_and_load_state(
 
     dt = 0.01
 
-    bnd_cond = "dirichlet"
+    mech_model_type = "incompressible"
 
     mech_heart = simcardems.setup_models.setup_mechanics_solver(
         coupling=coupling,
-        bnd_cond=bnd_cond,
+        mech_model_type=mech_model_type,
         cell_params=cell_params,
     )
 
@@ -91,7 +91,6 @@ def test_save_and_load_state(
     )
     runner.outdir = "dummy_folder"
 
-    t0 = 0.0
     t1 = 0.2
     runner.solve(t1)
 
@@ -106,8 +105,8 @@ def test_save_and_load_state(
         mech_heart=mech_heart,
         coupling=coupling,
         dt=dt,
-        bnd_cond=bnd_cond,
-        t0=t0,
+        mech_model_type=mech_model_type,
+        t0=t1,
     )
 
     with mock.patch("simcardems.setup_models.cbcbeat.SplittingSolver") as m:
@@ -117,13 +116,14 @@ def test_save_and_load_state(
             dummyfile,
         )
 
-    assert t0_ == t0
+    assert t0_ == t1
     assert (mesh.coordinates() == coupling_.mech_mesh.coordinates()).all()
     assert simcardems.utils.compute_norm(ep_solver.vs_, ep_solver_.vs_) < 1e-12
     assert simcardems.utils.compute_norm(mech_heart.state, mech_heart_.state) < 1e-12
     assert simcardems.utils.compute_norm(coupling.vs, coupling_.vs) < 1e-12
     assert simcardems.utils.compute_norm(coupling.XS_mech, coupling_.XS_mech) < 1e-12
     assert simcardems.utils.compute_norm(coupling.XW_mech, coupling_.XW_mech) < 1e-12
+
     assert (
         simcardems.utils.compute_norm(coupling.lmbda_mech, coupling_.lmbda_mech) < 1e-12
     )
@@ -154,11 +154,11 @@ def test_load_state_with_new_parameters_uses_new_parameters(
 
     dt = 0.01
 
-    bnd_cond = "dirichlet"
+    mech_model_type = "incompressible"
 
     mech_heart = simcardems.setup_models.setup_mechanics_solver(
         coupling=coupling,
-        bnd_cond=bnd_cond,
+        mech_model_type=mech_model_type,
         cell_params=cell_params,
     )
 
@@ -179,7 +179,7 @@ def test_load_state_with_new_parameters_uses_new_parameters(
         mech_heart=mech_heart,
         coupling=coupling,
         dt=dt,
-        bnd_cond=bnd_cond,
+        mech_model_type=mech_model_type,
         t0=t0,
     )
 
