@@ -1624,6 +1624,7 @@ class ORdmm_Land(CardiacCellModel):
                 - rw * scale_popu_rw * (1.0 - (rs * scale_popu_rs))
             )
         )
+
         F_expressions[42] = (
             ufl.conditional(
                 ufl.lt(ufl.elem_pow(CaTrpn, -(ntm * scale_popu_nTm) / 2.0), 100.0),
