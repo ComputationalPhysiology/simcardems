@@ -4,7 +4,6 @@ import warnings
 from pathlib import Path
 
 import dolfin
-import pulse  # noqa: F401
 from dolfin import FiniteElement  # noqa: F401
 from dolfin import MixedElement  # noqa: F401
 from dolfin import tetrahedron  # noqa: F401
