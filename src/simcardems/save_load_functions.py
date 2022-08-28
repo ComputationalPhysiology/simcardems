@@ -4,7 +4,6 @@ import warnings
 from pathlib import Path
 
 import dolfin
-import pulse
 from dolfin import FiniteElement  # noqa: F401
 from dolfin import MixedElement  # noqa: F401
 from dolfin import tetrahedron  # noqa: F401
@@ -143,6 +142,7 @@ def load_state(
     drug_factors_file="",
     popu_factors_file="",
     disease_state="healthy",
+    PCL=1000,
 ):
     logger.debug(f"Load state from path {path}")
     path = Path(path)
@@ -191,7 +191,7 @@ def load_state(
     W = dolfin.FunctionSpace(mech_mesh, eval(mech_signature))
     mech_state = dolfin.Function(W)
 
-    V = pulse.QuadratureSpace(mech_mesh, degree=3, dim=1)
+    V = dolfin.FunctionSpace(mech_mesh, "CG", 1)
     lmbda_prev = dolfin.Function(V, name="lambda")
     Zetas_prev = dolfin.Function(V, name="Zetas")
     Zetaw_prev = dolfin.Function(V, name="Zetaw")
@@ -215,6 +215,7 @@ def load_state(
         drug_factors_file=drug_factors_file,
         popu_factors_file=popu_factors_file,
         disease_state=disease_state,
+        PCL=PCL,
     )
     coupling.register_ep_model(solver)
     bnd_cond_dict = dict([(0, "dirichlet"), (1, "rigid")])

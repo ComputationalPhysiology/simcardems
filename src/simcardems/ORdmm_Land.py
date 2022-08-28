@@ -1531,7 +1531,8 @@ class ORdmm_Land(CardiacCellModel):
         fJupp = 1.0 / (1.0 + KmCaMK / CaMKa)
         Jleak = 0.0002625 * cansr * scale_popu_Kleak * HF_scaling_Jleak
         Jup = (
-            (-Jleak + (1.0 - fJupp) * Jupnp + Jupp * fJupp)
+            -Jleak
+            + ((1.0 - fJupp) * Jupnp + Jupp * fJupp)
             * scale_popu_KSERCA
             * HF_scaling_Jup
         )
@@ -1600,9 +1601,9 @@ class ORdmm_Land(CardiacCellModel):
             - XW * gammawu
             - XW * kwu
         )
-        cat50 = cat50_ref * scale_popu_CaT50ref * HF_scaling_cat50_ref + Beta1 * (
-            -1.0 + lambda_min12
-        )
+        cat50 = (
+            cat50_ref * scale_popu_CaT50ref + Beta1 * (-1.0 + lambda_min12)
+        ) * HF_scaling_cat50_ref
         CaTrpn = ufl.conditional(ufl.lt(CaTrpn, 0.0), 0.0, CaTrpn)
         F_expressions[41] = (
             ktrpn

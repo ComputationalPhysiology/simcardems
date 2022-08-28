@@ -213,8 +213,7 @@ class RigidMotionProblem(MechanicsProblem):
 
 def setup_microstructure(mesh):
     logger.debug("Set up microstructure")
-    # V_f = dolfin.VectorFunctionSpace(mesh, "DG", 1)
-    V_f = pulse.QuadratureSpace(mesh, degree=3, dim=3)
+    V_f = dolfin.VectorFunctionSpace(mesh, "DG", 1)
     f0 = dolfin.interpolate(
         dolfin.Expression(("1.0", "0.0", "0.0"), degree=1, cell=mesh.ufl_cell()),
         V_f,

@@ -4,8 +4,6 @@ import dolfin
 import pulse
 import ufl
 
-from . import utils
-
 
 class Scheme(str, Enum):
     fd = "fd"
@@ -45,7 +43,7 @@ class LandModel(pulse.ActiveModel):
     ):
         super().__init__(f0=f0, s0=s0, n0=n0)
         self._eta = eta
-        self.function_space = pulse.QuadratureSpace(mesh, degree=3, dim=1)
+        self.function_space = dolfin.FunctionSpace(mesh, "CG", 1)
 
         self.XS = XS
         self.XW = XW
@@ -58,7 +56,7 @@ class LandModel(pulse.ActiveModel):
         self.lmbda_prev = dolfin.Function(self.function_space)
         self.lmbda_prev.vector()[:] = 1.0
         if lmbda is not None:
-            self.lmbda_prev = lmbda
+            self.lmbda_prev.assign(lmbda)
         self.lmbda = dolfin.Function(self.function_space)
 
         self._Zetas = dolfin.Function(self.function_space)
@@ -71,9 +69,7 @@ class LandModel(pulse.ActiveModel):
         if Zetaw is not None:
             self.Zetaw_prev.assign(Zetaw)
 
-        self.V_cg1 = dolfin.FunctionSpace(mesh, "CG", 1)
         self.Ta_current = dolfin.Function(self.function_space, name="Ta")
-        self.Ta_current_cg1 = dolfin.Function(self.V_cg1, name="Ta")
 
     @property
     def dLambda(self):
@@ -183,14 +179,7 @@ class LandModel(pulse.ActiveModel):
         self.Zetas_prev.vector()[:] = self.Zetas.vector()
         self.Zetaw_prev.vector()[:] = self.Zetaw.vector()
         self.lmbda_prev.vector()[:] = self.lmbda.vector()
-        self.Ta_current.assign(
-            dolfin.project(
-                self.Ta,
-                self.function_space,
-                form_compiler_parameters={"representation": "quadrature"},
-            ),
-        )
-        utils.local_project(self.Ta_current, self.V_cg1, self.Ta_current_cg1)
+        self.Ta_current.assign(dolfin.project(self.Ta, self.function_space))
 
     @property
     def Ta(self):
@@ -220,13 +209,7 @@ class LandModel(pulse.ActiveModel):
 
         C = F.T * F
         f = F * self.f0
-        self.lmbda.assign(
-            dolfin.project(
-                dolfin.sqrt(f**2),
-                self.function_space,
-                form_compiler_parameters={"representation": "quadrature"},
-            ),
-        )
+        self.lmbda.assign(dolfin.project(dolfin.sqrt(f**2), self.function_space))
         self.update_Zetas()
         self.update_Zetaw()
 
