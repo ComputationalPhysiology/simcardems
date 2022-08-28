@@ -260,7 +260,6 @@
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 
 <span class="kn">import</span> <span class="nn">dolfin</span>
-<span class="kn">import</span> <span class="nn">pulse</span>
 <span class="kn">from</span> <span class="nn">dolfin</span> <span class="kn">import</span> <span class="n">FiniteElement</span>  <span class="c1"># noqa: F401</span>
 <span class="kn">from</span> <span class="nn">dolfin</span> <span class="kn">import</span> <span class="n">MixedElement</span>  <span class="c1"># noqa: F401</span>
 <span class="kn">from</span> <span class="nn">dolfin</span> <span class="kn">import</span> <span class="n">tetrahedron</span>  <span class="c1"># noqa: F401</span>
@@ -399,6 +398,7 @@
     <span class="n">drug_factors_file</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="n">popu_factors_file</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="n">disease_state</span><span class="o">=</span><span class="s2">&quot;healthy&quot;</span><span class="p">,</span>
+    <span class="n">PCL</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Load state from path </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
@@ -447,7 +447,7 @@
     <span class="n">W</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">FunctionSpace</span><span class="p">(</span><span class="n">mech_mesh</span><span class="p">,</span> <span class="nb">eval</span><span class="p">(</span><span class="n">mech_signature</span><span class="p">))</span>
     <span class="n">mech_state</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">W</span><span class="p">)</span>
 
-    <span class="n">V</span> <span class="o">=</span> <span class="n">pulse</span><span class="o">.</span><span class="n">QuadratureSpace</span><span class="p">(</span><span class="n">mech_mesh</span><span class="p">,</span> <span class="n">degree</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">V</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">FunctionSpace</span><span class="p">(</span><span class="n">mech_mesh</span><span class="p">,</span> <span class="s2">&quot;CG&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
     <span class="n">lmbda_prev</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;lambda&quot;</span><span class="p">)</span>
     <span class="n">Zetas_prev</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Zetas&quot;</span><span class="p">)</span>
     <span class="n">Zetaw_prev</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Zetaw&quot;</span><span class="p">)</span>
@@ -471,6 +471,7 @@
         <span class="n">drug_factors_file</span><span class="o">=</span><span class="n">drug_factors_file</span><span class="p">,</span>
         <span class="n">popu_factors_file</span><span class="o">=</span><span class="n">popu_factors_file</span><span class="p">,</span>
         <span class="n">disease_state</span><span class="o">=</span><span class="n">disease_state</span><span class="p">,</span>
+        <span class="n">PCL</span><span class="o">=</span><span class="n">PCL</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">coupling</span><span class="o">.</span><span class="n">register_ep_model</span><span class="p">(</span><span class="n">solver</span><span class="p">)</span>
     <span class="n">bnd_cond_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;dirichlet&quot;</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;rigid&quot;</span><span class="p">)])</span>

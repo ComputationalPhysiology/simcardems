@@ -1787,7 +1787,8 @@
         <span class="n">fJupp</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">KmCaMK</span> <span class="o">/</span> <span class="n">CaMKa</span><span class="p">)</span>
         <span class="n">Jleak</span> <span class="o">=</span> <span class="mf">0.0002625</span> <span class="o">*</span> <span class="n">cansr</span> <span class="o">*</span> <span class="n">scale_popu_Kleak</span> <span class="o">*</span> <span class="n">HF_scaling_Jleak</span>
         <span class="n">Jup</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="p">(</span><span class="o">-</span><span class="n">Jleak</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">fJupp</span><span class="p">)</span> <span class="o">*</span> <span class="n">Jupnp</span> <span class="o">+</span> <span class="n">Jupp</span> <span class="o">*</span> <span class="n">fJupp</span><span class="p">)</span>
+            <span class="o">-</span><span class="n">Jleak</span>
+            <span class="o">+</span> <span class="p">((</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">fJupp</span><span class="p">)</span> <span class="o">*</span> <span class="n">Jupnp</span> <span class="o">+</span> <span class="n">Jupp</span> <span class="o">*</span> <span class="n">fJupp</span><span class="p">)</span>
             <span class="o">*</span> <span class="n">scale_popu_KSERCA</span>
             <span class="o">*</span> <span class="n">HF_scaling_Jup</span>
         <span class="p">)</span>
@@ -1856,9 +1857,9 @@
             <span class="o">-</span> <span class="n">XW</span> <span class="o">*</span> <span class="n">gammawu</span>
             <span class="o">-</span> <span class="n">XW</span> <span class="o">*</span> <span class="n">kwu</span>
         <span class="p">)</span>
-        <span class="n">cat50</span> <span class="o">=</span> <span class="n">cat50_ref</span> <span class="o">*</span> <span class="n">scale_popu_CaT50ref</span> <span class="o">*</span> <span class="n">HF_scaling_cat50_ref</span> <span class="o">+</span> <span class="n">Beta1</span> <span class="o">*</span> <span class="p">(</span>
-            <span class="o">-</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">lambda_min12</span>
-        <span class="p">)</span>
+        <span class="n">cat50</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">cat50_ref</span> <span class="o">*</span> <span class="n">scale_popu_CaT50ref</span> <span class="o">+</span> <span class="n">Beta1</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">lambda_min12</span><span class="p">)</span>
+        <span class="p">)</span> <span class="o">*</span> <span class="n">HF_scaling_cat50_ref</span>
         <span class="n">CaTrpn</span> <span class="o">=</span> <span class="n">ufl</span><span class="o">.</span><span class="n">conditional</span><span class="p">(</span><span class="n">ufl</span><span class="o">.</span><span class="n">lt</span><span class="p">(</span><span class="n">CaTrpn</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">CaTrpn</span><span class="p">)</span>
         <span class="n">F_expressions</span><span class="p">[</span><span class="mi">41</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">ktrpn</span>
