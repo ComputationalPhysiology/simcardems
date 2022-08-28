@@ -271,6 +271,7 @@ class Runner:
                 config.drug_factors_file,
                 config.popu_factors_file,
                 config.disease_state,
+                config.PCL,  # Set bcl from cli
             )
         else:
             logger.info("Create a new state")
@@ -434,7 +435,6 @@ class Runner:
             ("ep", "V", self._v),
             ("ep", "Ca", self._Ca),
             ("mechanics", "lmbda", self.coupling.lmbda_mech),
-            ("mechanics", "Ta", self.mech_heart.material.active.Ta_current_cg1),
             ("mechanics", "h_lmbda", self.mech_heart.material.active.h_lmbda),
             ("ep", "XS", self._XS),
             ("ep", "XW", self._XW),

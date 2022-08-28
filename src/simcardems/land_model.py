@@ -19,13 +19,13 @@ def _Zeta(Zeta_prev, A, c, dLambda, dt, scheme: Scheme):
 
     if scheme == Scheme.analytic:
         return Zeta_prev * dolfin.exp(-c * dt) + (A * dLambda / c * dt) * (
-            1 - dolfin.exp(-c * dt)
+            1.0 - dolfin.exp(-c * dt)
         )
 
     elif scheme == Scheme.bd:
-        return Zeta_prev + A * dLambda / (1 + c * dt)
+        return Zeta_prev + A * dLambda / (1.0 + c * dt)
     else:
-        return Zeta_prev * (1 - c * dt) + A * dLambda
+        return Zeta_prev * (1.0 - c * dt) + A * dLambda
 
 
 class LandModel(pulse.ActiveModel):
@@ -47,7 +47,7 @@ class LandModel(pulse.ActiveModel):
     ):
         super().__init__(f0=f0, s0=s0, n0=n0)
         self._eta = eta
-        self.function_space = pulse.QuadratureSpace(mesh, degree=3, dim=1)
+        self.function_space = dolfin.FunctionSpace(mesh, "CG", 1)
 
         self.XS = XS
         self.XW = XW
@@ -59,8 +59,9 @@ class LandModel(pulse.ActiveModel):
 
         self._dLambda = dolfin.Function(self.function_space)
         self.lmbda_prev = dolfin.Function(self.function_space)
+        self.lmbda_prev.vector()[:] = 1.0
         if lmbda is not None:
-            self.lmbda_prev = lmbda
+            self.lmbda_prev.assign(lmbda)
         self.lmbda = dolfin.Function(self.function_space)
 
         self._Zetas = dolfin.Function(self.function_space)
@@ -73,10 +74,8 @@ class LandModel(pulse.ActiveModel):
         if Zetaw is not None:
             self.Zetaw_prev.assign(Zetaw)
 
-        self.V_cg1 = dolfin.FunctionSpace(mesh, "CG", 1)
         self.Ta_current = dolfin.Function(self.function_space, name="Ta")
-        self.Ta_current_cg1 = dolfin.Function(self.V_cg1, name="Ta")
-        self.h_lmbda = dolfin.Function(self.V_cg1, name="Ta")
+        self.h_lmbda = dolfin.Function(self.function_space, name="Ta")
 
     @property
     def dLambda(self):
@@ -100,7 +99,7 @@ class LandModel(pulse.ActiveModel):
             Tot_A
             * rs
             * scale_popu_rs
-            / (rs * scale_popu_rs + rw * scale_popu_rw * (1 - (rs * scale_popu_rs)))
+            / (rs * scale_popu_rs + rw * scale_popu_rw * (1.0 - (rs * scale_popu_rs)))
         )
 
     @property
@@ -119,7 +118,7 @@ class LandModel(pulse.ActiveModel):
             kuw
             * scale_popu_kuw
             * phi
-            * (1 - (rw * scale_popu_rw))
+            * (1.0 - (rw * scale_popu_rw))
             / (rw * scale_popu_rw)
         )
 
@@ -138,7 +137,7 @@ class LandModel(pulse.ActiveModel):
             * phi
             * rw
             * scale_popu_rw
-            * (1 - (rs * scale_popu_rs))
+            * (1.0 - (rs * scale_popu_rs))
             / (rs * scale_popu_rs)
         )
 
@@ -192,15 +191,7 @@ class LandModel(pulse.ActiveModel):
         self.Zetas_prev.vector()[:] = self.Zetas.vector()
         self.Zetaw_prev.vector()[:] = self.Zetaw.vector()
         self.lmbda_prev.vector()[:] = self.lmbda.vector()
-        # FIXME: Only do this when we save
-        self.Ta_current.assign(
-            dolfin.project(
-                self.Ta,
-                self.function_space,
-                form_compiler_parameters={"representation": "quadrature"},
-            ),
-        )
-        utils.local_project(self.Ta_current, self.V_cg1, self.Ta_current_cg1)
+        self.Ta_current.assign(dolfin.project(self.Ta, self.function_space))
 
     @property
     def Ta(self):
@@ -208,6 +199,7 @@ class LandModel(pulse.ActiveModel):
         rs = self._parameters["rs"]
         scale_popu_Tref = self._parameters["scale_popu_Tref"]
         scale_popu_rs = self._parameters["scale_popu_rs"]
+
         # Beta0 = 1.0  # self._parameters["Beta0"]
 
         # _min = ufl.min_value
@@ -230,12 +222,12 @@ class LandModel(pulse.ActiveModel):
         # h_lambda = 1.47367914 / (1 + ufl.exp(-16.39943599 * (self.lmbda - 0.87576928)))
         h_lambda = 1.47 / (1 + ufl.exp(-14 * (self.lmbda - 0.87)))
         self.h_lmbda.assign(
-            dolfin.project(h_lambda, self.V_cg1),
+            dolfin.project(h_lambda, self.function_space),
         )
         return (
             h_lambda
             * (Tref * scale_popu_Tref / (rs * scale_popu_rs))
-            * (self.XS * (self.Zetas + 1) + self.XW * self.Zetaw)
+            * (self.XS * (self.Zetas + 1.0) + self.XW * self.Zetaw)
         )
 
     def Wactive(self, F, **kwargs):
@@ -243,13 +235,7 @@ class LandModel(pulse.ActiveModel):
 
         C = F.T * F
         f = F * self.f0
-        self.lmbda.assign(
-            dolfin.project(
-                dolfin.sqrt(f**2),
-                self.function_space,
-                form_compiler_parameters={"representation": "quadrature"},
-            ),
-        )
+        self.lmbda.assign(dolfin.project(dolfin.sqrt(f**2), self.function_space))
         self.update_Zetas()
         self.update_Zetaw()
 

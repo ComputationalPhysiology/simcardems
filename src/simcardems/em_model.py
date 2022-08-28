@@ -47,16 +47,13 @@ class EMCoupling:
         logger.debug("Done registering EP model")
 
     def register_mech_model(self, solver: MechanicsProblem):
-        logger.debug("Registering EP model")
+        logger.debug("Registering mech model")
         self._mech_solver = solver
 
-        self.Zetas_mech_quad = solver.material.active.Zetas_prev
-        self.Zetaw_mech_quad = solver.material.active.Zetaw_prev
-        self.lmbda_mech_quad = solver.material.active.lmbda_prev
-        # self.V = dolfin.FunctionSpace(self.mech_mesh, "DG", 1)
-        self.Zetas_mech = dolfin.Function(self.V_mech)
-        self.Zetaw_mech = dolfin.Function(self.V_mech)
-        self.lmbda_mech = dolfin.Function(self.V_mech)
+        self.Zetas_mech = solver.material.active.Zetas_prev
+        self.Zetaw_mech = solver.material.active.Zetaw_prev
+        self.lmbda_mech = solver.material.active.lmbda_prev
+
         self.mechanics_to_coupling()
         logger.debug("Done registering EP model")
 
@@ -78,9 +75,6 @@ class EMCoupling:
         logger.debug("Interpolate EP")
         # print("Zetas = ", self.Zetas_mech.vector().get_local())
         # print("Zetaw = ", self.Zetaw_mech.vector().get_local())
-        utils.local_project(self.lmbda_mech_quad, self.V_mech, self.lmbda_mech)
-        utils.local_project(self.Zetas_mech_quad, self.V_mech, self.Zetas_mech)
-        utils.local_project(self.Zetaw_mech_quad, self.V_mech, self.Zetaw_mech)
         self.lmbda_ep.assign(dolfin.interpolate(self.lmbda_mech, self.V_ep))
         self.Zetas_ep.assign(dolfin.interpolate(self.Zetas_mech, self.V_ep))
         self.Zetaw_ep.assign(dolfin.interpolate(self.Zetaw_mech, self.V_ep))

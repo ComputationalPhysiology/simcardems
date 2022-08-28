@@ -44,6 +44,9 @@ class Config:
     mechanics_use_custom_newton_solver: bool = False
     PCL: float = 1000
 
+    def as_dict(self):
+        return {k: v for k, v in self.__dict__.items()}
+
 
 def default_parameters():
     return {k: v for k, v in Config.__dict__.items() if not k.startswith("_")}
