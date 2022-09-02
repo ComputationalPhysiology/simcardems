@@ -6,6 +6,7 @@ Afcas
 Aff
 Ageo
 Ahf
+allbeats
 allclose
 allo
 allreduce
@@ -18,6 +19,7 @@ arange
 argmin
 assp
 atol
+axlast
 axpy
 Axrf
 Axrs
@@ -109,6 +111,7 @@ ff
 ffast
 ffp
 ffun
+figlast
 figsize
 filt
 Finsberg
@@ -227,6 +230,8 @@ Kxkur
 L
 labelsize
 lambda_max
+lastbeat
+ldrb
 leftback
 leftbottom
 lightcoral
@@ -266,6 +271,7 @@ Niederer
 nonconvergence
 ntm
 ntrpn
+onlylastbeat
 ORdmm_Land
 outdir
 p_a
@@ -376,6 +382,7 @@ tfcas
 tffp
 thL
 thsp
+timelb
 timestep
 tjca
 TmB
@@ -439,9 +446,3 @@ Zetaw
 zk
 zmax
 zmin
-allbeats
-lastbeat
-onlylastbeat
-figlast
-axlast
-timelb

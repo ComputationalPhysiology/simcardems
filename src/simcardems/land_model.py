@@ -4,6 +4,10 @@ import dolfin
 import pulse
 import ufl
 
+from . import utils
+
+logger = utils.getLogger(__name__)
+
 
 class Scheme(str, Enum):
     fd = "fd"
@@ -47,6 +51,7 @@ class LandModel(pulse.ActiveModel):
 
         self.XS = XS
         self.XW = XW
+
         self._parameters = parameters
         self._t = 0.0
         self._t_prev = 0.0
@@ -70,10 +75,17 @@ class LandModel(pulse.ActiveModel):
             self.Zetaw_prev.assign(Zetaw)
 
         self.Ta_current = dolfin.Function(self.function_space, name="Ta")
+        self.h_lmbda = dolfin.Function(self.function_space, name="Ta")
 
     @property
     def dLambda(self):
         self._dLambda.vector()[:] = self.lmbda.vector() - self.lmbda_prev.vector()
+        logger.debug(
+            (
+                self._dLambda.vector().get_local().min(),
+                self._dLambda.vector().get_local().max(),
+            ),
+        )
         return self._dLambda
 
     @property
@@ -187,17 +199,31 @@ class LandModel(pulse.ActiveModel):
         rs = self._parameters["rs"]
         scale_popu_Tref = self._parameters["scale_popu_Tref"]
         scale_popu_rs = self._parameters["scale_popu_rs"]
-        Beta0 = self._parameters["Beta0"]
 
-        _min = ufl.min_value
-        _max = ufl.max_value
-        if isinstance(self.lmbda, (int, float)):
-            _min = min
-            _max = max
-        lmbda = _min(1.2, self.lmbda)
-        h_lambda_prima = 1.0 + Beta0 * (lmbda + _min(lmbda, 0.87) - 1.87)
-        h_lambda = _max(0, h_lambda_prima)
+        # Beta0 = 1.0  # self._parameters["Beta0"]
 
+        # _min = ufl.min_value
+        # _max = ufl.max_value
+        # if isinstance(self.lmbda, (int, float)):
+        #     _min = min
+        #     _max = max
+        # lmbda = _min(1.2, self.lmbda)
+        # h_lambda_prima = 1 + Beta0 * (lmbda + _min(lmbda, 0.87) - 1.87)
+        # h_lambda = _max(0, h_lambda_prima)
+        # h_lambda = 1.49 * (self.lmbda**6) / ((0.875**6) + self.lmbda**6)
+        # h_lambda = (
+        #     44.80272882
+        #     - 198.26131388 * self.lmbda
+        #     + 314.45866191 * self.lmbda**2
+        #     - 211.22794757 * self.lmbda**3
+        #     + 51.48909772 * self.lmbda**4
+        # )
+        # h_lambda = 1.6 / (1 + ufl.exp(-10 * (self.lmbda - 0.9)))
+        # h_lambda = 1.47367914 / (1 + ufl.exp(-16.39943599 * (self.lmbda - 0.87576928)))
+        h_lambda = 1.47 / (1 + ufl.exp(-14 * (self.lmbda - 0.87)))
+        self.h_lmbda.assign(
+            dolfin.project(h_lambda, self.function_space),
+        )
         return (
             h_lambda
             * (Tref * scale_popu_Tref / (rs * scale_popu_rs))

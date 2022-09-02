@@ -15,8 +15,8 @@ class Config:
     T: float = 1000
     dx: float = 0.2
     dt: float = 0.05
-    bnd_cond: mechanics_model.BoundaryConditions = (
-        mechanics_model.BoundaryConditions.dirichlet
+    mech_model_type: mechanics_model.MechanicsModelType = (
+        mechanics_model.MechanicsModelType.compressible
     )
     load_state: bool = False
     cell_init_file: utils.PathLike = ""
