@@ -14,6 +14,10 @@ authors:
     affiliation: "1"
   - name: Cécile Daversin-Catty
     affiliation: "1"
+  - name: Hermenegild Arevalo
+    affiliation: "1"
+  - name: Samuel Wall
+    affiliation: "1"
 
 affiliations:
  - name: Simula Research Laboratory, Oslo, Norway
@@ -41,10 +45,9 @@ The `simcardems` software enables simulation of drugs response of hearth tissue 
 
 Even though the purpose of the project is to study drug effects, this software can be used to study cardiac electro-mechanics in general. `simcardems` is therefore also a great tool to use for learning about cardiac electro-mechanics
 
-
 # Acknowledgements
 This project received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 101016496 (SimCardioTest).
 
-We also wish to than Dr. Hermenegild Arevalo, Dr. Samuel T. Wall and Dr. Joakim Sundnes for scientific discussions and insightful comments and suggestions.
+We also wish to thank Dr. Joakim Sundnes for scientific discussions and insightful comments and suggestions.
 
 # References
