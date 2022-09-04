@@ -29,7 +29,7 @@ bibliography: paper.bib
 
 # Summary
 
-Modeling and simulations can help us to develop better understanding of the physiology and pathophysiology of the heart. It is especially challenging to study interactions across different scales, since of the tight coupling between several mechanisms. One example of this is in the modeling of the effect of drugs. A drug might block an ion channel in the cell, causing a change in the flow of ions in and out of the cell. Understanding how this effect propagates to the organ level and affects the electrophysiology and mechanics of the heart is key to understand if a drug is safe.
+Modeling and simulations can help us to develop better understanding of the physiology and pathophysiology of the heart. It is especially challenging to study interactions across different scales due to the tight coupling between several mechanisms. One example of this is in the modeling of the effect of drugs. A drug might block an ion channel in the cell, causing a change in the flow of ions in and out of the cell. Understanding how this effect propagates to the organ level and affects the electrophysiology and mechanics of the heart is key to understand if a drug is safe.
 
 An electromechanics solver contains a model that couples the models at the cellular level to the models at the tissue level, i.e a monodomain model for the electrophysiology and a hyperelastic continuum model for the mechanics.
 
@@ -39,7 +39,7 @@ We developed a command line interface and a graphical user interface for running
 
 # Statement of need
 
-`simcardems` is python package for performing cardiac electro-mechanics simulations. The package is developed at Simula Research Laboratory as part of the SimCardioTest project. One of the aims of the SimCardioTest project is develop a framework for using in-silico models to simulate the efficacy and safety of drugs.
+`simcardems` is python package for performing cardiac electro-mechanics simulations. The package is developed at Simula Research Laboratory as part of the SimCardioTest project. One of the goals of the SimCardioTest project is develop a framework for using in-silico models to simulate the efficacy and safety of drugs.
 
 The `simcardems` software enables simulation of drugs response of hearth tissue through a multi-scale modeling framework.
 
