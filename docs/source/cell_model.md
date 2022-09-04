@@ -5,6 +5,8 @@
 ## ORdmm_Land_em_coupling
 This document is automatically generated using [gotran](https://pypi.org/project/gotran/)
 
+Model is based on the work from {cite}`o2011simulation`, {cite}`land2017model`
+
 ### Parameters
 | Name                  | Value                    |
 | --------------------- | ------------------------ |
@@ -1413,3 +1415,9 @@ $$
 $$
 Jtr = 1\!\times\!10 ^{-2} cansr - 1\!\times\!10 ^{-2} cajsr
 $$
+
+## References
+
+```{bibliography}
+:filter: docname in docnames
+```
