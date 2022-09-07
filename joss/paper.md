@@ -44,7 +44,7 @@ We developed a command line interface and a graphical user interface for running
 
 The `simcardems` software enables simulation of drug response of heart tissue through a multi-scale modeling framework.
 
-Even though the purpose of the project is to study drug effects, this software can be used to study cardiac electro-mechanics in general. `simcardems` is therefore also a great tool to use for learning about cardiac electro-mechanics. 
+Even though the purpose of the project is to study drug effects, this software can be used to study cardiac electro-mechanics in general. `simcardems` is therefore also a great tool to use for learning about cardiac electro-mechanics.
 
 # Acknowledgements
 This project received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 101016496 (SimCardioTest).
