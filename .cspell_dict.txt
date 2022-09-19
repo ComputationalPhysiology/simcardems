@@ -23,6 +23,7 @@ Cd
 Cristobal
 Cécile
 Daversin
+Disp
 Elsevier
 Esac
 Esac_ns
@@ -178,6 +179,7 @@ dhsp
 diriclet
 discretization
 discretized
+disp
 djca
 dkss
 dnai
@@ -185,6 +187,8 @@ dnass
 dnca
 docname
 docnames
+dofmap
+dofmaps
 dofs
 dolfin
 dtype
@@ -389,7 +393,9 @@ silico
 simcardems
 splittingsolver
 streamlit
+subf
 subk
+submesh
 subv
 sundnes
 superlu
@@ -403,6 +409,8 @@ thsp
 timelb
 timestep
 tjca
+tmax
+tmin
 tolist
 tqdm
 transmembrane

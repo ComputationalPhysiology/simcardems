@@ -211,6 +211,87 @@ class RigidMotionProblem(MechanicsProblem):
         return sum(dolfin.dot(u, zi) * r[i] * dolfin.dx for i, zi in enumerate(RM))
 
 
+class TorsoMechanicsProblem:
+    def __init__(self, full_mesh, torso_mesh, heart_d):
+        self.mesh = full_mesh
+        self.torso_mesh = torso_mesh
+        self.heart_mesh = heart_d.function_space().mesh()
+        self.heart_d = heart_d
+        self.V = dolfin.FunctionSpace(self.torso_mesh, self.heart_d.ufl_element())
+
+    def update_heart_disp(self, d):
+        self.heart_d = d
+
+    def set_bcs(self):
+        bc_markers = torso_boundary_marking(self.torso_mesh, self.heart_mesh)
+        with dolfin.XDMFFile(
+            dolfin.MPI.comm_world,
+            "./XDMF/HT/torso_marking.xdmf",
+        ) as xdmf:
+            xdmf.write(bc_markers)
+
+        ## FIXME : This is super expensive!
+        class HeartDisp(dolfin.UserExpression):
+            def __init__(self, mesh, heart_d, **kwargs):
+                self.mesh_ = mesh
+                self.heart_disp_ = heart_d
+                super().__init__(**kwargs)
+
+            def eval(self, values, x):
+                # Check if x is in heart mesh (should be True only for heart boundary points)
+                index = self.mesh_.bounding_box_tree().compute_first_entity_collision(
+                    dolfin.Point(x),
+                )
+                x_in_mesh = index < self.mesh_.num_entities(self.mesh_.topology().dim())
+                if x_in_mesh:
+                    for i in range(self.mesh_.topology().dim()):
+                        values[i] = self.heart_disp_(x)[i]
+
+            def value_shape(self):
+                return (self.mesh_.topology().dim(),)
+
+        zero = dolfin.Constant((0.0, 0.0, 0.0))
+        dh = HeartDisp(self.heart_mesh, self.heart_d, degree=2)
+
+        # DEBUG
+        # Interpolation is also super expensive!
+        # dh_h = dolfin.interpolate(dh, self.V)
+        # with dolfin.XDMFFile(dolfin.MPI.comm_world, "./XDMF/HT/heart_disp1.xdmf") as xdmf:
+        #     xdmf.write(dh_h)
+        # with dolfin.XDMFFile(dolfin.MPI.comm_world, "./XDMF/HT/heart_disp2.xdmf") as xdmf:
+        #     xdmf.write(self.heart_d)
+
+        bc_ext = dolfin.DirichletBC(self.V, zero, bc_markers, 2)
+        bc_int = dolfin.DirichletBC(self.V, dh, bc_markers, 1)
+
+        return [bc_int, bc_ext]
+
+    def solve(self):
+
+        u = dolfin.TrialFunction(self.V)
+        phi = dolfin.TestFunction(self.V)
+        d = dolfin.Function(self.V)
+
+        # Variational formulation - Standard Poisson (for now)
+        a = dolfin.inner(dolfin.grad(u), dolfin.grad(phi)) * dolfin.dx
+        L = dolfin.inner(dolfin.Constant((0.0, 0.0, 0.0)), phi) * dolfin.dx
+
+        bcs = self.set_bcs()
+        dolfin.solve(a == L, d, bcs=bcs, solver_parameters={"linear_solver": "mumps"})
+
+        self.torso_d = d
+
+        # Create a displacement field defined on full mesh (H+T)
+        d_all = dolfin.Function(
+            dolfin.FunctionSpace(self.mesh, self.heart_d.ufl_element()),
+        )
+
+        utils.submesh_to_mesh(self.heart_d, d_all)  # Add heart contrib
+        utils.submesh_to_mesh(self.torso_d, d_all)  # Add torso contrib
+
+        return d_all
+
+
 def setup_microstructure(mesh):
     logger.debug("Set up microstructure")
     V_f = dolfin.VectorFunctionSpace(mesh, "DG", 1)
@@ -384,3 +465,92 @@ def setup_diriclet_bc(
     )
 
     return bcs, marker_functions
+
+
+# FIXME : This can be done in a more elegant way
+def torso_boundary_marking(
+    torso_mesh: dolfin.Mesh,
+    heart_mesh: dolfin.Mesh,
+):
+
+    logger.debug("Setup torso diriclet bc")
+
+    # Get the value of the greatest x-coordinate
+    Lx_h = heart_mesh.mpi_comm().allreduce(
+        heart_mesh.coordinates().max(0)[0],
+        op=MPI.MAX,
+    )
+    Ly_h = heart_mesh.mpi_comm().allreduce(
+        heart_mesh.coordinates().max(0)[1],
+        op=MPI.MAX,
+    )
+    Lz_h = heart_mesh.mpi_comm().allreduce(
+        heart_mesh.coordinates().max(0)[2],
+        op=MPI.MAX,
+    )
+
+    Lx_tmin = torso_mesh.mpi_comm().allreduce(
+        torso_mesh.coordinates().min(0)[0],
+        op=MPI.MIN,
+    )
+    Ly_tmin = torso_mesh.mpi_comm().allreduce(
+        torso_mesh.coordinates().min(0)[1],
+        op=MPI.MIN,
+    )
+    Lz_tmin = torso_mesh.mpi_comm().allreduce(
+        torso_mesh.coordinates().min(0)[2],
+        op=MPI.MIN,
+    )
+
+    Lx_tmax = torso_mesh.mpi_comm().allreduce(
+        torso_mesh.coordinates().max(0)[0],
+        op=MPI.MAX,
+    )
+    Ly_tmax = torso_mesh.mpi_comm().allreduce(
+        torso_mesh.coordinates().max(0)[1],
+        op=MPI.MAX,
+    )
+    Lz_tmax = torso_mesh.mpi_comm().allreduce(
+        torso_mesh.coordinates().max(0)[2],
+        op=MPI.MAX,
+    )
+
+    # Define domain to apply dirichlet boundary conditions
+    heart_x0 = dolfin.CompiledSubDomain("near(x[0], 0) && on_boundary")
+    heart_lx = dolfin.CompiledSubDomain("near(x[0], Lx) && on_boundary", Lx=Lx_h)
+    heart_y0 = dolfin.CompiledSubDomain("near(x[1], 0) && on_boundary")
+    heart_ly = dolfin.CompiledSubDomain("near(x[1], Ly) && on_boundary", Ly=Ly_h)
+    heart_z0 = dolfin.CompiledSubDomain("near(x[2], 0) && on_boundary")
+    heart_lz = dolfin.CompiledSubDomain("near(x[2], Lz) && on_boundary", Lz=Lz_h)
+
+    torso_x0 = dolfin.CompiledSubDomain("near(x[0], Lx) && on_boundary", Lx=Lx_tmin)
+    torso_lx = dolfin.CompiledSubDomain("near(x[0], Lx) && on_boundary", Lx=Lx_tmax)
+    torso_y0 = dolfin.CompiledSubDomain("near(x[1], Ly) && on_boundary", Ly=Ly_tmin)
+    torso_ly = dolfin.CompiledSubDomain("near(x[1], Ly) && on_boundary", Ly=Ly_tmax)
+    torso_z0 = dolfin.CompiledSubDomain("near(x[2], Lz) && on_boundary", Lz=Lz_tmin)
+    torso_lz = dolfin.CompiledSubDomain("near(x[2], Lz) && on_boundary", Lz=Lz_tmax)
+
+    boundary_markers = dolfin.MeshFunction(
+        "size_t",
+        torso_mesh,
+        torso_mesh.topology().dim() - 1,
+    )
+    boundary_markers.set_all(0)
+
+    interior_marker = 1
+    heart_x0.mark(boundary_markers, interior_marker)
+    heart_y0.mark(boundary_markers, interior_marker)
+    heart_z0.mark(boundary_markers, interior_marker)
+    heart_lx.mark(boundary_markers, interior_marker)
+    heart_ly.mark(boundary_markers, interior_marker)
+    heart_lz.mark(boundary_markers, interior_marker)
+
+    exterior_marker = 2
+    torso_x0.mark(boundary_markers, exterior_marker)
+    torso_y0.mark(boundary_markers, exterior_marker)
+    torso_z0.mark(boundary_markers, exterior_marker)
+    torso_lx.mark(boundary_markers, exterior_marker)
+    torso_ly.mark(boundary_markers, exterior_marker)
+    torso_lz.mark(boundary_markers, exterior_marker)
+
+    return boundary_markers

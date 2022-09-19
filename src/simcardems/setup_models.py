@@ -22,21 +22,30 @@ logger = utils.getLogger(__name__)
 
 EMState = namedtuple(
     "EMState",
-    ["coupling", "solver", "mech_heart", "t0"],
+    ["coupling", "solver", "mech_heart", "mech_torso", "t0"],
 )
 
 
 def setup_EM_model(config: Config):
 
-    geo = geometry.SlabGeometry(
-        lx=config.lx,
-        ly=config.ly,
-        lz=config.lz,
-        dx=config.dx,
-        num_refinements=config.num_refinements,
-    )
-
-    coupling = em_model.EMCoupling(geo)
+    if config.heart_torso_coupling:
+        geo_t = geometry.TorsoGeometry(
+            lx=config.lx,
+            ly=config.ly,
+            lz=config.lz,
+            dx=config.dx,
+            num_refinements=config.num_refinements,
+        )
+        coupling = em_model.EMCoupling(geo_t)
+    else:
+        geo_s = geometry.SlabGeometry(
+            lx=config.lx,
+            ly=config.ly,
+            lz=config.lz,
+            dx=config.dx,
+            num_refinements=config.num_refinements,
+        )
+        coupling = em_model.EMCoupling(geo_s)
 
     # Set-up solver and time it
     solver = setup_ep_solver(
@@ -51,7 +60,7 @@ def setup_EM_model(config: Config):
 
     coupling.register_ep_model(solver)
 
-    mech_heart = setup_mechanics_solver(
+    (mech_heart, mech_torso) = setup_mechanics_solver(
         coupling=coupling,
         bnd_cond=config.bnd_cond,
         cell_params=solver.ode_solver._model.parameters(),
@@ -62,12 +71,14 @@ def setup_EM_model(config: Config):
         set_material=config.set_material,
         mechanics_ode_scheme=config.mechanics_ode_scheme,
         use_custom_newton_solver=config.mechanics_use_custom_newton_solver,
+        heart_torso_coupling=config.heart_torso_coupling,
     )
 
     return EMState(
         coupling=coupling,
         solver=solver,
         mech_heart=mech_heart,
+        mech_torso=mech_torso,
         t0=0,
     )
 
@@ -84,6 +95,7 @@ def setup_mechanics_solver(
     set_material: str = "",
     linear_solver="mumps",
     use_custom_newton_solver: bool = Config.mechanics_use_custom_newton_solver,
+    heart_torso_coupling: bool = Config.heart_torso_coupling,
     Zetas_prev=None,
     Zetaw_prev=None,
     lmbda_prev=None,
@@ -179,7 +191,17 @@ def setup_mechanics_solver(
     logger.info("Mechanics model")
     utils.print_mesh_info(coupling.mech_mesh, total_dofs)
 
-    return problem
+    torso_problem = None
+    if heart_torso_coupling:
+        u, p = problem.state.split(deepcopy=True)
+        # u, p = problem.state.split()
+        # print("displacement min = ", min(u.vector().get_local()))
+        # print("displacement max = ", max(u.vector().get_local()))
+        TorsoProblem = mechanics_model.TorsoMechanicsProblem
+        torso_problem = TorsoProblem(coupling.mech_ht_mesh, coupling.mech_torso_mesh, u)
+        torso_problem.solve()
+
+    return (problem, torso_problem)
 
 
 def setup_ep_solver(
@@ -195,6 +217,7 @@ def setup_ep_solver(
     popu_factors_file=None,
     disease_state=Config.disease_state,
     PCL=Config.PCL,
+    heart_torso_coupling=Config.heart_torso_coupling,
 ):
     ps = ep_model.setup_splitting_solver_parameters(
         theta=theta,
@@ -222,10 +245,16 @@ def setup_ep_solver(
     cellmodel = CellModel(init_conditions=cell_inits, params=cell_params)
 
     # Set-up cardiac model
-    ep_heart = ep_model.setup_ep_model(cellmodel, coupling.ep_mesh, PCL=PCL)
+    (ep_heart, ep_torso) = ep_model.setup_ep_model(
+        cellmodel,
+        coupling.ep_mesh,
+        coupling.ep_ht_mesh,
+        PCL=PCL,
+    )
     timer = dolfin.Timer("SplittingSolver: setup")
 
-    solver = cbcbeat.SplittingSolver(ep_heart, params=ps)
+    # NOTE : if we don't have a torso model, then it is just none (default param), and it is back to initial
+    solver = cbcbeat.SplittingSolver(ep_heart, torso_model=ep_torso, params=ps)
 
     timer.stop()
     # Extract the solution fields and set the initial conditions
@@ -270,10 +299,11 @@ class Runner:
         else:
             logger.info("Create a new state")
             # Create a new state
-            coupling, ep_solver, mech_heart, t0 = setup_EM_model(config)
+            coupling, ep_solver, mech_heart, mech_torso, t0 = setup_EM_model(config)
         self.coupling: em_model.EMCoupling = coupling
         self.ep_solver: cbcbeat.SplittingSolver = ep_solver
         self.mech_heart: mechanics_model.MechanicsProblem = mech_heart
+        self.mech_torso: mechanics_model.TorsoMechanicsProblem = mech_torso
         self._t0: float = t0
 
         self._reset = reset
@@ -439,6 +469,7 @@ class Runner:
 
         # dt for the mechanics model should not be larger than 1 ms
         # return (XS_norm + XW_norm >= 0.05) #or self.dt_mechanics > 0.1
+
         return True  # self._t <= 10.0 or max(self.coupling.XS_ep.vector()) >= 0.0005 or max(self.coupling.XW_ep.vector()) >= 0.002
 
     def _pre_mechanics_solve(self) -> None:
@@ -461,6 +492,22 @@ class Runner:
             self.mech_heart.solve_for_control(self.coupling.XS_ep)
         else:
             self.mech_heart.solve()
+
+        if self._config.heart_torso_coupling:
+            u, p = self.mech_heart.state.split(deepcopy=True)
+            print("[_solve_mechanics] displacement min = ", min(u.vector().get_local()))
+            print("[_solve_mechanics] displacement max = ", max(u.vector().get_local()))
+
+            self.mech_torso.update_heart_disp(u)
+            d_all = self.mech_torso.solve()
+            print("[_solve_mechanics] d_all min = ", min(d_all.vector().get_local()))
+            print("[_solve_mechanics] d_all max = ", max(d_all.vector().get_local()))
+            # And move the mesh accordingly
+            d_all.rename("d_all", "d_all")
+
+            # FIXME
+            # dolfin.ALE.move(mesh, d_all)
+
         # converged = False
 
         # current_t = float(self.mech_heart.material.active.t)

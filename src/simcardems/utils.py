@@ -103,3 +103,30 @@ def print_mesh_info(mesh, total_dofs):
     logger.info(f"Mesh elements: {mesh.num_entities(mesh.topology().dim())}")
     logger.info(f"Mesh vertices: {mesh.num_entities(0)}")
     logger.info(f"Total degrees of freedom: {total_dofs}")
+
+
+def submesh_to_mesh(subf, f):
+    # Function spaces
+    V = f.function_space()
+    subV = subf.function_space()
+    # Meshes
+    submesh = subV.mesh()
+    mesh = V.mesh()
+
+    # Check if subfunction.mesh is a child of mesh
+    if not submesh.topology().mapping()[mesh.id()]:
+        print("No mapping between mesh and submesh!")  # Throw error here
+
+    # Get mapping
+    cell_map = submesh.topology().mapping()[mesh.id()].cell_map()
+    # Get dofmaps
+    sub_dofmap = subV.dofmap()
+    global_dofmap = V.dofmap()
+
+    # Transfer subfunction to mesh
+    for c in dolfin.cells(submesh):
+        parent_dofs = global_dofmap.cell_dofs(cell_map[c.index()])
+        sub_dofs = sub_dofmap.cell_dofs(c.index())
+        for d, dof in enumerate(parent_dofs):
+            if d < sub_dofs.size:  # FIXME : We shouldn't need that here
+                f.vector()[dof] = subf.vector()[sub_dofs[d]]
