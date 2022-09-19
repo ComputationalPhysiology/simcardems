@@ -14,6 +14,7 @@ Bcajsr
 Bcass
 Beta0
 Beta1
+Bidomain
 Boundary
 CaMKo
 CaMKt
@@ -138,6 +139,7 @@ atol
 axlast
 axpy
 bCaMK
+bidomain
 bnd_cond
 boxmesh
 bt

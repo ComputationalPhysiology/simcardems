@@ -32,13 +32,16 @@ def define_conductivity_tensor(chi, C_m):
     s_l = sigma_l / (C_m * chi)  # mm^2 / ms
     s_t = sigma_t / (C_m * chi)  # mm^2 / ms
 
-    # Define conductivity tensor
+    # Define conductivity tensor (heart)
     M = dolfin.as_tensor(((s_l, 0, 0), (0, s_t, 0), (0, 0, s_t)))
 
-    return M
+    # FIXME Define conductivity tensor (torso)
+    M_T = 0.25 * M
+
+    return (M, M_T)
 
 
-def setup_ep_model(cellmodel, mesh, PCL=1000):
+def setup_ep_model(cellmodel, mesh, ht_mesh=None, PCL=1000):
     """Set-up cardiac model based on benchmark parameters."""
 
     # Define time
@@ -50,7 +53,7 @@ def setup_ep_model(cellmodel, mesh, PCL=1000):
     C_m = 0.01  # mu F / mm^2
 
     # Define conductivity tensor
-    M = define_conductivity_tensor(chi, C_m)
+    (M, M_T) = define_conductivity_tensor(chi, C_m)
 
     # Mark stimulation region defined as [0, L]^3
     S1_marker = 1
@@ -98,13 +101,21 @@ def setup_ep_model(cellmodel, mesh, PCL=1000):
         domain=mesh,
         time=time,
         M_i=M,
-        M_e=None,
+        # M_e=None,
+        M_e=M,
         cell_models=cellmodel,
         stimulus=stimulus,
         applied_current=None,
     )
 
-    return heart
+    torso = None
+    if ht_mesh is not None:
+        # Check if we have the correct parent-child mapping
+        assert mesh.topology().mapping()[ht_mesh.id()].mesh().id() == ht_mesh.id()
+        # Build torso model based on full heart+torso (parent) mesh
+        torso = cbcbeat.TorsoModel(ht_mesh, M_T)
+
+    return heart, torso
 
 
 def setup_splitting_solver_parameters(
@@ -114,12 +125,15 @@ def setup_splitting_solver_parameters(
     scheme="GRL1",
 ):
     ps = cbcbeat.SplittingSolver.default_parameters()
-    ps["pde_solver"] = "monodomain"
-    ps["MonodomainSolver"]["linear_solver_type"] = "iterative"
-    ps["MonodomainSolver"]["theta"] = theta
-    ps["MonodomainSolver"]["preconditioner"] = preconditioner
-    ps["MonodomainSolver"]["default_timestep"] = dt
-    ps["MonodomainSolver"]["use_custom_preconditioner"] = False
+    # ps["pde_solver"] = "monodomain"
+    # ps["MonodomainSolver"]["linear_solver_type"] = "iterative"
+    # ps["MonodomainSolver"]["theta"] = theta
+    # ps["MonodomainSolver"]["preconditioner"] = preconditioner
+    # ps["MonodomainSolver"]["default_timestep"] = dt
+    # ps["MonodomainSolver"]["use_custom_preconditioner"] = False
+    ps["pde_solver"] = "bidomain"
+    ps["BidomainSolver"]["theta"] = theta
+    ps["BidomainSolver"]["preconditioner"] = preconditioner
     ps["theta"] = theta
     ps["enable_adjoint"] = False
     ps["apply_stimulus_current_to_pde"] = True

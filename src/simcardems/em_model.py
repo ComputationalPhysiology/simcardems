@@ -34,8 +34,20 @@ class EMCoupling:
         return self.geometry.mechanics_mesh
 
     @property
+    def mech_ht_mesh(self):
+        return self.geometry.mechanics_ht_mesh
+
+    @property
+    def mech_torso_mesh(self):
+        return self.geometry.mechanics_torso_mesh
+
+    @property
     def ep_mesh(self):
         return self.geometry.ep_mesh
+
+    @property
+    def ep_ht_mesh(self):
+        return self.geometry.ep_ht_mesh
 
     def register_ep_model(self, solver):
         logger.debug("Registering EP model")
