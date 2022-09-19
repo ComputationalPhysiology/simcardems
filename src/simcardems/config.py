@@ -43,6 +43,7 @@ class Config:
     mechanics_use_continuation: bool = False
     mechanics_use_custom_newton_solver: bool = False
     PCL: float = 1000
+    heart_torso_coupling: bool = False
 
     def as_dict(self):
         return {k: v for k, v in self.__dict__.items()}
