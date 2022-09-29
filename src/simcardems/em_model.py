@@ -28,6 +28,8 @@ class EMCoupling:
         self.lmbda_ep = dolfin.Function(self.V_ep, name="lambda_ep")
         self.Zetas_ep = dolfin.Function(self.V_ep, name="Zetas_ep")
         self.Zetaw_ep = dolfin.Function(self.V_ep, name="Zetaw_ep")
+        self.W_ep = dolfin.VectorFunctionSpace(self.ep_mesh, "CG", 2)
+        self.u_ep = dolfin.Function(self.W_ep)
 
     @property
     def mech_mesh(self):
@@ -50,10 +52,17 @@ class EMCoupling:
         logger.debug("Registering mech model")
         self._mech_solver = solver
 
+        self._u_subspace_index = 1 if solver.boundary_condition == "rigid" else 0
+        self.u_mech, self.u_mech_assigner = utils.setup_assigner(
+            solver.state,
+            self._u_subspace_index,
+        )
+        self.f0 = solver.material.f0
+
         self.Zetas_mech = solver.material.active.Zetas_prev
         self.Zetaw_mech = solver.material.active.Zetaw_prev
-        self.lmbda_mech = solver.material.active.lmbda_prev
-
+        # self.lmbda_mech = solver.material.active.lmbda_prev
+        self.mech_state = solver.state
         self.mechanics_to_coupling()
         logger.debug("Done registering EP model")
 
@@ -75,9 +84,35 @@ class EMCoupling:
         logger.debug("Interpolate EP")
         # print("Zetas = ", self.Zetas_mech.vector().get_local())
         # print("Zetaw = ", self.Zetaw_mech.vector().get_local())
+        self.u_mech_assigner.assign(
+            self.u_mech,
+            utils.sub_function(self.mech_state, self._u_subspace_index),
+        )
+        self.u_ep.assign(dolfin.interpolate(self.u_mech, self.W_ep))
+        F = dolfin.grad(self.u_mech) + dolfin.Identity(3)
+        f = F * self.f0
+
+        self.lmbda_ep.assign(dolfin.project(dolfin.sqrt(f**2), self.V_ep))
         self.lmbda_ep.assign(dolfin.interpolate(self.lmbda_mech, self.V_ep))
-        self.Zetas_ep.assign(dolfin.interpolate(self.Zetas_mech, self.V_ep))
-        self.Zetaw_ep.assign(dolfin.interpolate(self.Zetaw_mech, self.V_ep))
+
+        # utils.local_project(self.Zetas_mech, self.V_ep, self.Zetas_ep)
+        self.Zetas_ep.assign(
+            dolfin.project(
+                self.Zetas_mech,
+                self.V_ep,
+                form_compiler_parameters={"representation": "quadrature"},
+            ),
+        )
+        # utils.local_project(self.Zetaw_mech, self.V_ep, self.Zetaw_ep)
+        self.Zetaw_ep.assign(
+            dolfin.project(
+                self.Zetaw_mech,
+                self.V_ep,
+                form_compiler_parameters={"representation": "quadrature"},
+            ),
+        )
+        # self.Zetas_ep.assign(dolfin.interpolate(self.Zetas_mech, self.V_ep))
+        # self.Zetaw_ep.assign(dolfin.interpolate(self.Zetaw_mech, self.V_ep))
         logger.debug("Done interpolating EP")
 
     def coupling_to_ep(self):
