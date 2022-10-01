@@ -34,6 +34,8 @@ def setup_EM_model(config: Config):
         lz=config.lz,
         dx=config.dx,
         num_refinements=config.num_refinements,
+        marking=config.mesh_marking,
+        export_marking=config.export_marking,
     )
 
     coupling = em_model.EMCoupling(geo)
@@ -45,6 +47,7 @@ def setup_EM_model(config: Config):
         cell_init_file=config.cell_init_file,
         drug_factors_file=config.drug_factors_file,
         popu_factors_file=config.popu_factors_file,
+        heterogeneous_factors_file=config.heterogeneous_factors_file,
         disease_state=config.disease_state,
         PCL=config.PCL,
     )
@@ -193,6 +196,7 @@ def setup_ep_solver(
     cell_init_file=None,
     drug_factors_file=None,
     popu_factors_file=None,
+    heterogeneous_factors_file=None,
     disease_state=Config.disease_state,
     PCL=Config.PCL,
 ):
@@ -220,6 +224,42 @@ def setup_ep_solver(
     cell_inits["Zetaw"] = coupling.Zetaw_ep
 
     cellmodel = CellModel(init_conditions=cell_inits, params=cell_params)
+
+    # FIXME : Might be worth moving to a dedicated function
+    # Update cellmodel in case of heterogeneous tissue
+    if coupling.ep_marking:
+        logger.info(f"Updating cell parameters from {heterogeneous_factors_file}")
+        if not ep_model.file_exist(heterogeneous_factors_file, ".json"):
+            logger.warning(
+                f"Unable to find heterogeneous factors file {heterogeneous_factors_file}",
+            )
+
+        # Read json file containing heterogeneous parameters
+        # dict[param_name] = {(marker_id1, value1), (marker_id2, value2), ...}
+        heterogeneous_dict = ep_model.load_json(heterogeneous_factors_file)
+
+        # Build function with heterogeneous parameters
+        updated_params = dict()
+        for param in heterogeneous_dict.keys():
+
+            param_func = dolfin.Function(
+                dolfin.FunctionSpace(coupling.ep_mesh, "DG", 0),
+            )
+            # Initialize with initial cell_params value everywhere
+            param_func.vector()[:] = cell_params[param]
+            # Update value on the concerned (marked) cells
+            for (marker_id, value) in heterogeneous_dict[param].items():
+                for c in coupling.ep_marking.where_equal(int(marker_id)):
+                    param_func.vector()[c] = value
+
+            # DEBUG : Write heterogeneous params to xdmf file
+            filename = Path("heterogeneous_params").joinpath(param + "-function.xdmf")
+            with dolfin.XDMFFile(coupling.ep_mesh.mpi_comm(), str(filename)) as file:
+                file.write(param_func)
+
+            updated_params[param] = param_func
+
+        cellmodel.set_parameters(**updated_params)
 
     # Set-up cardiac model
     ep_heart = ep_model.setup_ep_model(cellmodel, coupling.ep_mesh, PCL=PCL)
@@ -264,6 +304,7 @@ class Runner:
                 self._state_path,
                 config.drug_factors_file,
                 config.popu_factors_file,
+                config.heterogeneous_factors_file,
                 config.disease_state,
                 config.PCL,  # Set bcl from cli
             )

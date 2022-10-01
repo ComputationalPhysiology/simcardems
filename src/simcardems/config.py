@@ -31,9 +31,12 @@ class Config:
     fix_right_plane: bool = False
     loglevel: int = logging.INFO
     num_refinements: int = 1
+    mesh_marking: typing.Optional[typing.Union[dict, str]] = None
+    export_marking: typing.Optional[typing.Union[utils.PathLike, str]] = None
     set_material: str = ""
     drug_factors_file: str = ""
     popu_factors_file: str = ""
+    heterogeneous_factors_file: str = ""
     disease_state: str = "healthy"
     mechanics_ode_scheme: land_model.Scheme = land_model.Scheme.analytic
     ep_ode_scheme: str = "GRL1"

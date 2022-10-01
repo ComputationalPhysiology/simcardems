@@ -10,6 +10,7 @@ from dolfin import tetrahedron  # noqa: F401
 from dolfin import VectorElement  # noqa: F401
 
 from . import em_model
+from . import ep_model
 from . import geometry
 from . import setup_models
 from . import utils
@@ -36,12 +37,33 @@ def h5pyfile(h5name, filemode="r"):
 
 def dict_to_h5(data, h5name, h5group):
     with h5pyfile(h5name, "a") as h5file:
-        if h5group == "":
-            group = h5file
+        if h5file.keys() != "":
+            # Creating a temporary h5file and copy to initial file to avoid overwriting
+            # FIXME : Is there a more elegant way to do this ?
+            if isinstance(h5name, str):
+                tmp_name = str(os.path.splitext(h5name)[0]) + "_tmp.h5"
+            elif isinstance(h5name, os.PathLike):
+                tmp_name = h5name.with_name(f"{h5name.stem}_tmp.h5")
+            else:
+                logger.error(
+                    "dict_to_h5 : h5name has wrong type (supported : str / path)",
+                )
+
+            with h5pyfile(tmp_name, "w") as h5file_tmp:
+                if h5group == "":
+                    group = h5file_tmp
+                else:
+                    group = h5file_tmp.create_group(h5group)
+                for k, v in data.items():
+                    group.create_dataset(k, data=v)
+                h5file_tmp.copy(group, h5file, name=h5group)
         else:
-            group = h5file.create_group(h5group)
-        for k, v in data.items():
-            group.create_dataset(k, data=v)
+            if h5group == "":
+                group = h5file
+            else:
+                group = h5file.create_group(h5group)
+            for k, v in data.items():
+                group.create_dataset(k, data=v)
 
 
 def decode(x):
@@ -91,6 +113,17 @@ def group_in_file(h5_filename, h5group):
     return exists
 
 
+def split_params(parameters):
+    heterogeneous_params = dict()
+    homogeneous_params = dict()
+    for (key, value) in parameters.items():
+        if isinstance(value, dolfin.Function):
+            heterogeneous_params[key] = value
+        elif isinstance(value, int) or isinstance(value, float):
+            homogeneous_params[key] = value
+    return homogeneous_params, heterogeneous_params
+
+
 def save_state(
     path,
     solver,
@@ -105,22 +138,25 @@ def save_state(
 
     logger.info(f"Save state to {path}")
 
-    mech_mesh = mech_heart.geometry.mesh
-    ep_mesh = solver.VS.mesh()
-    logger.debug("Save using dolfin.HDF5File")
-    with dolfin.HDF5File(ep_mesh.mpi_comm(), path.as_posix(), "w") as h5file:
-        h5file.write(mech_heart.material.active.lmbda_prev, "/em/lmbda_prev")
-        h5file.write(mech_heart.material.active.Zetas_prev, "/em/Zetas_prev")
-        h5file.write(mech_heart.material.active.Zetaw_prev, "/em/Zetaw_prev")
-
-        h5file.write(ep_mesh, "/ep/mesh")
-        h5file.write(solver.vs, "/ep/vs")
-        h5file.write(mech_mesh, "/mechanics/mesh")
-        h5file.write(mech_heart.state, "/mechanics/state")
-
+    # NOTE : dict_to_h5 calls needs to be made before calling h5file.write to avoid overwriting
     bnd_cond_dict = dict([("dirichlet", 0), ("rigid", 1)])
     logger.debug("Save using h5py")
-    dict_to_h5(solver.ode_solver._model.parameters(), path, "ep/cell_params")
+    if coupling.ep_marking:
+        homogeneous_params, heterogeneous_params = split_params(
+            solver.ode_solver._model.parameters(),
+        )
+        # Saving heterogeneous parameters (dolfin.Function type)
+        save_cell_params_to_h5(
+            path.as_posix(),
+            heterogeneous_params,
+            list(heterogeneous_params.keys()),
+        )
+        # Saving homogeneous parameters (float, int)
+        print("type path = ", type(path))
+        dict_to_h5(homogeneous_params, path, "ep/cell_params")
+    else:
+        dict_to_h5(solver.ode_solver._model.parameters(), path, "ep/cell_params")
+
     dict_to_h5(
         coupling.geometry.parameters,
         path,
@@ -136,11 +172,25 @@ def save_state(
         "state_params",
     )
 
+    mech_mesh = mech_heart.geometry.mesh
+    ep_mesh = solver.VS.mesh()
+    logger.debug("Save using dolfin.HDF5File")
+    with dolfin.HDF5File(ep_mesh.mpi_comm(), path.as_posix(), "a") as h5file:
+        h5file.write(mech_heart.material.active.lmbda_prev, "/em/lmbda_prev")
+        h5file.write(mech_heart.material.active.Zetas_prev, "/em/Zetas_prev")
+        h5file.write(mech_heart.material.active.Zetaw_prev, "/em/Zetaw_prev")
+
+        h5file.write(ep_mesh, "/ep/mesh")
+        h5file.write(solver.vs, "/ep/vs")
+        h5file.write(mech_mesh, "/mechanics/mesh")
+        h5file.write(mech_heart.state, "/mechanics/state")
+
 
 def load_state(
     path,
     drug_factors_file="",
     popu_factors_file="",
+    heterogeneous_factors_file="",
     disease_state="healthy",
     PCL=1000,
 ):
@@ -170,7 +220,8 @@ def load_state(
                 "dx": 1,  # This is not saved, so just set it to some value
                 "num_refinements": 1,  # This is not saved, so just set it to some value
             }
-        cell_params = h5_to_dict(h5file["ep"]["cell_params"])
+        homogeneous_cell_params = h5_to_dict(h5file["ep"]["cell_params"])
+        cell_params = dict(homogeneous_cell_params)
         vs_signature = h5file["ep"]["vs"].attrs["signature"].decode()
         mech_signature = h5file["mechanics"]["state"].attrs["signature"].decode()
 
@@ -180,6 +231,18 @@ def load_state(
     with dolfin.HDF5File(ep_mesh.mpi_comm(), path.as_posix(), "r") as h5file:
         h5file.read(ep_mesh, "/ep/mesh", True)
         h5file.read(mech_mesh, "/mechanics/mesh", True)
+
+    if ep_model.file_exist(heterogeneous_factors_file, ".json"):
+        heterogeneous_cell_params = dict()
+        Vp = dolfin.FunctionSpace(ep_mesh, "DG", 0)
+        heterogeneous_dict = ep_model.load_json(heterogeneous_factors_file)
+        load_cell_params_from_h5(
+            str(path),
+            Vp,
+            heterogeneous_cell_params,
+            list(heterogeneous_dict.keys()),
+        )
+        cell_params.update(heterogeneous_cell_params)
 
     geo = geometry.SlabGeometry(
         mechanics_mesh=mech_mesh, ep_mesh=ep_mesh, **geometry_params
@@ -214,6 +277,7 @@ def load_state(
         cell_inits=cell_inits,
         drug_factors_file=drug_factors_file,
         popu_factors_file=popu_factors_file,
+        heterogeneous_factors_file=heterogeneous_factors_file,
         disease_state=disease_state,
         PCL=PCL,
     )
@@ -287,7 +351,8 @@ def load_cell_params_from_h5(h5_filename, V, cell_params, params_list):
     h5_base = os.path.splitext(h5_filename)[0]
     param_f = dolfin.Function(V)
     for i, p in enumerate(params_list):
-        if h5_file.has_dataset("/function/param%d/vector_0"):
+        if h5_file.has_dataset("/function/param%d/vector_0" % i):
+            print("Read param ", p)
             h5_file.read(param_f, "/function/param%d/vector_0" % i)
         else:
             logger.info(f"Cannot load param[{p}]")

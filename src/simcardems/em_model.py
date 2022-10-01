@@ -37,6 +37,13 @@ class EMCoupling:
     def ep_mesh(self):
         return self.geometry.ep_mesh
 
+    @property
+    def ep_marking(self):
+        if hasattr(self.geometry, "_ep_marking"):
+            return self.geometry._ep_marking
+        else:
+            return None
+
     def register_ep_model(self, solver):
         logger.debug("Registering EP model")
         self._ep_solver = solver
