@@ -215,11 +215,17 @@ def setup_ep_solver(
         cell_init_file=cell_init_file,
     )
 
-    cell_inits["lmbda"] = coupling.lmbda_ep
-    cell_inits["Zetas"] = coupling.Zetas_ep
-    cell_inits["Zetaw"] = coupling.Zetaw_ep
+    # cell_inits["lmbda"] = coupling.lmbda_ep
+    # cell_inits["Zetas"] = coupling.Zetas_ep
+    # cell_inits["Zetaw"] = coupling.Zetaw_ep
 
-    cellmodel = CellModel(init_conditions=cell_inits, params=cell_params)
+    cellmodel = CellModel(
+        lmbda=coupling.lmbda_ep,
+        Zetaw=coupling.Zetas_ep,
+        Zetas=coupling.Zetaw_ep,
+        init_conditions=cell_inits,
+        params=cell_params,
+    )
 
     # Set-up cardiac model
     ep_heart = ep_model.setup_ep_model(cellmodel, coupling.ep_mesh, PCL=PCL)
@@ -387,8 +393,8 @@ class Runner:
         self._CaTrpn_assigner.assign(self._CaTrpn, utils.sub_function(self._vs, 42))
         self._TmB_assigner.assign(self._TmB, utils.sub_function(self._vs, 43))
         self._Cd_assigner.assign(self._Cd, utils.sub_function(self._vs, 44))
-        self._Zetas_assigner.assign(self._Zetas, utils.sub_function(self._vs, 47))
-        self._Zetaw_assigner.assign(self._Zetaw, utils.sub_function(self._vs, 48))
+        # self._Zetas_assigner.assign(self._Zetas, utils.sub_function(self._vs, 47))
+        # self._Zetaw_assigner.assign(self._Zetaw, utils.sub_function(self._vs, 48))
 
     def store(self):
         # Assign u, v and Ca for postprocessing
@@ -409,17 +415,17 @@ class Runner:
             ("mechanics", "u", self._u),
             ("ep", "V", self._v),
             ("ep", "Ca", self._Ca),
-            ("mechanics", "lmbda", self.coupling.lmbda_mech),
+            ("mechanics", "lmbda", self.mech_heart.material.active.lmbda),
             ("mechanics", "Ta", self.mech_heart.material.active.Ta_current),
             ("ep", "XS", self._XS),
             ("ep", "XW", self._XW),
             ("ep", "CaTrpn", self._CaTrpn),
             ("ep", "TmB", self._TmB),
             ("ep", "Cd", self._Cd),
-            ("ep", "Zetas", self._Zetas),
-            ("ep", "Zetaw", self._Zetaw),
-            ("mechanics", "Zetas_mech", self.coupling.Zetas_mech),
-            ("mechanics", "Zetaw_mech", self.coupling.Zetaw_mech),
+            ("ep", "Zetas", self.coupling.Zetas_ep),
+            ("ep", "Zetaw", self.coupling.Zetaw_ep),
+            ("mechanics", "Zetas_mech", self.mech_heart.material.active.Zetas),
+            ("mechanics", "Zetaw_mech", self.mech_heart.material.active.Zetaw),
             ("mechanics", "XS_mech", self.coupling.XS_mech),
             ("mechanics", "XW_mech", self.coupling.XW_mech),
         ]:

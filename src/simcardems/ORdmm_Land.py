@@ -34,7 +34,7 @@ def vs_functions_to_dict(vs):
 
 
 class ORdmm_Land(CardiacCellModel):
-    def __init__(self, params=None, init_conditions=None):
+    def __init__(self, lmbda, Zetas, Zetaw, params=None, init_conditions=None):
         """
         Create cardiac cell model
 
@@ -44,7 +44,9 @@ class ORdmm_Land(CardiacCellModel):
          init_conditions (dict, :py:class:`dolfin.Mesh`, optional)
            optional initial conditions
         """
-
+        self.lmbda = lmbda
+        self.Zetas = Zetas
+        self.Zetaw = Zetaw
         super().__init__(params, init_conditions)
 
     @staticmethod
@@ -367,6 +369,10 @@ class ORdmm_Land(CardiacCellModel):
             Zetas,
             Zetaw,
         ) = s
+
+        lmbda = self.lmbda
+        # Zetas = self.Zetas
+        # Zetaw = self.Zetaw
 
         # Assign parameters
         scale_ICaL = self._parameters["scale_ICaL"]
@@ -877,6 +883,10 @@ class ORdmm_Land(CardiacCellModel):
             Zetas,
             Zetaw,
         ) = s
+
+        lmbda = self.lmbda
+        Zetas = self.Zetas
+        Zetaw = self.Zetaw
 
         # Assign parameters
         scale_ICaL = self._parameters["scale_ICaL"]

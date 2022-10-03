@@ -11,7 +11,7 @@ class Scheme(str, Enum):
     analytic = "analytic"
 
 
-def _Zeta(Zeta_prev, A, c, dLambda, dt, scheme: Scheme):
+def advance_Zeta(Zeta_prev, A, c, dLambda, dt, scheme: Scheme):
 
     if scheme == Scheme.analytic:
         return Zeta_prev * dolfin.exp(-c * dt) + (A * dLambda / c * dt) * (
@@ -133,7 +133,7 @@ class LandModel(pulse.ActiveModel):
         )
 
     def update_Zetas(self):
-        self._Zetas.vector()[:] = _Zeta(
+        self._Zetas.vector()[:] = advance_Zeta(
             self.Zetas_prev.vector(),
             self.As,
             self.cs,
@@ -147,7 +147,7 @@ class LandModel(pulse.ActiveModel):
         return self._Zetas
 
     def update_Zetaw(self):
-        self._Zetaw.vector()[:] = _Zeta(
+        self._Zetaw.vector()[:] = advance_Zeta(
             self.Zetaw_prev.vector(),
             self.Aw,
             self.cw,
