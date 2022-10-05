@@ -124,15 +124,13 @@ def test_save_and_load_state(
     assert simcardems.utils.compute_norm(coupling.vs, coupling_.vs) < 1e-12
     assert simcardems.utils.compute_norm(coupling.XS_mech, coupling_.XS_mech) < 1e-12
     assert simcardems.utils.compute_norm(coupling.XW_mech, coupling_.XW_mech) < 1e-12
-    assert (
-        simcardems.utils.compute_norm(coupling.lmbda_mech, coupling_.lmbda_mech) < 1e-12
-    )
-    assert (
-        simcardems.utils.compute_norm(coupling.Zetas_mech, coupling_.Zetas_mech) < 1e-12
-    )
-    assert (
-        simcardems.utils.compute_norm(coupling.Zetaw_mech, coupling_.Zetaw_mech) < 1e-12
-    )
+
+    active = mech_heart.material.active
+    active_ = mech_heart.material.active
+
+    assert simcardems.utils.compute_norm(active.lmbda, active_.lmbda) < 1e-12
+    assert simcardems.utils.compute_norm(active.Zetas, active_.Zetas) < 1e-12
+    assert simcardems.utils.compute_norm(active.Zetaw, active_.Zetaw) < 1e-12
 
 
 @mock.patch("simcardems.mechanics_model.pulse.mechanicsproblem.MechanicsProblem.solve")

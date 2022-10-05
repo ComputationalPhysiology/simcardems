@@ -4,6 +4,7 @@ import warnings
 from pathlib import Path
 
 import dolfin
+import pulse
 from dolfin import FiniteElement  # noqa: F401
 from dolfin import MixedElement  # noqa: F401
 from dolfin import tetrahedron  # noqa: F401
@@ -191,7 +192,8 @@ def load_state(
     W = dolfin.FunctionSpace(mech_mesh, eval(mech_signature))
     mech_state = dolfin.Function(W)
 
-    V = dolfin.FunctionSpace(mech_mesh, "CG", 1)
+    # V = dolfin.FunctionSpace(mech_mesh, "CG", 1)
+    V = pulse.QuadratureSpace(mech_mesh, degree=3, dim=1)
     lmbda_prev = dolfin.Function(V, name="lambda")
     Zetas_prev = dolfin.Function(V, name="Zetas")
     Zetaw_prev = dolfin.Function(V, name="Zetaw")
