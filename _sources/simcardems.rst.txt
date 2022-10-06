@@ -12,6 +12,14 @@ simcardems.ORdmm\_Land module
    :undoc-members:
    :show-inheritance:
 
+simcardems.benchmark module
+---------------------------
+
+.. automodule:: simcardems.benchmark
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 simcardems.cli module
 ---------------------
 

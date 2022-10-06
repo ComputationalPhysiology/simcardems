@@ -571,6 +571,10 @@
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Please create a time stepper before solving&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_stepper</span><span class="o">.</span><span class="n">t</span>
 
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">t0</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_t0</span>
+
 <div class="viewcode-block" id="Runner.create_time_stepper"><a class="viewcode-back" href="../../simcardems.html#simcardems.setup_models.Runner.create_time_stepper">[docs]</a>    <span class="k">def</span> <span class="nf">create_time_stepper</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">T</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
@@ -756,7 +760,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_outdir&quot;</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Please set the output directory&quot;</span><span class="p">)</span>
 
-        <span class="c1"># Truncate residual0 file if exists</span>
+        <span class="c1"># Truncate</span>
         <span class="k">if</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;residual.txt&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
             <span class="n">fr</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;residual.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
             <span class="n">fr</span><span class="o">.</span><span class="n">truncate</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>

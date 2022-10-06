@@ -271,6 +271,11 @@
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#module-simcardems.benchmark">
+   simcardems.benchmark module
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#module-simcardems.cli">
    simcardems.cli module
   </a>
@@ -378,6 +383,11 @@
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#module-simcardems.ORdmm_Land">
    simcardems.ORdmm_Land module
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#module-simcardems.benchmark">
+   simcardems.benchmark module
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
@@ -546,6 +556,9 @@ membrane potential).</p>
 <span class="sig-prename descclassname"><span class="pre">simcardems.ORdmm_Land.</span></span><span class="sig-name descname"><span class="pre">vs_functions_to_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/ORdmm_Land.html#vs_functions_to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.ORdmm_Land.vs_functions_to_dict" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+</div>
+<div class="section" id="module-simcardems.benchmark">
+<span id="simcardems-benchmark-module"></span><h2>simcardems.benchmark module<a class="headerlink" href="#module-simcardems.benchmark" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="module-simcardems.cli">
 <span id="simcardems-cli-module"></span><h2>simcardems.cli module<a class="headerlink" href="#module-simcardems.cli" title="Permalink to this headline">¶</a></h2>
@@ -755,7 +768,7 @@ membrane potential).</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="simcardems.datacollector.DataGroups">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">simcardems.datacollector.</span></span><span class="sig-name descname"><span class="pre">DataGroups</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/datacollector.html#DataGroups"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.datacollector.DataGroups" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
 <p>An enumeration.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="simcardems.datacollector.DataGroups.ep">
@@ -1431,14 +1444,106 @@ spring.</p>
 
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="simcardems.postprocess.BoundaryNodes">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">simcardems.postprocess.</span></span><span class="sig-name descname"><span class="pre">BoundaryNodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/postprocess.html#BoundaryNodes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.postprocess.BoundaryNodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>An enumeration.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simcardems.postprocess.BoundaryNodes.center">
+<span class="sig-name descname"><span class="pre">center</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'center'</span></em><a class="headerlink" href="#simcardems.postprocess.BoundaryNodes.center" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simcardems.postprocess.BoundaryNodes.node_A">
+<span class="sig-name descname"><span class="pre">node_A</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'node_A'</span></em><a class="headerlink" href="#simcardems.postprocess.BoundaryNodes.node_A" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simcardems.postprocess.BoundaryNodes.node_B">
+<span class="sig-name descname"><span class="pre">node_B</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'node_B'</span></em><a class="headerlink" href="#simcardems.postprocess.BoundaryNodes.node_B" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simcardems.postprocess.BoundaryNodes.node_C">
+<span class="sig-name descname"><span class="pre">node_C</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'node_C'</span></em><a class="headerlink" href="#simcardems.postprocess.BoundaryNodes.node_C" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simcardems.postprocess.BoundaryNodes.node_D">
+<span class="sig-name descname"><span class="pre">node_D</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'node_D'</span></em><a class="headerlink" href="#simcardems.postprocess.BoundaryNodes.node_D" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simcardems.postprocess.BoundaryNodes.node_E">
+<span class="sig-name descname"><span class="pre">node_E</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'node_E'</span></em><a class="headerlink" href="#simcardems.postprocess.BoundaryNodes.node_E" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simcardems.postprocess.BoundaryNodes.node_F">
+<span class="sig-name descname"><span class="pre">node_F</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'node_F'</span></em><a class="headerlink" href="#simcardems.postprocess.BoundaryNodes.node_F" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simcardems.postprocess.BoundaryNodes.node_G">
+<span class="sig-name descname"><span class="pre">node_G</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'node_G'</span></em><a class="headerlink" href="#simcardems.postprocess.BoundaryNodes.node_G" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simcardems.postprocess.BoundaryNodes.node_H">
+<span class="sig-name descname"><span class="pre">node_H</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'node_H'</span></em><a class="headerlink" href="#simcardems.postprocess.BoundaryNodes.node_H" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simcardems.postprocess.BoundaryNodes.xmax">
+<span class="sig-name descname"><span class="pre">xmax</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'xmax'</span></em><a class="headerlink" href="#simcardems.postprocess.BoundaryNodes.xmax" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simcardems.postprocess.BoundaryNodes.xmin">
+<span class="sig-name descname"><span class="pre">xmin</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'xmin'</span></em><a class="headerlink" href="#simcardems.postprocess.BoundaryNodes.xmin" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simcardems.postprocess.BoundaryNodes.ymax">
+<span class="sig-name descname"><span class="pre">ymax</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'ymax'</span></em><a class="headerlink" href="#simcardems.postprocess.BoundaryNodes.ymax" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simcardems.postprocess.BoundaryNodes.ymin">
+<span class="sig-name descname"><span class="pre">ymin</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'ymin'</span></em><a class="headerlink" href="#simcardems.postprocess.BoundaryNodes.ymin" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simcardems.postprocess.BoundaryNodes.zmax">
+<span class="sig-name descname"><span class="pre">zmax</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'zmax'</span></em><a class="headerlink" href="#simcardems.postprocess.BoundaryNodes.zmax" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simcardems.postprocess.BoundaryNodes.zmin">
+<span class="sig-name descname"><span class="pre">zmin</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'zmin'</span></em><a class="headerlink" href="#simcardems.postprocess.BoundaryNodes.zmin" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="simcardems.postprocess.center_func">
 <span class="sig-prename descclassname"><span class="pre">simcardems.postprocess.</span></span><span class="sig-name descname"><span class="pre">center_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fmin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmax</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/postprocess.html#center_func"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.postprocess.center_func" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="simcardems.postprocess.extract_biomarkers">
+<span class="sig-prename descclassname"><span class="pre">simcardems.postprocess.</span></span><span class="sig-name descname"><span class="pre">extract_biomarkers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">V</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ca</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmbda</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inv_lmbda</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/postprocess.html#extract_biomarkers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.postprocess.extract_biomarkers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="simcardems.postprocess.extract_last_beat">
-<span class="sig-prename descclassname"><span class="pre">simcardems.postprocess.</span></span><span class="sig-name descname"><span class="pre">extract_last_beat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pacing</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/postprocess.html#extract_last_beat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.postprocess.extract_last_beat" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">simcardems.postprocess.</span></span><span class="sig-name descname"><span class="pre">extract_last_beat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pacing</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/postprocess.html#extract_last_beat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.postprocess.extract_last_beat" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="simcardems.postprocess.extract_traces">
+<span class="sig-prename descclassname"><span class="pre">simcardems.postprocess.</span></span><span class="sig-name descname"><span class="pre">extract_traces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loader</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#simcardems.datacollector.DataLoader" title="simcardems.datacollector.DataLoader"><span class="pre">simcardems.datacollector.DataLoader</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#simcardems.postprocess.BoundaryNodes" title="simcardems.postprocess.BoundaryNodes"><span class="pre">simcardems.postprocess.BoundaryNodes</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">BoundaryNodes.center</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/postprocess.html#extract_traces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.postprocess.extract_traces" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -1458,7 +1563,12 @@ spring.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="simcardems.postprocess.get_biomarkers">
-<span class="sig-prename descclassname"><span class="pre">simcardems.postprocess.</span></span><span class="sig-name descname"><span class="pre">get_biomarkers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_models</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/postprocess.html#get_biomarkers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.postprocess.get_biomarkers" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">simcardems.postprocess.</span></span><span class="sig-name descname"><span class="pre">get_biomarkers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_models</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/postprocess.html#get_biomarkers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.postprocess.get_biomarkers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="simcardems.postprocess.json_serial">
+<span class="sig-prename descclassname"><span class="pre">simcardems.postprocess.</span></span><span class="sig-name descname"><span class="pre">json_serial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/postprocess.html#json_serial"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.postprocess.json_serial" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -1482,13 +1592,18 @@ spring.</p>
 <dd></dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="simcardems.postprocess.numpyfy">
+<span class="sig-prename descclassname"><span class="pre">simcardems.postprocess.</span></span><span class="sig-name descname"><span class="pre">numpyfy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/postprocess.html#numpyfy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.postprocess.numpyfy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="simcardems.postprocess.plot_peaks">
 <span class="sig-prename descclassname"><span class="pre">simcardems.postprocess.</span></span><span class="sig-name descname"><span class="pre">plot_peaks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/postprocess.html#plot_peaks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.postprocess.plot_peaks" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="simcardems.postprocess.plot_population">
-<span class="sig-prename descclassname"><span class="pre">simcardems.postprocess.</span></span><span class="sig-name descname"><span class="pre">plot_population</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_models</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reset_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/postprocess.html#plot_population"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.postprocess.plot_population" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">simcardems.postprocess.</span></span><span class="sig-name descname"><span class="pre">plot_population</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_models</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reset_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/postprocess.html#plot_population"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.postprocess.plot_population" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -1651,6 +1766,11 @@ spring.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">t</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#simcardems.setup_models.Runner.t" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="simcardems.setup_models.Runner.t0">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">t0</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#simcardems.setup_models.Runner.t0" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -1754,6 +1874,11 @@ If deemed appropriate, the record may be modified in-place.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="simcardems.utils.compute_norm">
 <span class="sig-prename descclassname"><span class="pre">simcardems.utils.</span></span><span class="sig-name descname"><span class="pre">compute_norm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_prev</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/utils.html#compute_norm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.utils.compute_norm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="simcardems.utils.enum2str">
+<span class="sig-prename descclassname"><span class="pre">simcardems.utils.</span></span><span class="sig-name descname"><span class="pre">enum2str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">EnumCls</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/simcardems/utils.html#enum2str"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.utils.enum2str" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -2271,6 +2396,11 @@ If deemed appropriate, the record may be modified in-place.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="simcardems.Runner.t">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">t</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#simcardems.Runner.t" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="simcardems.Runner.t0">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">t0</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#simcardems.Runner.t0" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
