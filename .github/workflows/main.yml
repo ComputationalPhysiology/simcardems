@@ -7,7 +7,7 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     container:
-      image: quay.io/fenicsproject/stable:latest
+      image: finsberg/fenics
 
     steps:
       - uses: actions/checkout@v2
@@ -54,7 +54,6 @@ jobs:
           python3 -m
           pip install
           build
-          --user
 
       - name: Build a binary wheel and a source tarball
         run: >-
