@@ -94,7 +94,7 @@ const thebe_selector_output = ".output, .cell_output"
         <ul class="nav bd-sidenav">
  <li class="toctree-l1">
   <a class="reference internal" href="index.html">
-   Cardiac MPS motion
+   Simula Cardiac Electro-Mechanics Solver
   </a>
  </li>
 </ul>
@@ -323,7 +323,7 @@ const thebe_selector_output = ".output, .cell_output"
                 
   <div class="tex2jax_ignore mathjax_ignore section" id="benchmark">
 <h1>Benchmark<a class="headerlink" href="#benchmark" title="Permalink to this headline">¶</a></h1>
-<p>Whenever we make changes to the code we will rerun a simple benchmark in order to keep track of how the simulation results might change over time. It is in general hard to verify that the equations are implemented correctly because there exist no analytic solutions to the equations. However, by running the same benchmark over time we can see if the changes we make will impact the simulation results. Here the different biomarkers are taken from traces evalatuated a the center of a slab that is simulated for 1000 ms (see the bencmark in the library for more details)</p>
+<p>Whenever we make changes to the code we will rerun a simple benchmark in order to keep track of how the simulation results might change over time. It is in general hard to verify that the equations are implemented correctly because there exist no analytic solutions to the equations. However, by running the same benchmark over time we can see if the changes we make will impact the simulation results. Here the different biomarkers are taken from traces evaluated a the center of at slab that is simulated for 1000 ms (see the benchmark in the library for more details)</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
@@ -357,7 +357,7 @@ const thebe_selector_output = ".output, .cell_output"
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&#39;f63afc9&#39;, &#39;630ed09&#39;]
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&#39;f63afc9&#39;, &#39;4d3a653&#39;, &#39;630ed09&#39;]
 </pre></div>
 </div>
 </div>
@@ -406,6 +406,7 @@ const thebe_selector_output = ".output, .cell_output"
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022.3.0 2022-10-06 f63afc9
+2022.3.0 2022-10-06 4d3a653
 2022.3.0 2022-10-06 630ed09
 </pre></div>
 </div>
