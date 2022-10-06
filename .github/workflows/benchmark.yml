@@ -5,8 +5,12 @@
 
 name: Run benchmark
 
-on: [push]
-
+on:
+  push:
+    branches:
+      - "!*"
+    tags:
+      - "v*"
 env:
   CI_COMMIT_MESSAGE: Run benchmark and upload report
   CI_COMMIT_AUTHOR: Continuous Integration
