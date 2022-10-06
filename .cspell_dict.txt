@@ -6,6 +6,7 @@ Afcas
 Aff
 Ageo
 Ahf
+allbeats
 allclose
 allo
 allreduce
@@ -18,6 +19,7 @@ arange
 argmin
 assp
 atol
+axlast
 axpy
 Axrf
 Axrs
@@ -59,6 +61,7 @@ Cristobal
 csqnmax
 d
 datacollector
+datagroup
 Daversin
 dcai
 dcajsr
@@ -109,6 +112,7 @@ ff
 ffast
 ffp
 ffun
+figlast
 figsize
 filt
 Finsberg
@@ -166,6 +170,7 @@ iS
 Isac
 isacs
 iSp
+isscalar
 Istim
 Itop
 j
@@ -227,6 +232,7 @@ Kxkur
 L
 labelsize
 lambda_max
+lastbeat
 leftback
 leftbottom
 lightcoral
@@ -259,6 +265,7 @@ nao
 nass
 nca
 nconv
+ndarray
 nestedkey
 neumann
 Neumann
@@ -266,6 +273,8 @@ Niederer
 nonconvergence
 ntm
 ntrpn
+numpyfy
+onlylastbeat
 ORdmm_Land
 outdir
 p_a
@@ -376,6 +385,7 @@ tfcas
 tffp
 thL
 thsp
+timelb
 timestep
 tjca
 TmB
@@ -439,9 +449,3 @@ Zetaw
 zk
 zmax
 zmin
-allbeats
-lastbeat
-onlylastbeat
-figlast
-axlast
-timelb

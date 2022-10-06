@@ -15,7 +15,7 @@ from .save_load_functions import h5pyfile
 logger = utils.getLogger(__name__)
 
 
-class DataGroups(str, Enum):
+class DataGroups(Enum):
     ep = "ep"
     mechanics = "mechanics"
 
@@ -221,12 +221,13 @@ class DataLoader:
         KeyError
             If 't' provided is not among the time stamps
         """
-        if group not in self.names:
+        group_str = utils.enum2str(group, DataGroups)
+        if group_str not in self.names:
             raise KeyError(
                 f"Cannot find group {group} in names, expected of of {self.names.keys()}",
             )
 
-        names = self.names[group]
+        names = self.names[str(group)]
         if f"{name}" not in names:
             raise KeyError(
                 f"Cannot find name {name} in group {group}. Possible options are {names}",
@@ -237,6 +238,6 @@ class DataLoader:
         if t not in self.time_stamps:
             raise KeyError(f"Invalid time stamps {t}")
 
-        func = self._functions[group][name]
-        self._h5file.read(func, f"{group}/{name}/{t}/")
+        func = self._functions[group_str][name]
+        self._h5file.read(func, f"{group_str}/{name}/{t}/")
         return func

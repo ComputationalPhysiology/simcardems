@@ -296,7 +296,41 @@ def gui():
     sp.run(["streamlit", "run", gui_path.as_posix()])
 
 
+@click.command("run-benchmark")
+@click.argument(
+    "outdir",
+    required=True,
+    type=click.Path(resolve_path=True, writable=True),
+)
+@click.option(
+    "--overwrite/--no-overwrite",
+    default=True,
+    type=bool,
+    help="If True overwrite results in output directory",
+)
+def run_benchmark(outdir, overwrite):
+    # Make sure we can import the required packages
+    from . import benchmark  # noqa: F401
+    from . import __version__
+
+    benchmark_path = Path(__file__).parent.joinpath("benchmark.py")
+    import subprocess as sp
+
+    path = Path(outdir) / __version__
+
+    if path.exists():
+        if overwrite:
+            import shutil
+
+            shutil.rmtree(path)
+
+    path.mkdir(parents=True, exist_ok=True)
+
+    sp.run(["python3", benchmark_path, path])
+
+
 cli.add_command(run)
 cli.add_command(run_json)
 cli.add_command(postprocess)
 cli.add_command(gui)
+cli.add_command(run_benchmark)

@@ -32,6 +32,13 @@ def getLogger(name):
 logger = getLogger(__name__)
 
 
+def enum2str(x, EnumCls):
+    if isinstance(x, str):
+        return x
+    assert x in EnumCls
+    return dict(zip(EnumCls.__members__.values(), EnumCls.__members__.keys()))[x]
+
+
 def local_project(v, V, u=None):
     metadata = {"quadrature_degree": 3, "quadrature_scheme": "default"}
     dxm = dolfin.dx(metadata=metadata)
