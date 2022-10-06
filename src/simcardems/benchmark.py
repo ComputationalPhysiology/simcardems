@@ -22,7 +22,7 @@ def main(outdir):
 
     config = simcardems.Config(
         outdir=outdir,
-        T=10,
+        T=1000,
         dx=0.5,
         lx=1.0,
         ly=1.0,
