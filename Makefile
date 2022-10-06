@@ -78,6 +78,9 @@ docs: ## generate Sphinx HTML documentation, including API docs
 	jupytext demos/simple_demo.py -o docs/source/simple_demo.md
 	cd docs && make html
 
+run-benchmark:
+	python -m simcardems run-benchmark "benchmarks/$(shell git rev-parse --short HEAD)"
+
 show-docs:
 	open docs/build/html/index.html
 
