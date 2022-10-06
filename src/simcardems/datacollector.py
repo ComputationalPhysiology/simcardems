@@ -227,7 +227,7 @@ class DataLoader:
                 f"Cannot find group {group} in names, expected of of {self.names.keys()}",
             )
 
-        names = self.names[str(group)]
+        names = self.names[group_str]
         if f"{name}" not in names:
             raise KeyError(
                 f"Cannot find name {name} in group {group}. Possible options are {names}",
