@@ -315,6 +315,10 @@ class Runner:
             raise RuntimeError("Please create a time stepper before solving")
         return self._time_stepper.t
 
+    @property
+    def t0(self) -> float:
+        return self._t0
+
     def create_time_stepper(
         self,
         T: float,
@@ -500,7 +504,7 @@ class Runner:
         if not hasattr(self, "_outdir"):
             raise RuntimeError("Please set the output directory")
 
-        # Truncate residual0 file if exists
+        # Truncate
         if Path("residual.txt").is_file():
             fr = open("residual.txt", "w")
             fr.truncate(0)
