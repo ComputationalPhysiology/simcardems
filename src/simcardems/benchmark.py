@@ -1,3 +1,4 @@
+import datetime
 import json
 import time
 from pathlib import Path
@@ -19,6 +20,8 @@ def main(outdir):
     data = {}
 
     data["import_time"] = import_time
+    data["timestamp"] = datetime.datetime.now().isoformat()
+    data["simcardems_version"] = simcardems.__version__
 
     config = simcardems.Config(
         outdir=outdir,

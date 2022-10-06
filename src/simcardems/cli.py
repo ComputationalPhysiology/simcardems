@@ -311,13 +311,11 @@ def gui():
 def run_benchmark(outdir, overwrite):
     # Make sure we can import the required packages
     from . import benchmark  # noqa: F401
-    from . import __version__
 
     benchmark_path = Path(__file__).parent.joinpath("benchmark.py")
     import subprocess as sp
 
-    path = Path(outdir) / __version__
-
+    path = Path(outdir)
     if path.exists():
         if overwrite:
             import shutil
@@ -326,7 +324,7 @@ def run_benchmark(outdir, overwrite):
 
     path.mkdir(parents=True, exist_ok=True)
 
-    sp.run(["python3", benchmark_path, path])
+    sp.run(["python3", benchmark_path, path.as_posix()])
 
 
 cli.add_command(run)
