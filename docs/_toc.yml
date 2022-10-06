@@ -1,0 +1,32 @@
+format: jb-book
+root: index
+parts:
+  - caption: Installation
+    chapters:
+    - file: "install"
+  - caption: Mathematical Theory
+    chapters:
+    - file: "mechanics_model"
+    - file: "electrophysiology_model"
+    - file: "cell_model"
+    - file: "electro_mechanical_coupling"
+
+  - caption: Demos
+    chapters:
+    - file: "simple_demo"
+    - file: "cli"
+    - file: "docker"
+    - file: "release_test"
+    - file: "gui"
+
+  - caption: Verification
+    chapters:
+    - file: "benchmark"
+
+  - caption: Community
+    chapters:
+    - file: "CONTRIBUTING"
+
+  - caption: Programmers reference
+    chapters:
+    - file: "api"
