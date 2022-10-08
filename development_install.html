@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Installation &#8212; simcardems</title>
+    <title>Development installation &#8212; simcardems</title>
     
   <link href="_static/css/theme.css" rel="stylesheet">
   <link href="_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
@@ -54,8 +54,8 @@ const thebe_selector_output = ".output, .cell_output"
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Install with Docker" href="install_docker.html" />
-    <link rel="prev" title="Simula Cardiac Electro-Mechanics Solver" href="index.html" />
+    <link rel="next" title="Tissue level mechanics model" href="mechanics_model.html" />
+    <link rel="prev" title="Install with pip" href="install_pip.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
     
@@ -105,8 +105,8 @@ const thebe_selector_output = ".output, .cell_output"
  </span>
 </p>
 <ul class="current nav bd-sidenav">
- <li class="toctree-l1 current active">
-  <a class="current reference internal" href="#">
+ <li class="toctree-l1">
+  <a class="reference internal" href="install.html">
    Installation
   </a>
  </li>
@@ -125,8 +125,8 @@ const thebe_selector_output = ".output, .cell_output"
    </code>
   </a>
  </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="development_install.html">
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
    Development installation
   </a>
  </li>
@@ -266,7 +266,7 @@ const thebe_selector_output = ".output, .cell_output"
         <!-- ipynb file if we had a myst markdown file -->
         
         <!-- Download raw file -->
-        <a class="dropdown-buttons" href="_sources/install.md"><button type="button"
+        <a class="dropdown-buttons" href="_sources/development_install.md"><button type="button"
                 class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
                 data-placement="left">.md</button></a>
         <!-- Download PDF via print -->
@@ -286,7 +286,7 @@ const thebe_selector_output = ".output, .cell_output"
                 data-toggle="tooltip" data-placement="left" title="Source repository"><i
                     class="fab fa-github"></i>repository</button></a>
         <a class="issues-button"
-            href="https://github.com/ComputationalPhysiology/simcardems/issues/new?title=Issue%20on%20page%20%2Finstall.html&body=Your%20issue%20content%20here."><button
+            href="https://github.com/ComputationalPhysiology/simcardems/issues/new?title=Issue%20on%20page%20%2Fdevelopment_install.html&body=Your%20issue%20content%20here."><button
                 type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
                 title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
         
@@ -314,7 +314,7 @@ const thebe_selector_output = ".output, .cell_output"
         <div class="col-12 col-md-9 pl-md-3 pr-md-0">
             <!-- Table of contents that is only displayed when printing the page -->
             <div id="jb-print-docs-body" class="onlyprint">
-                <h1>Installation</h1>
+                <h1>Development installation</h1>
                 <!-- Table of contents -->
                 <div id="print-main-content">
                     <div id="jb-print-toc">
@@ -325,15 +325,18 @@ const thebe_selector_output = ".output, .cell_output"
             
               <div>
                 
-  <div class="tex2jax_ignore mathjax_ignore section" id="installation">
-<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
-<p>The preferred way to run <code class="docutils literal notranslate"><span class="pre">simcardems</span></code> is using Docker.</p>
-<p><code class="docutils literal notranslate"><span class="pre">simcardems</span></code> is a pure python package but depends on the <a class="reference external" href="https://fenicsproject.org/download/archive">legacy version of FEniCS</a> which is known to be difficult to install.</p>
-<ul class="simple">
-<li><p><a class="reference internal" href="install_docker.html"><span class="doc std std-doc">Install with Docker</span></a></p></li>
-<li><p><a class="reference internal" href="install_pip.html"><span class="doc std std-doc">Install with pip</span></a></p></li>
-<li><p><a class="reference internal" href="development_install.html"><span class="doc std std-doc">Development installation</span></a></p></li>
-</ul>
+  <div class="tex2jax_ignore mathjax_ignore section" id="development-installation">
+<h1>Development installation<a class="headerlink" href="#development-installation" title="Permalink to this headline">¶</a></h1>
+<p>Developers should use editable install and install the development requirements using the following command</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="s2">&quot;.[dev]&quot;</span>
+</pre></div>
+</div>
+<p>You should also install the <code class="docutils literal notranslate"><span class="pre">pre-commit</span></code> hook that comes with the package</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pre</span><span class="o">-</span><span class="n">commit</span> <span class="n">install</span>
+</pre></div>
+</div>
+<p>which will run a set of tests on the code that you commit to the repo.</p>
+<p>Note that linters and formatters will run in the CI system.</p>
 </div>
 
     <script type="text/x-thebe-config">
@@ -361,17 +364,17 @@ const thebe_selector_output = ".output, .cell_output"
             
                 <!-- Previous / next buttons -->
 <div class='prev-next-area'> 
-    <a class='left-prev' id="prev-link" href="index.html" title="previous page">
+    <a class='left-prev' id="prev-link" href="install_pip.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
             <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">Simula Cardiac Electro-Mechanics Solver</p>
+            <p class="prev-next-title">Install with <code class="docutils literal notranslate"><span class="pre">pip</span></code></p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="install_docker.html" title="next page">
+    <a class='right-next' id="next-link" href="mechanics_model.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Install with Docker</p>
+        <p class="prev-next-title">Tissue level mechanics model</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>

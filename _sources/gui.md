@@ -2,22 +2,34 @@
 
 We also developed a lightweight graphical user interface for `simcardems` based on [streamlit](https://streamlit.io) and [`fenics_plotly`](https://pypi.org/project/fenics-plotly/).
 
+
+## Running GUI in Docker
+To run the GUI inside the docker container you need to forward the port where the GUI is running from the Docker container to your computer. The GUI is running by default on port 8501, and you can forward this port by running the container as follows
+
+```
+docker run --rm -p 8501:8501 -it ghcr.io/computationalphysiology/simcardems:
+```
+Please also consult [Run docker](docker.md) for more options on how to use Docker.
+
+## Running the gui outside Docker
+
 In order to run the gui you need to first install `streamlit` and `fenics_plotly`, which can be done by either installing these packages separately, i.e
 ```
-python -m pip install streamlit fenics_plotly
+python3 -m pip install streamlit fenics_plotly
 ```
 or by installing `simcardems` with the extra requirements
 ```
-python -m pip install "simcardems[gui]"
+python3 -m pip install "simcardems[gui]"
 ```
 
 ## Starting the gui
 
 You can run the gui from the command line by executing the following command
 ```
-python -m simcardems gui
+python3 -m simcardems gui
 ```
-This will open up a browser with an about page, and you can click on the `Simulation` radio button to get options about running a simulation
+This will open up a browser with an about page, and you can click on the `Simulation` radio button to get options about running a simulation. If no browser opens automatically, you can try to manually open the browser and go to the url http://localhost:8501
+
 
 ## Running a simulation
 

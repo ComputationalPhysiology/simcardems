@@ -51,6 +51,7 @@ const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
     <script async="async" src="_static/sphinx-thebe.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Installation" href="install.html" />
@@ -108,6 +109,26 @@ const thebe_selector_output = ".output, .cell_output"
    Installation
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="install_docker.html">
+   Install with Docker
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="install_pip.html">
+   Install with
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     pip
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="development_install.html">
+   Development installation
+  </a>
+ </li>
 </ul>
 <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
@@ -154,7 +175,7 @@ const thebe_selector_output = ".output, .cell_output"
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="docker.html">
-   Run using docker
+   Run using Docker
   </a>
  </li>
  <li class="toctree-l1">
@@ -365,9 +386,8 @@ const thebe_selector_output = ".output, .cell_output"
                 
   <div class="tex2jax_ignore mathjax_ignore section" id="simula-cardiac-electro-mechanics-solver">
 <h1>Simula Cardiac Electro-Mechanics Solver<a class="headerlink" href="#simula-cardiac-electro-mechanics-solver" title="Permalink to this headline">¶</a></h1>
-<p><code class="docutils literal notranslate"><span class="pre">simcardems</span></code> is a FEniCS-based cardiac electro-mechanics solver and is
-developed as a part of the <a class="reference external" href="https://www.simcardiotest.eu/wordpress">SimCardio Test project</a>. The solver depends
-on <a class="reference external" href="https://github.com/ComputationalPhysiology/pulse">pulse</a> and <a class="reference external" href="https://github.com/ComputationalPhysiology/cbcbeat">cbcbeat</a></p>
+<p><code class="docutils literal notranslate"><span class="pre">simcardems</span></code> is a FEniCS-based cardiac electro-mechanics solver and is developed as a part of the <a class="reference external" href="https://www.simcardiotest.eu/wordpress">SimCardio Test project</a>. The solver depends
+on the mechanics solver <a class="reference external" href="https://github.com/ComputationalPhysiology/pulse">pulse</a> and electrophysiology solver <a class="reference external" href="https://github.com/ComputationalPhysiology/cbcbeat">cbcbeat</a>.</p>
 <div class="section" id="source-code">
 <h2>Source code<a class="headerlink" href="#source-code" title="Permalink to this headline">¶</a></h2>
 <p>The source code can be found on <a class="reference external" href="https://github.com/ComputationalPhysiology/simcardems">GitHub</a></p>
@@ -378,6 +398,9 @@ on <a class="reference external" href="https://github.com/ComputationalPhysiolog
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Installation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_docker.html">Install with Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_pip.html">Install with <code class="docutils literal notranslate"><span class="pre">pip</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="development_install.html">Development installation</a></li>
 </ul>
 </div>
 <div class="toctree-wrapper compound">
@@ -394,7 +417,7 @@ on <a class="reference external" href="https://github.com/ComputationalPhysiolog
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="simple_demo.html">Simple demo</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cli.html">Command line interface</a></li>
-<li class="toctree-l1"><a class="reference internal" href="docker.html">Run using docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docker.html">Run using Docker</a></li>
 <li class="toctree-l1"><a class="reference internal" href="release_test.html">Release test</a></li>
 <li class="toctree-l1"><a class="reference internal" href="gui.html">Graphical user interface</a></li>
 </ul>
