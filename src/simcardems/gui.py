@@ -37,8 +37,17 @@ def about():
         st.sidebar.write("")
 
     intro_markdown = """
+    The SIMula CARDiac ElectroMechanics solver
+    is a FEniCS-based cardiac electro-mechanics
+    solver and is developed as a part of the
+    [SimCardio Test project](https://www.simcardiotest.eu/wordpress).
+    The solver depends on the mechanics solver
+    [pulse](https://github.com/ComputationalPhysiology/pulse)
+    and electrophysiology solver [cbcbeat](https://github.com/ComputationalPhysiology/cbcbeat).
 
-    The SIMula CARDiac ElectroMechanics solver  is ..."""
+    Please consult the [documentation](http://computationalphysiology.github.io/simcardems)
+    if you want to learn more.
+    """
     st.markdown(intro_markdown)
 
     return
@@ -132,6 +141,9 @@ def postprocess():
 
     """
     st.markdown(intro_markdown)
+    if not simcardems_folder.exists():
+        st.info("No results found")
+        return
 
     outdir = st.selectbox(
         "Select result directory",
@@ -413,7 +425,7 @@ pages = {
 st.sidebar.title("Simcardems")
 
 # Radio buttons to select desired option
-page = st.sidebar.radio("", tuple(pages.keys()))
+page = st.sidebar.radio("Pages", tuple(pages.keys()))
 
 pages[page]()
 

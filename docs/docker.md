@@ -1,4 +1,4 @@
-# Run using docker
+# Run using Docker
 
 If you want to use docker please make sure to follow the installations step for how to install with {ref}`section:docker-install`.
 
