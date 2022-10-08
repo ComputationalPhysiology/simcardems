@@ -21,7 +21,7 @@ Commands:
 to see all commands.
 Run run a simulation using command line arguments you can use the `run` command. You can execute
 ```
-$ python -m simcardems run --help
+$ python3 -m simcardems run --help
 Usage: python -m simcardems run [OPTIONS]
 
 Options:
