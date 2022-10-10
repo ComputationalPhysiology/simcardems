@@ -45,16 +45,22 @@ pulse.set_log_level(logging.WARNING)
 class ReleaseRunner(simcardems.Runner):
     def __init__(self, T_release, *args, **kwargs):
         self._T_release = T_release
-        self.pre_stretch = kwargs.get("pre_stretch")
+        self.pre_stretch = config.pre_stretch
         assert self.pre_stretch is not None
         super().__init__(*args, **kwargs)
         # Make sure we have a SlabGeometry
         assert isinstance(self.coupling.geometry, simcardems.geometry.SlabGeometry)
         self.Lx = self.coupling.geometry.lx
+        self._print_message = True
 
     def _post_mechanics_solve(self) -> None:
-        if self.t >= self._T_release:
-            print("Release")
+        # Convert internal time for nanoseconds to milliseconds
+        # And apply release when time is greater then T release
+        if self._time_stepper.ns2ms(self.t) >= self._T_release:
+            if self._print_message:
+                # Make sure message is only printed once
+                print("Release")
+                self._print_message = False
             pulse.iterate.iterate(self.mech_heart, self.pre_stretch, -0.02 * self.Lx)
         return super()._post_mechanics_solve()
 
@@ -63,12 +69,11 @@ class ReleaseRunner(simcardems.Runner):
 # Now we can set up the main function
 
 
-def main(outdir: Path):
-    T = 200
-    T_release = 100
-    pre_stretch = dolfin.Constant(0.1)
-    runner = ReleaseRunner(outdir=outdir, T_release=T_release, pre_stretch=pre_stretch)
-    runner.solve(T=T)
+def main(config: simcardems.Config):
+    # Apply release half way through
+    T_release = config.T // 2
+    runner = ReleaseRunner(config=config, T_release=T_release)
+    runner.solve(T=config.T)
 
 
 # and a function for plotting the traces
@@ -80,15 +85,25 @@ def postprocess(outdir: Path):
 
 if __name__ == "__main__":
     outdir = Path("release_test_results")
-    main(outdir=outdir)
+    config = simcardems.Config(outdir=outdir, T=200, pre_stretch=dolfin.Constant(0.1))
+    main(config=config)
     postprocess(outdir=outdir)
 
-# In {numref}`Figure {number} <release_test_state_traces>` we see the resulting state traces, and can also see the instant drop in the active tension ($T_a$) at the time of the triggered release.
+# In {numref}`Figure {number} <release_test_state_traces>` we see the resulting state traces from the center of the slab, and can also see the instant drop in the active tension ($T_a$) at the time of the triggered release.
 #
-# ```{figure} figures/release_test_state_traces.png
+# ```{figure} figures/release_test_state_traces_center.png
 # ---
 # name: release_test_state_traces
 # ---
 # Traces of the stretch ($\lambda$), the active tension ($T_a$), the membrane potential ($V$) and the intercellular calcium concentration ($Ca$) at the center of the geometry.
+# ```
+#
+# In {numref}`Figure {number} <release_test_state_mech_traces>` we also plot some of the other mechanical traces from the underlying ODE model
+#
+# ```{figure} figures/release_test_state_mech_traces_center.png
+# ---
+# name: release_test_state_mech_traces
+# ---
+# Traces of some of the mechanics states in the ODE model
 # ```
 #
