@@ -498,7 +498,6 @@ class Runner:
         self,
         T: float = Config.T,
         save_freq: int = Config.save_freq,
-        hpc: bool = Config.hpc,
         st_progress: typing.Any = None,
     ):
         if not hasattr(self, "_outdir"):
@@ -512,7 +511,7 @@ class Runner:
 
         save_it = int(save_freq / self._dt)
         self.create_time_stepper(T, use_ns=True, st_progress=st_progress)
-        pbar = create_progressbar(time_stepper=self._time_stepper, hpc=hpc)
+        pbar = create_progressbar(time_stepper=self._time_stepper)
 
         # Store initial state
         save_state_every_n_beat = 5  # Save state every fifth beat
@@ -713,8 +712,8 @@ class TimeStepper:
 
 def create_progressbar(
     time_stepper: TimeStepper,
-    hpc: bool = Config.hpc,
 ):
+    hpc = bool(dolfin.MPI.size(dolfin.MPI.comm_world) > 1)
     if hpc:
         # Turn off progressbar
         pbar = _tqdm(time_stepper, total=time_stepper.total_steps)

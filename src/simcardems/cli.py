@@ -106,12 +106,6 @@ def cli():
     help="How much printing. DEBUG: 10, INFO:20 (default), WARNING: 30",
 )
 @click.option(
-    "--hpc",
-    is_flag=True,
-    default=Config.hpc,
-    help="Indicate if simulations runs on hpc. This turns off the progress bar.",
-)
-@click.option(
     "--drug_factors_file",
     default=Config.drug_factors_file,
     type=str,
@@ -173,7 +167,6 @@ def run(
     bnd_cond: mechanics_model.BoundaryConditions,
     load_state: bool,
     cell_init_file: utils.PathLike,
-    hpc: bool,
     lx: float,
     ly: float,
     lz: float,
@@ -202,7 +195,6 @@ def run(
         traction=traction,
         load_state=load_state,
         cell_init_file=cell_init_file,
-        hpc=hpc,
         lx=lx,
         ly=ly,
         lz=lz,
@@ -250,7 +242,7 @@ def main(config: typing.Optional[Config]):
 
     runner = Runner(config=config)
 
-    runner.solve(T=config.T, save_freq=config.save_freq, hpc=config.hpc)
+    runner.solve(T=config.T, save_freq=config.save_freq)
 
 
 @click.command("postprocess")

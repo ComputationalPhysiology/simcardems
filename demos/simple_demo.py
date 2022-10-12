@@ -51,12 +51,11 @@ config = simcardems.Config(outdir=outdir)
 #  'traction': None}
 # ```
 
-
 # Print current configuration
 pprint.pprint(config.as_dict())
 
 runner = simcardems.Runner(config)
-runner.solve(T=config.T, save_freq=config.save_freq, hpc=False)
+runner.solve(T=config.T, save_freq=config.save_freq)
 
 
 # This will create the output directory `results_simple_demo` with the following output
