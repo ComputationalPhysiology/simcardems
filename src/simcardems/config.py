@@ -20,6 +20,7 @@ class Config:
     )
     load_state: bool = False
     cell_init_file: utils.PathLike = ""
+    show_progress_bar: bool = True
     lx: float = 2.0
     ly: float = 0.7
     lz: float = 0.3

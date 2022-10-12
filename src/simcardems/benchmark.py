@@ -39,7 +39,7 @@ def main(outdir):
     t0 = time.perf_counter()
 
     if runner.t0 < config.T:
-        runner.solve(T=config.T, save_freq=config.save_freq)
+        runner.solve(T=config.T, save_freq=config.save_freq, show_progress_bar=False)
     data["solve_time"] = time.perf_counter() - t0
 
     loader = simcardems.DataLoader(Path(outdir) / "results.h5")

@@ -31,7 +31,7 @@ config = simcardems.Config(outdir=outdir)
 #  'ep_preconditioner': 'sor',
 #  'ep_theta': 0.5,
 #  'fix_right_plane': False,
-#  'hpc': False,
+#  'show_progress_bar': True,
 #  'linear_mechanics_solver': 'mumps',
 #  'load_state': False,
 #  'loglevel': 20,
@@ -55,7 +55,7 @@ config = simcardems.Config(outdir=outdir)
 pprint.pprint(config.as_dict())
 
 runner = simcardems.Runner(config)
-runner.solve(T=config.T, save_freq=config.save_freq)
+runner.solve(T=config.T, save_freq=config.save_freq, show_progress_bar=True)
 
 
 # This will create the output directory `results_simple_demo` with the following output

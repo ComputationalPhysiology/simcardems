@@ -106,6 +106,11 @@ def cli():
     help="How much printing. DEBUG: 10, INFO:20 (default), WARNING: 30",
 )
 @click.option(
+    "--show_progress_bar/--hide_progress_bar",
+    default=Config.show_progress_bar,
+    help="Shows or hide the progress bar.",
+)
+@click.option(
     "--drug_factors_file",
     default=Config.drug_factors_file,
     type=str,
@@ -167,6 +172,7 @@ def run(
     bnd_cond: mechanics_model.BoundaryConditions,
     load_state: bool,
     cell_init_file: utils.PathLike,
+    show_progress_bar: bool,
     lx: float,
     ly: float,
     lz: float,
@@ -195,6 +201,7 @@ def run(
         traction=traction,
         load_state=load_state,
         cell_init_file=cell_init_file,
+        show_progress_bar=show_progress_bar,
         lx=lx,
         ly=ly,
         lz=lz,
@@ -242,7 +249,11 @@ def main(config: typing.Optional[Config]):
 
     runner = Runner(config=config)
 
-    runner.solve(T=config.T, save_freq=config.save_freq)
+    runner.solve(
+        T=config.T,
+        save_freq=config.save_freq,
+        show_progress_bar=config.show_progress_bar,
+    )
 
 
 @click.command("postprocess")
