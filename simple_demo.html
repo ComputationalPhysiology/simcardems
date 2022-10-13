@@ -356,7 +356,7 @@ const thebe_selector_output = ".output, .cell_output"
  <span class="s1">&#39;ep_preconditioner&#39;</span><span class="p">:</span> <span class="s1">&#39;sor&#39;</span><span class="p">,</span>
  <span class="s1">&#39;ep_theta&#39;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
  <span class="s1">&#39;fix_right_plane&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
- <span class="s1">&#39;hpc&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+ <span class="s1">&#39;show_progress_bar&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
  <span class="s1">&#39;linear_mechanics_solver&#39;</span><span class="p">:</span> <span class="s1">&#39;mumps&#39;</span><span class="p">,</span>
  <span class="s1">&#39;load_state&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
  <span class="s1">&#39;loglevel&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
@@ -381,7 +381,7 @@ const thebe_selector_output = ".output, .cell_output"
 </pre></div>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">runner</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">Runner</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
-<span class="n">runner</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">T</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">save_freq</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">save_freq</span><span class="p">,</span> <span class="n">hpc</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">runner</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">T</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">save_freq</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">save_freq</span><span class="p">,</span> <span class="n">show_progress_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>This will create the output directory <code class="docutils literal notranslate"><span class="pre">results_simple_demo</span></code> with the following output</p>

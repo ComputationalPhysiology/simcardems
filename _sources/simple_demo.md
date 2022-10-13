@@ -36,7 +36,7 @@ This will set :
  'ep_preconditioner': 'sor',
  'ep_theta': 0.5,
  'fix_right_plane': False,
- 'hpc': False,
+ 'show_progress_bar': True,
  'linear_mechanics_solver': 'mumps',
  'load_state': False,
  'loglevel': 20,
@@ -56,7 +56,6 @@ This will set :
  'traction': None}
 ```
 
-
 ```python
 # Print current configuration
 pprint.pprint(config.as_dict())
@@ -64,7 +63,7 @@ pprint.pprint(config.as_dict())
 
 ```python
 runner = simcardems.Runner(config)
-runner.solve(T=config.T, save_freq=config.save_freq, hpc=False)
+runner.solve(T=config.T, save_freq=config.save_freq, show_progress_bar=True)
 ```
 
 

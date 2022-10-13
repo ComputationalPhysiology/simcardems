@@ -807,7 +807,7 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">T</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Config</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
         <span class="n">save_freq</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Config</span><span class="o">.</span><span class="n">save_freq</span><span class="p">,</span>
-        <span class="n">hpc</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">Config</span><span class="o">.</span><span class="n">hpc</span><span class="p">,</span>
+        <span class="n">show_progress_bar</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">Config</span><span class="o">.</span><span class="n">show_progress_bar</span><span class="p">,</span>
         <span class="n">st_progress</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_outdir&quot;</span><span class="p">):</span>
@@ -821,7 +821,10 @@ const thebe_selector_output = ".output, .cell_output"
 
         <span class="n">save_it</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">save_freq</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dt</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">create_time_stepper</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">use_ns</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">st_progress</span><span class="o">=</span><span class="n">st_progress</span><span class="p">)</span>
-        <span class="n">pbar</span> <span class="o">=</span> <span class="n">create_progressbar</span><span class="p">(</span><span class="n">time_stepper</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_time_stepper</span><span class="p">,</span> <span class="n">hpc</span><span class="o">=</span><span class="n">hpc</span><span class="p">)</span>
+        <span class="n">pbar</span> <span class="o">=</span> <span class="n">create_progressbar</span><span class="p">(</span>
+            <span class="n">time_stepper</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_time_stepper</span><span class="p">,</span>
+            <span class="n">show_progress_bar</span><span class="o">=</span><span class="n">show_progress_bar</span><span class="p">,</span>
+        <span class="p">)</span>
 
         <span class="c1"># Store initial state</span>
         <span class="n">save_state_every_n_beat</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># Save state every fifth beat</span>
@@ -1022,13 +1025,14 @@ const thebe_selector_output = ".output, .cell_output"
 
 <div class="viewcode-block" id="create_progressbar"><a class="viewcode-back" href="../../api.html#simcardems.setup_models.create_progressbar">[docs]</a><span class="k">def</span> <span class="nf">create_progressbar</span><span class="p">(</span>
     <span class="n">time_stepper</span><span class="p">:</span> <span class="n">TimeStepper</span><span class="p">,</span>
-    <span class="n">hpc</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">Config</span><span class="o">.</span><span class="n">hpc</span><span class="p">,</span>
+    <span class="n">show_progress_bar</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">Config</span><span class="o">.</span><span class="n">show_progress_bar</span><span class="p">,</span>
 <span class="p">):</span>
-    <span class="k">if</span> <span class="n">hpc</span><span class="p">:</span>
-        <span class="c1"># Turn off progressbar</span>
-        <span class="n">pbar</span> <span class="o">=</span> <span class="n">_tqdm</span><span class="p">(</span><span class="n">time_stepper</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="n">time_stepper</span><span class="o">.</span><span class="n">total_steps</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">show_progress_bar</span><span class="p">:</span>
+        <span class="c1"># Show progressbar</span>
         <span class="n">pbar</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">time_stepper</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="n">time_stepper</span><span class="o">.</span><span class="n">total_steps</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Hide progressbar</span>
+        <span class="n">pbar</span> <span class="o">=</span> <span class="n">_tqdm</span><span class="p">(</span><span class="n">time_stepper</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="n">time_stepper</span><span class="o">.</span><span class="n">total_steps</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">pbar</span></div>
 </pre></div>
 
