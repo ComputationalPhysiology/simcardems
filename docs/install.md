@@ -1,9 +1,10 @@
 # Installation
 
-The preferred way to run `simcardems` is using Docker.
+`simcardems` is a pure python package coupling the cardiac mechanics solver [pulse](https://github.com/finsberg/pulse)
+and the cardiac electrophysiology solver [cbcbeat](https://github.com/ComputationalPhysiology/cbcbeat),
+which are both python packages based on the legacy version of the open source finite element framework [FEniCS](https://fenicsproject.org/download/archive).
 
-`simcardems` is a pure python package but depends on the [legacy version of FEniCS](https://fenicsproject.org/download/archive) which is known to be difficult to install.
+* We recommend using the dedicated [Docker](install_docker.md) container, which includes all the aforementioned dependencies.
 
-* [Install with Docker](install_docker.md)
-* [Install with pip](install_pip.md)
-* [Development installation](development_install.md)
+* `simcardems` is also available on [PyPI](https://pypi.org/project/simcardems/) and can be installed with [pip](install_pip.md).
+This option is recommended for developers who want to contribute to the software, but requires installation of the dependencies.
