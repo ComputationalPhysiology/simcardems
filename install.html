@@ -125,11 +125,6 @@ const thebe_selector_output = ".output, .cell_output"
    </code>
   </a>
  </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="development_install.html">
-   Development installation
-  </a>
- </li>
 </ul>
 <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
@@ -327,12 +322,13 @@ const thebe_selector_output = ".output, .cell_output"
                 
   <div class="tex2jax_ignore mathjax_ignore section" id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
-<p>The preferred way to run <code class="docutils literal notranslate"><span class="pre">simcardems</span></code> is using Docker.</p>
-<p><code class="docutils literal notranslate"><span class="pre">simcardems</span></code> is a pure python package but depends on the <a class="reference external" href="https://fenicsproject.org/download/archive">legacy version of FEniCS</a> which is known to be difficult to install.</p>
+<p><code class="docutils literal notranslate"><span class="pre">simcardems</span></code> is a pure python package coupling the cardiac mechanics solver <a class="reference external" href="https://github.com/finsberg/pulse">pulse</a>
+and the cardiac electrophysiology solver <a class="reference external" href="https://github.com/ComputationalPhysiology/cbcbeat">cbcbeat</a>,
+which are both python packages based on the legacy version of the open source finite element framework <a class="reference external" href="https://fenicsproject.org/download/archive">FEniCS</a>.</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="install_docker.html"><span class="doc std std-doc">Install with Docker</span></a></p></li>
-<li><p><a class="reference internal" href="install_pip.html"><span class="doc std std-doc">Install with pip</span></a></p></li>
-<li><p><a class="reference internal" href="development_install.html"><span class="doc std std-doc">Development installation</span></a></p></li>
+<li><p>We recommend using the dedicated <a class="reference internal" href="install_docker.html"><span class="doc std std-doc">Docker</span></a> container, which includes all the aforementioned dependencies.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">simcardems</span></code> is also available on <a class="reference external" href="https://pypi.org/project/simcardems/">PyPI</a> and can be installed with <a class="reference internal" href="install_pip.html"><span class="doc std std-doc">pip</span></a>.
+This option is recommended for developers who want to contribute to the software, but requires installation of the dependencies.</p></li>
 </ul>
 </div>
 

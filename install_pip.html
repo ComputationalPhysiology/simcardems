@@ -54,7 +54,7 @@ const thebe_selector_output = ".output, .cell_output"
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Development installation" href="development_install.html" />
+    <link rel="next" title="Tissue level mechanics model" href="mechanics_model.html" />
     <link rel="prev" title="Install with Docker" href="install_docker.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
@@ -123,11 +123,6 @@ const thebe_selector_output = ".output, .cell_output"
      pip
     </span>
    </code>
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="development_install.html">
-   Development installation
   </a>
  </li>
 </ul>
@@ -318,18 +313,18 @@ const thebe_selector_output = ".output, .cell_output"
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#mac">
-     Mac
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#linux">
      Linux
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#windows-users">
-     Windows users
+    <a class="reference internal nav-link" href="#mac">
+     Mac
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#windows">
+     Windows
     </a>
    </li>
   </ul>
@@ -342,6 +337,11 @@ const thebe_selector_output = ".output, .cell_output"
      simcardems
     </span>
    </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#development-installation">
+   Development installation
   </a>
  </li>
 </ul>
@@ -370,18 +370,18 @@ const thebe_selector_output = ".output, .cell_output"
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#mac">
-     Mac
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#linux">
      Linux
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#windows-users">
-     Windows users
+    <a class="reference internal nav-link" href="#mac">
+     Mac
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#windows">
+     Windows
     </a>
    </li>
   </ul>
@@ -396,6 +396,11 @@ const thebe_selector_output = ".output, .cell_output"
    </code>
   </a>
  </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#development-installation">
+   Development installation
+  </a>
+ </li>
 </ul>
 
                         </nav>
@@ -407,21 +412,39 @@ const thebe_selector_output = ".output, .cell_output"
                 
   <div class="tex2jax_ignore mathjax_ignore section" id="install-with-pip">
 <h1>Install with <code class="docutils literal notranslate"><span class="pre">pip</span></code><a class="headerlink" href="#install-with-pip" title="Permalink to this headline">¶</a></h1>
-<p>Before installing <code class="docutils literal notranslate"><span class="pre">simcardems</span></code> with <code class="docutils literal notranslate"><span class="pre">pip</span></code> you need to <a class="reference external" href="https://fenicsproject.org/download/archive">install the legacy version of FEniCS</a>.</p>
+<p>Before installing <code class="docutils literal notranslate"><span class="pre">simcardems</span></code> with <code class="docutils literal notranslate"><span class="pre">pip</span></code> you need to install the <a class="reference external" href="https://fenicsproject.org/download/archive">legacy version of FEniCS</a>.</p>
 <div class="section" id="installing-fenics">
 <h2>Installing FEniCS<a class="headerlink" href="#installing-fenics" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="mac">
-<h3>Mac<a class="headerlink" href="#mac" title="Permalink to this headline">¶</a></h3>
-<p>If you are using Mac with Intel CPUs then you can install FEniCS with <code class="docutils literal notranslate"><span class="pre">conda</span></code> or use <a class="reference internal" href="install_docker.html"><span class="doc std std-doc">Docker</span></a>. Alternatively you can try to build FEniCS from source.</p>
-<p>If you are using Mac with Apple Silicon Chip then you can you should use <a class="reference internal" href="install_docker.html"><span class="doc std std-doc">Docker</span></a> or install from source.</p>
+<p>FEniCS provides prebuilt high-performance <a class="reference external" href="https://quay.io/repository/fenicsproject/stable">Docker images</a>, usable on most OS:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>docker run -ti -v $(pwd):/home/fenics/shared -w /home/fenics/shared quay.io/fenicsproject/stable:latest
+</pre></div>
 </div>
 <div class="section" id="linux">
 <h3>Linux<a class="headerlink" href="#linux" title="Permalink to this headline">¶</a></h3>
-<p>If you are running Linux then you can either install FEniCS using conda, Ubuntu package man</p>
+<p>Ubuntu users can also use the dedicated Ubuntu package:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>sudo apt-get install software-properties-common
+sudo add-apt-repository ppa:fenics-packages/fenics
+sudo apt-get update
+sudo apt-get install fenics`
+</pre></div>
 </div>
-<div class="section" id="windows-users">
-<h3>Windows users<a class="headerlink" href="#windows-users" title="Permalink to this headline">¶</a></h3>
-<p>Windows users should use <a class="reference external" href="https://docs.microsoft.com/en-us/windows/wsl/install-win10">Windows Subsystem for Linux</a> or use <a class="reference internal" href="install_docker.html"><span class="doc std std-doc">Docker</span></a></p>
+<p>or the prebuilt Anaconda package:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">fenicsproject</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="n">fenics</span>
+<span class="n">source</span> <span class="n">activate</span> <span class="n">fenicsproject</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="mac">
+<h3>Mac<a class="headerlink" href="#mac" title="Permalink to this headline">¶</a></h3>
+<p>On Mac with Intel CPUs, both Docker and Anaconda installation are possible.
+On Mac  with Apple Silicon Chip, the <a class="reference external" href="https://quay.io/repository/fenicsproject/stable">Docker installation</a> is recommended.</p>
+</div>
+<div class="section" id="windows">
+<h3>Windows<a class="headerlink" href="#windows" title="Permalink to this headline">¶</a></h3>
+<p>We recommend Windows users to use <a class="reference external" href="https://docs.microsoft.com/en-us/windows/wsl/install-win10">Windows Subsystem for Linux</a>
+and follow the (Linux users)[#linux] instructions, or use <a class="reference external" href="https://quay.io/repository/fenicsproject/stable">Docker</a></p>
+<p>Alternatively, FEniCS can also be built from source (only recommended for installation on HPC clusters),
+following the installation instructions from the (possibly not up-to-date) <a class="reference external" href="https://fenics.readthedocs.io/en/latest/installation.html">FEniCS Reference Manual</a>.</p>
 </div>
 </div>
 <div class="section" id="install-simcardems">
@@ -430,7 +453,8 @@ const thebe_selector_output = ".output, .cell_output"
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">simcardems</span>
 </pre></div>
 </div>
-<p>If you want the latest version or you want to develop <code class="docutils literal notranslate"><span class="pre">simcardems</span></code> you can install the code directly from the GitHub repo</p>
+<p>If you want the latest version or you want to contribute to <code class="docutils literal notranslate"><span class="pre">simcardems</span></code>,
+you can install the code directly from the GitHub repo</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">git</span><span class="o">+</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ComputationalPhysiology</span><span class="o">/</span><span class="n">simcardems</span><span class="o">.</span><span class="n">git</span>
 </pre></div>
 </div>
@@ -440,6 +464,20 @@ const thebe_selector_output = ".output, .cell_output"
 <span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">.</span>
 </pre></div>
 </div>
+</div>
+<div class="section" id="development-installation">
+<h2>Development installation<a class="headerlink" href="#development-installation" title="Permalink to this headline">¶</a></h2>
+<p>Developers should use editable install, adding the appropriate option <code class="docutils literal notranslate"><span class="pre">-e</span></code>
+to the previous <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span></code> commands:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="s2">&quot;.[dev]&quot;</span>
+</pre></div>
+</div>
+<p>You should also install the <code class="docutils literal notranslate"><span class="pre">pre-commit</span></code> hook that comes with the package</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pre</span><span class="o">-</span><span class="n">commit</span> <span class="n">install</span>
+</pre></div>
+</div>
+<p>which will run a set of tests on the code that you commit to the repo.
+Note that linters and formatters will run in the CI system.</p>
 </div>
 </div>
 
@@ -475,10 +513,10 @@ const thebe_selector_output = ".output, .cell_output"
             <p class="prev-next-title">Install with Docker</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="development_install.html" title="next page">
+    <a class='right-next' id="next-link" href="mechanics_model.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Development installation</p>
+        <p class="prev-next-title">Tissue level mechanics model</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>

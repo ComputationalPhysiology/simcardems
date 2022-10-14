@@ -1,20 +1,40 @@
 # Install with `pip`
 
-Before installing `simcardems` with `pip` you need to [install the legacy version of FEniCS](https://fenicsproject.org/download/archive).
+Before installing `simcardems` with `pip` you need to install the [legacy version of FEniCS](https://fenicsproject.org/download/archive).
 
 ## Installing FEniCS
 
-### Mac
-If you are using Mac with Intel CPUs then you can install FEniCS with `conda` or use [Docker](install_docker.md). Alternatively you can try to build FEniCS from source.
-
-If you are using Mac with Apple Silicon Chip then you can you should use [Docker](install_docker.md) or install from source.
+FEniCS provides prebuilt high-performance [Docker images](https://quay.io/repository/fenicsproject/stable), usable on most OS:
+```
+docker run -ti -v $(pwd):/home/fenics/shared -w /home/fenics/shared quay.io/fenicsproject/stable:latest
+```
 
 ### Linux
-If you are running Linux then you can either install FEniCS using conda, Ubuntu package man
 
+Ubuntu users can also use the dedicated Ubuntu package:
+```
+sudo apt-get install software-properties-common
+sudo add-apt-repository ppa:fenics-packages/fenics
+sudo apt-get update
+sudo apt-get install fenics`
+```
 
-### Windows users
-Windows users should use [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10) or use [Docker](install_docker.md)
+or the prebuilt Anaconda package:
+```
+conda create -n fenicsproject -c conda-forge fenics
+source activate fenicsproject
+```
+
+### Mac
+On Mac with Intel CPUs, both Docker and Anaconda installation are possible.
+On Mac  with Apple Silicon Chip, the [Docker installation](https://quay.io/repository/fenicsproject/stable) is recommended.
+
+### Windows
+We recommend Windows users to use [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
+and follow the (Linux users)[#linux] instructions, or use [Docker](https://quay.io/repository/fenicsproject/stable)
+
+Alternatively, FEniCS can also be built from source (only recommended for installation on HPC clusters),
+following the installation instructions from the (possibly not up-to-date) [FEniCS Reference Manual](https://fenics.readthedocs.io/en/latest/installation.html).
 
 ## Install `simcardems`
 
@@ -23,7 +43,8 @@ Once you have FEniCS installed, you can install `simcardems` with pip using the 
 python3 -m pip install simcardems
 ```
 
-If you want the latest version or you want to develop `simcardems` you can install the code directly from the GitHub repo
+If you want the latest version or you want to contribute to `simcardems`,
+you can install the code directly from the GitHub repo
 
 ```
 python3 -m pip install git+https://github.com/ComputationalPhysiology/simcardems.git
@@ -35,3 +56,17 @@ git clone git@github.com:ComputationalPhysiology/simcardems.git
 cd simcardems
 python3 -m pip install .
 ```
+
+## Development installation
+
+Developers should use editable install, adding the appropriate option `-e`
+to the previous `pip install` commands:
+```
+python -m pip install -e ".[dev]"
+```
+You should also install the `pre-commit` hook that comes with the package
+```
+pre-commit install
+```
+which will run a set of tests on the code that you commit to the repo.
+Note that linters and formatters will run in the CI system.
