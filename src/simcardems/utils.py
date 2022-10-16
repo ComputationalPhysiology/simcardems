@@ -39,6 +39,25 @@ def enum2str(x, EnumCls):
     return dict(zip(EnumCls.__members__.values(), EnumCls.__members__.keys()))[x]
 
 
+def float_to_constant(x: typing.Union[dolfin.Constant, float]) -> dolfin.Constant:
+    """Convert float to a dolfin constant.
+    If value is already a constant, do nothing.
+
+    Parameters
+    ----------
+    x : typing.Union[dolfin.Constant, float]
+        The value to be converted
+
+    Returns
+    -------
+    dolfin.Constant
+        The same value, wrapped in a constant
+    """
+    if isinstance(x, float):
+        return dolfin.Constant(x)
+    return x
+
+
 def local_project(v, V, u=None):
     metadata = {"quadrature_degree": 3, "quadrature_scheme": "default"}
     dxm = dolfin.dx(metadata=metadata)

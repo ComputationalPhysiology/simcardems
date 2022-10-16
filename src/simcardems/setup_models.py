@@ -8,6 +8,8 @@ import dolfin
 import pulse
 from tqdm import tqdm
 
+from . import boundary_conditions
+from . import config
 from . import em_model
 from . import ep_model
 from . import geometry
@@ -15,7 +17,6 @@ from . import land_model
 from . import mechanics_model
 from . import save_load_functions as io
 from . import utils
-from .config import Config
 from .ORdmm_Land import ORdmm_Land as CellModel
 
 logger = utils.getLogger(__name__)
@@ -26,15 +27,9 @@ EMState = namedtuple(
 )
 
 
-def setup_EM_model(config: Config):
+def setup_EM_model(config: config.Config):
 
-    geo = geometry.SlabGeometry(
-        lx=config.lx,
-        ly=config.ly,
-        lz=config.lz,
-        dx=config.dx,
-        num_refinements=config.num_refinements,
-    )
+    geo = geometry.load_geometry(config.geometry_path)
 
     coupling = em_model.EMCoupling(geo)
 
@@ -53,6 +48,7 @@ def setup_EM_model(config: Config):
 
     mech_heart = setup_mechanics_solver(
         coupling=coupling,
+        geo=geo,
         bnd_cond=config.bnd_cond,
         cell_params=solver.ode_solver._model.parameters(),
         pre_stretch=config.pre_stretch,
@@ -74,16 +70,17 @@ def setup_EM_model(config: Config):
 
 def setup_mechanics_solver(
     coupling: em_model.EMCoupling,
-    bnd_cond: mechanics_model.BoundaryConditions,
+    geo: geometry.BaseGeometry,
+    bnd_cond: config.SlabBoundaryConditionTypes,
     cell_params,
     pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
     traction: typing.Union[dolfin.Constant, float] = None,
     spring: typing.Union[dolfin.Constant, float] = None,
-    fix_right_plane: bool = Config.fix_right_plane,
-    mechanics_ode_scheme: land_model.Scheme = Config.mechanics_ode_scheme,
+    fix_right_plane: bool = config.Config.fix_right_plane,
+    mechanics_ode_scheme: land_model.Scheme = config.Config.mechanics_ode_scheme,
     set_material: str = "",
     linear_solver="mumps",
-    use_custom_newton_solver: bool = Config.mechanics_use_custom_newton_solver,
+    use_custom_newton_solver: bool = config.Config.mechanics_use_custom_newton_solver,
     Zetas_prev=None,
     Zetaw_prev=None,
     lmbda_prev=None,
@@ -91,12 +88,19 @@ def setup_mechanics_solver(
 ):
     """Setup mechanics model with dirichlet boundary conditions or rigid motion."""
     logger.info("Set up mechanics model")
+    bc = boundary_conditions.SlabBoundaryConditions(
+        geo=geo,
+        pre_stretch=0.1,
+        traction=1.0,
+        spring=0.2,
+        fix_right_plane=False,
+    )
 
-    microstructure = mechanics_model.setup_microstructure(coupling.mech_mesh)
+    # microstructure = mechanics_model.setup_microstructure(coupling.mech_mesh)
 
     marker_functions = None
     bcs = None
-    if bnd_cond == mechanics_model.BoundaryConditions.dirichlet:
+    if bnd_cond == config.SlabBoundaryConditionTypes.dirichlet:
         bcs, marker_functions = mechanics_model.setup_diriclet_bc(
             mesh=coupling.mech_mesh,
             pre_stretch=pre_stretch,
@@ -157,7 +161,7 @@ def setup_mechanics_solver(
         )
 
     Problem = mechanics_model.MechanicsProblem
-    if bnd_cond == mechanics_model.BoundaryConditions.rigid:
+    if bnd_cond == config.SlabBoundaryConditionTypes.rigid:
         Problem = mechanics_model.RigidMotionProblem
 
     verbose = logger.getEffectiveLevel() < logging.INFO
@@ -185,16 +189,16 @@ def setup_mechanics_solver(
 def setup_ep_solver(
     dt,
     coupling,
-    scheme=Config.ep_ode_scheme,
-    theta=Config.ep_theta,
-    preconditioner=Config.ep_preconditioner,
+    scheme=config.Config.ep_ode_scheme,
+    theta=config.Config.ep_theta,
+    preconditioner=config.Config.ep_preconditioner,
     cell_params=None,
     cell_inits=None,
     cell_init_file=None,
     drug_factors_file=None,
     popu_factors_file=None,
-    disease_state=Config.disease_state,
-    PCL=Config.PCL,
+    disease_state=config.Config.disease_state,
+    PCL=config.Config.PCL,
 ):
     ps = ep_model.setup_splitting_solver_parameters(
         theta=theta,
@@ -242,13 +246,13 @@ def setup_ep_solver(
 class Runner:
     def __init__(
         self,
-        config: typing.Optional[Config] = None,
+        config: typing.Optional[config.Config] = None,
         empty: bool = False,
         **kwargs,
     ) -> None:
 
         if config is None:
-            config = Config()
+            config = config.Config()
 
         self._config = config
 
@@ -496,9 +500,9 @@ class Runner:
 
     def solve(
         self,
-        T: float = Config.T,
-        save_freq: int = Config.save_freq,
-        show_progress_bar: bool = Config.show_progress_bar,
+        T: float = config.Config.T,
+        save_freq: int = config.Config.save_freq,
+        show_progress_bar: bool = config.Config.show_progress_bar,
         st_progress: typing.Any = None,
     ):
         if not hasattr(self, "_outdir"):
@@ -716,7 +720,7 @@ class TimeStepper:
 
 def create_progressbar(
     time_stepper: TimeStepper,
-    show_progress_bar: bool = Config.show_progress_bar,
+    show_progress_bar: bool = config.Config.show_progress_bar,
 ):
     if show_progress_bar:
         # Show progressbar

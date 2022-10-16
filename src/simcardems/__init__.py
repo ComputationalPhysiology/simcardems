@@ -8,6 +8,7 @@ from ffc.quadrature.deprecation import (
     QuadratureRepresentationDeprecationWarning as _QuadratureRepresentationDeprecationWarning,
 )
 
+from . import boundary_conditions
 from . import cli
 from . import config
 from . import datacollector
@@ -73,6 +74,7 @@ _warnings.simplefilter("once", _QuadratureRepresentationDeprecationWarning)
 
 __all__ = [
     "datacollector",
+    "boundary_conditions",
     "em_model",
     "ep_model",
     "mechanics_model",

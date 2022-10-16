@@ -13,7 +13,7 @@ import simcardems
 
 # Create configurations with custom output directory
 outdir = Path("results_simple_demo")
-config = simcardems.Config(outdir=outdir)
+config = simcardems.Config(outdir=outdir, geometry_path="slab")
 
 
 # This will set :
@@ -50,6 +50,7 @@ config = simcardems.Config(outdir=outdir)
 #  'spring': None,
 #  'traction': None}
 # ```
+
 
 # Print current configuration
 pprint.pprint(config.as_dict())

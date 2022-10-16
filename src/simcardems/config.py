@@ -1,29 +1,29 @@
 import logging
 import typing
 from dataclasses import dataclass
+from enum import Enum
 
 import dolfin
 
 from . import land_model
-from . import mechanics_model
 from . import utils
+
+
+class SlabBoundaryConditionTypes(str, Enum):
+    dirichlet = "dirichlet"
+    rigid = "rigid"
 
 
 @dataclass
 class Config:
     outdir: utils.PathLike = "results"
+    geometry_path: utils.PathLike = ""
     T: float = 1000
-    dx: float = 0.2
     dt: float = 0.05
-    bnd_cond: mechanics_model.BoundaryConditions = (
-        mechanics_model.BoundaryConditions.dirichlet
-    )
+    bnd_cond: SlabBoundaryConditionTypes = SlabBoundaryConditionTypes.dirichlet
     load_state: bool = False
     cell_init_file: utils.PathLike = ""
     show_progress_bar: bool = True
-    lx: float = 2.0
-    ly: float = 0.7
-    lz: float = 0.3
     save_freq: int = 1
     pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None
     traction: typing.Union[dolfin.Constant, float] = None
