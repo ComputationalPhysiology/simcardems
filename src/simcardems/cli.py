@@ -7,7 +7,6 @@ import dolfin
 
 from . import config
 from . import land_model
-from . import mechanics_model
 from . import postprocess as post
 from . import utils
 from .setup_models import Runner
@@ -148,15 +147,11 @@ def cli():
 def run(
     outdir: utils.PathLike,
     T: float,
-    dx: float,
     dt: float,
     bnd_cond: config.SlabBoundaryConditionTypes,
     load_state: bool,
     cell_init_file: utils.PathLike,
     show_progress_bar: bool,
-    lx: float,
-    ly: float,
-    lz: float,
     save_freq: int,
     loglevel: int,
     num_refinements: int,
@@ -172,10 +167,9 @@ def run(
     traction: float,
 ):
 
-    config = config.Config(
+    conf = config.Config(
         outdir=outdir,
         T=T,
-        dx=dx,
         dt=dt,
         bnd_cond=bnd_cond,
         spring=spring,
@@ -183,9 +177,6 @@ def run(
         load_state=load_state,
         cell_init_file=cell_init_file,
         show_progress_bar=show_progress_bar,
-        lx=lx,
-        ly=ly,
-        lz=lz,
         save_freq=save_freq,
         loglevel=loglevel,
         num_refinements=num_refinements,
@@ -198,7 +189,7 @@ def run(
         mechanics_use_custom_newton_solver=mechanics_use_custom_newton_solver,
         PCL=pcl,
     )
-    main(config=config)
+    main(conf=conf)
 
 
 @click.command("run-json")
@@ -210,14 +201,14 @@ def run_json(path):
     main(config.Config(**data))
 
 
-def main(config: typing.Optional[config.Config]):
+def main(conf: typing.Optional[config.Config]):
 
-    if config is None:
-        config = config.Config()
+    if conf is None:
+        conf = config.Config()
 
     # Get all arguments and dump them to a json file
-    info_dict = config.__dict__
-    outdir = Path(config.outdir)
+    info_dict = conf.__dict__
+    outdir = Path(conf.outdir)
     outdir.mkdir(exist_ok=True)
     with open(outdir.joinpath("parameters.json"), "w") as f:
         json.dump(info_dict, f)
@@ -225,15 +216,15 @@ def main(config: typing.Optional[config.Config]):
     # Disable warnings
     from . import set_log_level
 
-    set_log_level(config.loglevel)
-    dolfin.set_log_level(config.loglevel + 10)  # TODO: Make it possible to set this?
+    set_log_level(conf.loglevel)
+    dolfin.set_log_level(conf.loglevel + 10)  # TODO: Make it possible to set this?
 
-    runner = Runner(config=config)
+    runner = Runner(conf=conf)
 
     runner.solve(
-        T=config.T,
-        save_freq=config.save_freq,
-        show_progress_bar=config.show_progress_bar,
+        T=conf.T,
+        save_freq=conf.save_freq,
+        show_progress_bar=conf.show_progress_bar,
     )
 
 

@@ -10,8 +10,7 @@ from . import utils
 
 
 class BaseBoundaryConditions(abc.ABC):
-    @property
-    def bcs(self):
+    def __call__(self):
         return pulse.BoundaryConditions(
             dirichlet=self.dirichlet(),
             neumann=self.neumann(),
@@ -98,22 +97,22 @@ class SlabBoundaryConditions(BaseBoundaryConditions):
             # BC with fixing left size
             bcs = [
                 dolfin.DirichletBC(
-                    W.sub(0).sub(0),  # u_x
+                    W.sub(0).sub(0),
                     dolfin.Constant(0.0),
-                    sub_domains=self.geo.ffun,
-                    sub_domain=self.geo.markers["left"],
+                    self.geo.ffun,
+                    self.geo.markers["X0"][1],
                 ),
                 dolfin.DirichletBC(
                     W.sub(0).sub(1),  # u_y
                     dolfin.Constant(0.0),
-                    sub_domains=self.geo.ffun,
-                    sub_domain=self.geo.markers["plane_y0"],
+                    self.geo.ffun,
+                    self.geo.markers["Y0"][1],
                 ),
                 dolfin.DirichletBC(
                     W.sub(0).sub(2),  # u_z
                     dolfin.Constant(0.0),
-                    sub_domains=self.geo.ffun,
-                    sub_domain=self.geo.markers["plane_z0"],
+                    self.geo.ffun,
+                    self.geo.markers["Z0"][1],
                 ),
             ]
 
@@ -123,8 +122,8 @@ class SlabBoundaryConditions(BaseBoundaryConditions):
                         dolfin.DirichletBC(
                             W.sub(0).sub(0),  # u_x
                             dolfin.Constant(0.0),
-                            sub_domains=self.geo.ffun,
-                            sub_domain=self.geo.markers["right"],
+                            self.geo.ffun,
+                            self.geo.markers["X1"][1],
                         ),
                     ],
                 )
@@ -134,8 +133,8 @@ class SlabBoundaryConditions(BaseBoundaryConditions):
                     dolfin.DirichletBC(
                         W.sub(0).sub(0),
                         utils.float_to_constant(self.pre_stretch),
-                        sub_domains=self.geo.ffun,
-                        sub_domain=self.geo.markers["right"],
+                        self.geo.ffun,
+                        self.geo.markers["X1"][1],
                     ),
                 )
             return bcs
@@ -148,7 +147,7 @@ class SlabBoundaryConditions(BaseBoundaryConditions):
             neumann_bc.append(
                 pulse.NeumannBC(
                     traction=utils.float_to_constant(self.traction),
-                    marker=self.geo.markers["right"],
+                    marker=self.geo.markers["X1"][1],
                 ),
             )
         return neumann_bc
@@ -159,7 +158,7 @@ class SlabBoundaryConditions(BaseBoundaryConditions):
             robin_bc.append(
                 pulse.RobinBC(
                     value=utils.float_to_constant(self.spring),
-                    marker=self.geo.markers["right"],
+                    marker=self.geo.markers["X1"][1],
                 ),
             )
         return robin_bc

@@ -4,7 +4,7 @@ import simcardems
 
 
 def test_SlabBoundaryConditions():
-    geo = simcardems.geometry.SlabGeometry(lx=1, ly=1, lz=1, dx=1)
+    geo = simcardems.geometry.SlabGeometry(parameters=dict(lx=1, ly=1, lz=1, dx=1))
     bc = simcardems.boundary_conditions.SlabBoundaryConditions(
         geo=geo,
         pre_stretch=0.1,

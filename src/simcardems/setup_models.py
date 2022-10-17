@@ -68,6 +68,26 @@ def setup_EM_model(config: config.Config):
     )
 
 
+def resolve_boundary_conditions(
+    geo: geometry.BaseGeometry,
+    pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
+    traction: typing.Union[dolfin.Constant, float] = None,
+    spring: typing.Union[dolfin.Constant, float] = None,
+    fix_right_plane: bool = config.Config.fix_right_plane,
+) -> boundary_conditions.BaseBoundaryConditions:
+    if isinstance(geo, geometry.SlabGeometry):
+        return boundary_conditions.SlabBoundaryConditions(
+            geo=geo,
+            pre_stretch=pre_stretch,
+            traction=traction,
+            spring=spring,
+            fix_right_plane=fix_right_plane,
+        )
+    else:
+        # TODO: Implement more boundary conditions
+        raise NotImplementedError
+
+
 def setup_mechanics_solver(
     coupling: em_model.EMCoupling,
     geo: geometry.BaseGeometry,
@@ -88,34 +108,15 @@ def setup_mechanics_solver(
 ):
     """Setup mechanics model with dirichlet boundary conditions or rigid motion."""
     logger.info("Set up mechanics model")
-    bc = boundary_conditions.SlabBoundaryConditions(
+
+    bcs = resolve_boundary_conditions(
         geo=geo,
-        pre_stretch=0.1,
-        traction=1.0,
-        spring=0.2,
-        fix_right_plane=False,
+        pre_stretch=pre_stretch,
+        traction=traction,
+        spring=spring,
+        fix_right_plane=fix_right_plane,
     )
 
-    # microstructure = mechanics_model.setup_microstructure(coupling.mech_mesh)
-
-    marker_functions = None
-    bcs = None
-    if bnd_cond == config.SlabBoundaryConditionTypes.dirichlet:
-        bcs, marker_functions = mechanics_model.setup_diriclet_bc(
-            mesh=coupling.mech_mesh,
-            pre_stretch=pre_stretch,
-            traction=traction,
-            spring=spring,
-            fix_right_plane=fix_right_plane,
-        )
-    # Create the geometry
-    geometry = pulse.Geometry(
-        mesh=coupling.mech_mesh,
-        microstructure=microstructure,
-        marker_functions=marker_functions,
-    )
-    # Create the material
-    # material_parameters = pulse.HolzapfelOgden.default_parameters()
     # Use parameters from Biaxial test in Holzapfel 2019 (Table 1).
     material_parameters = dict(
         a=2.28,
@@ -129,9 +130,9 @@ def setup_mechanics_solver(
     )
 
     active_model = land_model.LandModel(
-        f0=microstructure.f0,
-        s0=microstructure.s0,
-        n0=microstructure.n0,
+        f0=geo.f0,
+        s0=geo.s0,
+        n0=geo.n0,
         eta=0,
         parameters=cell_params,
         XS=coupling.XS_mech,
@@ -166,9 +167,9 @@ def setup_mechanics_solver(
 
     verbose = logger.getEffectiveLevel() < logging.INFO
     problem = Problem(
-        geometry,
+        geo,
         material,
-        bcs,
+        bcs(),
         solver_parameters={"linear_solver": linear_solver, "verbose": verbose},
         use_custom_newton_solver=use_custom_newton_solver,
     )
@@ -246,35 +247,35 @@ def setup_ep_solver(
 class Runner:
     def __init__(
         self,
-        config: typing.Optional[config.Config] = None,
+        conf: typing.Optional[config.Config] = None,
         empty: bool = False,
         **kwargs,
     ) -> None:
 
-        if config is None:
-            config = config.Config()
+        if conf is None:
+            conf = config.Config()
 
-        self._config = config
+        self._config = conf
 
         if empty:
             return
 
-        self._state_path = Path(config.outdir).joinpath("state.h5")
-        reset = not config.load_state
+        self._state_path = Path(self._config.outdir).joinpath("state.h5")
+        reset = not self._config.load_state
         if not reset and self._state_path.is_file():
             # Load state
             logger.info("Load previously saved state")
             coupling, ep_solver, mech_heart, t0 = io.load_state(
                 self._state_path,
-                config.drug_factors_file,
-                config.popu_factors_file,
-                config.disease_state,
-                config.PCL,  # Set bcl from cli
+                self._config.drug_factors_file,
+                self._config.popu_factors_file,
+                self._config.disease_state,
+                self._config.PCL,  # Set bcl from cli
             )
         else:
             logger.info("Create a new state")
             # Create a new state
-            coupling, ep_solver, mech_heart, t0 = setup_EM_model(config)
+            coupling, ep_solver, mech_heart, t0 = setup_EM_model(self._config)
         self.coupling: em_model.EMCoupling = coupling
         self.ep_solver: cbcbeat.SplittingSolver = ep_solver
         self.mech_heart: mechanics_model.MechanicsProblem = mech_heart
@@ -283,7 +284,7 @@ class Runner:
         self._reset = reset
 
         self._setup_assigners()
-        self.outdir = config.outdir
+        self.outdir = self._config.outdir
 
         logger.info(f"Starting at t0={self._t0}")
 
