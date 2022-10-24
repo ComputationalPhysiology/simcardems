@@ -309,6 +309,8 @@ const thebe_selector_output = ".output, .cell_output"
 
 <span class="kn">import</span> <span class="nn">cbcbeat</span>
 <span class="kn">import</span> <span class="nn">dolfin</span>
+<span class="kn">import</span> <span class="nn">pulse</span>
+<span class="kn">import</span> <span class="nn">ufl</span>
 
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">utils</span>
 <span class="kn">from</span> <span class="nn">.ORdmm_Land</span> <span class="kn">import</span> <span class="n">ORdmm_Land</span> <span class="k">as</span> <span class="n">CellModel</span>
@@ -316,34 +318,77 @@ const thebe_selector_output = ".output, .cell_output"
 <span class="n">logger</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="define_conductivity_tensor"><a class="viewcode-back" href="../../api.html#simcardems.ep_model.define_conductivity_tensor">[docs]</a><span class="k">def</span> <span class="nf">define_conductivity_tensor</span><span class="p">(</span><span class="n">chi</span><span class="p">,</span> <span class="n">C_m</span><span class="p">):</span>
-
+<div class="viewcode-block" id="default_conductivities"><a class="viewcode-back" href="../../api.html#simcardems.ep_model.default_conductivities">[docs]</a><span class="k">def</span> <span class="nf">default_conductivities</span><span class="p">():</span>
     <span class="c1"># Conductivities as defined by page 4339 of Niederer benchmark</span>
-    <span class="n">sigma_il</span> <span class="o">=</span> <span class="mf">0.17</span>  <span class="c1"># mS / mm</span>
-    <span class="n">sigma_it</span> <span class="o">=</span> <span class="mf">0.019</span>  <span class="c1"># mS / mm</span>
-    <span class="n">sigma_el</span> <span class="o">=</span> <span class="mf">0.62</span>  <span class="c1"># mS / mm</span>
-    <span class="n">sigma_et</span> <span class="o">=</span> <span class="mf">0.24</span>  <span class="c1"># mS / mm</span>
+    <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="n">sigma_il</span><span class="o">=</span><span class="mf">0.17</span><span class="p">,</span>  <span class="c1"># mS / mm</span>
+        <span class="n">sigma_it</span><span class="o">=</span><span class="mf">0.019</span><span class="p">,</span>  <span class="c1"># mS / mm</span>
+        <span class="n">sigma_el</span><span class="o">=</span><span class="mf">0.62</span><span class="p">,</span>  <span class="c1"># mS / mm</span>
+        <span class="n">sigma_et</span><span class="o">=</span><span class="mf">0.24</span><span class="p">,</span>  <span class="c1"># mS / mm</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="define_conductivity_tensor"><a class="viewcode-back" href="../../api.html#simcardems.ep_model.define_conductivity_tensor">[docs]</a><span class="k">def</span> <span class="nf">define_conductivity_tensor</span><span class="p">(</span>
+    <span class="n">chi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">140.0</span><span class="p">,</span>
+    <span class="n">C_m</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span>
+    <span class="n">microstructure</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+
+    <span class="k">if</span> <span class="n">microstructure</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">microstructure</span> <span class="o">=</span> <span class="n">default_microstructure</span><span class="p">()</span>
+
+    <span class="n">fiber</span> <span class="o">=</span> <span class="n">microstructure</span><span class="o">.</span><span class="n">f0</span>
+    <span class="n">sheet</span> <span class="o">=</span> <span class="n">microstructure</span><span class="o">.</span><span class="n">s0</span>
+    <span class="n">cross_sheet</span> <span class="o">=</span> <span class="n">microstructure</span><span class="o">.</span><span class="n">n0</span>
+
+    <span class="n">A</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="p">[</span><span class="n">fiber</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">sheet</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">cross_sheet</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span>
+            <span class="p">[</span><span class="n">fiber</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">sheet</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">cross_sheet</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
+            <span class="p">[</span><span class="n">fiber</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">sheet</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">cross_sheet</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span>
+        <span class="p">],</span>
+    <span class="p">)</span>
+
+    <span class="c1"># FIXME: Make is possible to change this from the outside</span>
+    <span class="n">conductivities</span> <span class="o">=</span> <span class="n">default_conductivities</span><span class="p">()</span>
 
     <span class="c1"># Compute monodomain approximation by taking harmonic mean in each</span>
     <span class="c1"># direction of intracellular and extracellular part</span>
     <span class="k">def</span> <span class="nf">harmonic_mean</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">a</span> <span class="o">*</span> <span class="n">b</span> <span class="o">/</span> <span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span>
 
-    <span class="n">sigma_l</span> <span class="o">=</span> <span class="n">harmonic_mean</span><span class="p">(</span><span class="n">sigma_il</span><span class="p">,</span> <span class="n">sigma_el</span><span class="p">)</span>
-    <span class="n">sigma_t</span> <span class="o">=</span> <span class="n">harmonic_mean</span><span class="p">(</span><span class="n">sigma_it</span><span class="p">,</span> <span class="n">sigma_et</span><span class="p">)</span>
+    <span class="n">sigma_l</span> <span class="o">=</span> <span class="n">harmonic_mean</span><span class="p">(</span><span class="n">conductivities</span><span class="p">[</span><span class="s2">&quot;sigma_il&quot;</span><span class="p">],</span> <span class="n">conductivities</span><span class="p">[</span><span class="s2">&quot;sigma_el&quot;</span><span class="p">])</span>
+    <span class="n">sigma_t</span> <span class="o">=</span> <span class="n">harmonic_mean</span><span class="p">(</span><span class="n">conductivities</span><span class="p">[</span><span class="s2">&quot;sigma_it&quot;</span><span class="p">],</span> <span class="n">conductivities</span><span class="p">[</span><span class="s2">&quot;sigma_et&quot;</span><span class="p">])</span>
 
     <span class="c1"># Scale conductivities by 1/(C_m * chi)</span>
     <span class="n">s_l</span> <span class="o">=</span> <span class="n">sigma_l</span> <span class="o">/</span> <span class="p">(</span><span class="n">C_m</span> <span class="o">*</span> <span class="n">chi</span><span class="p">)</span>  <span class="c1"># mm^2 / ms</span>
     <span class="n">s_t</span> <span class="o">=</span> <span class="n">sigma_t</span> <span class="o">/</span> <span class="p">(</span><span class="n">C_m</span> <span class="o">*</span> <span class="n">chi</span><span class="p">)</span>  <span class="c1"># mm^2 / ms</span>
 
     <span class="c1"># Define conductivity tensor</span>
-    <span class="n">M</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(((</span><span class="n">s_l</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">s_t</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">s_t</span><span class="p">)))</span>
+    <span class="n">M_star</span> <span class="o">=</span> <span class="n">ufl</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">dolfin</span><span class="o">.</span><span class="n">as_vector</span><span class="p">([</span><span class="n">s_l</span><span class="p">,</span> <span class="n">s_t</span><span class="p">,</span> <span class="n">s_t</span><span class="p">]))</span>
+    <span class="n">M</span> <span class="o">=</span> <span class="n">A</span> <span class="o">*</span> <span class="n">M_star</span> <span class="o">*</span> <span class="n">A</span><span class="o">.</span><span class="n">T</span>
 
     <span class="k">return</span> <span class="n">M</span></div>
 
 
-<div class="viewcode-block" id="setup_ep_model"><a class="viewcode-back" href="../../api.html#simcardems.ep_model.setup_ep_model">[docs]</a><span class="k">def</span> <span class="nf">setup_ep_model</span><span class="p">(</span><span class="n">cellmodel</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">PCL</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
+<div class="viewcode-block" id="default_microstructure"><a class="viewcode-back" href="../../api.html#simcardems.ep_model.default_microstructure">[docs]</a><span class="k">def</span> <span class="nf">default_microstructure</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">(</span>
+        <span class="n">f0</span><span class="o">=</span><span class="n">dolfin</span><span class="o">.</span><span class="n">as_vector</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span>
+        <span class="n">s0</span><span class="o">=</span><span class="n">dolfin</span><span class="o">.</span><span class="n">as_vector</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span>
+        <span class="n">n0</span><span class="o">=</span><span class="n">dolfin</span><span class="o">.</span><span class="n">as_vector</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]),</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="setup_ep_model"><a class="viewcode-back" href="../../api.html#simcardems.ep_model.setup_ep_model">[docs]</a><span class="k">def</span> <span class="nf">setup_ep_model</span><span class="p">(</span>
+    <span class="n">cellmodel</span><span class="p">,</span>
+    <span class="n">mesh</span><span class="p">,</span>
+    <span class="n">PCL</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+    <span class="n">microstructure</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Set-up cardiac model based on benchmark parameters.&quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">microstructure</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">microstructure</span> <span class="o">=</span> <span class="n">default_microstructure</span><span class="p">()</span>
 
     <span class="c1"># Define time</span>
     <span class="n">time</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
@@ -354,7 +399,7 @@ const thebe_selector_output = ".output, .cell_output"
     <span class="n">C_m</span> <span class="o">=</span> <span class="mf">0.01</span>  <span class="c1"># mu F / mm^2</span>
 
     <span class="c1"># Define conductivity tensor</span>
-    <span class="n">M</span> <span class="o">=</span> <span class="n">define_conductivity_tensor</span><span class="p">(</span><span class="n">chi</span><span class="p">,</span> <span class="n">C_m</span><span class="p">)</span>
+    <span class="n">M</span> <span class="o">=</span> <span class="n">define_conductivity_tensor</span><span class="p">(</span><span class="n">chi</span><span class="p">,</span> <span class="n">C_m</span><span class="p">,</span> <span class="n">microstructure</span><span class="o">=</span><span class="n">microstructure</span><span class="p">)</span>
 
     <span class="c1"># Mark stimulation region defined as [0, L]^3</span>
     <span class="n">S1_marker</span> <span class="o">=</span> <span class="mi">1</span>
