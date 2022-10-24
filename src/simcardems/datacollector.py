@@ -90,6 +90,7 @@ class DataCollector:
 class DataLoader:
     def __init__(self, h5name) -> None:
 
+        self._h5file = None
         self._h5name = Path(h5name)
         if not self._h5name.is_file():
             raise FileNotFoundError(f"File {h5name} does not exist")
@@ -221,6 +222,8 @@ class DataLoader:
         KeyError
             If 't' provided is not among the time stamps
         """
+        if self._h5file is None:
+            raise RuntimeError(f"Unable to read from file {self._h5name}")
         group_str = utils.enum2str(group, DataGroups)
         if group_str not in self.names:
             raise KeyError(

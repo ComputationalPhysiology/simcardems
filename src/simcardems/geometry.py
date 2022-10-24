@@ -5,6 +5,7 @@ from typing import Any
 from typing import Dict
 from typing import Optional
 from typing import Tuple
+from typing import Union
 
 import dolfin
 import numpy as np
@@ -71,16 +72,11 @@ def create_boxmesh(lx, ly, lz, dx=0.5, refinements=0):
 class BaseGeometry(abc.ABC):
     """Abstract geometry base class"""
 
-    num_refinements: int = 0
     mechanics_mesh: dolfin.Mesh
     ffun: dolfin.MeshFunction
     markers: Dict[str, Tuple[int, int]]
     microstructure: pulse.Microstructure
-
-    @property
-    @abc.abstractmethod
-    def parameters(self) -> Dict[str, Any]:
-        ...
+    parameters: Dict[str, Any]
 
     @property
     def mesh(self) -> dolfin.Mesh:
@@ -99,13 +95,30 @@ class BaseGeometry(abc.ABC):
         return dolfin.ds(domain=self.mesh, subdomain_data=self.ffun)
 
     @property
+    def num_refinements(self) -> int:
+        return self.parameters["num_refinements"]
+
+    def dump(self, fname: utils.PathLike, file_mode="a"):
+        path = Path(fname)
+        with dolfin.HDF5File(
+            self.mesh.mpi_comm(),
+            path.as_posix(),
+            file_mode,
+        ) as h5file:
+            h5file.write(self.ep_mesh, "geometry/ep_mesh")
+            h5file.write(self.mechanics_mesh, "geometry/mechanics_mesh")
+
+    @property
     def ep_mesh(self) -> dolfin.Mesh:
         return self._ep_mesh
 
     @ep_mesh.setter
     def ep_mesh(self, mesh: Optional[dolfin.Mesh]) -> None:
         if mesh is None:
-            self._ep_mesh = refine_mesh(self.mechanics_mesh, self.num_refinements)
+            self._ep_mesh = refine_mesh(
+                self.mechanics_mesh,
+                self.parameters["num_refinements"],
+            )
             if self.outdir is not None:
                 mesh_path = self.outdir / "ep_mesh.xdmf"
                 with dolfin.XDMFFile(mesh_path.as_posix()) as f:
@@ -149,38 +162,32 @@ class Geometry(BaseGeometry):
         ffun: dolfin.MeshFunction,
         microstructure: pulse.Microstructure,
         markers: Optional[Dict[str, Tuple[int, int]]] = None,
-        num_refinements: int = 0,
+        parameters: Optional[Dict[str, Union[int, str]]] = None,
     ) -> None:
-        self.num_refinements = num_refinements
         self.mechanics_mesh = mesh
         self.ffun = ffun
         self.markers = markers or {}
         self.microstructure = microstructure
+        self.parameters = Geometry.default_parameters()
+        if parameters is not None:
+            self.parameters.update(parameters)
 
     def __repr__(self):
         return (
             f"{self.__class__.__name__}("
             f"mesh={self.mechanics_mesh}, "
-            f"num_refinements={self.num_refinements})"
+            f"num_refinements={self.parameters['num_refinements']})"
         )
 
-    def parameters(self):
-        return {"num_refinements": self.num_refinements}
+    @staticmethod
+    def default_parameters():
+        return {"num_refinements": 1, "fiber_space": "DG_1"}
 
 
 class SlabGeometry(BaseGeometry):
-
-    markers: Dict[str, Tuple[int, int]] = {
-        "X0": (2, 1),
-        "X1'": (2, 2),
-        "Y0": (2, 3),
-        "Z0": (2, 4),
-    }
-
     def __init__(
         self,
         parameters: Optional[Dict[str, Any]] = None,
-        num_refinements: int = 0,
         mechanics_mesh: Optional[dolfin.Mesh] = None,
         ep_mesh: Optional[dolfin.Mesh] = None,
         microstructure: Optional[pulse.Microstructure] = None,
@@ -189,27 +196,32 @@ class SlabGeometry(BaseGeometry):
         outdir: Optional[utils.PathLike] = None,
     ) -> None:
 
+        self.markers = SlabGeometry.default_markers()
+        if markers is not None:
+            self.markers.update(markers)
+
         self.outdir = outdir  # type: ignore
-        self._parameters = SlabGeometry.default_parameters()
+        self.parameters = SlabGeometry.default_parameters()
         if parameters is not None:
-            self._parameters.update(parameters)
-        self.num_refinements = num_refinements
+            self.parameters.update(parameters)
 
         self.mechanics_mesh = mechanics_mesh
         self.ep_mesh = ep_mesh
 
         self.ffun = ffun
 
-        if markers is not None:
-            self.markers = markers
-
         self.microstructure = microstructure
 
         self.validate()
 
-    @property
-    def parameters(self) -> Dict[str, Any]:
-        return self._parameters
+    @staticmethod
+    def default_markers() -> Dict[str, Tuple[int, int]]:
+        return {
+            "X0": (2, 1),
+            "X1": (2, 2),
+            "Y0": (2, 3),
+            "Z0": (2, 4),
+        }
 
     @property
     def ffun(self) -> dolfin.MeshFunction:
@@ -276,7 +288,14 @@ class SlabGeometry(BaseGeometry):
 
     @staticmethod
     def default_parameters():
-        return dict(lx=2.0, ly=0.7, lz=0.3, dx=0.2, fiber_space="DG_1")
+        return dict(
+            lx=2.0,
+            ly=0.7,
+            lz=0.3,
+            dx=0.2,
+            fiber_space="DG_1",
+            num_refinements=1,
+        )
 
     def validate(self):
         pass
@@ -288,29 +307,42 @@ class SlabGeometry(BaseGeometry):
             f"ly={self.parameters['ly']}, "
             f"lz={self.parameters['lz']}, "
             f"dx={self.parameters['dx']}, "
-            f"num_refinements={self.num_refinements})"
+            f"num_refinements={self.parameters['num_refinements']})"
         )
 
     @classmethod
     def from_files(
         cls,
         mesh_path: utils.PathLike,
-        ffun_path: utils.PathLike,
-        marker_path: utils.PathLike,
-        parameter_path: utils.PathLike,
-        microstructure_path: utils.PathLike,
+        ffun_path: Optional[utils.PathLike] = None,
+        marker_path: Optional[utils.PathLike] = None,
+        parameter_path: Optional[utils.PathLike] = None,
+        microstructure_path: Optional[utils.PathLike] = None,
         **kwargs,
     ):
 
-        markers = json.loads(Path(marker_path).read_text())
-        parameters = json.loads(Path(parameter_path).read_text())
+        markers = cls.default_markers()
+        if marker_path is not None:
+            markers.update(json.loads(Path(marker_path).read_text()))
+
+        parameters = cls.default_parameters()
+        if parameter_path is not None:
+            parameters.update(json.loads(Path(parameter_path).read_text()))
+
         mesh = dolfin.Mesh()
         with dolfin.XDMFFile(Path(mesh_path).as_posix()) as f:
             f.read(mesh)
 
-        ffun = dolfin.MeshFunction("size_t", mesh, 2)
-        with dolfin.XDMFFile(Path(ffun_path).as_posix()) as f:
-            f.read(ffun)
+        if ffun_path is not None:
+            ffun = dolfin.MeshFunction("size_t", mesh, 2)
+            with dolfin.XDMFFile(Path(ffun_path).as_posix()) as f:
+                f.read(ffun)
+        else:
+            ffun = create_slab_facet_function(
+                mesh,
+                lx=parameters["lx"],
+                markers=markers,
+            )
 
         fiber_space = parameters.get("fiber_space")
         if fiber_space is not None and microstructure_path is not None:
@@ -363,8 +395,10 @@ class SlabGeometry(BaseGeometry):
 def create_slab_facet_function(
     mesh: dolfin.Mesh,
     lx: float,
-    markers: Dict[str, Tuple[int, int]] = SlabGeometry.markers,
+    markers: Optional[Dict[str, Tuple[int, int]]] = None,
 ) -> dolfin.MeshFunction:
+    if markers is None:
+        markers = SlabGeometry.default_markers()
     # Define domain to apply dirichlet boundary conditions
     left = dolfin.CompiledSubDomain("near(x[0], 0) && on_boundary")
     right = dolfin.CompiledSubDomain("near(x[0], lx) && on_boundary", lx=lx)
@@ -374,10 +408,10 @@ def create_slab_facet_function(
     ffun = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim() - 1)
     ffun.set_all(0)
 
-    left.mark(ffun, markers["left"])
-    right.mark(ffun, markers["right"])
-    plane_y0.mark(ffun, markers["plane_y0"])
-    plane_z0.mark(ffun, markers["plane_z0"])
+    left.mark(ffun, markers["X0"][0])
+    right.mark(ffun, markers["X1"][0])
+    plane_y0.mark(ffun, markers["Y0"][0])
+    plane_z0.mark(ffun, markers["Z0"][0])
     return ffun
 
 

@@ -12,10 +12,10 @@ def test_SlabBoundaryConditions():
         spring=0.2,
         fix_right_plane=False,
     )
-    bcs = bc.bcs
+    bcs = bc()
 
     assert len(bcs.neumann) == 1
-    assert math.isclose(float(bc.bcs.neumann[0].traction), 1.0)
+    assert math.isclose(float(bcs.neumann[0].traction), 1.0)
 
     assert len(bcs.dirichlet) == 1
     assert callable(bcs.dirichlet[0])
