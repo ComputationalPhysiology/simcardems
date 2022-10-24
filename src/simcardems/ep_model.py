@@ -5,6 +5,8 @@ from typing import Optional
 
 import cbcbeat
 import dolfin
+import pulse
+import ufl
 
 from . import utils
 from .ORdmm_Land import ORdmm_Land as CellModel
@@ -12,34 +14,77 @@ from .ORdmm_Land import ORdmm_Land as CellModel
 logger = utils.getLogger(__name__)
 
 
-def define_conductivity_tensor(chi, C_m):
-
+def default_conductivities():
     # Conductivities as defined by page 4339 of Niederer benchmark
-    sigma_il = 0.17  # mS / mm
-    sigma_it = 0.019  # mS / mm
-    sigma_el = 0.62  # mS / mm
-    sigma_et = 0.24  # mS / mm
+    return dict(
+        sigma_il=0.17,  # mS / mm
+        sigma_it=0.019,  # mS / mm
+        sigma_el=0.62,  # mS / mm
+        sigma_et=0.24,  # mS / mm
+    )
+
+
+def define_conductivity_tensor(
+    chi: float = 140.0,
+    C_m: float = 0.01,
+    microstructure: Optional[pulse.Microstructure] = None,
+):
+
+    if microstructure is None:
+        microstructure = default_microstructure()
+
+    fiber = microstructure.f0
+    sheet = microstructure.s0
+    cross_sheet = microstructure.n0
+
+    A = dolfin.as_matrix(
+        [
+            [fiber[0], sheet[0], cross_sheet[0]],
+            [fiber[1], sheet[1], cross_sheet[1]],
+            [fiber[2], sheet[2], cross_sheet[2]],
+        ],
+    )
+
+    # FIXME: Make is possible to change this from the outside
+    conductivities = default_conductivities()
 
     # Compute monodomain approximation by taking harmonic mean in each
     # direction of intracellular and extracellular part
     def harmonic_mean(a, b):
         return a * b / (a + b)
 
-    sigma_l = harmonic_mean(sigma_il, sigma_el)
-    sigma_t = harmonic_mean(sigma_it, sigma_et)
+    sigma_l = harmonic_mean(conductivities["sigma_il"], conductivities["sigma_el"])
+    sigma_t = harmonic_mean(conductivities["sigma_it"], conductivities["sigma_et"])
 
     # Scale conductivities by 1/(C_m * chi)
     s_l = sigma_l / (C_m * chi)  # mm^2 / ms
     s_t = sigma_t / (C_m * chi)  # mm^2 / ms
 
     # Define conductivity tensor
-    M = dolfin.as_tensor(((s_l, 0, 0), (0, s_t, 0), (0, 0, s_t)))
+    M_star = ufl.diag(dolfin.as_vector([s_l, s_t, s_t]))
+    M = A * M_star * A.T
 
     return M
 
 
-def setup_ep_model(cellmodel, mesh, PCL=1000):
+def default_microstructure():
+    return pulse.Microstructure(
+        f0=dolfin.as_vector([1.0, 0.0, 0.0]),
+        s0=dolfin.as_vector([0.0, 1.0, 0.0]),
+        n0=dolfin.as_vector([0.0, 0.0, 1.0]),
+    )
+
+
+def setup_ep_model(
+    cellmodel,
+    mesh,
+    PCL=1000,
+    microstructure: Optional[pulse.Microstructure] = None,
+):
     """Set-up cardiac model based on benchmark parameters."""
+
+    if microstructure is None:
+        microstructure = default_microstructure()
 
     # Define time
     time = dolfin.Constant(0.0)
@@ -50,7 +95,7 @@ def setup_ep_model(cellmodel, mesh, PCL=1000):
     C_m = 0.01  # mu F / mm^2
 
     # Define conductivity tensor
-    M = define_conductivity_tensor(chi, C_m)
+    M = define_conductivity_tensor(chi, C_m, microstructure=microstructure)
 
     # Mark stimulation region defined as [0, L]^3
     S1_marker = 1

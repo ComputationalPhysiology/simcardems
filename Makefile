@@ -71,6 +71,8 @@ docs: ## generate Sphinx HTML documentation, including API docs
 	cp CONTRIBUTING.md docs/.
 	jupytext demos/release_test.py -o docs/release_test.md
 	jupytext demos/simple_demo.py -o docs/simple_demo.md
+	mkdir -p docs/_build
+	cp -r benchmarks docs/_build/
 	jupyter book build -W docs
 
 run-benchmark:
