@@ -16,12 +16,13 @@ def mesh():
 @pytest.fixture(scope="session")
 def geometry(mesh):
     return simcardems.geometry.SlabGeometry(
-        lx=1,
-        ly=1,
-        lz=1,
-        dx=1,
-        num_refinements=1,
-        mechanics_mesh=mesh,
+        parameters=dict(
+            lx=1,
+            ly=1,
+            lz=1,
+            dx=1,
+            num_refinements=1,
+        ),
     )
 
 

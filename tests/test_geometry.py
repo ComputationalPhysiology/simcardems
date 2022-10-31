@@ -1,10 +1,9 @@
-import json
-import tempfile
 from pathlib import Path
 
 import dolfin
-import pytest
 from simcardems import geometry
+
+here = Path(__file__).absolute().parent
 
 
 def test_create_slab_geometry_normal():
@@ -16,63 +15,6 @@ def test_create_slab_geometry_normal():
     for k, v in parameters.items():
         assert geo.parameters[k] == v
     assert geo.num_refinements == 1
-
-
-@pytest.mark.parametrize(
-    "include_ffun, include_marker, include_parameter",
-    (
-        (True, False, False),
-        (False, True, False),
-        (False, False, True),
-    ),
-)
-def test_create_slab_geometry_from_files(
-    include_ffun,
-    include_marker,
-    include_parameter,
-):
-    markers = geometry.SlabGeometry.default_markers()
-    parameters = {"lx": 1, "ly": 1, "lz": 1, "dx": 1, "num_refinements": 1}
-    mesh = geometry.create_boxmesh(lx=1, ly=1, lz=1, dx=1.0, refinements=0)
-    ffun = geometry.create_slab_facet_function(mesh=mesh, lx=1.0, markers=markers)
-
-    ffun_path = None
-    parameter_path = None
-    marker_path = None
-
-    with tempfile.TemporaryDirectory() as tmpdir_name:
-        tmpdir = Path(tmpdir_name)
-        mesh_path = tmpdir / "mesh.xdmf"
-        with dolfin.XDMFFile(mesh_path.as_posix()) as f:
-            f.write(mesh)
-
-        if include_ffun:
-            ffun_path = tmpdir / "ffun.xdmf"
-            with dolfin.XDMFFile(ffun_path.as_posix()) as f:
-                f.write(ffun)
-
-        if include_marker:
-            marker_path = tmpdir / "markers.json"
-            marker_path.write_text(json.dumps(markers))
-
-        if include_parameter:
-            parameter_path = tmpdir / "info.json"
-            parameter_path.write_text(json.dumps(parameters))
-
-        geo = geometry.SlabGeometry.from_files(
-            mesh_path=mesh_path,
-            ffun_path=ffun_path,
-            marker_path=marker_path,
-            parameter_path=parameter_path,
-        )
-
-    assert geo.mechanics_mesh.num_cells() == 6
-    assert geo.ep_mesh.num_cells() == 48
-    if include_parameter:
-        for k, v in parameters.items():
-            assert geo.parameters[k] == v
-    if include_ffun:
-        assert (geo.ffun.array() == ffun.array()).all()
 
 
 def test_create_slab_geometry_with_mechanics_mesh():
@@ -89,3 +31,28 @@ def test_create_slab_geometry_with_mechanics_mesh():
     for k, v in parameters.items():
         assert geo.parameters[k] == v
     assert geo.num_refinements == 1
+
+
+def test_load_geometry():
+    mesh_folder = here / ".." / "demos" / "geometries"
+    mesh_path = mesh_folder / "slab.h5"
+    schema_path = mesh_folder / "slab.json"
+    geo = geometry.load_geometry(mesh_path=mesh_path, schema_path=schema_path)
+    assert geo.mesh.num_cells() == 202
+    assert geo.ep_mesh.num_cells() == 1616
+    assert isinstance(geo, geometry.SlabGeometry)
+
+
+def test_dump_geometry(tmp_path):
+    mesh_folder = here / ".." / "demos" / "geometries"
+    mesh_path = mesh_folder / "slab.h5"
+    schema_path = mesh_folder / "slab.json"
+    geo = geometry.load_geometry(mesh_path=mesh_path, schema_path=schema_path)
+    outpath = tmp_path / "state.h5"
+    geo.dump(outpath)
+
+    dumped_geo = geometry.load_geometry(
+        mesh_path=outpath,
+        schema_path=outpath.with_suffix(".json"),
+    )
+    assert dumped_geo == geo

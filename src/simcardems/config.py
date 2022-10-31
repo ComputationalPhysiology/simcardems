@@ -18,6 +18,7 @@ class SlabBoundaryConditionTypes(str, Enum):
 class Config:
     outdir: utils.PathLike = "results"
     geometry_path: utils.PathLike = ""
+    geometry_schema_path: utils.PathLike = ""
     T: float = 1000
     dt: float = 0.05
     bnd_cond: SlabBoundaryConditionTypes = SlabBoundaryConditionTypes.dirichlet

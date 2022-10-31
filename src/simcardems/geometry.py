@@ -5,29 +5,31 @@ from typing import Any
 from typing import Dict
 from typing import Optional
 from typing import Tuple
-from typing import Union
 
 import dolfin
 import numpy as np
 import pulse
+from cardiac_geometries.geometry import Geometry
+from cardiac_geometries.geometry import H5Path
 
 from . import utils
 
 logger = utils.getLogger(__name__)
 
 
-def load_geometry(folder: utils.PathLike) -> "BaseGeometry":
-    info_path = Path(folder) / "info.json"
-    if not info_path.is_file():
-        raise RuntimeError("Cannot find info.json in geometry folder")
+def load_geometry(mesh_path: utils.PathLike, schema_path: utils.PathLike):
+    geo = Geometry.from_file(fname=mesh_path, schema_path=schema_path)
 
-    info = json.loads(info_path.read_text())
+    info = getattr(geo, "info", None)
+    if info is None:
+        raise RuntimeError("Unable to load info from geometry")
+
     mesh_type = info.get("mesh_type")
     if mesh_type is None:
-        raise RuntimeError(f"{info_path} missing key 'mesh_type'")
+        raise RuntimeError("Unable to get mesh type from info")
 
     if mesh_type == "slab":
-        return SlabGeometry.from_folder(folder)
+        return SlabGeometry.from_geometry(geo)
     elif mesh_type == "lv_ellipsoid":
         raise NotImplementedError
     elif mesh_type == "biv_ellipsoid":
@@ -72,11 +74,126 @@ def create_boxmesh(lx, ly, lz, dx=0.5, refinements=0):
 class BaseGeometry(abc.ABC):
     """Abstract geometry base class"""
 
-    mechanics_mesh: dolfin.Mesh
-    ffun: dolfin.MeshFunction
-    markers: Dict[str, Tuple[int, int]]
-    microstructure: pulse.Microstructure
-    parameters: Dict[str, Any]
+    def __init__(
+        self,
+        parameters: Optional[Dict[str, Any]] = None,
+        mechanics_mesh: Optional[dolfin.Mesh] = None,
+        ep_mesh: Optional[dolfin.Mesh] = None,
+        microstructure: Optional[pulse.Microstructure] = None,
+        microstructure_ep: Optional[pulse.Microstructure] = None,
+        ffun: Optional[dolfin.MeshFunction] = None,
+        markers: Optional[Dict[str, Tuple[int, int]]] = None,
+        outdir: Optional[utils.PathLike] = None,
+    ) -> None:
+
+        self.markers = type(self).default_markers()
+        if markers is not None:
+            self.markers.update(markers)
+
+        self.outdir = outdir  # type: ignore
+        self.parameters = type(self).default_parameters()
+        if parameters is not None:
+            self.parameters.update(parameters)
+
+        self.mechanics_mesh = mechanics_mesh
+        self.ep_mesh = ep_mesh
+
+        self.ffun = ffun
+        self.microstructure = microstructure
+        self.microstructure_ep = microstructure_ep
+        self.validate()
+
+    def __eq__(self, __o: object) -> bool:
+        if not isinstance(__o, type(self)):
+            return NotImplemented
+        # TODO: We might add more checks here
+        return self.parameters == __o.parameters
+
+    def validate(self):
+        pass
+
+    @staticmethod
+    @abc.abstractmethod
+    def default_markers() -> Dict[str, Tuple[int, int]]:
+        ...
+
+    @staticmethod
+    @abc.abstractmethod
+    def default_parameters() -> Dict[str, Any]:
+        ...
+
+    @staticmethod
+    def default_schema() -> Dict[str, H5Path]:
+        return {
+            "mesh": H5Path(
+                h5group="/geometry/mesh/mechanics",
+                is_mesh=True,
+            ),
+            "ep_mesh": H5Path(
+                h5group="/geometry/mesh/ep",
+                is_mesh=True,
+            ),
+            "ffun": H5Path(
+                h5group="/geometry/meshfunctions/ffun",
+                is_meshfunction=True,
+                dim=2,
+                mesh_key="mesh",
+            ),
+            "f0": H5Path(
+                h5group="/geometry/microstructure/mechanics/f0",
+                is_function=True,
+                mesh_key="mesh",
+            ),
+            "s0": H5Path(
+                h5group="/geometry/microstructure/mechanics/s0",
+                is_function=True,
+                mesh_key="mesh",
+            ),
+            "n0": H5Path(
+                h5group="/geometry/microstructure/mechanics/n0",
+                is_function=True,
+                mesh_key="mesh",
+            ),
+            "f0_ep": H5Path(
+                h5group="/geometry/microstructure/ep/f0",
+                is_function=True,
+                mesh_key="ep_mesh",
+            ),
+            "s0_ep": H5Path(
+                h5group="/geometry/microstructure/ep/s0",
+                is_function=True,
+                mesh_key="ep_mesh",
+            ),
+            "n0_ep": H5Path(
+                h5group="/geometry/microstructure/ep/n0",
+                is_function=True,
+                mesh_key="ep_mesh",
+            ),
+            "info": H5Path(
+                h5group="/geometry/info",
+                is_dolfin=False,
+            ),
+            "markers": H5Path(
+                h5group="/geometry/markers",
+                is_dolfin=False,
+            ),
+        }
+
+    @abc.abstractmethod
+    def _default_microstructure(
+        self,
+        fiber_space: str,
+        mesh: dolfin.Mesh,
+    ) -> pulse.Microstructure:
+        ...
+
+    @abc.abstractmethod
+    def _default_ffun(self, mesh: dolfin.Mesh) -> dolfin.MeshFunction:
+        ...
+
+    @abc.abstractmethod
+    def _default_mesh(self) -> dolfin.Mesh:
+        ...
 
     @property
     def mesh(self) -> dolfin.Mesh:
@@ -98,19 +215,127 @@ class BaseGeometry(abc.ABC):
     def num_refinements(self) -> int:
         return self.parameters["num_refinements"]
 
-    def dump(self, fname: utils.PathLike, file_mode="a"):
+    def dump(self, fname: utils.PathLike, unlink: bool = False):
         path = Path(fname)
-        with dolfin.HDF5File(
-            self.mesh.mpi_comm(),
-            path.as_posix(),
-            file_mode,
-        ) as h5file:
-            h5file.write(self.ep_mesh, "geometry/ep_mesh")
-            h5file.write(self.mechanics_mesh, "geometry/mechanics_mesh")
+        schema = type(self).default_schema()
+
+        kwargs = {k: getattr(self, k) for k in schema if k != "info"}
+        kwargs["info"] = self.parameters
+        geo = Geometry(**kwargs, schema=schema)
+        geo.save(path, unlink=unlink)
+        logger.info(f"Saved geometry to {fname}")
+
+    def _get_microstructure_if_None(
+        self,
+        mesh: dolfin.Mesh,
+        label: str,
+    ) -> pulse.Microstructure:
+        microstructure = self._default_microstructure(
+            fiber_space=self.parameters["fiber_space"],
+            mesh=mesh,
+        )
+
+        if self.outdir is not None:
+            path = self.outdir / f"microstructure{label}.h5"
+            with dolfin.HDF5File(
+                mesh.mpi_comm(),
+                path.as_posix(),
+                "w",
+            ) as h5file:
+                h5file.write(microstructure.f0, "f0")
+                h5file.write(microstructure.s0, "s0")
+                h5file.write(microstructure.n0, "n0")
+        return microstructure
+
+    @property
+    def microstructure_ep(self) -> pulse.Microstructure:
+        return self._microstructure_ep  # type: ignore
+
+    @microstructure_ep.setter
+    def microstructure_ep(self, microstructure: Optional[pulse.Microstructure]) -> None:
+        if microstructure is None:
+            microstructure = self._interpolate_microstructure()
+        self._microstructure_ep = microstructure
+
+    def _interpolate_microstructure(self) -> pulse.Microstructure:
+        element = self.f0.ufl_element()
+        V = dolfin.FunctionSpace(self.ep_mesh, element)
+        f0 = dolfin.interpolate(self.f0, V)
+        s0 = dolfin.interpolate(self.s0, V)
+        n0 = dolfin.interpolate(self.n0, V)
+        return pulse.Microstructure(f0=f0, s0=s0, n0=n0)
+
+    @property
+    def microstructure(self) -> pulse.Microstructure:
+        return self._microstructure  # type: ignore
+
+    @microstructure.setter
+    def microstructure(self, microstructure: Optional[pulse.Microstructure]) -> None:
+        if microstructure is None:
+            microstructure = self._get_microstructure_if_None(
+                mesh=self.mechanics_mesh,
+                label="",
+            )
+        self._microstructure = microstructure
+
+    @property
+    def f0(self) -> dolfin.Function:
+        return self.microstructure.f0
+
+    @property
+    def s0(self) -> dolfin.Function:
+        return self.microstructure.s0
+
+    @property
+    def n0(self) -> dolfin.Function:
+        return self.microstructure.n0
+
+    @property
+    def f0_ep(self) -> dolfin.Function:
+        return self.microstructure_ep.f0
+
+    @property
+    def s0_ep(self) -> dolfin.Function:
+        return self.microstructure_ep.s0
+
+    @property
+    def n0_ep(self) -> dolfin.Function:
+        return self.microstructure_ep.n0
+
+    @property
+    def mechanics_mesh(self) -> dolfin.Mesh:
+        return self._mechanics_mesh  # type: ignore
+
+    @mechanics_mesh.setter
+    def mechanics_mesh(self, mesh: Optional[dolfin.Mesh]) -> None:
+        if mesh is None:
+            mesh = self._default_mesh()
+            if self.outdir is not None:
+                mesh_path = self.outdir / "mesh.xdmf"
+                with dolfin.XDMFFile(mesh_path.as_posix()) as f:
+                    f.write(mesh)
+        self._mechanics_mesh = mesh
+
+    @property
+    def ffun(self) -> dolfin.MeshFunction:
+        return self._ffun  # type: ignore
+
+    @ffun.setter
+    def ffun(self, ffun: Optional[dolfin.MeshFunction]) -> None:
+        if ffun is None:
+            self._ffun = self._default_ffun(
+                self.mechanics_mesh,
+            )
+            if self.outdir is not None:
+                ffun_path = self.outdir / "ffun.xdmf"
+                with dolfin.XDMFFile(ffun_path.as_posix()) as f:
+                    f.write(self.ffun)
+        else:
+            self._ffun = ffun
 
     @property
     def ep_mesh(self) -> dolfin.Mesh:
-        return self._ep_mesh
+        return self._ep_mesh  # type: ignore
 
     @ep_mesh.setter
     def ep_mesh(self, mesh: Optional[dolfin.Mesh]) -> None:
@@ -141,174 +366,6 @@ class BaseGeometry(abc.ABC):
     @property
     def marker_functions(self):
         return pulse.MarkerFunctions(ffun=self.ffun)
-
-    @property
-    def f0(self) -> dolfin.Function:
-        return self.microstructure.f0
-
-    @property
-    def s0(self) -> dolfin.Function:
-        return self.microstructure.s0
-
-    @property
-    def n0(self) -> dolfin.Function:
-        return self.microstructure.n0
-
-
-class Geometry(BaseGeometry):
-    def __init__(
-        self,
-        mesh: dolfin.Mesh,
-        ffun: dolfin.MeshFunction,
-        microstructure: pulse.Microstructure,
-        markers: Optional[Dict[str, Tuple[int, int]]] = None,
-        parameters: Optional[Dict[str, Union[int, str]]] = None,
-    ) -> None:
-        self.mechanics_mesh = mesh
-        self.ffun = ffun
-        self.markers = markers or {}
-        self.microstructure = microstructure
-        self.parameters = Geometry.default_parameters()
-        if parameters is not None:
-            self.parameters.update(parameters)
-
-    def __repr__(self):
-        return (
-            f"{self.__class__.__name__}("
-            f"mesh={self.mechanics_mesh}, "
-            f"num_refinements={self.parameters['num_refinements']})"
-        )
-
-    @staticmethod
-    def default_parameters():
-        return {"num_refinements": 1, "fiber_space": "DG_1"}
-
-
-class SlabGeometry(BaseGeometry):
-    def __init__(
-        self,
-        parameters: Optional[Dict[str, Any]] = None,
-        mechanics_mesh: Optional[dolfin.Mesh] = None,
-        ep_mesh: Optional[dolfin.Mesh] = None,
-        microstructure: Optional[pulse.Microstructure] = None,
-        ffun: Optional[dolfin.MeshFunction] = None,
-        markers: Optional[Dict[str, Tuple[int, int]]] = None,
-        outdir: Optional[utils.PathLike] = None,
-    ) -> None:
-
-        self.markers = SlabGeometry.default_markers()
-        if markers is not None:
-            self.markers.update(markers)
-
-        self.outdir = outdir  # type: ignore
-        self.parameters = SlabGeometry.default_parameters()
-        if parameters is not None:
-            self.parameters.update(parameters)
-
-        self.mechanics_mesh = mechanics_mesh
-        self.ep_mesh = ep_mesh
-
-        self.ffun = ffun
-
-        self.microstructure = microstructure
-
-        self.validate()
-
-    @staticmethod
-    def default_markers() -> Dict[str, Tuple[int, int]]:
-        return {
-            "X0": (2, 1),
-            "X1": (2, 2),
-            "Y0": (2, 3),
-            "Z0": (2, 4),
-        }
-
-    @property
-    def ffun(self) -> dolfin.MeshFunction:
-        return self._ffun  # type: ignore
-
-    @ffun.setter
-    def ffun(self, ffun: Optional[dolfin.MeshFunction]) -> None:
-        if ffun is None:
-            self._ffun = create_slab_facet_function(
-                self.mechanics_mesh,
-                self.parameters["lx"],
-                self.markers,
-            )
-            if self.outdir is not None:
-                ffun_path = self.outdir / "ffun.xdmf"
-                with dolfin.XDMFFile(ffun_path.as_posix()) as f:
-                    f.write(self.ffun)
-        else:
-            self._ffun = ffun
-
-    @property
-    def microstructure(self) -> pulse.Microstructure:
-        return self._microstructure  # type: ignore
-
-    @microstructure.setter
-    def microstructure(self, microstructure: Optional[pulse.Microstructure]) -> None:
-        if microstructure is None:
-            microstructure = create_slab_microstructure(
-                fiber_space=self.parameters["fiber_space"],
-                mesh=self.mechanics_mesh,
-            )
-
-            if self.outdir is not None:
-                path = self.outdir / "microstructure.h5"
-                with dolfin.HDF5File(
-                    self.mechanics_mesh.mpi_comm(),
-                    path.as_posix(),
-                    "w",
-                ) as h5file:
-                    h5file.write(microstructure.f0, "f0")
-                    h5file.write(microstructure.s0, "s0")
-                    h5file.write(microstructure.n0, "n0")
-        self._microstructure = microstructure
-
-    @property
-    def mechanics_mesh(self) -> dolfin.Mesh:
-        return self._mechanics_mesh
-
-    @mechanics_mesh.setter
-    def mechanics_mesh(self, mesh: Optional[dolfin.Mesh]) -> None:
-        if mesh is None:
-            mesh = create_boxmesh(
-                **{
-                    k: v
-                    for k, v in self.parameters.items()
-                    if k in ["lx", "ly", "lz", "dx"]
-                },
-            )
-            if self.outdir is not None:
-                mesh_path = self.outdir / "mesh.xdmf"
-                with dolfin.XDMFFile(mesh_path.as_posix()) as f:
-                    f.write(mesh)
-        self._mechanics_mesh = mesh
-
-    @staticmethod
-    def default_parameters():
-        return dict(
-            lx=2.0,
-            ly=0.7,
-            lz=0.3,
-            dx=0.2,
-            fiber_space="DG_1",
-            num_refinements=1,
-        )
-
-    def validate(self):
-        pass
-
-    def __repr__(self) -> str:
-        return (
-            f"{self.__class__.__name__}("
-            f"lx={self.parameters['lx']}, "
-            f"ly={self.parameters['ly']}, "
-            f"lz={self.parameters['lz']}, "
-            f"dx={self.parameters['dx']}, "
-            f"num_refinements={self.parameters['num_refinements']})"
-        )
 
     @classmethod
     def from_files(
@@ -376,19 +433,93 @@ class SlabGeometry(BaseGeometry):
         )
 
     @classmethod
-    def from_folder(cls, folder: utils.PathLike):
-        folder = Path(folder)
-        mesh_path = folder / "mesh.xdmf"
-        ffun_path = folder / "ffun.xdmf"
-        marker_path = folder / "markers.json"
-        parameter_path = folder / "info.json"
-        microstructure_path = folder / "microstructure.h5"
-        return cls.from_files(
-            mesh_path=mesh_path,
-            ffun_path=ffun_path,
-            marker_path=marker_path,
-            parameter_path=parameter_path,
-            microstructure_path=microstructure_path,
+    def from_geometry(cls, geo: Geometry):
+        kwargs = {}
+        for attr_geo, attr_simcardems in [
+            ("info", "parameters"),
+            ("mesh", "mechanics_mesh"),
+            ("ep_mesh", "ep_mesh"),
+            ("markers", "markers"),
+            ("ffun", "ffun"),
+        ]:
+            attr = getattr(geo, attr_geo, None)
+            if attr is not None:
+                kwargs[attr_simcardems] = attr
+
+        micro_kwargs = {}
+        for f in ["f0", "s0", "n0"]:
+            attr = getattr(geo, f, None)
+            if attr is not None:
+                micro_kwargs[f] = attr
+        if micro_kwargs:
+            kwargs["microstructure"] = pulse.Microstructure(**micro_kwargs)
+
+        micro_ep_kwargs = {}
+        for f in ["f0_ep", "s0_ep", "n0_ep"]:
+            attr = getattr(geo, f, None)
+            if attr is not None:
+                micro_ep_kwargs[f] = attr
+        if micro_kwargs:
+            kwargs["microstructure_ep"] = pulse.Microstructure(**micro_ep_kwargs)
+
+        return cls(**kwargs)
+
+
+class SlabGeometry(BaseGeometry):
+    @staticmethod
+    def default_markers() -> Dict[str, Tuple[int, int]]:
+        return {
+            "X0": (2, 1),
+            "X1": (2, 2),
+            "Y0": (2, 3),
+            "Z0": (2, 4),
+        }
+
+    def _default_microstructure(
+        self,
+        fiber_space: str,
+        mesh: dolfin.Mesh,
+    ) -> pulse.Microstructure:
+        return create_slab_microstructure(fiber_space=fiber_space, mesh=mesh)
+
+    def _default_ffun(self, mesh: dolfin.Mesh) -> dolfin.MeshFunction:
+        return create_slab_facet_function(
+            mesh,
+            self.parameters["lx"],
+            self.markers,
+        )
+
+    def _default_mesh(self) -> dolfin.Mesh:
+        return create_boxmesh(
+            **{
+                k: v
+                for k, v in self.parameters.items()
+                if k in ["lx", "ly", "lz", "dx"]
+            },
+        )
+
+    @staticmethod
+    def default_parameters():
+        return dict(
+            lx=2.0,
+            ly=0.7,
+            lz=0.3,
+            dx=0.2,
+            fiber_space="DG_1",
+            num_refinements=1,
+        )
+
+    def validate(self):
+        pass
+
+    def __repr__(self) -> str:
+        return (
+            f"{self.__class__.__name__}("
+            f"lx={self.parameters['lx']}, "
+            f"ly={self.parameters['ly']}, "
+            f"lz={self.parameters['lz']}, "
+            f"dx={self.parameters['dx']}, "
+            f"num_refinements={self.parameters['num_refinements']})"
         )
 
 

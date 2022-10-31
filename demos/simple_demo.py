@@ -13,7 +13,15 @@ import simcardems
 
 # Create configurations with custom output directory
 outdir = Path("results_simple_demo")
-config = simcardems.Config(outdir=outdir, geometry_path="slab")
+
+geometry_path = "geometries/slab.h5"
+geometry_schema_path = "geometries/slab.json"
+
+config = simcardems.Config(
+    outdir=outdir,
+    geometry_path=geometry_path,
+    geometry_schema_path=geometry_schema_path,
+)
 
 
 # This will set :

@@ -29,7 +29,10 @@ EMState = namedtuple(
 
 def setup_EM_model(config: config.Config):
 
-    geo = geometry.load_geometry(config.geometry_path)
+    geo = geometry.load_geometry(
+        mesh_path=config.geometry_path,
+        schema_path=config.geometry_schema_path,
+    )
 
     coupling = em_model.EMCoupling(geo)
 
