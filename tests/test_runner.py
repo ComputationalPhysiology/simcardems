@@ -11,7 +11,7 @@ from simcardems import TimeStepper
 
 @pytest.mark.slow
 def test_runner():
-    runner = Runner(lx=1, ly=1, lz=1, dx=1)
+    runner = Runner(conf=Config(lx=1, ly=1, lz=1, dx=1))
     runner.solve(0.02)
 
 

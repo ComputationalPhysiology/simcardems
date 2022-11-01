@@ -65,7 +65,7 @@ def test_dict_to_h5(data, dummyfile):
 def test_save_and_load_state(
     solve_mock,
     dummyfile,
-    mesh,
+    geometry,
     coupling,
     ep_solver,
     cell_params,
@@ -80,6 +80,7 @@ def test_save_and_load_state(
 
     mech_heart = simcardems.setup_models.setup_mechanics_solver(
         coupling=coupling,
+        geo=geometry,
         bnd_cond=bnd_cond,
         cell_params=cell_params,
     )
@@ -87,6 +88,7 @@ def test_save_and_load_state(
     runner = simcardems.setup_models.Runner.from_models(
         coupling=coupling,
         ep_solver=ep_solver,
+        geo=geometry,
         mech_heart=mech_heart,
     )
     runner.outdir = "dummy_folder"
@@ -104,21 +106,21 @@ def test_save_and_load_state(
         dummyfile,
         solver=ep_solver,
         mech_heart=mech_heart,
-        coupling=coupling,
+        geo=geometry,
         dt=dt,
-        bnd_cond=bnd_cond,
         t0=t0,
     )
 
     with mock.patch("simcardems.setup_models.cbcbeat.SplittingSolver") as m:
         m.return_value = ep_solver
 
-        coupling_, ep_solver_, mech_heart_, t0_ = slf.load_state(
+        coupling_, ep_solver_, mech_heart_, geometry_, t0_ = slf.load_state(
             dummyfile,
         )
 
     assert t0_ == t0
-    assert (mesh.coordinates() == coupling_.mech_mesh.coordinates()).all()
+    assert geometry_ == geometry
+    assert (coupling.mech_mesh.coordinates() == coupling_.mech_mesh.coordinates()).all()
     assert simcardems.utils.compute_norm(ep_solver.vs_, ep_solver_.vs_) < 1e-12
     assert simcardems.utils.compute_norm(mech_heart.state, mech_heart_.state) < 1e-12
     assert simcardems.utils.compute_norm(coupling.vs, coupling_.vs) < 1e-12

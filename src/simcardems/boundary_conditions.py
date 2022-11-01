@@ -1,4 +1,3 @@
-import abc
 import typing
 
 import dolfin
@@ -9,38 +8,13 @@ from . import geometry
 from . import utils
 
 
-class BaseBoundaryConditions(abc.ABC):
-    def __call__(self):
-        return pulse.BoundaryConditions(
-            dirichlet=self.dirichlet(),
-            neumann=self.neumann(),
-            robin=self.robin(),
-        )
-
-    @abc.abstractmethod
-    def dirichlet(
-        self,
-    ) -> typing.Iterable[
-        typing.Union[
-            typing.Callable[
-                [dolfin.FunctionSpace],
-                typing.Iterable[dolfin.DirichletBC],
-            ],
-            dolfin.DirichletBC,
-        ]
-    ]:
-        ...
-
-    @abc.abstractmethod
-    def neumann(self) -> typing.Iterable[pulse.NeumannBC]:
-        ...
-
-    @abc.abstractmethod
-    def robin(self) -> typing.Iterable[pulse.RobinBC]:
-        ...
-
-
-class SlabBoundaryConditions(BaseBoundaryConditions):
+def create_slab_boundary_conditions(
+    geo: geometry.SlabGeometry,
+    pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
+    traction: typing.Union[dolfin.Constant, float] = None,
+    spring: typing.Union[dolfin.Constant, float] = None,
+    fix_right_plane: bool = config.Config.fix_right_plane,
+) -> pulse.BoundaryConditions:
     """Completely fix the left side of the mesh in the x-direction (i.e the side with the
     lowest x-values), fix the plane with y=0 in the y-direction, fix the plane with
     z=0 in the z-direction and apply some boundary condition to the right side.
@@ -78,87 +52,72 @@ class SlabBoundaryConditions(BaseBoundaryConditions):
 
     """
 
-    def __init__(
-        self,
-        geo: geometry.SlabGeometry,
-        pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
-        traction: typing.Union[dolfin.Constant, float] = None,
-        spring: typing.Union[dolfin.Constant, float] = None,
-        fix_right_plane: bool = config.Config.fix_right_plane,
-    ) -> None:
-        self.pre_stretch = pre_stretch
-        self.traction = traction
-        self.spring = spring
-        self.fix_right_plane = fix_right_plane
-        self.geo = geo
+    def dirichlet_bc(W):
+        # BC with fixing left size
+        bcs = [
+            dolfin.DirichletBC(
+                W.sub(0).sub(0),
+                dolfin.Constant(0.0),
+                geo.ffun,
+                geo.markers["X0"][1],
+            ),
+            dolfin.DirichletBC(
+                W.sub(0).sub(1),  # u_y
+                dolfin.Constant(0.0),
+                geo.ffun,
+                geo.markers["Y0"][1],
+            ),
+            dolfin.DirichletBC(
+                W.sub(0).sub(2),  # u_z
+                dolfin.Constant(0.0),
+                geo.ffun,
+                geo.markers["Z0"][1],
+            ),
+        ]
 
-    def dirichlet(self):
-        def dirichlet_bc(W):
-            # BC with fixing left size
-            bcs = [
+        if fix_right_plane:
+            bcs.extend(
+                [
+                    dolfin.DirichletBC(
+                        W.sub(0).sub(0),  # u_x
+                        dolfin.Constant(0.0),
+                        geo.ffun,
+                        geo.markers["X1"][1],
+                    ),
+                ],
+            )
+
+        if pre_stretch is not None:
+            bcs.append(
                 dolfin.DirichletBC(
                     W.sub(0).sub(0),
-                    dolfin.Constant(0.0),
-                    self.geo.ffun,
-                    self.geo.markers["X0"][1],
-                ),
-                dolfin.DirichletBC(
-                    W.sub(0).sub(1),  # u_y
-                    dolfin.Constant(0.0),
-                    self.geo.ffun,
-                    self.geo.markers["Y0"][1],
-                ),
-                dolfin.DirichletBC(
-                    W.sub(0).sub(2),  # u_z
-                    dolfin.Constant(0.0),
-                    self.geo.ffun,
-                    self.geo.markers["Z0"][1],
-                ),
-            ]
-
-            if self.fix_right_plane:
-                bcs.extend(
-                    [
-                        dolfin.DirichletBC(
-                            W.sub(0).sub(0),  # u_x
-                            dolfin.Constant(0.0),
-                            self.geo.ffun,
-                            self.geo.markers["X1"][1],
-                        ),
-                    ],
-                )
-
-            if self.pre_stretch is not None:
-                bcs.append(
-                    dolfin.DirichletBC(
-                        W.sub(0).sub(0),
-                        utils.float_to_constant(self.pre_stretch),
-                        self.geo.ffun,
-                        self.geo.markers["X1"][1],
-                    ),
-                )
-            return bcs
-
-        return (dirichlet_bc,)
-
-    def neumann(self) -> typing.List[pulse.NeumannBC]:
-        neumann_bc = []
-        if self.traction is not None:
-            neumann_bc.append(
-                pulse.NeumannBC(
-                    traction=utils.float_to_constant(self.traction),
-                    marker=self.geo.markers["X1"][1],
+                    utils.float_to_constant(pre_stretch),
+                    geo.ffun,
+                    geo.markers["X1"][1],
                 ),
             )
-        return neumann_bc
+        return bcs
 
-    def robin(self):
-        robin_bc = []
-        if self.spring is not None:
-            robin_bc.append(
-                pulse.RobinBC(
-                    value=utils.float_to_constant(self.spring),
-                    marker=self.geo.markers["X1"][1],
-                ),
-            )
-        return robin_bc
+    neumann_bc = []
+    if traction is not None:
+        neumann_bc.append(
+            pulse.NeumannBC(
+                traction=utils.float_to_constant(traction),
+                marker=geo.markers["X1"][1],
+            ),
+        )
+
+    robin_bc = []
+    if spring is not None:
+        robin_bc.append(
+            pulse.RobinBC(
+                value=utils.float_to_constant(spring),
+                marker=geo.markers["X1"][1],
+            ),
+        )
+
+    return pulse.BoundaryConditions(
+        dirichlet=(dirichlet_bc,),
+        neumann=neumann_bc,
+        robin=robin_bc,
+    )

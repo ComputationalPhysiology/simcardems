@@ -21,6 +21,8 @@ config = simcardems.Config(
     outdir=outdir,
     geometry_path=geometry_path,
     geometry_schema_path=geometry_schema_path,
+    T=15,
+    load_state=True,
 )
 
 

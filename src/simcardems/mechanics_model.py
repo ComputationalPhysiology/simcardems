@@ -1,7 +1,13 @@
+import logging
+import typing
+
 import dolfin
 import pulse
 from mpi4py import MPI
 
+from . import boundary_conditions
+from . import config
+from . import geometry
 from . import utils
 from .newton_solver import MechanicsNewtonSolver
 from .newton_solver import MechanicsNewtonSolver_ODE
@@ -67,6 +73,10 @@ class MechanicsProblem(ContinuationBasedMechanicsProblem):
             dolfin.MixedElement([P2, P1]),
         )
         self._init_functions()
+
+    @property
+    def u_subspace_index(self) -> int:
+        return 0
 
     def _init_functions(self):
         self.state = dolfin.Function(self.state_space, name="state")
@@ -144,6 +154,10 @@ class RigidMotionProblem(MechanicsProblem):
 
         self._init_functions()
 
+    @property
+    def u_subspace_index(self) -> int:
+        return 1
+
     def _handle_bcs(self, bcs, bcs_parameters):
         self.bcs = pulse.BoundaryConditions()
         self._dirichlet_bc = []
@@ -197,3 +211,57 @@ class RigidMotionProblem(MechanicsProblem):
         ]
 
         return sum(dolfin.dot(u, zi) * r[i] * dolfin.dx for i, zi in enumerate(RM))
+
+
+def resolve_boundary_conditions(
+    geo: geometry.BaseGeometry,
+    pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
+    traction: typing.Union[dolfin.Constant, float] = None,
+    spring: typing.Union[dolfin.Constant, float] = None,
+    fix_right_plane: bool = config.Config.fix_right_plane,
+) -> pulse.BoundaryConditions:
+    if isinstance(geo, geometry.SlabGeometry):
+        return boundary_conditions.create_slab_boundary_conditions(
+            geo=geo,
+            pre_stretch=pre_stretch,
+            traction=traction,
+            spring=spring,
+            fix_right_plane=fix_right_plane,
+        )
+    else:
+        # TODO: Implement more boundary conditions
+        raise NotImplementedError
+
+
+def create_slab_problem(
+    material: pulse.Material,
+    geo: geometry.BaseGeometry,
+    bnd_cond: config.SlabBoundaryConditionTypes,
+    pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
+    traction: typing.Union[dolfin.Constant, float] = None,
+    spring: typing.Union[dolfin.Constant, float] = None,
+    fix_right_plane: bool = config.Config.fix_right_plane,
+    linear_solver="mumps",
+    use_custom_newton_solver: bool = config.Config.mechanics_use_custom_newton_solver,
+) -> MechanicsProblem:
+    Problem = MechanicsProblem
+    if bnd_cond == config.SlabBoundaryConditionTypes.rigid:
+        bcs = None
+        Problem = RigidMotionProblem
+    else:
+        bcs = resolve_boundary_conditions(
+            geo=geo,
+            pre_stretch=pre_stretch,
+            traction=traction,
+            spring=spring,
+            fix_right_plane=fix_right_plane,
+        )
+
+    verbose = logger.getEffectiveLevel() < logging.INFO
+    return Problem(
+        geo,
+        material,
+        bcs,
+        solver_parameters={"linear_solver": linear_solver, "verbose": verbose},
+        use_custom_newton_solver=use_custom_newton_solver,
+    )

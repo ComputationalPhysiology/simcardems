@@ -17,8 +17,15 @@ from . import utils
 logger = utils.getLogger(__name__)
 
 
-def load_geometry(mesh_path: utils.PathLike, schema_path: utils.PathLike):
-    geo = Geometry.from_file(fname=mesh_path, schema_path=schema_path)
+def load_geometry(
+    mesh_path: utils.PathLike,
+    schema_path: utils.PathLike,
+) -> "BaseGeometry":
+    geo = Geometry.from_file(
+        fname=mesh_path,
+        schema_path=schema_path,
+        schema=BaseGeometry.default_schema(),
+    )
 
     info = getattr(geo, "info", None)
     if info is None:
@@ -215,7 +222,7 @@ class BaseGeometry(abc.ABC):
     def num_refinements(self) -> int:
         return self.parameters["num_refinements"]
 
-    def dump(self, fname: utils.PathLike, unlink: bool = False):
+    def dump(self, fname: utils.PathLike, unlink: bool = True):
         path = Path(fname)
         schema = type(self).default_schema()
 

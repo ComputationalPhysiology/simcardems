@@ -9,12 +9,7 @@ _here = Path(__file__).absolute().parent
 
 
 @pytest.fixture(scope="session")
-def mesh():
-    return dolfin.UnitCubeMesh(1, 1, 1)
-
-
-@pytest.fixture(scope="session")
-def geometry(mesh):
+def geometry():
     return simcardems.geometry.SlabGeometry(
         parameters=dict(
             lx=1,
