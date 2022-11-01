@@ -6,7 +6,7 @@ import simcardems
 
 @pytest.mark.slow
 @pytest.mark.parametrize("bnd_cond", ["dirichlet", "rigid"])
-def test_em_model(coupling, ep_solver, cell_params, bnd_cond):
+def test_em_model(coupling, ep_solver, cell_params, geo, bnd_cond):
     coupling.register_ep_model(ep_solver)
     with mock.patch(
         "simcardems.setup_models.pulse.mechanicsproblem.MechanicsProblem.solve",
@@ -16,4 +16,5 @@ def test_em_model(coupling, ep_solver, cell_params, bnd_cond):
             coupling=coupling,
             bnd_cond=bnd_cond,
             cell_params=cell_params,
+            geo=geo,
         )
