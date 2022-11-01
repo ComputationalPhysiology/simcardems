@@ -14,6 +14,7 @@ import simcardems
 # Create configurations with custom output directory
 outdir = Path("results_simple_demo")
 
+# Specify paths to the geometry that we will use
 geometry_path = "geometries/slab.h5"
 geometry_schema_path = "geometries/slab.json"
 
@@ -21,8 +22,7 @@ config = simcardems.Config(
     outdir=outdir,
     geometry_path=geometry_path,
     geometry_schema_path=geometry_schema_path,
-    T=15,
-    load_state=True,
+    T=1000,
 )
 
 
@@ -30,24 +30,21 @@ config = simcardems.Config(
 #
 # ```
 # {'PCL': 1000,
-#  'T': 1000,
-#  'bnd_cond': <BoundaryConditions.dirichlet: 'dirichlet'>,
+#  'T': 15,
+#  'bnd_cond': <SlabBoundaryConditionTypes.dirichlet: 'dirichlet'>,
 #  'cell_init_file': '',
 #  'disease_state': 'healthy',
 #  'drug_factors_file': '',
 #  'dt': 0.05,
-#  'dx': 0.2,
 #  'ep_ode_scheme': 'GRL1',
 #  'ep_preconditioner': 'sor',
 #  'ep_theta': 0.5,
 #  'fix_right_plane': False,
-#  'show_progress_bar': True,
+#  'geometry_path': 'geometries/slab.h5',
+#  'geometry_schema_path': 'geometries/slab.json',
 #  'linear_mechanics_solver': 'mumps',
-#  'load_state': False,
+#  'load_state': True,
 #  'loglevel': 20,
-#  'lx': 2.0,
-#  'ly': 0.7,
-#  'lz': 0.3,
 #  'mechanics_ode_scheme': <Scheme.analytic: 'analytic'>,
 #  'mechanics_use_continuation': False,
 #  'mechanics_use_custom_newton_solver': False,
@@ -57,6 +54,7 @@ config = simcardems.Config(
 #  'pre_stretch': None,
 #  'save_freq': 1,
 #  'set_material': '',
+#  'show_progress_bar': True,
 #  'spring': None,
 #  'traction': None}
 # ```
