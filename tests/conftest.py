@@ -9,7 +9,7 @@ _here = Path(__file__).absolute().parent
 
 
 @pytest.fixture(scope="session")
-def geometry():
+def geo():
     return simcardems.geometry.SlabGeometry(
         parameters=dict(
             lx=1,
@@ -21,9 +21,14 @@ def geometry():
     )
 
 
+@pytest.fixture(scope="session")
+def mesh(geo):
+    return geo.mesh
+
+
 @pytest.fixture
-def coupling(geometry):
-    return simcardems.EMCoupling(geometry)
+def coupling(geo):
+    return simcardems.EMCoupling(geo)
 
 
 @pytest.fixture

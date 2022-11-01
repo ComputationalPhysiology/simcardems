@@ -42,6 +42,7 @@ CaMKo
 CaMKt
 cansr
 cao
+capfd
 cardiomyocites
 cardiomyocytes
 cass

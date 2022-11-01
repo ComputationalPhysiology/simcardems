@@ -22,6 +22,16 @@ def cli():
 
 
 @click.command("run")
+@click.argument("geometry-path", type=click.Path(exists=True, resolve_path=True))
+@click.option(
+    "-s",
+    "--geometry-schema-path",
+    default=None,
+    help=(
+        "Schema for the geometry. If not provided it will assume that this file has the "
+        "same file name as `geometry-path` but with the suffix `.json`."
+    ),
+)
 @click.option(
     "-o",
     "--outdir",
@@ -145,6 +155,8 @@ def cli():
     help="Set value of traction for Neumann boundary condition",
 )
 def run(
+    geometry_path: utils.PathLike,
+    geometry_schema_path: typing.Optional[utils.PathLike],
     outdir: utils.PathLike,
     T: float,
     dt: float,
@@ -166,8 +178,9 @@ def run(
     spring: float,
     traction: float,
 ):
-
     conf = config.Config(
+        geometry_path=geometry_path,
+        geometry_schema_path=geometry_schema_path,
         outdir=outdir,
         T=T,
         dt=dt,
@@ -206,12 +219,19 @@ def main(conf: typing.Optional[config.Config]):
     if conf is None:
         conf = config.Config()
 
+    geometry_path = Path(conf.geometry_path)
+    if not geometry_path.is_file():
+        msg = f"Unable to to find geometry path {geometry_path}"
+        raise IOError(msg)
+    if conf.geometry_schema_path is None:
+        conf.geometry_schema_path = geometry_path.with_suffix(".json")
+
     # Get all arguments and dump them to a json file
     info_dict = conf.__dict__
     outdir = Path(conf.outdir)
     outdir.mkdir(exist_ok=True)
     with open(outdir.joinpath("parameters.json"), "w") as f:
-        json.dump(info_dict, f)
+        json.dump(info_dict, f, default=post.json_serial)
 
     # Disable warnings
     from . import set_log_level

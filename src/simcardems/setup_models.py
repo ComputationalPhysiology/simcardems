@@ -323,7 +323,7 @@ class Runner:
         obj.coupling = coupling
         obj.ep_solver = ep_solver
         obj.mech_heart = mech_heart
-        obj.geometry = geometry
+        obj.geometry = geo
         obj._t0 = t0
 
         obj._reset = reset

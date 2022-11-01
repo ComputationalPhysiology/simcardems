@@ -109,7 +109,6 @@ def save_state(
     utils.remove_file(path)
 
     logger.info(f"Save state to {path}")
-
     geo.dump(path)
     logger.debug("Save using dolfin.HDF5File")
 

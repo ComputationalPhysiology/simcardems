@@ -19,8 +19,12 @@ logger = utils.getLogger(__name__)
 
 def load_geometry(
     mesh_path: utils.PathLike,
-    schema_path: utils.PathLike,
+    schema_path: Optional[utils.PathLike] = None,
 ) -> "BaseGeometry":
+
+    if schema_path is None:
+        schema_path = Path(mesh_path).with_suffix(".json")
+
     geo = Geometry.from_file(
         fname=mesh_path,
         schema_path=schema_path,
@@ -222,14 +226,23 @@ class BaseGeometry(abc.ABC):
     def num_refinements(self) -> int:
         return self.parameters["num_refinements"]
 
-    def dump(self, fname: utils.PathLike, unlink: bool = True):
+    def dump(
+        self,
+        fname: utils.PathLike,
+        schema_path: Optional[utils.PathLike] = None,
+        unlink: bool = True,
+    ):
         path = Path(fname)
         schema = type(self).default_schema()
 
         kwargs = {k: getattr(self, k) for k in schema if k != "info"}
         kwargs["info"] = self.parameters
         geo = Geometry(**kwargs, schema=schema)
-        geo.save(path, unlink=unlink)
+
+        if schema_path is None:
+            schema_path = path.with_suffix(".json")
+
+        geo.save(path, schema_path=schema_path, unlink=unlink)
         logger.info(f"Saved geometry to {fname}")
 
     def _get_microstructure_if_None(
@@ -465,7 +478,7 @@ class BaseGeometry(abc.ABC):
         for f in ["f0_ep", "s0_ep", "n0_ep"]:
             attr = getattr(geo, f, None)
             if attr is not None:
-                micro_ep_kwargs[f] = attr
+                micro_ep_kwargs[f.rstrip("_ep")] = attr
         if micro_kwargs:
             kwargs["microstructure_ep"] = pulse.Microstructure(**micro_ep_kwargs)
 
@@ -514,6 +527,7 @@ class SlabGeometry(BaseGeometry):
             dx=0.2,
             fiber_space="DG_1",
             num_refinements=1,
+            mesh_type="slab",
         )
 
     def validate(self):
@@ -546,10 +560,10 @@ def create_slab_facet_function(
     ffun = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim() - 1)
     ffun.set_all(0)
 
-    left.mark(ffun, markers["X0"][0])
-    right.mark(ffun, markers["X1"][0])
-    plane_y0.mark(ffun, markers["Y0"][0])
-    plane_z0.mark(ffun, markers["Z0"][0])
+    left.mark(ffun, markers["X0"][1])
+    right.mark(ffun, markers["X1"][1])
+    plane_y0.mark(ffun, markers["Y0"][1])
+    plane_z0.mark(ffun, markers["Z0"][1])
     return ffun
 
 
