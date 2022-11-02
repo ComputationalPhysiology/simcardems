@@ -15,8 +15,8 @@ import simcardems
 outdir = Path("results_simple_demo")
 
 # Specify paths to the geometry that we will use
-geometry_path = "geometries/slab.h5"
-geometry_schema_path = "geometries/slab.json"
+geometry_path = "demos/geometries/slab.h5"
+geometry_schema_path = "demos/geometries/slab.json"
 
 config = simcardems.Config(
     outdir=outdir,
@@ -40,8 +40,8 @@ config = simcardems.Config(
 #  'ep_preconditioner': 'sor',
 #  'ep_theta': 0.5,
 #  'fix_right_plane': False,
-#  'geometry_path': 'geometries/slab.h5',
-#  'geometry_schema_path': 'geometries/slab.json',
+#  'geometry_path': 'demos/geometries/slab.h5',
+#  'geometry_schema_path': 'demos/geometries/slab.json',
 #  'linear_mechanics_solver': 'mumps',
 #  'load_state': True,
 #  'loglevel': 20,
