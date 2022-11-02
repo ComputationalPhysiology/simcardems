@@ -102,7 +102,7 @@ class DataLoader:
 
             # Find the remaining functions
             self.names = {
-                group: [name for name in h5file[group].keys()]
+                group: [name for name in h5file.get(group, {}).keys()]
                 for group in ["ep", "mechanics"]
             }
             if len(self.names["ep"]) + len(self.names["mechanics"]) == 0:
