@@ -121,3 +121,46 @@ def create_slab_boundary_conditions(
         neumann=neumann_bc,
         robin=robin_bc,
     )
+
+
+def create_lv_boundary_conditions(
+    geo: geometry.LeftVentricularGeometry,
+    traction: typing.Union[dolfin.Constant, float] = None,
+    spring: typing.Union[dolfin.Constant, float] = None,
+):
+    def dirichlet_bc(W):
+        # Completely fix the base
+        return [
+            dolfin.DirichletBC(
+                W.sub(0),
+                dolfin.Constant((0.0, 0.0, 0.0)),
+                geo.ffun,
+                geo.markers["BASE"][0],
+            ),
+        ]
+
+    neumann_bc = []
+    if traction is not None:
+        # LV pressure
+        neumann_bc.append(
+            pulse.NeumannBC(
+                traction=utils.float_to_constant(traction),
+                marker=geo.markers["ENDO"][0],
+            ),
+        )
+
+    robin_bc = []
+    if spring is not None:
+        # Pericardium
+        robin_bc.append(
+            pulse.RobinBC(
+                value=utils.float_to_constant(spring),
+                marker=geo.markers["EPI"][0],
+            ),
+        )
+
+    return pulse.BoundaryConditions(
+        dirichlet=(dirichlet_bc,),
+        neumann=neumann_bc,
+        robin=robin_bc,
+    )

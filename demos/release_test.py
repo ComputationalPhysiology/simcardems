@@ -85,9 +85,11 @@ def postprocess(outdir: Path):
 
 
 if __name__ == "__main__":
-    outdir = Path("release_test_results")
-    geometry_path = "demos/geometries/slab.h5"
-    geometry_schema_path = "demos/geometries/slab.json"
+    # Get path to this file
+    here = Path(__file__).absolute().parent
+    outdir = here / "release_test_results"
+    geometry_path = here / "geometries/slab.h5"
+    geometry_schema_path = here / "geometries/slab.json"
 
     config = simcardems.Config(
         outdir=outdir,

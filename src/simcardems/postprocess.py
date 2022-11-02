@@ -1,11 +1,8 @@
 import json
-import warnings
-from enum import Enum
 from pathlib import Path
 
 import ap_features as apf
 import dolfin
-import h5py
 import matplotlib.pyplot as plt
 import numpy as np
 import tqdm
@@ -15,248 +12,6 @@ from .datacollector import DataGroups
 from .datacollector import DataLoader
 
 logger = utils.getLogger(__name__)
-
-
-def center_func(fmin, fmax):
-    return fmin + (fmax - fmin) / 2
-
-
-class BoundaryNodes(Enum):
-    center = "center"
-    node_A = "node_A"
-    node_B = "node_B"
-    node_C = "node_C"
-    node_D = "node_D"
-    node_E = "node_E"
-    node_F = "node_F"
-    node_G = "node_G"
-    node_H = "node_H"
-    xmax = "xmax"
-    xmin = "xmin"
-    ymax = "ymax"
-    ymin = "ymin"
-    zmax = "zmax"
-    zmin = "zmin"
-
-
-class Boundary:
-    def __init__(self, mesh):
-        self.mesh = mesh
-
-    @staticmethod
-    def nodes():
-        return BoundaryNodes._member_names_
-
-    @property
-    def boundaries(self):
-        coords = self.mesh.coordinates()
-        return dict(
-            max_x=coords.T[0].max(),
-            min_x=coords.T[0].min(),
-            max_y=coords.T[1].max(),
-            min_y=coords.T[1].min(),
-            max_z=coords.T[2].max(),
-            min_z=coords.T[2].min(),
-        )
-
-    @property
-    def xmin(self):
-        return [
-            self.boundaries["min_x"],
-            center_func(self.boundaries["min_y"], self.boundaries["max_y"]),
-            center_func(self.boundaries["min_z"], self.boundaries["max_z"]),
-        ]
-
-    @property
-    def xmax(self):
-        return [
-            self.boundaries["max_x"],
-            center_func(self.boundaries["min_y"], self.boundaries["max_y"]),
-            center_func(self.boundaries["min_z"], self.boundaries["max_z"]),
-        ]
-
-    @property
-    def ymin(self):
-        return [
-            center_func(self.boundaries["min_x"], self.boundaries["max_x"]),
-            self.boundaries["min_y"],
-            center_func(self.boundaries["min_z"], self.boundaries["max_z"]),
-        ]
-
-    @property
-    def ymax(self):
-        return [
-            center_func(self.boundaries["min_x"], self.boundaries["max_x"]),
-            self.boundaries["max_y"],
-            center_func(self.boundaries["min_z"], self.boundaries["max_z"]),
-        ]
-
-    @property
-    def zmin(self):
-        return [
-            center_func(self.boundaries["min_x"], self.boundaries["max_x"]),
-            center_func(self.boundaries["min_y"], self.boundaries["max_y"]),
-            self.boundaries["min_z"],
-        ]
-
-    @property
-    def zmax(self):
-        return [
-            center_func(self.boundaries["min_x"], self.boundaries["max_x"]),
-            center_func(self.boundaries["min_y"], self.boundaries["max_y"]),
-            self.boundaries["max_z"],
-        ]
-
-    @property
-    def center(self):
-        return [
-            center_func(self.boundaries["min_x"], self.boundaries["max_x"]),
-            center_func(self.boundaries["min_y"], self.boundaries["max_y"]),
-            center_func(self.boundaries["min_z"], self.boundaries["max_z"]),
-        ]
-
-    @property
-    def node_A(self):
-        return [
-            self.boundaries["min_x"],
-            self.boundaries["min_y"],
-            self.boundaries["min_z"],
-        ]
-
-    @property
-    def node_B(self):
-        return [
-            self.boundaries["max_x"],
-            self.boundaries["min_y"],
-            self.boundaries["min_z"],
-        ]
-
-    @property
-    def node_C(self):
-        return [
-            self.boundaries["max_x"],
-            self.boundaries["min_y"],
-            self.boundaries["max_z"],
-        ]
-
-    @property
-    def node_D(self):
-        return [
-            self.boundaries["min_x"],
-            self.boundaries["min_y"],
-            self.boundaries["max_z"],
-        ]
-
-    @property
-    def node_E(self):
-        return [
-            self.boundaries["min_x"],
-            self.boundaries["max_y"],
-            self.boundaries["min_z"],
-        ]
-
-    @property
-    def node_F(self):
-        return [
-            self.boundaries["max_x"],
-            self.boundaries["max_y"],
-            self.boundaries["min_z"],
-        ]
-
-    @property
-    def node_G(self):
-        return [
-            self.boundaries["max_x"],
-            self.boundaries["max_y"],
-            self.boundaries["max_z"],
-        ]
-
-    @property
-    def node_H(self):
-        return [
-            self.boundaries["min_x"],
-            self.boundaries["max_y"],
-            self.boundaries["max_z"],
-        ]
-
-
-def load_mesh(file):
-    # load the mesh from the results file
-    mesh = dolfin.Mesh()
-
-    with dolfin.HDF5File(mesh.mpi_comm(), file, "r") as h5file:
-        h5file.read(mesh, "/mesh", False)
-
-    bnd = Boundary(mesh)
-
-    return mesh, bnd
-
-
-def load_times(filename):
-    from mpi4py import MPI
-
-    # Find time points
-    time_points = None
-
-    if h5py.h5.get_config().mpi and dolfin.MPI.size(dolfin.MPI.comm_world) > 1:
-        h5file = h5py.File(filename, "r", driver="mpio", comm=MPI.COMM_WORLD)
-    else:
-        if dolfin.MPI.size(dolfin.MPI.comm_world) > 1:
-            warnings.warn("h5py is not installed with MPI support")
-        h5file = h5py.File(filename, "r")
-
-    time_points = list(h5file["V"].keys())
-    # Make sure they are sorted
-    time_points = sorted(time_points, key=lambda x: float(x))
-
-    if time_points is None:
-        raise IOError("No results found")
-
-    h5file.close()
-
-    return time_points
-
-
-def load_data(file, mesh, bnd, time_points):
-    V = dolfin.FunctionSpace(mesh, "CG", 1)
-
-    v_space = dolfin.Function(V)
-
-    # Create a dictionary to assign all values to
-    data = {
-        "node_A": None,
-        "node_B": None,
-        "node_C": None,
-        "node_D": None,
-        "node_E": None,
-        "node_F": None,
-        "node_G": None,
-        "node_H": None,
-    }
-
-    with dolfin.HDF5File(mesh.mpi_comm(), file, "r") as h5file:
-        for data_node in data.keys():
-            logger.info("analyzing: ", data_node)
-
-            # Assign the variables to be stored in the dictionary
-            data[data_node] = {
-                "V": np.zeros(len(time_points)),
-                "Cai": np.zeros(len(time_points)),
-                "Ta": np.zeros(len(time_points)),
-                "stretch": np.zeros(len(time_points)),
-            }
-
-            # Loop over all variables to be stored
-            for nestedkey in data[data_node]:
-                logger.info("analyzing: ", nestedkey)
-                for i, t in enumerate(time_points):
-                    h5file.read(
-                        v_space,
-                        "/" + nestedkey + "/{0:.2f}/".format(float(t)),
-                    )
-                    data_temp = v_space(eval("bnd." + data_node))
-                    data[data_node][nestedkey][i] = data_temp
-    return data
 
 
 def plot_peaks(fname, data, threshold):
@@ -285,8 +40,7 @@ def plot_peaks(fname, data, threshold):
     fig.savefig(fname, dpi=300)
 
 
-def extract_traces(loader: DataLoader, point: BoundaryNodes = BoundaryNodes.center):
-    bnd = {"ep": Boundary(loader.ep_mesh), "mechanics": Boundary(loader.mech_mesh)}
+def extract_traces(loader: DataLoader, reduction: str = "average"):
 
     all_names = {
         "mechanics": [
@@ -311,37 +65,27 @@ def extract_traces(loader: DataLoader, point: BoundaryNodes = BoundaryNodes.cent
     values["mechanics"]["u"] = np.zeros((len(loader.time_stamps), 3))
     values["time"] = np.array(loader.time_stamps, dtype=float)
 
-    for i, t in enumerate(loader.time_stamps):
+    logger.info("Extract traces...")
 
-        for group, names in all_names.items():
-            value_point = getattr(bnd[group], utils.enum2str(point, BoundaryNodes))
-            datagroup = getattr(DataGroups, utils.enum2str(group, DataGroups))
-            for name in names:
-                func = loader.get(datagroup, name, t)
-
-                dof_coords = func.function_space().tabulate_dof_coordinates()
-                dof = np.argmin(
-                    np.linalg.norm(dof_coords - np.array(value_point), axis=1),
+    for group, names in all_names.items():
+        logger.info(f"Group: {group}")
+        # value_point = getattr(bnd[group], utils.enum2str(point, BoundaryNodes))
+        datagroup = getattr(DataGroups, utils.enum2str(group, DataGroups))
+        for name in names:
+            logger.info(f"Name: {name}")
+            for i, t in enumerate(loader.time_stamps):
+                values[group][name][i] = loader.extract_value(
+                    datagroup,
+                    name,
+                    t,
+                    reduction=reduction,
                 )
-                if name == "u":
-                    # e.g u -> a vector
-                    values[group][name][i] = func(value_point)
-
-                if np.isclose(dof_coords[dof], np.array(value_point)).all():
-                    # If we have a dof at the center - evaluation at dof (cheaper)
-                    values[group][name][i] = func.vector().get_local()[dof]
-                else:
-                    # Otherwise, evaluation at center coordinates
-                    try:
-                        values[group][name][i] = func(value_point)
-                    except RuntimeError:
-                        values[group][name][i] = func.vector().get_local()[dof]
 
     values["mechanics"]["inv_lmbda"] = 1 - values["mechanics"]["lmbda"]
     return values
 
 
-def plot_state_traces(results_file):
+def plot_state_traces(results_file: utils.PathLike, reduction: str = "average"):
     fig, ax = plt.subplots(2, 2, figsize=(10, 8), sharex=True)
     fig2, ax2 = plt.subplots(2, 4, figsize=(10, 8), sharex=True)
     results_file = Path(results_file)
@@ -351,7 +95,7 @@ def plot_state_traces(results_file):
     outdir = results_file.parent
 
     loader = DataLoader(results_file)
-    values = extract_traces(loader)
+    values = extract_traces(loader, reduction=reduction)
 
     times = np.array(loader.time_stamps, dtype=float)
 
