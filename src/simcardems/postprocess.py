@@ -1,12 +1,12 @@
 import json
 from pathlib import Path
 
+import ap_features as apf
 import dolfin
 import matplotlib.pyplot as plt
 import numpy as np
 import tqdm
 
-import ap_features as apf
 from . import utils
 from .datacollector import DataGroups
 from .datacollector import DataLoader
