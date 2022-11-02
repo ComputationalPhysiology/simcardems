@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-# # Simple demo
+# # Left ventricular geometry
 #
-# In this demo we show the most simple usage of the `simcardems` library using the python API
+# In this demo we will run the same
 #
 # Import the necessary libraries
 #
@@ -12,14 +12,11 @@ from pathlib import Path
 import simcardems
 
 # Create configurations with custom output directory
-outdir = Path("results_simple_demo")
+outdir = Path("results_lv_ellipsoid_new3")
 
 # Specify paths to the geometry that we will use
-geometry_path = "geometries/slab.h5"
-geometry_schema_path = "geometries/slab.json"
-
-# Please see https://computationalphysiology.github.io/cardiac_geometries/ for more info about the geometries
-
+geometry_path = "geometries/lv_ellipsoid.h5"
+geometry_schema_path = "geometries/lv_ellipsoid.json"
 
 config = simcardems.Config(
     outdir=outdir,
@@ -46,7 +43,7 @@ config = simcardems.Config(
 #  'geometry_path': 'geometries/slab.h5',
 #  'geometry_schema_path': 'geometries/slab.json',
 #  'linear_mechanics_solver': 'mumps',
-#  'load_state': False,
+#  'load_state': True,
 #  'loglevel': 20,
 #  'mechanics_ode_scheme': <Scheme.analytic: 'analytic'>,
 #  'mechanics_use_continuation': False,
@@ -83,7 +80,8 @@ runner.solve(T=config.T, save_freq=config.save_freq, show_progress_bar=True)
 #
 #
 
-simcardems.postprocess.plot_state_traces(outdir.joinpath("results.h5"), "center")
+
+simcardems.postprocess.plot_state_traces(outdir.joinpath("results.h5"))
 
 #
 # And save the output to xdmf-files that can be viewed in Paraview
@@ -92,22 +90,22 @@ simcardems.postprocess.plot_state_traces(outdir.joinpath("results.h5"), "center"
 simcardems.postprocess.make_xdmffiles(outdir.joinpath("results.h5"))
 
 #
-# The `xdmf` files are can be opened in [Paraview](https://www.paraview.org/download/) to visualize the different variables such as in {numref}`Figure {number} <simple-demo-paraview>`.
+# The `xdmf` files are can be opened in [Paraview](https://www.paraview.org/download/) to visualize the different variables such as in {numref}`Figure {number} <lv-paraview>`.
 #
-# ```{figure} figures/simple_demo.png
+# ```{figure} figures/lv.png
 # ---
-# name: simple-demo-paraview
+# name: lv-paraview
 # ---
 #
 # Displacement ($u$), active tension ($T_a$), voltage ($V$) and calcium ($Ca$) visualized for a specific time point in Paraview.
 # ```
 
 
-# This will create a figure in the output directory called `state_traces.png` which in this case is shown in {numref}`Figure {number} <simple_demo_state_traces>` we see the resulting state traces, and can also see the instant drop in the active tension ($T_a$) at the time of the triggered release.
+# This will create a figure in the output directory called `state_traces.png` which in this case is shown in {numref}`Figure {number} <lv_demo_state_traces>` we see the resulting state traces, and can also see the instant drop in the active tension ($T_a$) at the time of the triggered release.
 #
-# ```{figure} figures/simple_demo_state_traces.png
+# ```{figure} figures/lv_demo_state_traces.png
 # ---
-# name: simple_demo_state_traces
+# name: lv_demo_state_traces
 # ---
 # Traces of the stretch ($\lambda$), the active tension ($T_a$), the membrane potential ($V$) and the intercellular calcium concentration ($Ca$) at the center of the geometry.
 # ```

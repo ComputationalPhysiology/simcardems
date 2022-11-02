@@ -228,6 +228,12 @@ def resolve_boundary_conditions(
             spring=spring,
             fix_right_plane=fix_right_plane,
         )
+    elif isinstance(geo, geometry.LeftVentricularGeometry):
+        return boundary_conditions.create_lv_boundary_conditions(
+            geo=geo,
+            traction=traction,
+            spring=spring,
+        )
     else:
         # TODO: Implement more boundary conditions
         raise NotImplementedError
@@ -246,6 +252,10 @@ def create_slab_problem(
 ) -> MechanicsProblem:
     Problem = MechanicsProblem
     if bnd_cond == config.SlabBoundaryConditionTypes.rigid:
+        if not isinstance(geo, geometry.SlabGeometry):
+            raise RuntimeError(
+                "Can only use Rigid boundary conditions with SlabGeometry",
+            )
         bcs = None
         Problem = RigidMotionProblem
     else:

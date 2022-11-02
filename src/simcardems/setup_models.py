@@ -381,9 +381,8 @@ class Runner:
         from .datacollector import DataCollector
 
         self.collector = DataCollector(
-            self._outdir,
-            self.coupling.mech_mesh,
-            self.coupling.ep_mesh,
+            outdir=self._outdir,
+            geo=self.geometry,
             reset_state=self._reset,
         )
         for group, name, f in [

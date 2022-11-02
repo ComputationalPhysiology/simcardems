@@ -268,11 +268,23 @@ def main(conf: typing.Optional[config.Config]):
     default=False,
     help="Plot population",
 )
+@click.option(
+    "--reduction",
+    default="average",
+    help="What type of reduction to perform when plotting state traces, by default 'average'.",
+)
 @click.option("--num_models", default=5, help="Number of models to be analyzed")
-def postprocess(folder, num_models, plot_state_traces, make_xdmf, population):
+def postprocess(
+    folder,
+    num_models,
+    plot_state_traces,
+    make_xdmf,
+    population,
+    reduction,
+):
     folder = Path(folder)
     if plot_state_traces:
-        post.plot_state_traces(folder.joinpath("results.h5"))
+        post.plot_state_traces(folder.joinpath("results.h5"), reduction=reduction)
     if make_xdmf:
         post.make_xdmffiles(folder.joinpath("results.h5"))
     if population:

@@ -42,7 +42,7 @@ def load_geometry(
     if mesh_type == "slab":
         return SlabGeometry.from_geometry(geo)
     elif mesh_type == "lv_ellipsoid":
-        raise NotImplementedError
+        return LeftVentricularGeometry.from_geometry(geo)
     elif mesh_type == "biv_ellipsoid":
         raise NotImplementedError
     raise RuntimeError(f"Unknown mesh type {mesh_type!r}")
@@ -598,3 +598,51 @@ def create_slab_microstructure(fiber_space, mesh):
     )
     # Collect the microstructure
     return pulse.Microstructure(f0=f0, s0=s0, n0=n0)
+
+
+class LeftVentricularGeometry(BaseGeometry):
+    @staticmethod
+    def default_markers() -> Dict[str, Tuple[int, int]]:
+        return {
+            "BASE": (5, 2),
+            "ENDO": (6, 2),
+            "EPI": (7, 2),
+        }
+
+    def _default_microstructure(
+        self,
+        fiber_space: str,
+        mesh: dolfin.Mesh,
+    ) -> pulse.Microstructure:
+        raise NotImplementedError
+
+    def _default_ffun(self, mesh: dolfin.Mesh) -> dolfin.MeshFunction:
+        raise NotImplementedError
+
+    def _default_mesh(self) -> dolfin.Mesh:
+        raise NotImplementedError
+
+    @staticmethod
+    def default_parameters():
+        return {
+            "num_refinements": 1,
+            "fiber_space": "P_1",
+            "fibers_angle_endo": -60.0,
+            "fibers_angle_epi": 60.0,
+            "mesh_type": "lv_ellipsoid",
+            "mu_apex_endo": -3.141592653589793,
+            "mu_apex_epi": -3.141592653589793,
+            "mu_base_endo": -1.2722641256100204,
+            "mu_base_epi": -1.318116071652818,
+            "psize_ref": 3.0,
+            "r_long_endo": 17.0,
+            "r_long_epi": 20.0,
+            "r_short_endo": 7.0,
+            "r_short_epi": 10.0,
+        }
+
+    def validate(self):
+        pass
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(parameters={self.parameters})"
