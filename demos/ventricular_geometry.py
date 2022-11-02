@@ -12,11 +12,12 @@ from pathlib import Path
 import simcardems
 
 # Create configurations with custom output directory
-outdir = Path("results_lv_ellipsoid_new3")
+here = Path(__file__).absolute().parent
+outdir = here / "results_lv_ellipsoid"
 
 # Specify paths to the geometry that we will use
-geometry_path = "demos/geometries/lv_ellipsoid.h5"
-geometry_schema_path = "demos/geometries/lv_ellipsoid.json"
+geometry_path = here / "geometries/lv_ellipsoid.h5"
+geometry_schema_path = here / "geometries/lv_ellipsoid.json"
 
 config = simcardems.Config(
     outdir=outdir,

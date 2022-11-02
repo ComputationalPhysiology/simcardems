@@ -12,11 +12,12 @@ from pathlib import Path
 import simcardems
 
 # Create configurations with custom output directory
-outdir = Path("results_simple_demo")
+here = Path(__file__).absolute().parent
+outdir = here / "results_simple_demo"
 
 # Specify paths to the geometry that we will use
-geometry_path = "geometries/slab.h5"
-geometry_schema_path = "geometries/slab.json"
+geometry_path = here / "geometries/slab.h5"
+geometry_schema_path = here / "geometries/slab.json"
 
 # Please see https://computationalphysiology.github.io/cardiac_geometries/ for more info about the geometries
 
