@@ -25,6 +25,10 @@ parts:
     chapters:
     - file: "benchmark"
 
+  - caption: Postprocessing
+    chapters:
+    - file: "visualization"
+
   - caption: Community
     chapters:
     - file: "CONTRIBUTING"

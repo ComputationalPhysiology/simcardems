@@ -68,9 +68,9 @@ Options:
   --help                          Show this message and exit.
 ```
 to see all options.
-For example if you want to run a simulations with `T=1000`, then use
+For example if you want to run a simulations with `T 1000`, then use
 ```
-python3 -m simcardems run -T=1000
+python3 -m simcardems run -T 1000
 ```
 You can also specify a json file containing all the settings, e.g a file called `args.json` with the following content
 
@@ -92,8 +92,8 @@ python3 -m simcardems run-json args.json
 You can run a simulation in parallel without changing anything in the code, using the `mpirun` command which takes the number of processors to be used (as option `-np`).
 Although the progress bar indicating the progress of the simulation looks very nice on one processor, its display might become troublesome on HPC clusters.
 We recommend using the option `--hide_progress_bar` when running simulations in parallel.
-The command to run the previous simulation with `T=1000` on 2 processors then becomes :
+The command to run the previous simulation with `T 1000` on 2 processors then becomes :
 ```
-mpirun -np 2 python3 -m simcardems run -T=1000 --hide_progress_bar
+mpirun -np 2 python3 -m simcardems run -T 1000 --hide_progress_bar
 ```
 One shall also note that good scalability is only obtained on "big enough" problems (e.g. not on the small demo example)

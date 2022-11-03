@@ -23,14 +23,6 @@ def center_func(fmin, fmax):
 
 class BoundaryNodes(Enum):
     center = "center"
-    node_A = "node_A"
-    node_B = "node_B"
-    node_C = "node_C"
-    node_D = "node_D"
-    node_E = "node_E"
-    node_F = "node_F"
-    node_G = "node_G"
-    node_H = "node_H"
     xmax = "xmax"
     xmin = "xmin"
     ymax = "ymax"
@@ -115,70 +107,6 @@ class Boundary:
             center_func(self.boundaries["min_z"], self.boundaries["max_z"]),
         ]
 
-    @property
-    def node_A(self):
-        return [
-            self.boundaries["min_x"],
-            self.boundaries["min_y"],
-            self.boundaries["min_z"],
-        ]
-
-    @property
-    def node_B(self):
-        return [
-            self.boundaries["max_x"],
-            self.boundaries["min_y"],
-            self.boundaries["min_z"],
-        ]
-
-    @property
-    def node_C(self):
-        return [
-            self.boundaries["max_x"],
-            self.boundaries["min_y"],
-            self.boundaries["max_z"],
-        ]
-
-    @property
-    def node_D(self):
-        return [
-            self.boundaries["min_x"],
-            self.boundaries["min_y"],
-            self.boundaries["max_z"],
-        ]
-
-    @property
-    def node_E(self):
-        return [
-            self.boundaries["min_x"],
-            self.boundaries["max_y"],
-            self.boundaries["min_z"],
-        ]
-
-    @property
-    def node_F(self):
-        return [
-            self.boundaries["max_x"],
-            self.boundaries["max_y"],
-            self.boundaries["min_z"],
-        ]
-
-    @property
-    def node_G(self):
-        return [
-            self.boundaries["max_x"],
-            self.boundaries["max_y"],
-            self.boundaries["max_z"],
-        ]
-
-    @property
-    def node_H(self):
-        return [
-            self.boundaries["min_x"],
-            self.boundaries["max_y"],
-            self.boundaries["max_z"],
-        ]
-
 
 def load_mesh(file):
     # load the mesh from the results file
@@ -215,48 +143,6 @@ def load_times(filename):
     h5file.close()
 
     return time_points
-
-
-def load_data(file, mesh, bnd, time_points):
-    V = dolfin.FunctionSpace(mesh, "CG", 1)
-
-    v_space = dolfin.Function(V)
-
-    # Create a dictionary to assign all values to
-    data = {
-        "node_A": None,
-        "node_B": None,
-        "node_C": None,
-        "node_D": None,
-        "node_E": None,
-        "node_F": None,
-        "node_G": None,
-        "node_H": None,
-    }
-
-    with dolfin.HDF5File(mesh.mpi_comm(), file, "r") as h5file:
-        for data_node in data.keys():
-            logger.info("analyzing: ", data_node)
-
-            # Assign the variables to be stored in the dictionary
-            data[data_node] = {
-                "V": np.zeros(len(time_points)),
-                "Cai": np.zeros(len(time_points)),
-                "Ta": np.zeros(len(time_points)),
-                "stretch": np.zeros(len(time_points)),
-            }
-
-            # Loop over all variables to be stored
-            for nestedkey in data[data_node]:
-                logger.info("analyzing: ", nestedkey)
-                for i, t in enumerate(time_points):
-                    h5file.read(
-                        v_space,
-                        "/" + nestedkey + "/{0:.2f}/".format(float(t)),
-                    )
-                    data_temp = v_space(eval("bnd." + data_node))
-                    data[data_node][nestedkey][i] = data_temp
-    return data
 
 
 def plot_peaks(fname, data, threshold):
