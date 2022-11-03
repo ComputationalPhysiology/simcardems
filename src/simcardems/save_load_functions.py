@@ -188,12 +188,12 @@ def load_state(
         PCL=PCL,
     )
     coupling.register_ep_model(solver)
-    bnd_cond_dict = dict([(0, "dirichlet"), (1, "rigid")])
+    bnd_cond_dict = dict([(0, False), (1, True)])
 
     mech_heart = setup_models.setup_mechanics_solver(
         coupling=coupling,
         geo=geo,
-        bnd_cond=bnd_cond_dict[state_params["bnd_cond"]],
+        bnd_rigid=bnd_cond_dict[state_params["bnd_cond"]],
         cell_params=solver.ode_solver._model.parameters(),
         Zetas_prev=Zetas_prev,
         Zetaw_prev=Zetaw_prev,

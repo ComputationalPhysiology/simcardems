@@ -77,12 +77,9 @@ def test_save_and_load_state(
 
     dt = 0.01
 
-    bnd_cond = "dirichlet"
-
     mech_heart = simcardems.setup_models.setup_mechanics_solver(
         coupling=coupling,
         geo=geo,
-        bnd_cond=bnd_cond,
         cell_params=cell_params,
     )
 
@@ -163,11 +160,8 @@ def test_load_state_with_new_parameters_uses_new_parameters(
 
     dt = 0.01
 
-    bnd_cond = "dirichlet"
-
     mech_heart = simcardems.setup_models.setup_mechanics_solver(
         coupling=coupling,
-        bnd_cond=bnd_cond,
         cell_params=cell_params,
         geo=geo,
     )
