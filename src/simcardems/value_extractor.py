@@ -84,14 +84,6 @@ class LVBoundary(Boundary):
 
 class SlabBoundaryNodes(Enum):
     center = "center"
-    node_A = "node_A"
-    node_B = "node_B"
-    node_C = "node_C"
-    node_D = "node_D"
-    node_E = "node_E"
-    node_F = "node_F"
-    node_G = "node_G"
-    node_H = "node_H"
     xmax = "xmax"
     xmin = "xmin"
     ymax = "ymax"
@@ -171,68 +163,4 @@ class SlabBoundary(Boundary):
             center_func(self.boundaries["min_x"], self.boundaries["max_x"]),
             center_func(self.boundaries["min_y"], self.boundaries["max_y"]),
             center_func(self.boundaries["min_z"], self.boundaries["max_z"]),
-        ]
-
-    @property
-    def node_A(self):
-        return [
-            self.boundaries["min_x"],
-            self.boundaries["min_y"],
-            self.boundaries["min_z"],
-        ]
-
-    @property
-    def node_B(self):
-        return [
-            self.boundaries["max_x"],
-            self.boundaries["min_y"],
-            self.boundaries["min_z"],
-        ]
-
-    @property
-    def node_C(self):
-        return [
-            self.boundaries["max_x"],
-            self.boundaries["min_y"],
-            self.boundaries["max_z"],
-        ]
-
-    @property
-    def node_D(self):
-        return [
-            self.boundaries["min_x"],
-            self.boundaries["min_y"],
-            self.boundaries["max_z"],
-        ]
-
-    @property
-    def node_E(self):
-        return [
-            self.boundaries["min_x"],
-            self.boundaries["max_y"],
-            self.boundaries["min_z"],
-        ]
-
-    @property
-    def node_F(self):
-        return [
-            self.boundaries["max_x"],
-            self.boundaries["max_y"],
-            self.boundaries["min_z"],
-        ]
-
-    @property
-    def node_G(self):
-        return [
-            self.boundaries["max_x"],
-            self.boundaries["max_y"],
-            self.boundaries["max_z"],
-        ]
-
-    @property
-    def node_H(self):
-        return [
-            self.boundaries["min_x"],
-            self.boundaries["max_y"],
-            self.boundaries["max_z"],
         ]
