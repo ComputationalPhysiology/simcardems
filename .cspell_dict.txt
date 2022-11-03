@@ -29,7 +29,7 @@ bCaMK
 Bcass
 Beta0
 Beta1
-bnd_cond
+bnd_rigid
 Boundary
 boxmesh
 BSLmax
