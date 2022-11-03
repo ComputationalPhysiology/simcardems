@@ -68,10 +68,10 @@ def cli():
     help="Choose material properties for mechanics model (default is HolzapfelOgden, option is Guccione",
 )
 @click.option(
-    "--bnd_cond",
-    default=config.Config.bnd_cond,
-    type=click.Choice(config.SlabBoundaryConditionTypes._member_names_),
-    help="Boundary conditions for the mechanics problem",
+    "--bnd_rigid",
+    is_flag=True,
+    default=config.Config.bnd_rigid,
+    help="Flag to set boundary conditions for the mechanics problem to rigid motion condition",
 )
 @click.option(
     "--load_state",
@@ -160,7 +160,7 @@ def run(
     outdir: utils.PathLike,
     T: float,
     dt: float,
-    bnd_cond: config.SlabBoundaryConditionTypes,
+    bnd_rigid: bool,
     load_state: bool,
     cell_init_file: utils.PathLike,
     show_progress_bar: bool,
@@ -184,7 +184,7 @@ def run(
         outdir=outdir,
         T=T,
         dt=dt,
-        bnd_cond=bnd_cond,
+        bnd_rigid=bnd_rigid,
         spring=spring,
         traction=traction,
         load_state=load_state,

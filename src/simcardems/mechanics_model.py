@@ -242,7 +242,7 @@ def resolve_boundary_conditions(
 def create_slab_problem(
     material: pulse.Material,
     geo: geometry.BaseGeometry,
-    bnd_cond: config.SlabBoundaryConditionTypes,
+    bnd_rigid: bool = config.Config.bnd_rigid,
     pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
     traction: typing.Union[dolfin.Constant, float] = None,
     spring: typing.Union[dolfin.Constant, float] = None,
@@ -251,7 +251,7 @@ def create_slab_problem(
     use_custom_newton_solver: bool = config.Config.mechanics_use_custom_newton_solver,
 ) -> MechanicsProblem:
     Problem = MechanicsProblem
-    if bnd_cond == config.SlabBoundaryConditionTypes.rigid:
+    if bnd_rigid:
         if not isinstance(geo, geometry.SlabGeometry):
             raise RuntimeError(
                 "Can only use Rigid boundary conditions with SlabGeometry",

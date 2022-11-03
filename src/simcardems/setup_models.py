@@ -55,7 +55,7 @@ def setup_EM_model(config: config.Config):
     mech_heart = setup_mechanics_solver(
         coupling=coupling,
         geo=geo,
-        bnd_cond=config.bnd_cond,
+        bnd_rigid=config.bnd_rigid,
         cell_params=solver.ode_solver._model.parameters(),
         pre_stretch=config.pre_stretch,
         traction=config.traction,
@@ -78,8 +78,8 @@ def setup_EM_model(config: config.Config):
 def setup_mechanics_solver(
     coupling: em_model.EMCoupling,
     geo: geometry.BaseGeometry,
-    bnd_cond: config.SlabBoundaryConditionTypes,
     cell_params,
+    bnd_rigid: bool = config.Config.bnd_rigid,
     pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
     traction: typing.Union[dolfin.Constant, float] = None,
     spring: typing.Union[dolfin.Constant, float] = None,
@@ -143,7 +143,7 @@ def setup_mechanics_solver(
     problem = mechanics_model.create_slab_problem(
         material=material,
         geo=geo,
-        bnd_cond=bnd_cond,
+        bnd_rigid=bnd_rigid,
         pre_stretch=pre_stretch,
         traction=traction,
         spring=spring,

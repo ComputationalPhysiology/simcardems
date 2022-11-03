@@ -33,8 +33,8 @@ config = simcardems.Config(
 #
 # ```
 # {'PCL': 1000,
-#  'T': 15,
-#  'bnd_cond': <SlabBoundaryConditionTypes.dirichlet: 'dirichlet'>,
+#  'T': 1000,
+#  'bnd_rigid': False,
 #  'cell_init_file': '',
 #  'disease_state': 'healthy',
 #  'drug_factors_file': '',
