@@ -197,6 +197,18 @@ const thebe_selector_output = ".output, .cell_output"
 </ul>
 <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
+  Postprocessing
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../visualization.html">
+   Data visualization
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
   Community
  </span>
 </p>
@@ -327,14 +339,6 @@ const thebe_selector_output = ".output, .cell_output"
 
 <div class="viewcode-block" id="BoundaryNodes"><a class="viewcode-back" href="../../api.html#simcardems.postprocess.BoundaryNodes">[docs]</a><span class="k">class</span> <span class="nc">BoundaryNodes</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
     <span class="n">center</span> <span class="o">=</span> <span class="s2">&quot;center&quot;</span>
-    <span class="n">node_A</span> <span class="o">=</span> <span class="s2">&quot;node_A&quot;</span>
-    <span class="n">node_B</span> <span class="o">=</span> <span class="s2">&quot;node_B&quot;</span>
-    <span class="n">node_C</span> <span class="o">=</span> <span class="s2">&quot;node_C&quot;</span>
-    <span class="n">node_D</span> <span class="o">=</span> <span class="s2">&quot;node_D&quot;</span>
-    <span class="n">node_E</span> <span class="o">=</span> <span class="s2">&quot;node_E&quot;</span>
-    <span class="n">node_F</span> <span class="o">=</span> <span class="s2">&quot;node_F&quot;</span>
-    <span class="n">node_G</span> <span class="o">=</span> <span class="s2">&quot;node_G&quot;</span>
-    <span class="n">node_H</span> <span class="o">=</span> <span class="s2">&quot;node_H&quot;</span>
     <span class="n">xmax</span> <span class="o">=</span> <span class="s2">&quot;xmax&quot;</span>
     <span class="n">xmin</span> <span class="o">=</span> <span class="s2">&quot;xmin&quot;</span>
     <span class="n">ymax</span> <span class="o">=</span> <span class="s2">&quot;ymax&quot;</span>
@@ -417,70 +421,6 @@ const thebe_selector_output = ".output, .cell_output"
             <span class="n">center_func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">boundaries</span><span class="p">[</span><span class="s2">&quot;min_x&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">boundaries</span><span class="p">[</span><span class="s2">&quot;max_x&quot;</span><span class="p">]),</span>
             <span class="n">center_func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">boundaries</span><span class="p">[</span><span class="s2">&quot;min_y&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">boundaries</span><span class="p">[</span><span class="s2">&quot;max_y&quot;</span><span class="p">]),</span>
             <span class="n">center_func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">boundaries</span><span class="p">[</span><span class="s2">&quot;min_z&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">boundaries</span><span class="p">[</span><span class="s2">&quot;max_z&quot;</span><span class="p">]),</span>
-        <span class="p">]</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">node_A</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">[</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">boundaries</span><span class="p">[</span><span class="s2">&quot;min_x&quot;</span><span class="p">],</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">boundaries</span><span class="p">[</span><span class="s2">&quot;min_y&quot;</span><span class="p">],</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">boundaries</span><span class="p">[</span><span class="s2">&quot;min_z&quot;</span><span class="p">],</span>
-        <span class="p">]</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">node_B</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">[</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">boundaries</span><span class="p">[</span><span class="s2">&quot;max_x&quot;</span><span class="p">],</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">boundaries</span><span class="p">[</span><span class="s2">&quot;min_y&quot;</span><span class="p">],</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">boundaries</span><span class="p">[</span><span class="s2">&quot;min_z&quot;</span><span class="p">],</span>
-        <span class="p">]</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">node_C</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">[</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">boundaries</span><span class="p">[</span><span class="s2">&quot;max_x&quot;</span><span class="p">],</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">boundaries</span><span class="p">[</span><span class="s2">&quot;min_y&quot;</span><span class="p">],</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">boundaries</span><span class="p">[</span><span class="s2">&quot;max_z&quot;</span><span class="p">],</span>
-        <span class="p">]</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">node_D</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">[</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">boundaries</span><span class="p">[</span><span class="s2">&quot;min_x&quot;</span><span class="p">],</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">boundaries</span><span class="p">[</span><span class="s2">&quot;min_y&quot;</span><span class="p">],</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">boundaries</span><span class="p">[</span><span class="s2">&quot;max_z&quot;</span><span class="p">],</span>
-        <span class="p">]</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">node_E</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">[</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">boundaries</span><span class="p">[</span><span class="s2">&quot;min_x&quot;</span><span class="p">],</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">boundaries</span><span class="p">[</span><span class="s2">&quot;max_y&quot;</span><span class="p">],</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">boundaries</span><span class="p">[</span><span class="s2">&quot;min_z&quot;</span><span class="p">],</span>
-        <span class="p">]</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">node_F</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">[</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">boundaries</span><span class="p">[</span><span class="s2">&quot;max_x&quot;</span><span class="p">],</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">boundaries</span><span class="p">[</span><span class="s2">&quot;max_y&quot;</span><span class="p">],</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">boundaries</span><span class="p">[</span><span class="s2">&quot;min_z&quot;</span><span class="p">],</span>
-        <span class="p">]</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">node_G</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">[</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">boundaries</span><span class="p">[</span><span class="s2">&quot;max_x&quot;</span><span class="p">],</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">boundaries</span><span class="p">[</span><span class="s2">&quot;max_y&quot;</span><span class="p">],</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">boundaries</span><span class="p">[</span><span class="s2">&quot;max_z&quot;</span><span class="p">],</span>
-        <span class="p">]</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">node_H</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">[</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">boundaries</span><span class="p">[</span><span class="s2">&quot;min_x&quot;</span><span class="p">],</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">boundaries</span><span class="p">[</span><span class="s2">&quot;max_y&quot;</span><span class="p">],</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">boundaries</span><span class="p">[</span><span class="s2">&quot;max_z&quot;</span><span class="p">],</span>
         <span class="p">]</span></div>
 
 
@@ -519,48 +459,6 @@ const thebe_selector_output = ".output, .cell_output"
     <span class="n">h5file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
     <span class="k">return</span> <span class="n">time_points</span></div>
-
-
-<div class="viewcode-block" id="load_data"><a class="viewcode-back" href="../../api.html#simcardems.postprocess.load_data">[docs]</a><span class="k">def</span> <span class="nf">load_data</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">bnd</span><span class="p">,</span> <span class="n">time_points</span><span class="p">):</span>
-    <span class="n">V</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">FunctionSpace</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="s2">&quot;CG&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-
-    <span class="n">v_space</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
-
-    <span class="c1"># Create a dictionary to assign all values to</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;node_A&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="s2">&quot;node_B&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="s2">&quot;node_C&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="s2">&quot;node_D&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="s2">&quot;node_E&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="s2">&quot;node_F&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="s2">&quot;node_G&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="s2">&quot;node_H&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">}</span>
-
-    <span class="k">with</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">HDF5File</span><span class="p">(</span><span class="n">mesh</span><span class="o">.</span><span class="n">mpi_comm</span><span class="p">(),</span> <span class="n">file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">h5file</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">data_node</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;analyzing: &quot;</span><span class="p">,</span> <span class="n">data_node</span><span class="p">)</span>
-
-            <span class="c1"># Assign the variables to be stored in the dictionary</span>
-            <span class="n">data</span><span class="p">[</span><span class="n">data_node</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s2">&quot;V&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">time_points</span><span class="p">)),</span>
-                <span class="s2">&quot;Cai&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">time_points</span><span class="p">)),</span>
-                <span class="s2">&quot;Ta&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">time_points</span><span class="p">)),</span>
-                <span class="s2">&quot;stretch&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">time_points</span><span class="p">)),</span>
-            <span class="p">}</span>
-
-            <span class="c1"># Loop over all variables to be stored</span>
-            <span class="k">for</span> <span class="n">nestedkey</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="n">data_node</span><span class="p">]:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;analyzing: &quot;</span><span class="p">,</span> <span class="n">nestedkey</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">time_points</span><span class="p">):</span>
-                    <span class="n">h5file</span><span class="o">.</span><span class="n">read</span><span class="p">(</span>
-                        <span class="n">v_space</span><span class="p">,</span>
-                        <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">nestedkey</span> <span class="o">+</span> <span class="s2">&quot;/</span><span class="si">{0:.2f}</span><span class="s2">/&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">t</span><span class="p">)),</span>
-                    <span class="p">)</span>
-                    <span class="n">data_temp</span> <span class="o">=</span> <span class="n">v_space</span><span class="p">(</span><span class="nb">eval</span><span class="p">(</span><span class="s2">&quot;bnd.&quot;</span> <span class="o">+</span> <span class="n">data_node</span><span class="p">))</span>
-                    <span class="n">data</span><span class="p">[</span><span class="n">data_node</span><span class="p">][</span><span class="n">nestedkey</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_temp</span>
-    <span class="k">return</span> <span class="n">data</span></div>
 
 
 <div class="viewcode-block" id="plot_peaks"><a class="viewcode-back" href="../../api.html#simcardems.postprocess.plot_peaks">[docs]</a><span class="k">def</span> <span class="nf">plot_peaks</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">threshold</span><span class="p">):</span>

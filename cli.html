@@ -199,6 +199,18 @@ const thebe_selector_output = ".output, .cell_output"
 </ul>
 <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
+  Postprocessing
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="visualization.html">
+   Data visualization
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
   Community
  </span>
 </p>
@@ -390,8 +402,8 @@ Options:
 </pre></div>
 </div>
 <p>to see all options.
-For example if you want to run a simulations with <code class="docutils literal notranslate"><span class="pre">T=1000</span></code>, then use</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">simcardems</span> <span class="n">run</span> <span class="o">-</span><span class="n">T</span><span class="o">=</span><span class="mi">1000</span>
+For example if you want to run a simulations with <code class="docutils literal notranslate"><span class="pre">T</span> <span class="pre">1000</span></code>, then use</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">simcardems</span> <span class="n">run</span> <span class="o">-</span><span class="n">T</span> <span class="mi">1000</span>
 </pre></div>
 </div>
 <p>You can also specify a json file containing all the settings, e.g a file called <code class="docutils literal notranslate"><span class="pre">args.json</span></code> with the following content</p>
@@ -412,8 +424,8 @@ For example if you want to run a simulations with <code class="docutils literal 
 You can run a simulation in parallel without changing anything in the code, using the <code class="docutils literal notranslate"><span class="pre">mpirun</span></code> command which takes the number of processors to be used (as option <code class="docutils literal notranslate"><span class="pre">-np</span></code>).
 Although the progress bar indicating the progress of the simulation looks very nice on one processor, its display might become troublesome on HPC clusters.
 We recommend using the option <code class="docutils literal notranslate"><span class="pre">--hide_progress_bar</span></code> when running simulations in parallel.
-The command to run the previous simulation with <code class="docutils literal notranslate"><span class="pre">T=1000</span></code> on 2 processors then becomes :</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mpirun</span> <span class="o">-</span><span class="n">np</span> <span class="mi">2</span> <span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">simcardems</span> <span class="n">run</span> <span class="o">-</span><span class="n">T</span><span class="o">=</span><span class="mi">1000</span> <span class="o">--</span><span class="n">hide_progress_bar</span>
+The command to run the previous simulation with <code class="docutils literal notranslate"><span class="pre">T</span> <span class="pre">1000</span></code> on 2 processors then becomes :</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mpirun</span> <span class="o">-</span><span class="n">np</span> <span class="mi">2</span> <span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">simcardems</span> <span class="n">run</span> <span class="o">-</span><span class="n">T</span> <span class="mi">1000</span> <span class="o">--</span><span class="n">hide_progress_bar</span>
 </pre></div>
 </div>
 <p>One shall also note that good scalability is only obtained on “big enough” problems (e.g. not on the small demo example)</p>
