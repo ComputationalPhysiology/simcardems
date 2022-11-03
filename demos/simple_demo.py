@@ -88,7 +88,20 @@ runner.solve(T=config.T, save_freq=config.save_freq, show_progress_bar=True)
 simcardems.postprocess.plot_state_traces(outdir.joinpath("results.h5"), "center")
 
 #
-# And save the output to xdmf-files that can be viewed in Paraview
+# Here we also specify that we want the trace from the center of the slab
+#
+
+# This will create a figure in the output directory called `state_traces.png` which in this case is shown in {numref}`Figure {number} <simple_demo_state_traces>` we see the resulting state traces, and can also see the instant drop in the active tension ($T_a$) at the time of the triggered release.
+#
+# ```{figure} figures/simple_demo_state_traces.png
+# ---
+# name: simple_demo_state_traces
+# ---
+# Traces of the stretch ($\lambda$), the active tension ($T_a$), the membrane potential ($V$) and the intercellular calcium concentration ($Ca$) at the center of the geometry.
+# ```
+
+#
+# We can also save the output to xdmf-files that can be viewed in Paraview
 #
 
 simcardems.postprocess.make_xdmffiles(outdir.joinpath("results.h5"))
@@ -102,14 +115,4 @@ simcardems.postprocess.make_xdmffiles(outdir.joinpath("results.h5"))
 # ---
 #
 # Displacement ($u$), active tension ($T_a$), voltage ($V$) and calcium ($Ca$) visualized for a specific time point in Paraview.
-# ```
-
-
-# This will create a figure in the output directory called `state_traces.png` which in this case is shown in {numref}`Figure {number} <simple_demo_state_traces>` we see the resulting state traces, and can also see the instant drop in the active tension ($T_a$) at the time of the triggered release.
-#
-# ```{figure} figures/simple_demo_state_traces.png
-# ---
-# name: simple_demo_state_traces
-# ---
-# Traces of the stretch ($\lambda$), the active tension ($T_a$), the membrane potential ($V$) and the intercellular calcium concentration ($Ca$) at the center of the geometry.
 # ```

@@ -59,7 +59,8 @@ class ValueExtractor:
             point = getattr(self.boundary, value)
             return self.eval_at_node(func=func, point=point, dofs=dofs)
 
-        raise NotImplementedError("Value {value} is not implemented")
+        msg = f"Value {value} is not implemented"
+        raise NotImplementedError(msg)
 
 
 def center_func(fmin, fmax):

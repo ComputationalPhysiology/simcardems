@@ -6,7 +6,10 @@ For quick visualization of results, traces extracted from the center of the tiss
 $ python3 -m simcardems postprocess "path_to_results" --plot-state-traces
 ```
 The `path_to_results` directs to the folder containing the `results.h5` file.
-A figure is generated showing traces of membrane potential ($V$), intracellular calcium concentration ($Ca$), stress ($\lambda$) and active tension ($T_a$). This figure is saved in the folder containing the original data.
+A figure is generated showing traces of membrane potential ($V$), intracellular calcium concentration ($Ca$), stress ($\lambda$) and active tension ($T_a$). This figure is saved in the folder containing the original data. By the default trace is extracted by averaging over the domain. For a slab geometry you can also get the value at the center of the slab using the command
+```
+$ python3 -m simcardems postprocess "path_to_results" --plot-state-traces --reduction="center"
+```
 
 ## Create XDMF-files
 The results of a simulation with `simcardems` are stored in a single file called `results.h5`. These results can be visualized in ParaView, but require 1 step in between: Creation of XDMF-files from `results.h5`. Execute
