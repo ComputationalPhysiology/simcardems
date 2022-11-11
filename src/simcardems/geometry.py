@@ -11,6 +11,7 @@ import numpy as np
 import pulse
 from cardiac_geometries.geometry import Geometry
 from cardiac_geometries.geometry import H5Path
+from cardiac_geometries.geometry import MeshTypes
 
 from . import utils
 
@@ -39,12 +40,11 @@ def load_geometry(
     if mesh_type is None:
         raise RuntimeError("Unable to get mesh type from info")
 
-    if mesh_type == "slab":
+    if mesh_type == MeshTypes.slab.value:
         return SlabGeometry.from_geometry(geo)
-    elif mesh_type == "lv_ellipsoid":
+    elif mesh_type == MeshTypes.lv_ellipsoid.value:
         return LeftVentricularGeometry.from_geometry(geo)
-    elif mesh_type == "biv_ellipsoid":
-        raise NotImplementedError
+
     raise RuntimeError(f"Unknown mesh type {mesh_type!r}")
 
 
@@ -527,7 +527,7 @@ class SlabGeometry(BaseGeometry):
             dx=0.2,
             fiber_space="DG_1",
             num_refinements=1,
-            mesh_type="slab",
+            mesh_type=MeshTypes.slab.value,
         )
 
     def validate(self):
@@ -629,7 +629,7 @@ class LeftVentricularGeometry(BaseGeometry):
             "fiber_space": "P_1",
             "fibers_angle_endo": -60.0,
             "fibers_angle_epi": 60.0,
-            "mesh_type": "lv_ellipsoid",
+            "mesh_type": MeshTypes.lv_ellipsoid.value,
             "mu_apex_endo": -3.141592653589793,
             "mu_apex_epi": -3.141592653589793,
             "mu_base_endo": -1.2722641256100204,
