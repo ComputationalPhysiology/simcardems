@@ -12,7 +12,6 @@ except ImportError:
 
 
 from pathlib import Path
-import numpy as np
 import matplotlib.pyplot as plt
 
 
@@ -37,8 +36,17 @@ def about():
         st.sidebar.write("")
 
     intro_markdown = """
+    The SIMula CARDiac ElectroMechanics solver
+    is a FEniCS-based cardiac electro-mechanics
+    solver and is developed as a part of the
+    [SimCardio Test project](https://www.simcardiotest.eu/wordpress).
+    The solver depends on the mechanics solver
+    [pulse](https://github.com/ComputationalPhysiology/pulse)
+    and electrophysiology solver [cbcbeat](https://github.com/ComputationalPhysiology/cbcbeat).
 
-    The SIMula CARDiac ElectroMechanics solver  is ..."""
+    Please consult the [documentation](http://computationalphysiology.github.io/simcardems)
+    if you want to learn more.
+    """
     st.markdown(intro_markdown)
 
     return
@@ -46,57 +54,18 @@ def about():
 
 class Postprocess:
     @staticmethod
-    def load_data(outdir, node="center"):
+    def load_data(outdir, reduction="center"):
 
         loader = simcardems.DataLoader(outdir.joinpath("results.h5"))
-        bnd = {
-            "ep": simcardems.postprocess.Boundary(loader.ep_mesh),
-            "mechanics": simcardems.postprocess.Boundary(loader.mech_mesh),
-        }
-
-        all_names = {"mechanics": ["lmbda", "Ta"], "ep": ["V", "Ca"]}
-
-        values = {
-            group: {name: np.zeros(len(loader.time_stamps)) for name in names}
-            for group, names in all_names.items()
-        }
-
-        for i, t in enumerate(loader.time_stamps):
-            for group, names in all_names.items():
-                for name in names:
-                    func = loader.get(group, name, t)
-                    dof_coords = func.function_space().tabulate_dof_coordinates()
-                    # Find the closest dof
-                    dof = np.argmin(
-                        np.linalg.norm(
-                            dof_coords - np.array(getattr(bnd[group], node)),
-                            axis=1,
-                        ),
-                    )
-
-                    if np.isclose(
-                        dof_coords[dof],
-                        np.array(getattr(bnd[group], node)),
-                    ).all():
-                        # If we have a dof at the center - evaluation at dof (cheaper)
-                        values[group][name][i] = func.vector().get_local()[dof]
-                    else:
-                        # Otherwise, evaluation at center coordinates
-                        try:
-                            values[group][name][i] = func(getattr(bnd[group], node))
-                        except RuntimeError:
-                            values[group][name][i] = func.vector().get_local()[dof]
-
-        times = np.array(loader.time_stamps, dtype=float)
-        return times, values
+        return simcardems.postprocess.extract_traces(loader=loader, reduction=reduction)
 
     @staticmethod
-    def make_figures(times, values):
+    def make_figures(values):
         fig, ax = plt.subplots(2, 2, figsize=(10, 8), sharex=True)
-        ax[0, 0].plot(times[1:], values["mechanics"]["lmbda"][1:])
-        ax[0, 1].plot(times[1:], values["mechanics"]["Ta"][1:])
-        ax[1, 0].plot(times, values["ep"]["V"])
-        ax[1, 1].plot(times[1:], values["ep"]["Ca"][1:])
+        ax[0, 0].plot(values["time"][1:], values["mechanics"]["lmbda"][1:])
+        ax[0, 1].plot(values["time"][1:], values["mechanics"]["Ta"][1:])
+        ax[1, 0].plot(values["time"], values["ep"]["V"])
+        ax[1, 1].plot(values["time"][1:], values["ep"]["Ca"][1:])
 
         ax[0, 0].set_title(r"$\lambda$")
         ax[0, 1].set_title("Ta")
@@ -132,6 +101,9 @@ def postprocess():
 
     """
     st.markdown(intro_markdown)
+    if not simcardems_folder.exists():
+        st.info("No results found")
+        return
 
     outdir = st.selectbox(
         "Select result directory",
@@ -145,17 +117,17 @@ def postprocess():
     outdir = Path(outdir)
 
     # TODO: Use multiselect instead
-    selected_node = st.selectbox(
-        "Select a node",
-        [""] + list(simcardems.postprocess.Boundary.nodes()),
+    reduction = st.selectbox(
+        "Select a reduction",
+        [""] + ["center", "average"],
         format_func=lambda x: "Select an option" if x == "" else x,
     )
-    if selected_node == "":
+    if reduction == "":
         st.info("Please select a node")
         return
 
-    times, values = Postprocess.load_data(outdir, node=selected_node)
-    fig = Postprocess.make_figures(times, values)
+    values = Postprocess.load_data(outdir, reduction=reduction)
+    fig = Postprocess.make_figures(values)
     st.pyplot(fig)
 
     return
@@ -173,20 +145,21 @@ class Simulation:
     def handle_mesh():
         st.header("Mesh")
         cols_l_xyz = st.columns(3)
+        params = simcardems.geometry.SlabGeometry.default_parameters()
         with cols_l_xyz[0]:
-            lx = st.number_input("lx", value=simcardems.Config.lx)
+            lx = st.number_input("lx", value=params["lx"])
         with cols_l_xyz[1]:
-            ly = st.number_input("ly", value=simcardems.Config.ly)
+            ly = st.number_input("ly", value=params["ly"])
         with cols_l_xyz[2]:
-            lz = st.number_input("lz", value=simcardems.Config.lz)
+            lz = st.number_input("lz", value=params["lz"])
 
         cols_dx_ref = st.columns(2)
         with cols_dx_ref[0]:
-            dx = st.number_input("dx", value=simcardems.Config.dx)
+            dx = st.number_input("dx", value=params["dx"])
         with cols_dx_ref[1]:
             num_refinements = st.number_input(
                 "num_refinements",
-                value=simcardems.Config.num_refinements,
+                value=params["num_refinements"],
             )
 
         return {
@@ -249,7 +222,7 @@ class Simulation:
         with cols_mech[0]:
             bnd_cond = st.selectbox(
                 "Boundary conditions",
-                simcardems.mechanics_model.BoundaryConditions._member_names_,
+                simcardems.config.SlabBoundaryConditionTypes._member_names_,
             )
         with cols_mech[1]:
             add_pre_stretch = st.checkbox("Add pre stretch")
@@ -286,7 +259,7 @@ class Simulation:
     def load_model(geometry_args, ep_solver_args, mechanics_args):
 
         st.info("Create geometry")
-        geometry = simcardems.geometry.SlabGeometry(**geometry_args)
+        geometry = simcardems.geometry.SlabGeometry(parameters=geometry_args)
         st.info("Create EM coupling")
         coupling = simcardems.EMCoupling(geometry)
         st.info("Create EP model")
@@ -300,6 +273,7 @@ class Simulation:
                 coupling=coupling,
                 cell_params=ep_solver.ode_solver._model.parameters(),
                 linear_solver="superlu_dist",
+                geo=geometry,
                 **mechanics_args,
             )
         )
@@ -308,6 +282,7 @@ class Simulation:
             coupling=coupling,
             ep_solver=ep_solver,
             mech_heart=mech_heart,
+            geo=geometry,
         )
 
     @staticmethod
@@ -413,7 +388,7 @@ pages = {
 st.sidebar.title("Simcardems")
 
 # Radio buttons to select desired option
-page = st.sidebar.radio("", tuple(pages.keys()))
+page = st.sidebar.radio("Pages", tuple(pages.keys()))
 
 pages[page]()
 

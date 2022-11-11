@@ -9,9 +9,9 @@ demos/release_test_results/
 demos/results_simple_demo/
 demos/simple_demo.md
 docs/CONTRIBUTING.md
-docs/source/CONTRIBUTING.md
-docs/source/release_test.md
-docs/source/simple_demo.md
+docs/release_test.md
+docs/simple_demo.md
+docs/ventricular_geometry.md
 test_outdir/
 docs/source/modules.rst
 docs/source/simcardems.rst

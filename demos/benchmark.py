@@ -22,13 +22,7 @@ def run_benchmark():
 
     M = simcardems.ep_model.define_conductivity_tensor(chi, C_m)
 
-    geometry = simcardems.geometry.SlabGeometry(
-        lx=Lx,
-        ly=Ly,
-        lz=Lz,
-        dx=1.0,
-        num_refinements=1,
-    )
+    geometry = simcardems.geometry.SlabGeometry()
 
     coupling = simcardems.em_model.EMCoupling(geometry)
 
@@ -92,33 +86,6 @@ def run_benchmark():
 
     coupling.register_ep_model(solver)
 
-    microstructure = simcardems.mechanics_model.setup_microstructure(coupling.mech_mesh)
-
-    markers = dolfin.MeshFunction("size_t", geometry.mechanics_mesh, 2)
-    markers.set_all(0)
-
-    # Fix S1_domain
-    fixed_domain = dolfin.CompiledSubDomain(f"{S1_subdomain_str} && on_boundary")
-    fixed_marker = 1
-    fixed_domain.mark(markers, fixed_marker)
-
-    left = dolfin.CompiledSubDomain("near(x[0], 0) && on_boundary")
-    left_marker = 2
-    left.mark(markers, left_marker)
-
-    def dirichlet_bc(W):
-
-        bc_fixed = dolfin.DirichletBC(
-            W.sub(0),
-            dolfin.Constant((0.0, 0.0, 0.0)),
-            fixed_domain,
-        )
-        bc_anchor_x = dolfin.DirichletBC(W.sub(0).sub(0), dolfin.Constant(0.0), left)
-        return [bc_fixed, bc_anchor_x]
-
-    marker_functions = pulse.MarkerFunctions(ffun=markers)
-    bcs = pulse.BoundaryConditions(dirichlet=(dirichlet_bc,))
-
     # Create the material
     # material_parameters = pulse.HolzapfelOgden.default_parameters()
     # Use parameters from Biaxial test in Holzapfel 2019 (Table 1).
@@ -134,14 +101,11 @@ def run_benchmark():
     )
 
     V = dolfin.FunctionSpace(coupling.mech_mesh, "CG", 1)
-    active_model = simcardems.mechanics_model.LandModel(
-        f0=microstructure.f0,
-        s0=microstructure.s0,
-        n0=microstructure.n0,
+    active_model = simcardems.land_model.LandModel(
+        f0=geometry.f0,
+        s0=geometry.s0,
+        n0=geometry.n0,
         eta=0,
-        # lmbda=coupling.lmbda_mech,
-        # Zetas=coupling.Zetas_mech,
-        # Zetaw=coupling.Zetaw_mech,
         parameters=solver.ode_solver._model.parameters(),
         XS=coupling.XS_mech,
         XW=coupling.XW_mech,
@@ -153,16 +117,10 @@ def run_benchmark():
         parameters=material_parameters,
     )
 
-    mech_geometry = pulse.Geometry(
-        mesh=coupling.mech_mesh,
-        microstructure=microstructure,
-        marker_functions=marker_functions,
-    )
-
-    problem = simcardems.mechanics_model.MechanicsProblem(
-        geometry=mech_geometry,
+    problem = simcardems.mechanics_model.create_slab_problem(
         material=material,
-        bcs=bcs,
+        geo=geometry,
+        bnd_cond="dirichlet",
     )
 
     problem.solve()
@@ -171,13 +129,14 @@ def run_benchmark():
         coupling=coupling,
         ep_solver=solver,
         mech_heart=problem,
+        geo=geometry,
     )
     runner.outdir = "benchmark"
     runner.solve(T=1000)
 
 
 def postprocess():
-    simcardems.postprocess.plot_state_traces("benchmark/results.h5")
+    simcardems.postprocess.plot_state_traces("benchmark/results.h5", "center")
     simcardems.postprocess.make_xdmffiles("benchmark/results.h5")
 
     loader = simcardems.DataLoader("benchmark/results.h5")

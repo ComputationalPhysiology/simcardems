@@ -65,10 +65,11 @@ def test_dict_to_h5(data, dummyfile):
 def test_save_and_load_state(
     solve_mock,
     dummyfile,
-    mesh,
+    geo,
     coupling,
     ep_solver,
     cell_params,
+    capfd,
 ):
 
     solve_mock.return_value = (1, True)  # (niter, nconv)
@@ -76,17 +77,16 @@ def test_save_and_load_state(
 
     dt = 0.01
 
-    bnd_cond = "dirichlet"
-
     mech_heart = simcardems.setup_models.setup_mechanics_solver(
         coupling=coupling,
-        bnd_cond=bnd_cond,
+        geo=geo,
         cell_params=cell_params,
     )
 
     runner = simcardems.setup_models.Runner.from_models(
         coupling=coupling,
         ep_solver=ep_solver,
+        geo=geo,
         mech_heart=mech_heart,
     )
     runner.outdir = "dummy_folder"
@@ -104,21 +104,21 @@ def test_save_and_load_state(
         dummyfile,
         solver=ep_solver,
         mech_heart=mech_heart,
-        coupling=coupling,
+        geo=geo,
         dt=dt,
-        bnd_cond=bnd_cond,
         t0=t0,
     )
 
     with mock.patch("simcardems.setup_models.cbcbeat.SplittingSolver") as m:
         m.return_value = ep_solver
 
-        coupling_, ep_solver_, mech_heart_, t0_ = slf.load_state(
+        coupling_, ep_solver_, mech_heart_, geo_, t0_ = slf.load_state(
             dummyfile,
         )
 
     assert t0_ == t0
-    assert (mesh.coordinates() == coupling_.mech_mesh.coordinates()).all()
+    assert geo_ == geo
+    assert (coupling.mech_mesh.coordinates() == coupling_.mech_mesh.coordinates()).all()
     assert simcardems.utils.compute_norm(ep_solver.vs_, ep_solver_.vs_) < 1e-12
     assert simcardems.utils.compute_norm(mech_heart.state, mech_heart_.state) < 1e-12
     assert simcardems.utils.compute_norm(coupling.vs, coupling_.vs) < 1e-12
@@ -132,12 +132,18 @@ def test_save_and_load_state(
     assert simcardems.utils.compute_norm(active.Zetas, active_.Zetas) < 1e-12
     assert simcardems.utils.compute_norm(active.Zetaw, active_.Zetaw) < 1e-12
 
+    out, err = capfd.readouterr()
+    assert (
+        "*** Warning: Found no facets matching domain for boundary condition" not in out
+    )
+
 
 @mock.patch("simcardems.mechanics_model.pulse.mechanicsproblem.MechanicsProblem.solve")
 def test_load_state_with_new_parameters_uses_new_parameters(
     solve_mock,
     dummyfile,
     coupling,
+    geo,
     cell_params,
 ):
 
@@ -152,12 +158,10 @@ def test_load_state_with_new_parameters_uses_new_parameters(
 
     dt = 0.01
 
-    bnd_cond = "dirichlet"
-
     mech_heart = simcardems.setup_models.setup_mechanics_solver(
         coupling=coupling,
-        bnd_cond=bnd_cond,
         cell_params=cell_params,
+        geo=geo,
     )
 
     # Save some non-zero values - just run the model
@@ -165,6 +169,7 @@ def test_load_state_with_new_parameters_uses_new_parameters(
         coupling=coupling,
         ep_solver=ep_solver,
         mech_heart=mech_heart,
+        geo=geo,
     )
     runner.outdir = "dummy_folder"
 
@@ -175,9 +180,8 @@ def test_load_state_with_new_parameters_uses_new_parameters(
         dummyfile,
         solver=ep_solver,
         mech_heart=mech_heart,
-        coupling=coupling,
+        geo=geo,
         dt=dt,
-        bnd_cond=bnd_cond,
         t0=t0,
     )
 
@@ -189,7 +193,7 @@ def test_load_state_with_new_parameters_uses_new_parameters(
     popu_factors = {"scale_popu_GNa": 13.13}
     popu_factors_file.write_text(json.dumps(popu_factors))
 
-    coupling_, ep_solver_, mech_heart_, t0_ = slf.load_state(
+    coupling_, ep_solver_, mech_heart_, geometry_, t0_ = slf.load_state(
         dummyfile,
         drug_factors_file=drug_factors_file,
         popu_factors_file=popu_factors_file,

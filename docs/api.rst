@@ -1,0 +1,132 @@
+API documentaion
+================
+
+
+simcardems.ORdmm\_Land module
+-----------------------------
+
+.. automodule:: simcardems.ORdmm_Land
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+simcardems.cli module
+---------------------
+
+.. automodule:: simcardems.cli
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+simcardems.config module
+------------------------
+
+.. automodule:: simcardems.config
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+simcardems.datacollector module
+-------------------------------
+
+.. automodule:: simcardems.datacollector
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+simcardems.em\_model module
+---------------------------
+
+.. automodule:: simcardems.em_model
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+simcardems.ep\_model module
+---------------------------
+
+.. automodule:: simcardems.ep_model
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+simcardems.geometry module
+--------------------------
+
+.. automodule:: simcardems.geometry
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+simcardems.land\_model module
+-----------------------------
+
+.. automodule:: simcardems.land_model
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+simcardems.mechanics\_model module
+----------------------------------
+
+.. automodule:: simcardems.mechanics_model
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+simcardems.newton\_solver module
+--------------------------------
+
+.. automodule:: simcardems.newton_solver
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+simcardems.postprocess module
+-----------------------------
+
+.. automodule:: simcardems.postprocess
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+simcardems.save\_load\_functions module
+---------------------------------------
+
+.. automodule:: simcardems.save_load_functions
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+simcardems.setup\_models module
+-------------------------------
+
+.. automodule:: simcardems.setup_models
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+simcardems.utils module
+-----------------------
+
+.. automodule:: simcardems.utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+simcardems.version module
+-------------------------
+
+.. automodule:: simcardems.version
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: simcardems
+   :members:
+   :undoc-members:
+   :show-inheritance:

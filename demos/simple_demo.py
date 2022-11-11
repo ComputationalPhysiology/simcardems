@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # # Simple demo
 #
-# In this demos we show the most simple usage of the `simcardems` library using the python API
+# In this demo we show the most simple usage of the `simcardems` library using the python API
 #
 # Import the necessary libraries
 #
@@ -12,8 +12,23 @@ from pathlib import Path
 import simcardems
 
 # Create configurations with custom output directory
-outdir = Path("results_simple_demo")
-config = simcardems.Config(outdir=outdir)
+here = Path(__file__).absolute().parent
+outdir = here / "results_simple_demo"
+
+# Specify paths to the geometry that we will use
+
+geometry_path = here / "geometries/slab.h5"
+geometry_schema_path = here / "geometries/slab.json"
+
+# Please see https://computationalphysiology.github.io/cardiac_geometries/ for more info about the geometries
+
+
+config = simcardems.Config(
+    outdir=outdir,
+    geometry_path=geometry_path,
+    geometry_schema_path=geometry_schema_path,
+    T=1000,
+)
 
 
 # This will set :
@@ -21,23 +36,20 @@ config = simcardems.Config(outdir=outdir)
 # ```
 # {'PCL': 1000,
 #  'T': 1000,
-#  'bnd_cond': <BoundaryConditions.dirichlet: 'dirichlet'>,
+#  'bnd_rigid': False,
 #  'cell_init_file': '',
 #  'disease_state': 'healthy',
 #  'drug_factors_file': '',
 #  'dt': 0.05,
-#  'dx': 0.2,
 #  'ep_ode_scheme': 'GRL1',
 #  'ep_preconditioner': 'sor',
 #  'ep_theta': 0.5,
 #  'fix_right_plane': False,
-#  'hpc': False,
+#  'geometry_path': 'demos/geometries/slab.h5',
+#  'geometry_schema_path': 'demos/geometries/slab.json',
 #  'linear_mechanics_solver': 'mumps',
 #  'load_state': False,
 #  'loglevel': 20,
-#  'lx': 2.0,
-#  'ly': 0.7,
-#  'lz': 0.3,
 #  'mechanics_ode_scheme': <Scheme.analytic: 'analytic'>,
 #  'mechanics_use_continuation': False,
 #  'mechanics_use_custom_newton_solver': False,
@@ -47,6 +59,7 @@ config = simcardems.Config(outdir=outdir)
 #  'pre_stretch': None,
 #  'save_freq': 1,
 #  'set_material': '',
+#  'show_progress_bar': True,
 #  'spring': None,
 #  'traction': None}
 # ```
@@ -56,7 +69,7 @@ config = simcardems.Config(outdir=outdir)
 pprint.pprint(config.as_dict())
 
 runner = simcardems.Runner(config)
-runner.solve(T=config.T, save_freq=config.save_freq, hpc=False)
+runner.solve(T=config.T, save_freq=config.save_freq, show_progress_bar=True)
 
 
 # This will create the output directory `results_simple_demo` with the following output
@@ -72,10 +85,23 @@ runner.solve(T=config.T, save_freq=config.save_freq, hpc=False)
 #
 #
 
-simcardems.postprocess.plot_state_traces(outdir.joinpath("results.h5"))
+simcardems.postprocess.plot_state_traces(outdir.joinpath("results.h5"), "center")
 
 #
-# And save the output to xdmf-files that can be viewed in Paraview
+# Here we also specify that we want the trace from the center of the slab
+#
+
+# This will create a figure in the output directory called `state_traces.png` which in this case is shown in {numref}`Figure {number} <simple_demo_state_traces>` we see the resulting state traces, and can also see the instant drop in the active tension ($T_a$) at the time of the triggered release.
+#
+# ```{figure} figures/simple_demo_state_traces.png
+# ---
+# name: simple_demo_state_traces
+# ---
+# Traces of the stretch ($\lambda$), the active tension ($T_a$), the membrane potential ($V$) and the intercellular calcium concentration ($Ca$) at the center of the geometry.
+# ```
+
+#
+# We can also save the output to xdmf-files that can be viewed in Paraview
 #
 
 simcardems.postprocess.make_xdmffiles(outdir.joinpath("results.h5"))
@@ -89,14 +115,4 @@ simcardems.postprocess.make_xdmffiles(outdir.joinpath("results.h5"))
 # ---
 #
 # Displacement ($u$), active tension ($T_a$), voltage ($V$) and calcium ($Ca$) visualized for a specific time point in Paraview.
-# ```
-
-
-# This will create a figure in the output directory called `state_traces.png` which in this case is shown in {numref}`Figure {number} <simple_demo_state_traces>` we see the resulting state traces, and can also see the instant drop in the active tension ($T_a$) at the time of the triggered release.
-#
-# ```{figure} figures/simple_demo_state_traces.png
-# ---
-# name: simple_demo_state_traces
-# ---
-# Traces of the stretch ($\lambda$), the active tension ($T_a$), the membrane potential ($V$) and the intercellular calcium concentration ($Ca$) at the center of the geometry.
 # ```

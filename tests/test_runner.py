@@ -10,18 +10,38 @@ from simcardems import TimeStepper
 
 
 @pytest.mark.slow
-def test_runner():
-    runner = Runner(lx=1, ly=1, lz=1, dx=1)
+def test_runner(tmp_path, geo):
+
+    geometry_path = tmp_path / "geo.h5"
+    geometry_schema_path = geometry_path.with_suffix(".json")
+    geo.dump(fname=geometry_path, schema_path=geometry_schema_path)
+
+    runner = Runner(
+        conf=Config(
+            geometry_path=geometry_path,
+            geometry_schema_path=geometry_schema_path,
+        ),
+    )
     runner.solve(0.02)
 
 
 @pytest.mark.slow
-def test_runner_load_state_with_new_parameters():
+def test_runner_load_state_with_new_parameters(tmp_path, geo):
+
+    geometry_path = tmp_path / "geo.h5"
+    geometry_schema_path = geometry_path.with_suffix(".json")
+    geo.dump(fname=geometry_path, schema_path=geometry_schema_path)
 
     outdir = Path("runner_load_state_with_new_parameters")
     if outdir.exists():
         shutil.rmtree(outdir)
-    runner = Runner(Config(outdir=outdir, lx=1, ly=1, lz=1, dx=1))
+    runner = Runner(
+        Config(
+            outdir=outdir,
+            geometry_path=geometry_path,
+            geometry_schema_path=geometry_schema_path,
+        ),
+    )
     runner.solve(0.02)
 
     drug_factors_file = Path("drug_factors_file.json")

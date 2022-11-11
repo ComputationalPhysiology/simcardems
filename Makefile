@@ -68,15 +68,16 @@ test: ## run tests quickly with the default Python
 	python3 -m pytest
 
 docs: ## generate Sphinx HTML documentation, including API docs
-	rm -f docs/source/simcardems.rst´
-	rm -f docs/source/modules.rst
-	sphinx-apidoc -o docs/source src/simcardems
-	for file in CONTRIBUTING.md; do \
-		cp $$file docs/source/. ;\
-	done
-	jupytext demos/release_test.py -o docs/source/release_test.md
-	jupytext demos/simple_demo.py -o docs/source/simple_demo.md
-	cd docs && make html
+	cp CONTRIBUTING.md docs/.
+	jupytext demos/release_test.py -o docs/release_test.md
+	jupytext demos/simple_demo.py -o docs/simple_demo.md
+	jupytext demos/ventricular_geometry.py -o docs/ventricular_geometry.md
+	mkdir -p docs/_build
+	cp -r benchmarks docs/_build/
+	jupyter book build -W docs
+
+run-benchmark:
+	python -m simcardems run-benchmark "benchmarks/$(shell git rev-parse --short HEAD)"
 
 show-docs:
 	open docs/build/html/index.html

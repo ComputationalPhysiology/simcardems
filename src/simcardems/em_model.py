@@ -88,8 +88,6 @@ class EMCoupling:
 
     def coupling_to_mechanics(self):
         logger.debug("Interpolate mechanics")
-        # print("XS = ", self.XS_mech.vector().get_local())
-        # print("XW = ", self.XW_mech.vector().get_local())
         self.XS_mech.assign(dolfin.interpolate(self.XS_ep, self.V_mech))
         self.XW_mech.assign(dolfin.interpolate(self.XW_ep, self.V_mech))
         logger.debug("Done interpolating mechanics")
@@ -124,8 +122,7 @@ class EMCoupling:
 
     def mechanics_to_coupling(self):
         logger.debug("Interpolate EP")
-        # print("Zetas = ", self.Zetas_mech.vector().get_local())
-        # print("Zetaw = ", self.Zetaw_mech.vector().get_local())
+
         self.u_mech_assigner.assign(
             self.u_mech,
             utils.sub_function(self.mech_state, self._u_subspace_index),
@@ -134,31 +131,10 @@ class EMCoupling:
         self._project_lmbda()
         self._compute_zeta()
 
-        # self.lmbda_ep.assign(dolfin.interpolate(self.lmbda_mech, self.V_ep))
-
-        # utils.local_project(self.Zetas_mech, self.V_ep, self.Zetas_ep)
-        # self.Zetas_ep.assign(
-        #     dolfin.project(
-        #         self.Zetas_mech,
-        #         self.V_ep,
-        #         form_compiler_parameters={"representation": "quadrature"},
-        #     ),
-        # )
-        # # utils.local_project(self.Zetaw_mech, self.V_ep, self.Zetaw_ep)
-        # self.Zetaw_ep.assign(
-        #     dolfin.project(
-        #         self.Zetaw_mech,
-        #         self.V_ep,
-        #         form_compiler_parameters={"representation": "quadrature"},
-        #     ),
-        # )
-        # self.Zetas_ep.assign(dolfin.interpolate(self.Zetas_mech, self.V_ep))
-        # self.Zetaw_ep.assign(dolfin.interpolate(self.Zetaw_mech, self.V_ep))
         logger.debug("Done interpolating EP")
 
     def coupling_to_ep(self):
         logger.debug("Update EP")
-        # breakpoint()
         # dolfin.assign(utils.sub_function(self._ep_solver.vs, 46), self.lmbda_ep)
         # dolfin.assign(utils.sub_function(self._ep_solver.vs, 47), self.Zetas_ep)
         # dolfin.assign(utils.sub_function(self._ep_solver.vs, 48), self.Zetaw_ep)

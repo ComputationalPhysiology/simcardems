@@ -43,7 +43,7 @@ jobs:
           python3 -m pytest
 
       - name: Coverage report
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3
         if: github.ref == 'refs/heads/master'
         with:
           fail_ci_if_error: true

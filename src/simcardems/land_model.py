@@ -43,10 +43,7 @@ class LandModel(pulse.ActiveModel):
     ):
         super().__init__(f0=f0, s0=s0, n0=n0)
         self._eta = eta
-        # Use DG 1 rep of lambda and zetas?
-        self.quad_space = pulse.QuadratureSpace(mesh, degree=3, dim=1)
         self.cg1_space = dolfin.FunctionSpace(mesh, "CG", 1)
-        # self.dg1_space = dolfin.FunctionSpace(mesh, "DG", 1)
 
         self.XS = XS
         self.XW = XW
@@ -55,20 +52,20 @@ class LandModel(pulse.ActiveModel):
         self._t_prev = 0.0
         self._scheme = scheme
 
-        self._dLambda = dolfin.Function(self.quad_space)
-        self.lmbda_prev = dolfin.Function(self.quad_space)
+        self._dLambda = dolfin.Function(self.cg1_space)
+        self.lmbda_prev = dolfin.Function(self.cg1_space)
         self.lmbda_prev.vector()[:] = 1.0
         if lmbda is not None:
             self.lmbda_prev.assign(lmbda)
-        self.lmbda = dolfin.Function(self.quad_space)
+        self.lmbda = dolfin.Function(self.cg1_space)
 
-        self._Zetas = dolfin.Function(self.quad_space)
-        self.Zetas_prev = dolfin.Function(self.quad_space)
+        self._Zetas = dolfin.Function(self.cg1_space)
+        self.Zetas_prev = dolfin.Function(self.cg1_space)
         if Zetas is not None:
             self.Zetas_prev.assign(Zetas)
 
-        self._Zetaw = dolfin.Function(self.quad_space)
-        self.Zetaw_prev = dolfin.Function(self.quad_space)
+        self._Zetaw = dolfin.Function(self.cg1_space)
+        self.Zetaw_prev = dolfin.Function(self.cg1_space)
         if Zetaw is not None:
             self.Zetaw_prev.assign(Zetaw)
 
@@ -219,7 +216,7 @@ class LandModel(pulse.ActiveModel):
         self.lmbda.assign(
             dolfin.project(
                 dolfin.sqrt(f**2),
-                self.quad_space,
+                self.cg1_space,
                 form_compiler_parameters={"representation": "quadrature"},
             ),
         )

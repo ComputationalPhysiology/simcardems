@@ -1,6 +1,5 @@
 import json
-import shutil
-from pathlib import Path
+import math
 
 import pytest
 from click.testing import CliRunner
@@ -11,14 +10,22 @@ mesh_args = ["-lx", 1, "-ly", 1, "-lz", 1, "-dx", 1, "--num_refinements", 1]
 
 
 @pytest.mark.slow
-def test_run():
+def test_run(tmp_path, geo):
+
+    geometry_path = tmp_path / "geo.h5"
+    geometry_schema_path = geometry_path.with_suffix(".json")
+    geo.dump(fname=geometry_path, schema_path=geometry_schema_path)
+    geo_args = [geometry_path.as_posix(), "-s", geometry_schema_path.as_posix()]
+
     runner = CliRunner()
-    outdir = Path("test_outdir").absolute()
-    if outdir.exists():
-        shutil.rmtree(outdir)
-    args = ["-T", 0.2, "--outdir", outdir.as_posix()] + mesh_args
-    kwargs = dict(zip([arg.strip("-").strip("-") for arg in args[::2]], args[1::2]))
-    result = runner.invoke(run, args)
+    outdir = tmp_path / "results"
+
+    T = 0.2
+    arguments = geo_args + ["-T", 0.2, "--outdir", outdir.as_posix()]
+
+    # kwargs = dict(zip([arg.strip("-").strip("-") for arg in args[::2]], args[1::2]))
+    result = runner.invoke(run, arguments)
+
     assert result.exit_code == 0
     assert outdir.exists()
     assert outdir.joinpath("results.h5").is_file()
@@ -26,21 +33,31 @@ def test_run():
     with open(outdir.joinpath("parameters.json"), "r") as f:
         dumped_arguments = json.load(f)
 
-    for k, v in kwargs.items():
-        assert dumped_arguments[k] == v, k
-
-    shutil.rmtree(outdir)
+    assert dumped_arguments["geometry_path"] == geometry_path.as_posix()
+    assert dumped_arguments["geometry_schema_path"] == geometry_schema_path.as_posix()
+    assert math.isclose(dumped_arguments["T"], T)
+    assert dumped_arguments["outdir"] == outdir.as_posix()
 
 
 @pytest.mark.slow
-def test_run_json():
-    runner = CliRunner()
-    outdir = Path("test_outdir").absolute()
-    if outdir.exists():
-        shutil.rmtree(outdir)
+def test_run_json(tmp_path, geo):
 
-    args = ["-T", 1, "--outdir", outdir.as_posix()] + mesh_args
-    kwargs = dict(zip([arg.strip("-").strip("-") for arg in args[::2]], args[1::2]))
+    geometry_path = tmp_path / "geo.h5"
+    geometry_schema_path = geometry_path.with_suffix(".json")
+    geo.dump(fname=geometry_path, schema_path=geometry_schema_path)
+    # geo_args = [geometry_path.as_posix(), "-s", geometry_schema_path.as_posix()]
+
+    runner = CliRunner()
+    outdir = tmp_path / "results"
+
+    T = 0.2
+    # arguments = geo_args + ["-T", 0.2, "--outdir", outdir.as_posix()]
+    # Do not provide schema path to test that it picks up the default schema path
+    kwargs = {
+        "geometry_path": geometry_path.as_posix(),
+        "outdir": outdir.as_posix(),
+        "T": T,
+    }
     json_path = "args.json"
 
     with open(json_path, "w") as jsonfile:
@@ -51,7 +68,7 @@ def test_run_json():
     assert outdir.joinpath("results.h5").is_file()
     with open(outdir.joinpath("parameters.json"), "r") as f:
         dumped_arguments = json.load(f)
-    for k, v in kwargs.items():
-        assert dumped_arguments[k] == v
-
-    shutil.rmtree(outdir)
+    assert dumped_arguments["geometry_path"] == geometry_path.as_posix()
+    assert dumped_arguments["geometry_schema_path"] == geometry_schema_path.as_posix()
+    assert math.isclose(dumped_arguments["T"], T)
+    assert dumped_arguments["outdir"] == outdir.as_posix()

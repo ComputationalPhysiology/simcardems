@@ -1,21 +1,19 @@
+import logging
 import typing
-from enum import Enum
 
 import dolfin
 import pulse
 from mpi4py import MPI
 
+from . import boundary_conditions
+from . import config
+from . import geometry
 from . import utils
 from .newton_solver import MechanicsNewtonSolver
 from .newton_solver import MechanicsNewtonSolver_ODE
 
 
 logger = utils.getLogger(__name__)
-
-
-class BoundaryConditions(str, Enum):
-    dirichlet = "dirichlet"
-    rigid = "rigid"
 
 
 class ContinuationBasedMechanicsProblem(pulse.MechanicsProblem):
@@ -63,8 +61,6 @@ class ContinuationBasedMechanicsProblem(pulse.MechanicsProblem):
 
 
 class MechanicsProblem(ContinuationBasedMechanicsProblem):
-    boundary_condition = BoundaryConditions.dirichlet
-
     def _init_spaces(self):
 
         mesh = self.geometry.mesh
@@ -77,6 +73,10 @@ class MechanicsProblem(ContinuationBasedMechanicsProblem):
             dolfin.MixedElement([P2, P1]),
         )
         self._init_functions()
+
+    @property
+    def u_subspace_index(self) -> int:
+        return 0
 
     def _init_functions(self):
         self.state = dolfin.Function(self.state_space, name="state")
@@ -139,8 +139,6 @@ class MechanicsProblem(ContinuationBasedMechanicsProblem):
 
 
 class RigidMotionProblem(MechanicsProblem):
-    boundary_condition = BoundaryConditions.rigid
-
     def _init_spaces(self):
 
         mesh = self.geometry.mesh
@@ -155,6 +153,10 @@ class RigidMotionProblem(MechanicsProblem):
         )
 
         self._init_functions()
+
+    @property
+    def u_subspace_index(self) -> int:
+        return 1
 
     def _handle_bcs(self, bcs, bcs_parameters):
         self.bcs = pulse.BoundaryConditions()
@@ -211,176 +213,65 @@ class RigidMotionProblem(MechanicsProblem):
         return sum(dolfin.dot(u, zi) * r[i] * dolfin.dx for i, zi in enumerate(RM))
 
 
-def setup_microstructure(mesh):
-    logger.debug("Set up microstructure")
-    V_f = dolfin.VectorFunctionSpace(mesh, "DG", 1)
-    f0 = dolfin.interpolate(
-        dolfin.Expression(("1.0", "0.0", "0.0"), degree=1, cell=mesh.ufl_cell()),
-        V_f,
-    )
-    s0 = dolfin.interpolate(
-        dolfin.Expression(("0.0", "1.0", "0.0"), degree=1, cell=mesh.ufl_cell()),
-        V_f,
-    )
-    n0 = dolfin.interpolate(
-        dolfin.Expression(("0.0", "0.0", "1.0"), degree=1, cell=mesh.ufl_cell()),
-        V_f,
-    )
-    # Collect the microstructure
-    return pulse.Microstructure(f0=f0, s0=s0, n0=n0)
-
-
-def float_to_constant(x: typing.Union[dolfin.Constant, float]) -> dolfin.Constant:
-    """Convert float to a dolfin constant.
-    If value is already a constant, do nothing.
-
-    Parameters
-    ----------
-    x : typing.Union[dolfin.Constant, float]
-        The value to be converted
-
-    Returns
-    -------
-    dolfin.Constant
-        The same value, wrapped in a constant
-    """
-    if isinstance(x, float):
-        return dolfin.Constant(x)
-    return x
-
-
-def setup_diriclet_bc(
-    mesh: dolfin.Mesh,
+def resolve_boundary_conditions(
+    geo: geometry.BaseGeometry,
     pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
     traction: typing.Union[dolfin.Constant, float] = None,
     spring: typing.Union[dolfin.Constant, float] = None,
-    fix_right_plane: bool = False,
-) -> typing.Tuple[pulse.BoundaryConditions, pulse.MarkerFunctions]:
-    """Completely fix the left side of the mesh in the x-direction (i.e the side with the
-    lowest x-values), fix the plane with y=0 in the y-direction, fix the plane with
-    z=0 in the z-direction and apply some boundary condition to the right side.
+    fix_right_plane: bool = config.Config.fix_right_plane,
+) -> pulse.BoundaryConditions:
+    if isinstance(geo, geometry.SlabGeometry):
+        return boundary_conditions.create_slab_boundary_conditions(
+            geo=geo,
+            pre_stretch=pre_stretch,
+            traction=traction,
+            spring=spring,
+            fix_right_plane=fix_right_plane,
+        )
+    elif isinstance(geo, geometry.LeftVentricularGeometry):
+        return boundary_conditions.create_lv_boundary_conditions(
+            geo=geo,
+            traction=traction,
+            spring=spring,
+        )
+    else:
+        # TODO: Implement more boundary conditions
+        raise NotImplementedError
 
 
-    Parameters
-    ----------
-    mesh : dolfin.Mesh
-        A cube or box-shaped mesh
-    pre_stretch : typing.Union[dolfin.Constant, float], optional
-        Value representing the amount of pre stretch, by default None
-    traction : typing.Union[dolfin.Constant, float], optional
-        Value representing the amount of traction, by default None
-    spring : typing.Union[dolfin.Constant, float], optional
-        Value representing the stiffness of the string, by default None
-    fix_right_plane : bool, optional
-        Fix the right plane so that it is not able to move in any direction
-        except the x-direction, by default True
-
-    Returns
-    -------
-    typing.Tuple[pulse.BoundaryConditions, pulse.MarkerFunctions]
-        The boundary conditions and markers for the mesh
-
-    Notes
-    -----
-    If `pre_stretch` if different from None, a pre stretch will be applied
-    to the right side, through a Dirichlet boundary condition.
-
-    If `traction` is different from None then an external force is applied
-    to the right size, through a Neumann boundary condition.
-    A positive value means that the force is compressing while a
-    negative value means that it is stretching
-
-    If `spring` is different from None then the amount of force that needs
-    to be applied to displace the right boundary increases with the amount
-    of displacement. The value of `spring` represents the stiffness of the
-    spring.
-
-    """
-    logger.debug("Setup diriclet bc")
-    # Get the value of the greatest x-coordinate
-    Lx = mesh.mpi_comm().allreduce(mesh.coordinates().max(0)[0], op=MPI.MAX)
-
-    # Define domain to apply dirichlet boundary conditions
-    left = dolfin.CompiledSubDomain("near(x[0], 0) && on_boundary")
-    right = dolfin.CompiledSubDomain("near(x[0], Lx) && on_boundary", Lx=Lx)
-    plane_y0 = dolfin.CompiledSubDomain("near(x[1], 0) && on_boundary")
-    plane_z0 = dolfin.CompiledSubDomain("near(x[2], 0) && on_boundary")
-
-    boundary_markers = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim() - 1)
-    boundary_markers.set_all(0)
-
-    left_marker = 1
-    left.mark(boundary_markers, left_marker)
-    right_marker = 2
-    right.mark(boundary_markers, right_marker)
-    plane_y0_marker = 3
-    plane_y0.mark(boundary_markers, plane_y0_marker)
-    plane_z0_marker = 4
-    plane_z0.mark(boundary_markers, plane_z0_marker)
-
-    marker_functions = pulse.MarkerFunctions(ffun=boundary_markers)
-
-    def dirichlet_bc(W):
-        # W here refers to the state space
-
-        # BC with fixing left size
-        bcs = [
-            dolfin.DirichletBC(
-                W.sub(0).sub(0),  # u_x
-                dolfin.Constant(0.0),
-                left,
-            ),
-            dolfin.DirichletBC(
-                W.sub(0).sub(1),  # u_y
-                dolfin.Constant(0.0),
-                plane_y0,
-            ),
-            dolfin.DirichletBC(
-                W.sub(0).sub(2),  # u_z
-                dolfin.Constant(0.0),
-                plane_z0,
-            ),
-        ]
-
-        if fix_right_plane:
-            bcs.extend(
-                [
-                    dolfin.DirichletBC(
-                        W.sub(0).sub(0),  # u_x
-                        dolfin.Constant(0.0),
-                        right,
-                    ),
-                ],
+def create_slab_problem(
+    material: pulse.Material,
+    geo: geometry.BaseGeometry,
+    bnd_rigid: bool = config.Config.bnd_rigid,
+    pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
+    traction: typing.Union[dolfin.Constant, float] = None,
+    spring: typing.Union[dolfin.Constant, float] = None,
+    fix_right_plane: bool = config.Config.fix_right_plane,
+    linear_solver="mumps",
+    use_custom_newton_solver: bool = config.Config.mechanics_use_custom_newton_solver,
+) -> MechanicsProblem:
+    Problem = MechanicsProblem
+    if bnd_rigid:
+        if not isinstance(geo, geometry.SlabGeometry):
+            raise RuntimeError(
+                "Can only use Rigid boundary conditions with SlabGeometry",
             )
-
-        if pre_stretch is not None:
-            bcs.append(
-                dolfin.DirichletBC(
-                    W.sub(0).sub(0),
-                    float_to_constant(pre_stretch),
-                    right,
-                ),
-            )
-        return bcs
-
-    neumann_bc = []
-    if traction is not None:
-        neumann_bc.append(
-            pulse.NeumannBC(
-                traction=float_to_constant(traction),
-                marker=right_marker,
-            ),
+        bcs = None
+        Problem = RigidMotionProblem
+    else:
+        bcs = resolve_boundary_conditions(
+            geo=geo,
+            pre_stretch=pre_stretch,
+            traction=traction,
+            spring=spring,
+            fix_right_plane=fix_right_plane,
         )
 
-    robin_bc = []
-    if spring is not None:
-        robin_bc.append(
-            pulse.RobinBC(value=float_to_constant(spring), marker=right_marker),
-        )
-    bcs = pulse.BoundaryConditions(
-        dirichlet=(dirichlet_bc,),
-        neumann=neumann_bc,
-        robin=robin_bc,
+    verbose = logger.getEffectiveLevel() < logging.INFO
+    return Problem(
+        geo,
+        material,
+        bcs,
+        solver_parameters={"linear_solver": linear_solver, "verbose": verbose},
+        use_custom_newton_solver=use_custom_newton_solver,
     )
-
-    return bcs, marker_functions
