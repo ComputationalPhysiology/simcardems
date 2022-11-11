@@ -7,7 +7,7 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     container:
-      image: quay.io/fenicsproject/stable:latest
+      image: finsberg/fenics
 
     steps:
       - uses: actions/checkout@v2
