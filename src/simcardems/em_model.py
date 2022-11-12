@@ -24,16 +24,14 @@ class EMCoupling:
         self.XS_ep = dolfin.Function(self.V_ep, name="XS_ep")
         self.XW_ep = dolfin.Function(self.V_ep, name="XW_ep")
 
-        # self.Q_ep = pulse.QuadratureSpace(self.ep_mesh, degree=3, dim=1)
-        self.Q_ep = self.V_ep  # This should eventually be a quadrature space
-        self.lmbda_ep = dolfin.Function(self.Q_ep, name="lambda_ep")
-        self.lmbda_ep_prev = dolfin.Function(self.Q_ep, name="lambda_ep_prev")
+        self.lmbda_ep = dolfin.Function(self.V_ep, name="lambda_ep")
+        self.lmbda_ep_prev = dolfin.Function(self.V_ep, name="lambda_ep_prev")
         self.lmbda_ep_prev.vector()[:] = 1.0
-        self._dLambda_ep = dolfin.Function(self.Q_ep, name="lambda_ep")
-        self.Zetas_ep = dolfin.Function(self.Q_ep, name="Zetas_ep")
-        self.Zetaw_ep = dolfin.Function(self.Q_ep, name="Zetaw_ep")
-        self.Zetas_ep_prev = dolfin.Function(self.Q_ep, name="Zetas_ep_prev")
-        self.Zetaw_ep_prev = dolfin.Function(self.Q_ep, name="Zetaw_ep_prev")
+        self._dLambda_ep = dolfin.Function(self.V_ep, name="lambda_ep")
+        self.Zetas_ep = dolfin.Function(self.V_ep, name="Zetas_ep")
+        self.Zetaw_ep = dolfin.Function(self.V_ep, name="Zetaw_ep")
+        self.Zetas_ep_prev = dolfin.Function(self.V_ep, name="Zetas_ep_prev")
+        self.Zetaw_ep_prev = dolfin.Function(self.V_ep, name="Zetaw_ep_prev")
 
         self.W_ep = dolfin.VectorFunctionSpace(self.ep_mesh, "CG", 2)
         self.u_ep = dolfin.Function(self.W_ep)
@@ -66,12 +64,16 @@ class EMCoupling:
         logger.debug("Registering mech model")
         self._mech_solver = solver
 
-        self._u_subspace_index = 1 if solver.boundary_condition == "rigid" else 0
+        self._u_subspace_index = (
+            1 if type(solver).__name__ == "RigidMotionProblem" else 0
+        )
         self.u_mech, self.u_mech_assigner = utils.setup_assigner(
             solver.state,
             self._u_subspace_index,
         )
-        self.f0 = solver.material.f0
+        # Don't know why we need to set this one
+        self.u_mech.set_allow_extrapolation(True)
+        self.f0 = solver.material.active.f0
         self.mech_solver = solver
         self.mechanics_to_coupling()
         logger.debug("Done registering EP model")
@@ -93,9 +95,10 @@ class EMCoupling:
         logger.debug("Done interpolating mechanics")
 
     def _project_lmbda(self):
-        F = dolfin.grad(self.u_mech) + dolfin.Identity(3)
-        f = F * self.f0
-        self.lmbda_ep.assign(dolfin.project(dolfin.sqrt(f**2), self.Q_ep))
+
+        F = dolfin.grad(self.u_ep) + dolfin.Identity(3)
+        f = F * self.geometry.f0_ep
+        self.lmbda_ep.assign(dolfin.project(dolfin.sqrt(f**2), self.V_ep))
 
     def _compute_zeta(self):
         self.Zetaw_ep.vector()[:] = land_model.advance_Zeta(

@@ -217,7 +217,6 @@ class LandModel(pulse.ActiveModel):
             dolfin.project(
                 dolfin.sqrt(f**2),
                 self.cg1_space,
-                form_compiler_parameters={"representation": "quadrature"},
             ),
         )
         self.update_Zetas()
