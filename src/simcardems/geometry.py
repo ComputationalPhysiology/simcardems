@@ -418,6 +418,8 @@ class BaseGeometry(abc.ABC):
             ffun = create_slab_facet_function(
                 mesh,
                 lx=parameters["lx"],
+                ly=parameters["ly"],
+                lz=parameters["lz"],
                 markers=markers,
             )
 
@@ -492,7 +494,9 @@ class SlabGeometry(BaseGeometry):
             "X0": (2, 1),
             "X1": (2, 2),
             "Y0": (2, 3),
-            "Z0": (2, 4),
+            "Y1": (2, 4),
+            "Z0": (2, 5),
+            "Z1": (2, 6),
         }
 
     def _default_microstructure(
@@ -504,9 +508,11 @@ class SlabGeometry(BaseGeometry):
 
     def _default_ffun(self, mesh: dolfin.Mesh) -> dolfin.MeshFunction:
         return create_slab_facet_function(
-            mesh,
-            self.parameters["lx"],
-            self.markers,
+            mesh=mesh,
+            lx=self.parameters["lx"],
+            ly=self.parameters["ly"],
+            lz=self.parameters["lz"],
+            markers=self.markers,
         )
 
     def _default_mesh(self) -> dolfin.Mesh:
@@ -547,23 +553,31 @@ class SlabGeometry(BaseGeometry):
 def create_slab_facet_function(
     mesh: dolfin.Mesh,
     lx: float,
+    ly: float,
+    lz: float,
     markers: Optional[Dict[str, Tuple[int, int]]] = None,
 ) -> dolfin.MeshFunction:
     if markers is None:
         markers = SlabGeometry.default_markers()
     # Define domain to apply dirichlet boundary conditions
-    left = dolfin.CompiledSubDomain("near(x[0], 0) && on_boundary")
-    right = dolfin.CompiledSubDomain("near(x[0], lx) && on_boundary", lx=lx)
-    plane_y0 = dolfin.CompiledSubDomain("near(x[1], 0) && on_boundary")
-    plane_z0 = dolfin.CompiledSubDomain("near(x[2], 0) && on_boundary")
+    x0 = dolfin.CompiledSubDomain("near(x[0], 0) && on_boundary")
+    x1 = dolfin.CompiledSubDomain("near(x[0], lx) && on_boundary", lx=lx)
+    y0 = dolfin.CompiledSubDomain("near(x[1], 0) && on_boundary")
+    y1 = dolfin.CompiledSubDomain("near(x[1], ly) && on_boundary", ly=ly)
+    z0 = dolfin.CompiledSubDomain("near(x[2], 0) && on_boundary")
+    z1 = dolfin.CompiledSubDomain("near(x[2], lz) && on_boundary", lz=lz)
 
     ffun = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim() - 1)
     ffun.set_all(0)
 
-    left.mark(ffun, markers["X0"][1])
-    right.mark(ffun, markers["X1"][1])
-    plane_y0.mark(ffun, markers["Y0"][1])
-    plane_z0.mark(ffun, markers["Z0"][1])
+    x0.mark(ffun, markers["X0"][1])
+    x1.mark(ffun, markers["X1"][1])
+
+    y0.mark(ffun, markers["Y0"][1])
+    y1.mark(ffun, markers["Y1"][1])
+
+    z0.mark(ffun, markers["Z0"][1])
+    z1.mark(ffun, markers["Z1"][1])
     return ffun
 
 

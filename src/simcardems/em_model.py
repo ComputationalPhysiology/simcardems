@@ -66,7 +66,9 @@ class EMCoupling:
         logger.debug("Registering mech model")
         self._mech_solver = solver
 
-        self._u_subspace_index = 1 if solver.boundary_condition == "rigid" else 0
+        self._u_subspace_index = (
+            1 if type(solver).__name__ == "RigidMotionProblem" else 0
+        )
         self.u_mech, self.u_mech_assigner = utils.setup_assigner(
             solver.state,
             self._u_subspace_index,
