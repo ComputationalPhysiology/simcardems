@@ -26,10 +26,6 @@ def main(outdir):
     config = simcardems.Config(
         outdir=outdir,
         T=1000,
-        dx=0.5,
-        lx=1.0,
-        ly=1.0,
-        lz=1.0,
         load_state=True,
     )
     t0 = time.perf_counter()
