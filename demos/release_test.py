@@ -43,14 +43,15 @@ pulse.set_log_level(logging.WARNING)
 
 
 class ReleaseRunner(simcardems.Runner):
-    def __init__(self, T_release, *args, **kwargs):
+    def __init__(self, config, T_release):
         self._T_release = T_release
         self.pre_stretch = config.pre_stretch
         assert self.pre_stretch is not None
-        super().__init__(*args, **kwargs)
+
+        super().__init__(conf=config)
         # Make sure we have a SlabGeometry
         assert isinstance(self.coupling.geometry, simcardems.geometry.SlabGeometry)
-        self.Lx = self.coupling.geometry.lx
+        self.Lx = self.coupling.geometry.parameters["lx"]
         self._print_message = True
 
     def _post_mechanics_solve(self) -> None:
@@ -84,8 +85,19 @@ def postprocess(outdir: Path):
 
 
 if __name__ == "__main__":
-    outdir = Path("release_test_results")
-    config = simcardems.Config(outdir=outdir, T=200, pre_stretch=dolfin.Constant(0.1))
+    # Get path to this file
+    here = Path(__file__).absolute().parent
+    outdir = here / "release_test_results"
+    geometry_path = here / "geometries/slab.h5"
+    geometry_schema_path = here / "geometries/slab.json"
+
+    config = simcardems.Config(
+        outdir=outdir,
+        T=200,
+        pre_stretch=dolfin.Constant(0.1),
+        geometry_path=geometry_path,
+        geometry_schema_path=geometry_schema_path,
+    )
     main(config=config)
     postprocess(outdir=outdir)
 

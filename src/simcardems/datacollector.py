@@ -10,7 +10,10 @@ from dolfin import tetrahedron  # noqa: F401
 from dolfin import VectorElement  # noqa: F401
 
 from . import utils
+from .geometry import BaseGeometry
+from .geometry import load_geometry
 from .save_load_functions import h5pyfile
+from .value_extractor import ValueExtractor
 
 logger = utils.getLogger(__name__)
 
@@ -21,19 +24,17 @@ class DataGroups(Enum):
 
 
 class DataCollector:
-    def __init__(self, outdir, mech_mesh, ep_mesh, reset_state=True) -> None:
+    def __init__(self, outdir, geo: BaseGeometry, reset_state=True) -> None:
         self.outdir = Path(outdir)
         self._results_file = self.outdir.joinpath("results.h5")
-        self.comm = ep_mesh.mpi_comm()  # FIXME: Is this important?
+        self.comm = geo.mesh.mpi_comm()  # FIXME: Is this important?
 
         if reset_state:
             utils.remove_file(self._results_file)
 
         self._times_stamps = set()
         if not self._results_file.is_file():
-            with dolfin.HDF5File(self.comm, self.results_file, "w") as h5file:
-                h5file.write(mech_mesh, "/mechanics/mesh")
-                h5file.write(ep_mesh, "/ep/mesh")
+            geo.dump(self.results_file)
 
         else:
 
@@ -90,22 +91,18 @@ class DataCollector:
 class DataLoader:
     def __init__(self, h5name) -> None:
 
+        self._h5file = None
         self._h5name = Path(h5name)
         if not self._h5name.is_file():
             raise FileNotFoundError(f"File {h5name} does not exist")
 
+        self.geo = load_geometry(self._h5name)
+
         with h5pyfile(self._h5name) as h5file:
-
-            # Check that we have mesh
-
-            if not ("ep" in h5file and "mesh" in h5file["ep"]):
-                raise ValueError("No ep mesh in results file. Cannot load data")
-            if not ("mechanics" in h5file and "mesh" in h5file["mechanics"]):
-                raise ValueError("No mechanics mesh in results file. Cannot load data")
 
             # Find the remaining functions
             self.names = {
-                group: [name for name in h5file[group].keys() if name != "mesh"]
+                group: [name for name in h5file.get(group, {}).keys()]
                 for group in ["ep", "mechanics"]
             }
             if len(self.names["ep"]) + len(self.names["mechanics"]) == 0:
@@ -140,8 +137,6 @@ class DataLoader:
                 for group, names in self.names.items()
             }
 
-        self.ep_mesh = dolfin.Mesh()
-        self.mech_mesh = dolfin.Mesh()
         self._h5file = dolfin.HDF5File(
             self.ep_mesh.mpi_comm(),
             self._h5name.as_posix(),
@@ -149,6 +144,15 @@ class DataLoader:
         )
 
         self._create_functions()
+        self.value_extractor = ValueExtractor(self.geo)
+
+    @property
+    def ep_mesh(self):
+        return self.geo.ep_mesh
+
+    @property
+    def mech_mesh(self):
+        return self.geo.mechanics_mesh
 
     @property
     def size(self) -> int:
@@ -162,9 +166,6 @@ class DataLoader:
             self._h5file.close()
 
     def _create_functions(self):
-        self._h5file.read(self.ep_mesh, "/ep/mesh", True)
-        self._h5file.read(self.mech_mesh, "/mechanics/mesh", True)
-
         self._function_spaces = {}
 
         for group, signature_dict in self._signatures.items():
@@ -188,6 +189,33 @@ class DataLoader:
             }
             for group, names in self.names.items()
         }
+
+        self._dofs = {
+            group: {
+                name: func.function_space().tabulate_dof_coordinates()
+                for name, func in functions.items()
+            }
+            for group, functions in self._functions.items()
+        }
+
+    def extract_value(
+        self,
+        group: DataGroups,
+        name: str,
+        t: Union[str, float],
+        reduction: str,
+    ):
+        func = self.get(group, name, t)
+        dofs = self._dofs[self._group_to_str(group)][name]
+        return self.value_extractor.eval(func, value=reduction, dofs=dofs)
+
+    def _group_to_str(self, group):
+        group_str = utils.enum2str(group, DataGroups)
+        if group_str not in self.names:
+            raise KeyError(
+                f"Cannot find group {group} in names, expected of of {self.names.keys()}",
+            )
+        return group_str
 
     def get(
         self,
@@ -221,12 +249,10 @@ class DataLoader:
         KeyError
             If 't' provided is not among the time stamps
         """
-        group_str = utils.enum2str(group, DataGroups)
-        if group_str not in self.names:
-            raise KeyError(
-                f"Cannot find group {group} in names, expected of of {self.names.keys()}",
-            )
+        if self._h5file is None:
+            raise RuntimeError(f"Unable to read from file {self._h5name}")
 
+        group_str = self._group_to_str(group)
         names = self.names[group_str]
         if f"{name}" not in names:
             raise KeyError(

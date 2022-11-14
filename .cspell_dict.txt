@@ -29,7 +29,7 @@ bCaMK
 Bcass
 Beta0
 Beta1
-bnd_cond
+bnd_rigid
 Boundary
 boxmesh
 BSLmax
@@ -42,6 +42,7 @@ CaMKo
 CaMKt
 cansr
 cao
+capfd
 cardiomyocites
 cardiomyocytes
 cass
@@ -251,6 +252,8 @@ maxlmbda
 Mcontrol
 mechanicsproblem
 mechano
+meshfunction
+meshfunctions
 MgADP
 MgATP
 minlmbda
@@ -277,6 +280,7 @@ numpyfy
 onlylastbeat
 ORdmm_Land
 outdir
+outpath
 p_a
 p_b
 p_k
@@ -298,6 +302,7 @@ popu
 postprocess
 preconditioner
 preonly
+psize
 Pueyo
 pypi
 pyplot

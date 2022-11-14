@@ -19,6 +19,7 @@ parts:
     - file: "cli"
     - file: "docker"
     - file: "release_test"
+    - file: "ventricular_geometry"
     - file: "gui"
 
   - caption: Verification

@@ -1,13 +1,14 @@
-import logging
+import math
 import typing
-from collections import namedtuple
 from pathlib import Path
+from typing import NamedTuple
 
 import cbcbeat
 import dolfin
 import pulse
 from tqdm import tqdm
 
+from . import config
 from . import em_model
 from . import ep_model
 from . import geometry
@@ -15,25 +16,25 @@ from . import land_model
 from . import mechanics_model
 from . import save_load_functions as io
 from . import utils
-from .config import Config
+from .em_model import EMCoupling
 from .ORdmm_Land import ORdmm_Land as CellModel
 
 logger = utils.getLogger(__name__)
 
-EMState = namedtuple(
-    "EMState",
-    ["coupling", "solver", "mech_heart", "t0"],
-)
+
+class EMState(NamedTuple):
+    coupling: EMCoupling
+    solver: cbcbeat.SplittingSolver
+    mech_heart: pulse.MechanicsProblem
+    geometry: geometry.BaseGeometry
+    t0: float
 
 
-def setup_EM_model(config: Config):
+def setup_EM_model(config: config.Config):
 
-    geo = geometry.SlabGeometry(
-        lx=config.lx,
-        ly=config.ly,
-        lz=config.lz,
-        dx=config.dx,
-        num_refinements=config.num_refinements,
+    geo = geometry.load_geometry(
+        mesh_path=config.geometry_path,
+        schema_path=config.geometry_schema_path,
     )
 
     coupling = em_model.EMCoupling(geo)
@@ -53,7 +54,8 @@ def setup_EM_model(config: Config):
 
     mech_heart = setup_mechanics_solver(
         coupling=coupling,
-        bnd_cond=config.bnd_cond,
+        geo=geo,
+        bnd_rigid=config.bnd_rigid,
         cell_params=solver.ode_solver._model.parameters(),
         pre_stretch=config.pre_stretch,
         traction=config.traction,
@@ -68,22 +70,24 @@ def setup_EM_model(config: Config):
         coupling=coupling,
         solver=solver,
         mech_heart=mech_heart,
+        geometry=geo,
         t0=0,
     )
 
 
 def setup_mechanics_solver(
     coupling: em_model.EMCoupling,
-    bnd_cond: mechanics_model.BoundaryConditions,
+    geo: geometry.BaseGeometry,
     cell_params,
+    bnd_rigid: bool = config.Config.bnd_rigid,
     pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
     traction: typing.Union[dolfin.Constant, float] = None,
     spring: typing.Union[dolfin.Constant, float] = None,
-    fix_right_plane: bool = Config.fix_right_plane,
-    mechanics_ode_scheme: land_model.Scheme = Config.mechanics_ode_scheme,
+    fix_right_plane: bool = config.Config.fix_right_plane,
+    mechanics_ode_scheme: land_model.Scheme = config.Config.mechanics_ode_scheme,
     set_material: str = "",
     linear_solver="mumps",
-    use_custom_newton_solver: bool = Config.mechanics_use_custom_newton_solver,
+    use_custom_newton_solver: bool = config.Config.mechanics_use_custom_newton_solver,
     Zetas_prev=None,
     Zetaw_prev=None,
     lmbda_prev=None,
@@ -92,26 +96,6 @@ def setup_mechanics_solver(
     """Setup mechanics model with dirichlet boundary conditions or rigid motion."""
     logger.info("Set up mechanics model")
 
-    microstructure = mechanics_model.setup_microstructure(coupling.mech_mesh)
-
-    marker_functions = None
-    bcs = None
-    if bnd_cond == mechanics_model.BoundaryConditions.dirichlet:
-        bcs, marker_functions = mechanics_model.setup_diriclet_bc(
-            mesh=coupling.mech_mesh,
-            pre_stretch=pre_stretch,
-            traction=traction,
-            spring=spring,
-            fix_right_plane=fix_right_plane,
-        )
-    # Create the geometry
-    geometry = pulse.Geometry(
-        mesh=coupling.mech_mesh,
-        microstructure=microstructure,
-        marker_functions=marker_functions,
-    )
-    # Create the material
-    # material_parameters = pulse.HolzapfelOgden.default_parameters()
     # Use parameters from Biaxial test in Holzapfel 2019 (Table 1).
     material_parameters = dict(
         a=2.28,
@@ -125,9 +109,9 @@ def setup_mechanics_solver(
     )
 
     active_model = land_model.LandModel(
-        f0=microstructure.f0,
-        s0=microstructure.s0,
-        n0=microstructure.n0,
+        f0=geo.f0,
+        s0=geo.s0,
+        n0=geo.n0,
         eta=0,
         parameters=cell_params,
         XS=coupling.XS_mech,
@@ -156,16 +140,15 @@ def setup_mechanics_solver(
             active_model=active_model,
         )
 
-    Problem = mechanics_model.MechanicsProblem
-    if bnd_cond == mechanics_model.BoundaryConditions.rigid:
-        Problem = mechanics_model.RigidMotionProblem
-
-    verbose = logger.getEffectiveLevel() < logging.INFO
-    problem = Problem(
-        geometry,
-        material,
-        bcs,
-        solver_parameters={"linear_solver": linear_solver, "verbose": verbose},
+    problem = mechanics_model.create_slab_problem(
+        material=material,
+        geo=geo,
+        bnd_rigid=bnd_rigid,
+        pre_stretch=pre_stretch,
+        traction=traction,
+        spring=spring,
+        fix_right_plane=fix_right_plane,
+        linear_solver=linear_solver,
         use_custom_newton_solver=use_custom_newton_solver,
     )
 
@@ -185,16 +168,16 @@ def setup_mechanics_solver(
 def setup_ep_solver(
     dt,
     coupling,
-    scheme=Config.ep_ode_scheme,
-    theta=Config.ep_theta,
-    preconditioner=Config.ep_preconditioner,
+    scheme=config.Config.ep_ode_scheme,
+    theta=config.Config.ep_theta,
+    preconditioner=config.Config.ep_preconditioner,
     cell_params=None,
     cell_inits=None,
     cell_init_file=None,
     drug_factors_file=None,
     popu_factors_file=None,
-    disease_state=Config.disease_state,
-    PCL=Config.PCL,
+    disease_state=config.Config.disease_state,
+    PCL=config.Config.PCL,
 ):
     ps = ep_model.setup_splitting_solver_parameters(
         theta=theta,
@@ -242,44 +225,45 @@ def setup_ep_solver(
 class Runner:
     def __init__(
         self,
-        config: typing.Optional[Config] = None,
+        conf: typing.Optional[config.Config] = None,
         empty: bool = False,
         **kwargs,
     ) -> None:
 
-        if config is None:
-            config = Config()
+        if conf is None:
+            conf = config.Config()
 
-        self._config = config
+        self._config = conf
 
         if empty:
             return
 
-        self._state_path = Path(config.outdir).joinpath("state.h5")
-        reset = not config.load_state
+        self._state_path = Path(self._config.outdir).joinpath("state.h5")
+        reset = not self._config.load_state
         if not reset and self._state_path.is_file():
             # Load state
             logger.info("Load previously saved state")
-            coupling, ep_solver, mech_heart, t0 = io.load_state(
+            coupling, ep_solver, mech_heart, geo, t0 = io.load_state(
                 self._state_path,
-                config.drug_factors_file,
-                config.popu_factors_file,
-                config.disease_state,
-                config.PCL,  # Set bcl from cli
+                self._config.drug_factors_file,
+                self._config.popu_factors_file,
+                self._config.disease_state,
+                self._config.PCL,  # Set bcl from cli
             )
         else:
             logger.info("Create a new state")
             # Create a new state
-            coupling, ep_solver, mech_heart, t0 = setup_EM_model(config)
+            coupling, ep_solver, mech_heart, geo, t0 = setup_EM_model(self._config)
         self.coupling: em_model.EMCoupling = coupling
         self.ep_solver: cbcbeat.SplittingSolver = ep_solver
         self.mech_heart: mechanics_model.MechanicsProblem = mech_heart
+        self.geometry = geo
         self._t0: float = t0
 
         self._reset = reset
 
         self._setup_assigners()
-        self.outdir = config.outdir
+        self.outdir = self._config.outdir
 
         logger.info(f"Starting at t0={self._t0}")
 
@@ -290,14 +274,6 @@ class Runner:
     @_dt.setter
     def _dt(self, value):
         self._config.dt = value
-
-    @property
-    def _bnd_cond(self):
-        return self._config.bnd_cond
-
-    @_bnd_cond.setter
-    def _bnd_cond(self, value):
-        self._config.bnd_cond = value
 
     @property
     def outdir(self):
@@ -339,6 +315,7 @@ class Runner:
         coupling: em_model.EMCoupling,
         ep_solver: cbcbeat.SplittingSolver,
         mech_heart: mechanics_model.MechanicsProblem,
+        geo: geometry.BaseGeometry,
         reset: bool = True,
         t0: float = 0,
     ):
@@ -346,11 +323,11 @@ class Runner:
         obj.coupling = coupling
         obj.ep_solver = ep_solver
         obj.mech_heart = mech_heart
+        obj.geometry = geo
         obj._t0 = t0
 
         obj._reset = reset
         obj._dt = ep_solver.parameters["MonodomainSolver"]["default_timestep"]
-        obj._bnd_cond = mech_heart.boundary_condition
         obj._setup_assigners()
         return obj
 
@@ -370,7 +347,7 @@ class Runner:
         self._pre_XS, self._preXS_assigner = utils.setup_assigner(self._vs, 40)
         self._pre_XW, self._preXW_assigner = utils.setup_assigner(self._vs, 41)
 
-        self._u_subspace_index = 1 if self._bnd_cond == "rigid" else 0
+        self._u_subspace_index = self.mech_heart.u_subspace_index
         self._u, self._u_assigner = utils.setup_assigner(
             self.mech_heart.state,
             self._u_subspace_index,
@@ -404,9 +381,8 @@ class Runner:
         from .datacollector import DataCollector
 
         self.collector = DataCollector(
-            self._outdir,
-            self.coupling.mech_mesh,
-            self.coupling.ep_mesh,
+            outdir=self._outdir,
+            geo=self.geometry,
             reset_state=self._reset,
         )
         for group, name, f in [
@@ -494,21 +470,31 @@ class Runner:
 
         self._post_mechanics_solve()
 
+    def save_state(self, path):
+        io.save_state(
+            path,
+            solver=self.ep_solver,
+            mech_heart=self.mech_heart,
+            geo=self.geometry,
+            dt=self._dt,
+            t0=TimeStepper.ns2ms(self.t),
+        )
+
     def solve(
         self,
-        T: float = Config.T,
-        save_freq: int = Config.save_freq,
-        show_progress_bar: bool = Config.show_progress_bar,
+        T: float = config.Config.T,
+        save_freq: int = config.Config.save_freq,
+        show_progress_bar: bool = config.Config.show_progress_bar,
         st_progress: typing.Any = None,
     ):
         if not hasattr(self, "_outdir"):
             raise RuntimeError("Please set the output directory")
 
         # Truncate
-        if Path("residual.txt").is_file():
-            fr = open("residual.txt", "w")
-            fr.truncate(0)
-            fr.close()
+        # if Path("residual.txt").is_file():
+        #     fr = open("residual.txt", "w")
+        #     fr.truncate(0)
+        #     fr.close()
 
         save_it = int(save_freq / self._dt)
         self.create_time_stepper(T, use_ns=True, st_progress=st_progress)
@@ -518,11 +504,11 @@ class Runner:
         )
 
         # Store initial state
-        save_state_every_n_beat = 5  # Save state every fifth beat
-        five_beats = (
-            TimeStepper.ms2ns(save_state_every_n_beat * 1000.0) / self._time_stepper.dt
-        )
-        beat_nr = 0
+        # save_state_every_n_beat = 5  # Save state every fifth beat
+        # five_beats = (
+        #     TimeStepper.ms2ns(save_state_every_n_beat * 1000.0) / self._time_stepper.dt
+        # )
+        # beat_nr = 0
         self.mech_heart.material.active.start_time(self.t)
 
         for (i, (t0, t)) in enumerate(pbar):
@@ -551,44 +537,30 @@ class Runner:
                 self.store()
 
             # Store state every 5 beats
-            if i > 0 and (i + 1) % five_beats == 0:
-                io.save_state(
-                    self._state_path.parent.joinpath(
-                        f"state_{beat_nr}beat.h5",
-                    ),
-                    solver=self.ep_solver,
-                    mech_heart=self.mech_heart,
-                    coupling=self.coupling,
-                    dt=self._dt,
-                    bnd_cond=self._bnd_cond,
-                    t0=TimeStepper.ns2ms(self.t),
-                )
-                beat_nr += save_state_every_n_beat
+            # if i > 0 and (i + 1) % five_beats == 0:
+            #     self.save_state(
+            #         self._state_path.parent.joinpath(
+            #             f"state_{beat_nr}beat.h5",
+            #         ),
+            #     )
+            #     beat_nr += save_state_every_n_beat
 
-            # Residual file : End of line after each time step
-            if (
-                Path("residual.txt").is_file()
-                and dolfin.MPI.rank(dolfin.MPI.comm_world) == 0
-            ):
-                fr = open("residual.txt", "a")
-                fr.write("\n")
-                fr.close()
+            # # Residual file : End of line after each time step
+            # if (
+            #     Path("residual.txt").is_file()
+            #     and dolfin.MPI.rank(dolfin.MPI.comm_world) == 0
+            # ):
+            #     fr = open("residual.txt", "a")
+            #     fr.write("\n")
+            #     fr.close()
 
-        io.save_state(
-            self._state_path,
-            solver=self.ep_solver,
-            mech_heart=self.mech_heart,
-            coupling=self.coupling,
-            dt=self._dt,
-            bnd_cond=self._bnd_cond,
-            t0=TimeStepper.ns2ms(self.t),
-        )
+        self.save_state(self._state_path)
 
         # Copy residual file to output dir (if exists)
-        if Path("residual.txt").is_file():
-            Path(self._outdir).joinpath("residual.txt").write_text(
-                Path("residual.txt").read_text(),
-            )
+        # if Path("residual.txt").is_file():
+        #     Path(self._outdir).joinpath("residual.txt").write_text(
+        #         Path("residual.txt").read_text(),
+        #     )
 
 
 class _tqdm:
@@ -652,7 +624,7 @@ class TimeStepper:
 
     @T.setter
     def T(self, T: float) -> None:
-        if self.t0 >= T:
+        if self.t0 > T:
             raise ValueError("Start time has to be lower than end time")
         self._T = T
 
@@ -667,6 +639,8 @@ class TimeStepper:
 
     @property
     def total_steps(self) -> int:
+        if math.isclose(self.T, self.t0):
+            return 0
         return round((self.T - self.t0) / self.dt)
 
     def __iter__(self):
@@ -716,7 +690,7 @@ class TimeStepper:
 
 def create_progressbar(
     time_stepper: TimeStepper,
-    show_progress_bar: bool = Config.show_progress_bar,
+    show_progress_bar: bool = config.Config.show_progress_bar,
 ):
     if show_progress_bar:
         # Show progressbar
