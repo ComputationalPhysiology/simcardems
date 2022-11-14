@@ -182,6 +182,11 @@ const thebe_selector_output = ".output, .cell_output"
   </a>
  </li>
  <li class="toctree-l1">
+  <a class="reference internal" href="ventricular_geometry.html">
+   Left ventricular geometry
+  </a>
+ </li>
+ <li class="toctree-l1">
   <a class="reference internal" href="gui.html">
    Graphical user interface
   </a>
@@ -389,7 +394,10 @@ const thebe_selector_output = ".output, .cell_output"
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">path_to_results</span></code> directs to the folder containing the <code class="docutils literal notranslate"><span class="pre">results.h5</span></code> file.
-A figure is generated showing traces of membrane potential (<span class="math notranslate nohighlight">\(V\)</span>), intracellular calcium concentration (<span class="math notranslate nohighlight">\(Ca\)</span>), stress (<span class="math notranslate nohighlight">\(\lambda\)</span>) and active tension (<span class="math notranslate nohighlight">\(T_a\)</span>). This figure is saved in the folder containing the original data.</p>
+A figure is generated showing traces of membrane potential (<span class="math notranslate nohighlight">\(V\)</span>), intracellular calcium concentration (<span class="math notranslate nohighlight">\(Ca\)</span>), stress (<span class="math notranslate nohighlight">\(\lambda\)</span>) and active tension (<span class="math notranslate nohighlight">\(T_a\)</span>). This figure is saved in the folder containing the original data. By the default trace is extracted by averaging over the domain. For a slab geometry you can also get the value at the center of the slab using the command</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python3 -m simcardems postprocess &quot;path_to_results&quot; --plot-state-traces --reduction=&quot;center&quot;
+</pre></div>
+</div>
 </div>
 <div class="section" id="create-xdmf-files">
 <h2>Create XDMF-files<a class="headerlink" href="#create-xdmf-files" title="Permalink to this headline">¶</a></h2>

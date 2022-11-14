@@ -178,6 +178,11 @@ const thebe_selector_output = ".output, .cell_output"
   </a>
  </li>
  <li class="toctree-l1">
+  <a class="reference internal" href="../../ventricular_geometry.html">
+   Left ventricular geometry
+  </a>
+ </li>
+ <li class="toctree-l1">
   <a class="reference internal" href="../../gui.html">
    Graphical user interface
   </a>
@@ -370,6 +375,11 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="bp">self</span><span class="o">.</span><span class="n">Zetaw_mech</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">active</span><span class="o">.</span><span class="n">Zetaw_prev</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lmbda_mech</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">active</span><span class="o">.</span><span class="n">lmbda_prev</span>
 
+        <span class="c1"># Note sure why we need to do this for the LV?</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lmbda_mech</span><span class="o">.</span><span class="n">set_allow_extrapolation</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Zetas_mech</span><span class="o">.</span><span class="n">set_allow_extrapolation</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Zetaw_mech</span><span class="o">.</span><span class="n">set_allow_extrapolation</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">mechanics_to_coupling</span><span class="p">()</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Done registering EP model&quot;</span><span class="p">)</span></div>
 
@@ -381,16 +391,12 @@ const thebe_selector_output = ".output, .cell_output"
 
 <div class="viewcode-block" id="EMCoupling.coupling_to_mechanics"><a class="viewcode-back" href="../../api.html#simcardems.em_model.EMCoupling.coupling_to_mechanics">[docs]</a>    <span class="k">def</span> <span class="nf">coupling_to_mechanics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Interpolate mechanics&quot;</span><span class="p">)</span>
-        <span class="c1"># print(&quot;XS = &quot;, self.XS_mech.vector().get_local())</span>
-        <span class="c1"># print(&quot;XW = &quot;, self.XW_mech.vector().get_local())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">XS_mech</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">dolfin</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">XS_ep</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">V_mech</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">XW_mech</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">dolfin</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">XW_ep</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">V_mech</span><span class="p">))</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Done interpolating mechanics&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="EMCoupling.mechanics_to_coupling"><a class="viewcode-back" href="../../api.html#simcardems.em_model.EMCoupling.mechanics_to_coupling">[docs]</a>    <span class="k">def</span> <span class="nf">mechanics_to_coupling</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Interpolate EP&quot;</span><span class="p">)</span>
-        <span class="c1"># print(&quot;Zetas = &quot;, self.Zetas_mech.vector().get_local())</span>
-        <span class="c1"># print(&quot;Zetaw = &quot;, self.Zetaw_mech.vector().get_local())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lmbda_ep</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">dolfin</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lmbda_mech</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">V_ep</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Zetas_ep</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">dolfin</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Zetas_mech</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">V_ep</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Zetaw_ep</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">dolfin</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Zetaw_mech</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">V_ep</span><span class="p">))</span>

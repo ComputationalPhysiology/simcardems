@@ -178,6 +178,11 @@ const thebe_selector_output = ".output, .cell_output"
   </a>
  </li>
  <li class="toctree-l1">
+  <a class="reference internal" href="../../ventricular_geometry.html">
+   Left ventricular geometry
+  </a>
+ </li>
+ <li class="toctree-l1">
   <a class="reference internal" href="../../gui.html">
    Graphical user interface
   </a>
@@ -326,7 +331,10 @@ const thebe_selector_output = ".output, .cell_output"
 <span class="kn">from</span> <span class="nn">dolfin</span> <span class="kn">import</span> <span class="n">VectorElement</span>  <span class="c1"># noqa: F401</span>
 
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">utils</span>
+<span class="kn">from</span> <span class="nn">.geometry</span> <span class="kn">import</span> <span class="n">BaseGeometry</span>
+<span class="kn">from</span> <span class="nn">.geometry</span> <span class="kn">import</span> <span class="n">load_geometry</span>
 <span class="kn">from</span> <span class="nn">.save_load_functions</span> <span class="kn">import</span> <span class="n">h5pyfile</span>
+<span class="kn">from</span> <span class="nn">.value_extractor</span> <span class="kn">import</span> <span class="n">ValueExtractor</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -337,19 +345,17 @@ const thebe_selector_output = ".output, .cell_output"
 
 
 <div class="viewcode-block" id="DataCollector"><a class="viewcode-back" href="../../api.html#simcardems.datacollector.DataCollector">[docs]</a><span class="k">class</span> <span class="nc">DataCollector</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outdir</span><span class="p">,</span> <span class="n">mech_mesh</span><span class="p">,</span> <span class="n">ep_mesh</span><span class="p">,</span> <span class="n">reset_state</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outdir</span><span class="p">,</span> <span class="n">geo</span><span class="p">:</span> <span class="n">BaseGeometry</span><span class="p">,</span> <span class="n">reset_state</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">outdir</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_results_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;results.h5&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">comm</span> <span class="o">=</span> <span class="n">ep_mesh</span><span class="o">.</span><span class="n">mpi_comm</span><span class="p">()</span>  <span class="c1"># FIXME: Is this important?</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">comm</span> <span class="o">=</span> <span class="n">geo</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">mpi_comm</span><span class="p">()</span>  <span class="c1"># FIXME: Is this important?</span>
 
         <span class="k">if</span> <span class="n">reset_state</span><span class="p">:</span>
             <span class="n">utils</span><span class="o">.</span><span class="n">remove_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_results_file</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_times_stamps</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_results_file</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
-            <span class="k">with</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">HDF5File</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">results_file</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">h5file</span><span class="p">:</span>
-                <span class="n">h5file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">mech_mesh</span><span class="p">,</span> <span class="s2">&quot;/mechanics/mesh&quot;</span><span class="p">)</span>
-                <span class="n">h5file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">ep_mesh</span><span class="p">,</span> <span class="s2">&quot;/ep/mesh&quot;</span><span class="p">)</span>
+            <span class="n">geo</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results_file</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
 
@@ -406,22 +412,18 @@ const thebe_selector_output = ".output, .cell_output"
 <div class="viewcode-block" id="DataLoader"><a class="viewcode-back" href="../../api.html#simcardems.datacollector.DataLoader">[docs]</a><span class="k">class</span> <span class="nc">DataLoader</span><span class="p">:</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h5name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">_h5file</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_h5name</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">h5name</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5name</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;File </span><span class="si">{</span><span class="n">h5name</span><span class="si">}</span><span class="s2"> does not exist&quot;</span><span class="p">)</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">geo</span> <span class="o">=</span> <span class="n">load_geometry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_h5name</span><span class="p">)</span>
+
         <span class="k">with</span> <span class="n">h5pyfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_h5name</span><span class="p">)</span> <span class="k">as</span> <span class="n">h5file</span><span class="p">:</span>
-
-            <span class="c1"># Check that we have mesh</span>
-
-            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="s2">&quot;ep&quot;</span> <span class="ow">in</span> <span class="n">h5file</span> <span class="ow">and</span> <span class="s2">&quot;mesh&quot;</span> <span class="ow">in</span> <span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;ep&quot;</span><span class="p">]):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No ep mesh in results file. Cannot load data&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="s2">&quot;mechanics&quot;</span> <span class="ow">in</span> <span class="n">h5file</span> <span class="ow">and</span> <span class="s2">&quot;mesh&quot;</span> <span class="ow">in</span> <span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;mechanics&quot;</span><span class="p">]):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No mechanics mesh in results file. Cannot load data&quot;</span><span class="p">)</span>
 
             <span class="c1"># Find the remaining functions</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">names</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="n">group</span><span class="p">:</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">h5file</span><span class="p">[</span><span class="n">group</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">name</span> <span class="o">!=</span> <span class="s2">&quot;mesh&quot;</span><span class="p">]</span>
+                <span class="n">group</span><span class="p">:</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">h5file</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
                 <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;ep&quot;</span><span class="p">,</span> <span class="s2">&quot;mechanics&quot;</span><span class="p">]</span>
             <span class="p">}</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="s2">&quot;ep&quot;</span><span class="p">])</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="s2">&quot;mechanics&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -456,8 +458,6 @@ const thebe_selector_output = ".output, .cell_output"
                 <span class="k">for</span> <span class="n">group</span><span class="p">,</span> <span class="n">names</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
             <span class="p">}</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">ep_mesh</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mech_mesh</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_h5file</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">HDF5File</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ep_mesh</span><span class="o">.</span><span class="n">mpi_comm</span><span class="p">(),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_h5name</span><span class="o">.</span><span class="n">as_posix</span><span class="p">(),</span>
@@ -465,6 +465,15 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_create_functions</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value_extractor</span> <span class="o">=</span> <span class="n">ValueExtractor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">geo</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ep_mesh</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">ep_mesh</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">mech_mesh</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">mechanics_mesh</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
@@ -478,9 +487,6 @@ const thebe_selector_output = ".output, .cell_output"
             <span class="bp">self</span><span class="o">.</span><span class="n">_h5file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_create_functions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_h5file</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ep_mesh</span><span class="p">,</span> <span class="s2">&quot;/ep/mesh&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_h5file</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mech_mesh</span><span class="p">,</span> <span class="s2">&quot;/mechanics/mesh&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">_function_spaces</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="k">for</span> <span class="n">group</span><span class="p">,</span> <span class="n">signature_dict</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signatures</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -504,6 +510,33 @@ const thebe_selector_output = ".output, .cell_output"
             <span class="p">}</span>
             <span class="k">for</span> <span class="n">group</span><span class="p">,</span> <span class="n">names</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
         <span class="p">}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dofs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">group</span><span class="p">:</span> <span class="p">{</span>
+                <span class="n">name</span><span class="p">:</span> <span class="n">func</span><span class="o">.</span><span class="n">function_space</span><span class="p">()</span><span class="o">.</span><span class="n">tabulate_dof_coordinates</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">functions</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="p">}</span>
+            <span class="k">for</span> <span class="n">group</span><span class="p">,</span> <span class="n">functions</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_functions</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">}</span>
+
+<div class="viewcode-block" id="DataLoader.extract_value"><a class="viewcode-back" href="../../api.html#simcardems.datacollector.DataLoader.extract_value">[docs]</a>    <span class="k">def</span> <span class="nf">extract_value</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">group</span><span class="p">:</span> <span class="n">DataGroups</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">t</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+        <span class="n">reduction</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+        <span class="n">dofs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dofs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_group_to_str</span><span class="p">(</span><span class="n">group</span><span class="p">)][</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value_extractor</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">reduction</span><span class="p">,</span> <span class="n">dofs</span><span class="o">=</span><span class="n">dofs</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_group_to_str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">group</span><span class="p">):</span>
+        <span class="n">group_str</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">enum2str</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">DataGroups</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">group_str</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Cannot find group </span><span class="si">{</span><span class="n">group</span><span class="si">}</span><span class="s2"> in names, expected of of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">group_str</span>
 
 <div class="viewcode-block" id="DataLoader.get"><a class="viewcode-back" href="../../api.html#simcardems.datacollector.DataLoader.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -537,12 +570,10 @@ const thebe_selector_output = ".output, .cell_output"
 <span class="sd">        KeyError</span>
 <span class="sd">            If &#39;t&#39; provided is not among the time stamps</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">group_str</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">enum2str</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">DataGroups</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">group_str</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Cannot find group </span><span class="si">{</span><span class="n">group</span><span class="si">}</span><span class="s2"> in names, expected of of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-            <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unable to read from file </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_h5name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
+        <span class="n">group_str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_group_to_str</span><span class="p">(</span><span class="n">group</span><span class="p">)</span>
         <span class="n">names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">group_str</span><span class="p">]</span>
         <span class="k">if</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>

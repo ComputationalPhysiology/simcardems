@@ -178,6 +178,11 @@ const thebe_selector_output = ".output, .cell_output"
   </a>
  </li>
  <li class="toctree-l1">
+  <a class="reference internal" href="../../ventricular_geometry.html">
+   Left ventricular geometry
+  </a>
+ </li>
+ <li class="toctree-l1">
   <a class="reference internal" href="../../gui.html">
    Graphical user interface
   </a>
@@ -353,6 +358,25 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="k">return</span> <span class="n">x</span>
     <span class="k">assert</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">EnumCls</span>
     <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">EnumCls</span><span class="o">.</span><span class="n">__members__</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="n">EnumCls</span><span class="o">.</span><span class="n">__members__</span><span class="o">.</span><span class="n">keys</span><span class="p">()))[</span><span class="n">x</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="float_to_constant"><a class="viewcode-back" href="../../api.html#simcardems.utils.float_to_constant">[docs]</a><span class="k">def</span> <span class="nf">float_to_constant</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Convert float to a dolfin constant.</span>
+<span class="sd">    If value is already a constant, do nothing.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : typing.Union[dolfin.Constant, float]</span>
+<span class="sd">        The value to be converted</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dolfin.Constant</span>
+<span class="sd">        The same value, wrapped in a constant</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">x</span></div>
 
 
 <div class="viewcode-block" id="local_project"><a class="viewcode-back" href="../../api.html#simcardems.utils.local_project">[docs]</a><span class="k">def</span> <span class="nf">local_project</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">u</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>

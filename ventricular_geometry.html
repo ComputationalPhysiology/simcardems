@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Simple demo &#8212; simcardems</title>
+    <title>Left ventricular geometry &#8212; simcardems</title>
     
   <link href="_static/css/theme.css" rel="stylesheet">
   <link href="_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
@@ -56,8 +56,8 @@ const thebe_selector_output = ".output, .cell_output"
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Command line interface" href="cli.html" />
-    <link rel="prev" title="Electro-Mechanical coupling" href="electro_mechanical_coupling.html" />
+    <link rel="next" title="Graphical user interface" href="gui.html" />
+    <link rel="prev" title="Release test" href="release_test.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
     
@@ -161,8 +161,8 @@ const thebe_selector_output = ".output, .cell_output"
  </span>
 </p>
 <ul class="current nav bd-sidenav">
- <li class="toctree-l1 current active">
-  <a class="current reference internal" href="#">
+ <li class="toctree-l1">
+  <a class="reference internal" href="simple_demo.html">
    Simple demo
   </a>
  </li>
@@ -181,8 +181,8 @@ const thebe_selector_output = ".output, .cell_output"
    Release test
   </a>
  </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="ventricular_geometry.html">
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
    Left ventricular geometry
   </a>
  </li>
@@ -280,7 +280,7 @@ const thebe_selector_output = ".output, .cell_output"
         <!-- ipynb file if we had a myst markdown file -->
         
         <!-- Download raw file -->
-        <a class="dropdown-buttons" href="_sources/simple_demo.md"><button type="button"
+        <a class="dropdown-buttons" href="_sources/ventricular_geometry.md"><button type="button"
                 class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
                 data-placement="left">.md</button></a>
         <!-- Download PDF via print -->
@@ -300,7 +300,7 @@ const thebe_selector_output = ".output, .cell_output"
                 data-toggle="tooltip" data-placement="left" title="Source repository"><i
                     class="fab fa-github"></i>repository</button></a>
         <a class="issues-button"
-            href="https://github.com/ComputationalPhysiology/simcardems/issues/new?title=Issue%20on%20page%20%2Fsimple_demo.html&body=Your%20issue%20content%20here."><button
+            href="https://github.com/ComputationalPhysiology/simcardems/issues/new?title=Issue%20on%20page%20%2Fventricular_geometry.html&body=Your%20issue%20content%20here."><button
                 type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
                 title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
         
@@ -328,7 +328,7 @@ const thebe_selector_output = ".output, .cell_output"
         <div class="col-12 col-md-9 pl-md-3 pr-md-0">
             <!-- Table of contents that is only displayed when printing the page -->
             <div id="jb-print-docs-body" class="onlyprint">
-                <h1>Simple demo</h1>
+                <h1>Left ventricular geometry</h1>
                 <!-- Table of contents -->
                 <div id="print-main-content">
                     <div id="jb-print-toc">
@@ -339,9 +339,11 @@ const thebe_selector_output = ".output, .cell_output"
             
               <div>
                 
-  <div class="tex2jax_ignore mathjax_ignore section" id="simple-demo">
-<h1>Simple demo<a class="headerlink" href="#simple-demo" title="Permalink to this headline">¶</a></h1>
-<p>In this demo we show the most simple usage of the <code class="docutils literal notranslate"><span class="pre">simcardems</span></code> library using the python API</p>
+  <div class="tex2jax_ignore mathjax_ignore section" id="left-ventricular-geometry">
+<h1>Left ventricular geometry<a class="headerlink" href="#left-ventricular-geometry" title="Permalink to this headline">¶</a></h1>
+<p>In this demo we will run the same simple demo but using a ventricular geometry instead.
+Note that we currently only support a fixed base boundary condition, but plan to add support for
+more complicated boundary conditions in the future.</p>
 <p>Import the necessary libraries</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pprint</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
@@ -352,15 +354,14 @@ const thebe_selector_output = ".output, .cell_output"
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create configurations with custom output directory</span>
 <span class="n">here</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span>
-<span class="n">outdir</span> <span class="o">=</span> <span class="n">here</span> <span class="o">/</span> <span class="s2">&quot;results_simple_demo&quot;</span>
+<span class="n">outdir</span> <span class="o">=</span> <span class="n">here</span> <span class="o">/</span> <span class="s2">&quot;results_lv_ellipsoid&quot;</span>
 </pre></div>
 </div>
-<p>Specify paths to the geometry that we will use</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">geometry_path</span> <span class="o">=</span> <span class="n">here</span> <span class="o">/</span> <span class="s2">&quot;geometries/slab.h5&quot;</span>
-<span class="n">geometry_schema_path</span> <span class="o">=</span> <span class="n">here</span> <span class="o">/</span> <span class="s2">&quot;geometries/slab.json&quot;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Specify paths to the geometry that we will use</span>
+<span class="n">geometry_path</span> <span class="o">=</span> <span class="n">here</span> <span class="o">/</span> <span class="s2">&quot;geometries/lv_ellipsoid.h5&quot;</span>
+<span class="n">geometry_schema_path</span> <span class="o">=</span> <span class="n">here</span> <span class="o">/</span> <span class="s2">&quot;geometries/lv_ellipsoid.json&quot;</span>
 </pre></div>
 </div>
-<p>Please see <a class="reference external" href="https://computationalphysiology.github.io/cardiac_geometries/">https://computationalphysiology.github.io/cardiac_geometries/</a> for more info about the geometries</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">Config</span><span class="p">(</span>
     <span class="n">outdir</span><span class="o">=</span><span class="n">outdir</span><span class="p">,</span>
     <span class="n">geometry_path</span><span class="o">=</span><span class="n">geometry_path</span><span class="p">,</span>
@@ -411,29 +412,32 @@ const thebe_selector_output = ".output, .cell_output"
 <p>This will create the output directory <code class="docutils literal notranslate"><span class="pre">results_simple_demo</span></code> with the following output</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>results_simple_demo
 ├── results.h5
+├── results.json
 ├── state.h5
+├── state.json
 </pre></div>
 </div>
 <p>The file <code class="docutils literal notranslate"><span class="pre">state.h5</span></code> contains the final state which can be used if you want use the final state as a starting point for the next simulation.
-The file <code class="docutils literal notranslate"><span class="pre">results.h5</span></code> contains the Displacement (<span class="math notranslate nohighlight">\(u\)</span>), active tension (<span class="math notranslate nohighlight">\(T_a\)</span>), voltage (<span class="math notranslate nohighlight">\(V\)</span>) and calcium (<span class="math notranslate nohighlight">\(Ca\)</span>) for each time step.
-We can also plot the traces using the postprocess module</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">simcardems</span><span class="o">.</span><span class="n">postprocess</span><span class="o">.</span><span class="n">plot_state_traces</span><span class="p">(</span><span class="n">outdir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;results.h5&quot;</span><span class="p">),</span> <span class="s2">&quot;center&quot;</span><span class="p">)</span>
+The file <code class="docutils literal notranslate"><span class="pre">results.h5</span></code> contains different traces such as Displacement (<span class="math notranslate nohighlight">\(u\)</span>), active tension (<span class="math notranslate nohighlight">\(T_a\)</span>), voltage (<span class="math notranslate nohighlight">\(V\)</span>) and calcium (<span class="math notranslate nohighlight">\(Ca\)</span>) for each time step.
+The <code class="docutils literal notranslate"><span class="pre">.json</span></code> files are used to load load the geometries and, see <a class="reference external" href="https://computationalphysiology.github.io/cardiac_geometries/quickstart.html#schema">https://computationalphysiology.github.io/cardiac_geometries/quickstart.html#schema</a> for more info.
+We can also plot the traces using the postprocess module.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">simcardems</span><span class="o">.</span><span class="n">postprocess</span><span class="o">.</span><span class="n">plot_state_traces</span><span class="p">(</span><span class="n">outdir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;results.h5&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>Here we also specify that we want the trace from the center of the slab</p>
-<p>This will create a figure in the output directory called <code class="docutils literal notranslate"><span class="pre">state_traces.png</span></code> which in this case is shown in <a class="reference internal" href="#simple-demo-state-traces"><span class="std std-numref">Figure 1</span></a> we see the resulting state traces, and can also see the instant drop in the active tension (<span class="math notranslate nohighlight">\(T_a\)</span>) at the time of the triggered release.</p>
-<div class="figure align-default" id="simple-demo-state-traces">
-<img alt="_images/simple_demo_state_traces.png" src="_images/simple_demo_state_traces.png" />
-<p class="caption"><span class="caption-number">Fig. 1 </span><span class="caption-text">Traces of the stretch (<span class="math notranslate nohighlight">\(\lambda\)</span>), the active tension (<span class="math notranslate nohighlight">\(T_a\)</span>), the membrane potential (<span class="math notranslate nohighlight">\(V\)</span>) and the intercellular calcium concentration (<span class="math notranslate nohighlight">\(Ca\)</span>) at the center of the geometry.</span><a class="headerlink" href="#simple-demo-state-traces" title="Permalink to this image">¶</a></p>
+<p>Here the traces generated by averaging over this domain.</p>
+<p>This will create a figure in the output directory called <code class="docutils literal notranslate"><span class="pre">state_traces.png</span></code> which in this case is shown in <a class="reference internal" href="#lv-demo-state-traces"><span class="std std-numref">Figure 5</span></a> we see the resulting state traces, and can also see the instant drop in the active tension (<span class="math notranslate nohighlight">\(T_a\)</span>) at the time of the triggered release.</p>
+<div class="figure align-default" id="lv-demo-state-traces">
+<img alt="_images/lv_demo_state_traces.png" src="_images/lv_demo_state_traces.png" />
+<p class="caption"><span class="caption-number">Fig. 5 </span><span class="caption-text">Traces of the stretch (<span class="math notranslate nohighlight">\(\lambda\)</span>), the active tension (<span class="math notranslate nohighlight">\(T_a\)</span>), the membrane potential (<span class="math notranslate nohighlight">\(V\)</span>) and the intercellular calcium concentration (<span class="math notranslate nohighlight">\(Ca\)</span>) at the center of the geometry.</span><a class="headerlink" href="#lv-demo-state-traces" title="Permalink to this image">¶</a></p>
 </div>
 <p>We can also save the output to xdmf-files that can be viewed in Paraview</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">simcardems</span><span class="o">.</span><span class="n">postprocess</span><span class="o">.</span><span class="n">make_xdmffiles</span><span class="p">(</span><span class="n">outdir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;results.h5&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">xdmf</span></code> files are can be opened in <a class="reference external" href="https://www.paraview.org/download/">Paraview</a> to visualize the different variables such as in <a class="reference internal" href="#simple-demo-paraview"><span class="std std-numref">Figure 2</span></a>.</p>
-<div class="figure align-default" id="simple-demo-paraview">
-<img alt="_images/simple_demo.png" src="_images/simple_demo.png" />
-<p class="caption"><span class="caption-number">Fig. 2 </span><span class="caption-text">Displacement (<span class="math notranslate nohighlight">\(u\)</span>), active tension (<span class="math notranslate nohighlight">\(T_a\)</span>), voltage (<span class="math notranslate nohighlight">\(V\)</span>) and calcium (<span class="math notranslate nohighlight">\(Ca\)</span>) visualized for a specific time point in Paraview.</span><a class="headerlink" href="#simple-demo-paraview" title="Permalink to this image">¶</a></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">xdmf</span></code> files are can be opened in <a class="reference external" href="https://www.paraview.org/download/">Paraview</a> to visualize the different variables such as in <a class="reference internal" href="#lv-paraview"><span class="std std-numref">Figure 6</span></a>.</p>
+<div class="figure align-default" id="lv-paraview">
+<img alt="_images/lv.png" src="_images/lv.png" />
+<p class="caption"><span class="caption-number">Fig. 6 </span><span class="caption-text">Displacement (<span class="math notranslate nohighlight">\(u\)</span>), active tension (<span class="math notranslate nohighlight">\(T_a\)</span>), voltage (<span class="math notranslate nohighlight">\(V\)</span>) and calcium (<span class="math notranslate nohighlight">\(Ca\)</span>) visualized for a specific time point in Paraview.</span><a class="headerlink" href="#lv-paraview" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 
@@ -462,17 +466,17 @@ We can also plot the traces using the postprocess module</p>
             
                 <!-- Previous / next buttons -->
 <div class='prev-next-area'> 
-    <a class='left-prev' id="prev-link" href="electro_mechanical_coupling.html" title="previous page">
+    <a class='left-prev' id="prev-link" href="release_test.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
             <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">Electro-Mechanical coupling</p>
+            <p class="prev-next-title">Release test</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="cli.html" title="next page">
+    <a class='right-next' id="next-link" href="gui.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Command line interface</p>
+        <p class="prev-next-title">Graphical user interface</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>

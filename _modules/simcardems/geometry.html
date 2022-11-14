@@ -178,6 +178,11 @@ const thebe_selector_output = ".output, .cell_output"
   </a>
  </li>
  <li class="toctree-l1">
+  <a class="reference internal" href="../../ventricular_geometry.html">
+   Left ventricular geometry
+  </a>
+ </li>
+ <li class="toctree-l1">
   <a class="reference internal" href="../../gui.html">
    Graphical user interface
   </a>
@@ -315,15 +320,53 @@ const thebe_selector_output = ".output, .cell_output"
                 
   <h1>Source code for simcardems.geometry</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">abc</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
 
 <span class="kn">import</span> <span class="nn">dolfin</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pulse</span>
+<span class="kn">from</span> <span class="nn">cardiac_geometries.geometry</span> <span class="kn">import</span> <span class="n">Geometry</span>
+<span class="kn">from</span> <span class="nn">cardiac_geometries.geometry</span> <span class="kn">import</span> <span class="n">H5Path</span>
+<span class="kn">from</span> <span class="nn">cardiac_geometries.geometry</span> <span class="kn">import</span> <span class="n">MeshTypes</span>
 
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">utils</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="load_geometry"><a class="viewcode-back" href="../../api.html#simcardems.geometry.load_geometry">[docs]</a><span class="k">def</span> <span class="nf">load_geometry</span><span class="p">(</span>
+    <span class="n">mesh_path</span><span class="p">:</span> <span class="n">utils</span><span class="o">.</span><span class="n">PathLike</span><span class="p">,</span>
+    <span class="n">schema_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">utils</span><span class="o">.</span><span class="n">PathLike</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;BaseGeometry&quot;</span><span class="p">:</span>
+
+    <span class="k">if</span> <span class="n">schema_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">schema_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">mesh_path</span><span class="p">)</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">&quot;.json&quot;</span><span class="p">)</span>
+
+    <span class="n">geo</span> <span class="o">=</span> <span class="n">Geometry</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span>
+        <span class="n">fname</span><span class="o">=</span><span class="n">mesh_path</span><span class="p">,</span>
+        <span class="n">schema_path</span><span class="o">=</span><span class="n">schema_path</span><span class="p">,</span>
+        <span class="n">schema</span><span class="o">=</span><span class="n">BaseGeometry</span><span class="o">.</span><span class="n">default_schema</span><span class="p">(),</span>
+    <span class="p">)</span>
+
+    <span class="n">info</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="s2">&quot;info&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Unable to load info from geometry&quot;</span><span class="p">)</span>
+
+    <span class="n">mesh_type</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mesh_type&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mesh_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Unable to get mesh type from info&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">mesh_type</span> <span class="o">==</span> <span class="n">MeshTypes</span><span class="o">.</span><span class="n">slab</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">SlabGeometry</span><span class="o">.</span><span class="n">from_geometry</span><span class="p">(</span><span class="n">geo</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">mesh_type</span> <span class="o">==</span> <span class="n">MeshTypes</span><span class="o">.</span><span class="n">lv_ellipsoid</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">LeftVentricularGeometry</span><span class="o">.</span><span class="n">from_geometry</span><span class="p">(</span><span class="n">geo</span><span class="p">)</span>
+
+    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown mesh type </span><span class="si">{</span><span class="n">mesh_type</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="refine_mesh"><a class="viewcode-back" href="../../api.html#simcardems.geometry.refine_mesh">[docs]</a><span class="k">def</span> <span class="nf">refine_mesh</span><span class="p">(</span>
@@ -339,18 +382,18 @@ const thebe_selector_output = ".output, .cell_output"
     <span class="k">return</span> <span class="n">mesh</span></div>
 
 
-<div class="viewcode-block" id="create_boxmesh"><a class="viewcode-back" href="../../api.html#simcardems.geometry.create_boxmesh">[docs]</a><span class="k">def</span> <span class="nf">create_boxmesh</span><span class="p">(</span><span class="n">Lx</span><span class="p">,</span> <span class="n">Ly</span><span class="p">,</span> <span class="n">Lz</span><span class="p">,</span> <span class="n">dx</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">refinements</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-    <span class="c1"># Create computational domain [0, Lx] x [0, Ly] x [0, Lz]</span>
+<div class="viewcode-block" id="create_boxmesh"><a class="viewcode-back" href="../../api.html#simcardems.geometry.create_boxmesh">[docs]</a><span class="k">def</span> <span class="nf">create_boxmesh</span><span class="p">(</span><span class="n">lx</span><span class="p">,</span> <span class="n">ly</span><span class="p">,</span> <span class="n">lz</span><span class="p">,</span> <span class="n">dx</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">refinements</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="c1"># Create computational domain [0, lx] x [0, ly] x [0, lz]</span>
     <span class="c1"># with resolution prescribed by benchmark or more refinements</span>
 
     <span class="n">N</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rint</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
     <span class="n">mesh</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">BoxMesh</span><span class="p">(</span>
         <span class="n">dolfin</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">,</span>
         <span class="n">dolfin</span><span class="o">.</span><span class="n">Point</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
-        <span class="n">dolfin</span><span class="o">.</span><span class="n">Point</span><span class="p">(</span><span class="n">Lx</span><span class="p">,</span> <span class="n">Ly</span><span class="p">,</span> <span class="n">Lz</span><span class="p">),</span>
-        <span class="n">N</span><span class="p">(</span><span class="n">Lx</span> <span class="o">/</span> <span class="n">dx</span><span class="p">),</span>
-        <span class="n">N</span><span class="p">(</span><span class="n">Ly</span> <span class="o">/</span> <span class="n">dx</span><span class="p">),</span>
-        <span class="n">N</span><span class="p">(</span><span class="n">Lz</span> <span class="o">/</span> <span class="n">dx</span><span class="p">),</span>
+        <span class="n">dolfin</span><span class="o">.</span><span class="n">Point</span><span class="p">(</span><span class="n">lx</span><span class="p">,</span> <span class="n">ly</span><span class="p">,</span> <span class="n">lz</span><span class="p">),</span>
+        <span class="n">N</span><span class="p">(</span><span class="n">lx</span> <span class="o">/</span> <span class="n">dx</span><span class="p">),</span>
+        <span class="n">N</span><span class="p">(</span><span class="n">ly</span> <span class="o">/</span> <span class="n">dx</span><span class="p">),</span>
+        <span class="n">N</span><span class="p">(</span><span class="n">lz</span> <span class="o">/</span> <span class="n">dx</span><span class="p">),</span>
     <span class="p">)</span>
 
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">refinements</span><span class="p">):</span>
@@ -363,86 +406,567 @@ const thebe_selector_output = ".output, .cell_output"
 <div class="viewcode-block" id="BaseGeometry"><a class="viewcode-back" href="../../api.html#simcardems.geometry.BaseGeometry">[docs]</a><span class="k">class</span> <span class="nc">BaseGeometry</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Abstract geometry base class&quot;&quot;&quot;</span>
 
-    <span class="n">num_refinements</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">mechanics_mesh</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">parameters</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">mechanics_mesh</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ep_mesh</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">microstructure</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">microstructure_ep</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ffun</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">markers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">outdir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">utils</span><span class="o">.</span><span class="n">PathLike</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">markers</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">default_markers</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">markers</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">markers</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">markers</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span> <span class="o">=</span> <span class="n">outdir</span>  <span class="c1"># type: ignore</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">default_parameters</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">mechanics_mesh</span> <span class="o">=</span> <span class="n">mechanics_mesh</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ep_mesh</span> <span class="o">=</span> <span class="n">ep_mesh</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ffun</span> <span class="o">=</span> <span class="n">ffun</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">microstructure</span> <span class="o">=</span> <span class="n">microstructure</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">microstructure_ep</span> <span class="o">=</span> <span class="n">microstructure_ep</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">__o</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">__o</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="bp">NotImplemented</span>
+        <span class="c1"># TODO: We might add more checks here</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">==</span> <span class="n">__o</span><span class="o">.</span><span class="n">parameters</span>
+
+<div class="viewcode-block" id="BaseGeometry.validate"><a class="viewcode-back" href="../../api.html#simcardems.geometry.BaseGeometry.validate">[docs]</a>    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="BaseGeometry.default_markers"><a class="viewcode-back" href="../../api.html#simcardems.geometry.BaseGeometry.default_markers">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">default_markers</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
+        <span class="o">...</span></div>
+
+<div class="viewcode-block" id="BaseGeometry.default_parameters"><a class="viewcode-back" href="../../api.html#simcardems.geometry.BaseGeometry.default_parameters">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">default_parameters</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="o">...</span></div>
+
+<div class="viewcode-block" id="BaseGeometry.default_schema"><a class="viewcode-back" href="../../api.html#simcardems.geometry.BaseGeometry.default_schema">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">default_schema</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">H5Path</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;mesh&quot;</span><span class="p">:</span> <span class="n">H5Path</span><span class="p">(</span>
+                <span class="n">h5group</span><span class="o">=</span><span class="s2">&quot;/geometry/mesh/mechanics&quot;</span><span class="p">,</span>
+                <span class="n">is_mesh</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;ep_mesh&quot;</span><span class="p">:</span> <span class="n">H5Path</span><span class="p">(</span>
+                <span class="n">h5group</span><span class="o">=</span><span class="s2">&quot;/geometry/mesh/ep&quot;</span><span class="p">,</span>
+                <span class="n">is_mesh</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;ffun&quot;</span><span class="p">:</span> <span class="n">H5Path</span><span class="p">(</span>
+                <span class="n">h5group</span><span class="o">=</span><span class="s2">&quot;/geometry/meshfunctions/ffun&quot;</span><span class="p">,</span>
+                <span class="n">is_meshfunction</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                <span class="n">mesh_key</span><span class="o">=</span><span class="s2">&quot;mesh&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;f0&quot;</span><span class="p">:</span> <span class="n">H5Path</span><span class="p">(</span>
+                <span class="n">h5group</span><span class="o">=</span><span class="s2">&quot;/geometry/microstructure/mechanics/f0&quot;</span><span class="p">,</span>
+                <span class="n">is_function</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">mesh_key</span><span class="o">=</span><span class="s2">&quot;mesh&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;s0&quot;</span><span class="p">:</span> <span class="n">H5Path</span><span class="p">(</span>
+                <span class="n">h5group</span><span class="o">=</span><span class="s2">&quot;/geometry/microstructure/mechanics/s0&quot;</span><span class="p">,</span>
+                <span class="n">is_function</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">mesh_key</span><span class="o">=</span><span class="s2">&quot;mesh&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;n0&quot;</span><span class="p">:</span> <span class="n">H5Path</span><span class="p">(</span>
+                <span class="n">h5group</span><span class="o">=</span><span class="s2">&quot;/geometry/microstructure/mechanics/n0&quot;</span><span class="p">,</span>
+                <span class="n">is_function</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">mesh_key</span><span class="o">=</span><span class="s2">&quot;mesh&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;f0_ep&quot;</span><span class="p">:</span> <span class="n">H5Path</span><span class="p">(</span>
+                <span class="n">h5group</span><span class="o">=</span><span class="s2">&quot;/geometry/microstructure/ep/f0&quot;</span><span class="p">,</span>
+                <span class="n">is_function</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">mesh_key</span><span class="o">=</span><span class="s2">&quot;ep_mesh&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;s0_ep&quot;</span><span class="p">:</span> <span class="n">H5Path</span><span class="p">(</span>
+                <span class="n">h5group</span><span class="o">=</span><span class="s2">&quot;/geometry/microstructure/ep/s0&quot;</span><span class="p">,</span>
+                <span class="n">is_function</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">mesh_key</span><span class="o">=</span><span class="s2">&quot;ep_mesh&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;n0_ep&quot;</span><span class="p">:</span> <span class="n">H5Path</span><span class="p">(</span>
+                <span class="n">h5group</span><span class="o">=</span><span class="s2">&quot;/geometry/microstructure/ep/n0&quot;</span><span class="p">,</span>
+                <span class="n">is_function</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">mesh_key</span><span class="o">=</span><span class="s2">&quot;ep_mesh&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;info&quot;</span><span class="p">:</span> <span class="n">H5Path</span><span class="p">(</span>
+                <span class="n">h5group</span><span class="o">=</span><span class="s2">&quot;/geometry/info&quot;</span><span class="p">,</span>
+                <span class="n">is_dolfin</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;markers&quot;</span><span class="p">:</span> <span class="n">H5Path</span><span class="p">(</span>
+                <span class="n">h5group</span><span class="o">=</span><span class="s2">&quot;/geometry/markers&quot;</span><span class="p">,</span>
+                <span class="n">is_dolfin</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">}</span></div>
+
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_default_microstructure</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">fiber_space</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">mesh</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">:</span>
+        <span class="o">...</span>
+
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_default_ffun</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mesh</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">:</span>
+        <span class="o">...</span>
+
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_default_mesh</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">:</span>
+        <span class="o">...</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">mesh</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mechanics_mesh</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dx</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the volume measure using self.mesh&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">dx</span><span class="p">(</span><span class="n">domain</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the surface measure of exterior facets using</span>
+<span class="sd">        self.mesh as domain and self.ffun as subdomain_data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">ds</span><span class="p">(</span><span class="n">domain</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">,</span> <span class="n">subdomain_data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ffun</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">num_refinements</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;num_refinements&quot;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="BaseGeometry.dump"><a class="viewcode-back" href="../../api.html#simcardems.geometry.BaseGeometry.dump">[docs]</a>    <span class="k">def</span> <span class="nf">dump</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">fname</span><span class="p">:</span> <span class="n">utils</span><span class="o">.</span><span class="n">PathLike</span><span class="p">,</span>
+        <span class="n">schema_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">utils</span><span class="o">.</span><span class="n">PathLike</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">unlink</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+        <span class="n">schema</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">default_schema</span><span class="p">()</span>
+
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">schema</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s2">&quot;info&quot;</span><span class="p">}</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;info&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span>
+        <span class="n">geo</span> <span class="o">=</span> <span class="n">Geometry</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">schema_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">schema_path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">&quot;.json&quot;</span><span class="p">)</span>
+
+        <span class="n">geo</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">schema_path</span><span class="o">=</span><span class="n">schema_path</span><span class="p">,</span> <span class="n">unlink</span><span class="o">=</span><span class="n">unlink</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saved geometry to </span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_microstructure_if_None</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">mesh</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">,</span>
+        <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">:</span>
+        <span class="n">microstructure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_microstructure</span><span class="p">(</span>
+            <span class="n">fiber_space</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;fiber_space&quot;</span><span class="p">],</span>
+            <span class="n">mesh</span><span class="o">=</span><span class="n">mesh</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;microstructure</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">.h5&quot;</span>
+            <span class="k">with</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">HDF5File</span><span class="p">(</span>
+                <span class="n">mesh</span><span class="o">.</span><span class="n">mpi_comm</span><span class="p">(),</span>
+                <span class="n">path</span><span class="o">.</span><span class="n">as_posix</span><span class="p">(),</span>
+                <span class="s2">&quot;w&quot;</span><span class="p">,</span>
+            <span class="p">)</span> <span class="k">as</span> <span class="n">h5file</span><span class="p">:</span>
+                <span class="n">h5file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">microstructure</span><span class="o">.</span><span class="n">f0</span><span class="p">,</span> <span class="s2">&quot;f0&quot;</span><span class="p">)</span>
+                <span class="n">h5file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">microstructure</span><span class="o">.</span><span class="n">s0</span><span class="p">,</span> <span class="s2">&quot;s0&quot;</span><span class="p">)</span>
+                <span class="n">h5file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">microstructure</span><span class="o">.</span><span class="n">n0</span><span class="p">,</span> <span class="s2">&quot;n0&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">microstructure</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">microstructure_ep</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_microstructure_ep</span>  <span class="c1"># type: ignore</span>
+
+    <span class="nd">@microstructure_ep</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">microstructure_ep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">microstructure</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">microstructure</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">microstructure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interpolate_microstructure</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_microstructure_ep</span> <span class="o">=</span> <span class="n">microstructure</span>
+
+    <span class="k">def</span> <span class="nf">_interpolate_microstructure</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">:</span>
+        <span class="n">element</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f0</span><span class="o">.</span><span class="n">ufl_element</span><span class="p">()</span>
+        <span class="n">V</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">FunctionSpace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ep_mesh</span><span class="p">,</span> <span class="n">element</span><span class="p">)</span>
+        <span class="n">f0</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f0</span><span class="p">,</span> <span class="n">V</span><span class="p">)</span>
+        <span class="n">s0</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">s0</span><span class="p">,</span> <span class="n">V</span><span class="p">)</span>
+        <span class="n">n0</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n0</span><span class="p">,</span> <span class="n">V</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">(</span><span class="n">f0</span><span class="o">=</span><span class="n">f0</span><span class="p">,</span> <span class="n">s0</span><span class="o">=</span><span class="n">s0</span><span class="p">,</span> <span class="n">n0</span><span class="o">=</span><span class="n">n0</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">microstructure</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_microstructure</span>  <span class="c1"># type: ignore</span>
+
+    <span class="nd">@microstructure</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">microstructure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">microstructure</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">microstructure</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">microstructure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_microstructure_if_None</span><span class="p">(</span>
+                <span class="n">mesh</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mechanics_mesh</span><span class="p">,</span>
+                <span class="n">label</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_microstructure</span> <span class="o">=</span> <span class="n">microstructure</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">f0</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">microstructure</span><span class="o">.</span><span class="n">f0</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">s0</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">microstructure</span><span class="o">.</span><span class="n">s0</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">n0</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">microstructure</span><span class="o">.</span><span class="n">n0</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">f0_ep</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">microstructure_ep</span><span class="o">.</span><span class="n">f0</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">s0_ep</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">microstructure_ep</span><span class="o">.</span><span class="n">s0</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">n0_ep</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">microstructure_ep</span><span class="o">.</span><span class="n">n0</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">mechanics_mesh</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mechanics_mesh</span>  <span class="c1"># type: ignore</span>
+
+    <span class="nd">@mechanics_mesh</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">mechanics_mesh</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mesh</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">mesh</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mesh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_mesh</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">mesh_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span> <span class="o">/</span> <span class="s2">&quot;mesh.xdmf&quot;</span>
+                <span class="k">with</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">XDMFFile</span><span class="p">(</span><span class="n">mesh_path</span><span class="o">.</span><span class="n">as_posix</span><span class="p">())</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mechanics_mesh</span> <span class="o">=</span> <span class="n">mesh</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ffun</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ffun</span>  <span class="c1"># type: ignore</span>
+
+    <span class="nd">@ffun</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">ffun</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ffun</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">ffun</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ffun</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_ffun</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mechanics_mesh</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">ffun_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span> <span class="o">/</span> <span class="s2">&quot;ffun.xdmf&quot;</span>
+                <span class="k">with</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">XDMFFile</span><span class="p">(</span><span class="n">ffun_path</span><span class="o">.</span><span class="n">as_posix</span><span class="p">())</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ffun</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ffun</span> <span class="o">=</span> <span class="n">ffun</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">ep_mesh</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">:</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_ep_mesh&quot;</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_ep_mesh</span> <span class="o">=</span> <span class="n">refine_mesh</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mechanics_mesh</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_refinements</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ep_mesh</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ep_mesh</span>  <span class="c1"># type: ignore</span>
 
-    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractproperty</span>
-    <span class="k">def</span> <span class="nf">parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-        <span class="o">...</span></div>
+    <span class="nd">@ep_mesh</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">ep_mesh</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mesh</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">mesh</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ep_mesh</span> <span class="o">=</span> <span class="n">refine_mesh</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mechanics_mesh</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;num_refinements&quot;</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">mesh_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span> <span class="o">/</span> <span class="s2">&quot;ep_mesh.xdmf&quot;</span>
+                <span class="k">with</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">XDMFFile</span><span class="p">(</span><span class="n">mesh_path</span><span class="o">.</span><span class="n">as_posix</span><span class="p">())</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
 
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ep_mesh</span> <span class="o">=</span> <span class="n">mesh</span>
 
-<div class="viewcode-block" id="Geometry"><a class="viewcode-back" href="../../api.html#simcardems.geometry.Geometry">[docs]</a><span class="k">class</span> <span class="nc">Geometry</span><span class="p">(</span><span class="n">BaseGeometry</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mesh</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">,</span> <span class="n">num_refinements</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">num_refinements</span> <span class="o">=</span> <span class="n">num_refinements</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mechanics_mesh</span> <span class="o">=</span> <span class="n">mesh</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">outdir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outdir</span>
 
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(&quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;mesh=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mechanics_mesh</span><span class="si">}</span><span class="s2">, &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;num_refinements=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">num_refinements</span><span class="si">}</span><span class="s2">)&quot;</span>
-        <span class="p">)</span>
+    <span class="nd">@outdir</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">outdir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">folder</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">utils</span><span class="o">.</span><span class="n">PathLike</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="n">folder</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_outdir</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_outdir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Geometry.parameters"><a class="viewcode-back" href="../../api.html#simcardems.geometry.Geometry.parameters">[docs]</a>    <span class="k">def</span> <span class="nf">parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;num_refinements&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_refinements</span><span class="p">}</span></div></div>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">marker_functions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">pulse</span><span class="o">.</span><span class="n">MarkerFunctions</span><span class="p">(</span><span class="n">ffun</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ffun</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BaseGeometry.from_files"><a class="viewcode-back" href="../../api.html#simcardems.geometry.BaseGeometry.from_files">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_files</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">mesh_path</span><span class="p">:</span> <span class="n">utils</span><span class="o">.</span><span class="n">PathLike</span><span class="p">,</span>
+        <span class="n">ffun_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">utils</span><span class="o">.</span><span class="n">PathLike</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">marker_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">utils</span><span class="o">.</span><span class="n">PathLike</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">parameter_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">utils</span><span class="o">.</span><span class="n">PathLike</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">microstructure_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">utils</span><span class="o">.</span><span class="n">PathLike</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+
+        <span class="n">markers</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">default_markers</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">marker_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">markers</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">marker_path</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">()))</span>
+
+        <span class="n">parameters</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">default_parameters</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">parameter_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">parameters</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">parameter_path</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">()))</span>
+
+        <span class="n">mesh</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">()</span>
+        <span class="k">with</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">XDMFFile</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">mesh_path</span><span class="p">)</span><span class="o">.</span><span class="n">as_posix</span><span class="p">())</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ffun_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ffun</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">(</span><span class="s2">&quot;size_t&quot;</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="k">with</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">XDMFFile</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">ffun_path</span><span class="p">)</span><span class="o">.</span><span class="n">as_posix</span><span class="p">())</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">ffun</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ffun</span> <span class="o">=</span> <span class="n">create_slab_facet_function</span><span class="p">(</span>
+                <span class="n">mesh</span><span class="p">,</span>
+                <span class="n">lx</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;lx&quot;</span><span class="p">],</span>
+                <span class="n">markers</span><span class="o">=</span><span class="n">markers</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="n">fiber_space</span> <span class="o">=</span> <span class="n">parameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fiber_space&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">fiber_space</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">microstructure_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">family</span><span class="p">,</span> <span class="n">degree</span> <span class="o">=</span> <span class="n">fiber_space</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Set up microstructure&quot;</span><span class="p">)</span>
+            <span class="n">V_f</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">VectorFunctionSpace</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">family</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">degree</span><span class="p">))</span>
+            <span class="n">f0</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">V_f</span><span class="p">)</span>
+            <span class="n">s0</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">V_f</span><span class="p">)</span>
+            <span class="n">n0</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">V_f</span><span class="p">)</span>
+            <span class="k">with</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">HDF5File</span><span class="p">(</span>
+                <span class="n">mesh</span><span class="o">.</span><span class="n">mpi_comm</span><span class="p">(),</span>
+                <span class="n">Path</span><span class="p">(</span><span class="n">microstructure_path</span><span class="p">)</span><span class="o">.</span><span class="n">as_posix</span><span class="p">(),</span>
+                <span class="s2">&quot;r&quot;</span><span class="p">,</span>
+            <span class="p">)</span> <span class="k">as</span> <span class="n">h5file</span><span class="p">:</span>
+                <span class="n">h5file</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">f0</span><span class="p">,</span> <span class="s2">&quot;f0&quot;</span><span class="p">)</span>
+                <span class="n">h5file</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">s0</span><span class="p">,</span> <span class="s2">&quot;s0&quot;</span><span class="p">)</span>
+                <span class="n">h5file</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">n0</span><span class="p">,</span> <span class="s2">&quot;n0&quot;</span><span class="p">)</span>
+
+            <span class="n">microstructure</span> <span class="o">=</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">(</span><span class="n">f0</span><span class="o">=</span><span class="n">f0</span><span class="p">,</span> <span class="n">s0</span><span class="o">=</span><span class="n">s0</span><span class="p">,</span> <span class="n">n0</span><span class="o">=</span><span class="n">n0</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">microstructure</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">mechanics_mesh</span><span class="o">=</span><span class="n">mesh</span><span class="p">,</span>
+            <span class="n">ffun</span><span class="o">=</span><span class="n">ffun</span><span class="p">,</span>
+            <span class="n">markers</span><span class="o">=</span><span class="n">markers</span><span class="p">,</span>
+            <span class="n">parameters</span><span class="o">=</span><span class="n">parameters</span><span class="p">,</span>
+            <span class="n">microstructure</span><span class="o">=</span><span class="n">microstructure</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="BaseGeometry.from_geometry"><a class="viewcode-back" href="../../api.html#simcardems.geometry.BaseGeometry.from_geometry">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_geometry</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">geo</span><span class="p">:</span> <span class="n">Geometry</span><span class="p">):</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">attr_geo</span><span class="p">,</span> <span class="n">attr_simcardems</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s2">&quot;info&quot;</span><span class="p">,</span> <span class="s2">&quot;parameters&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;mesh&quot;</span><span class="p">,</span> <span class="s2">&quot;mechanics_mesh&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;ep_mesh&quot;</span><span class="p">,</span> <span class="s2">&quot;ep_mesh&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;markers&quot;</span><span class="p">,</span> <span class="s2">&quot;markers&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;ffun&quot;</span><span class="p">,</span> <span class="s2">&quot;ffun&quot;</span><span class="p">),</span>
+        <span class="p">]:</span>
+            <span class="n">attr</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">attr_geo</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">attr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="n">attr_simcardems</span><span class="p">]</span> <span class="o">=</span> <span class="n">attr</span>
+
+        <span class="n">micro_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;f0&quot;</span><span class="p">,</span> <span class="s2">&quot;s0&quot;</span><span class="p">,</span> <span class="s2">&quot;n0&quot;</span><span class="p">]:</span>
+            <span class="n">attr</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">attr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">micro_kwargs</span><span class="p">[</span><span class="n">f</span><span class="p">]</span> <span class="o">=</span> <span class="n">attr</span>
+        <span class="k">if</span> <span class="n">micro_kwargs</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;microstructure&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">(</span><span class="o">**</span><span class="n">micro_kwargs</span><span class="p">)</span>
+
+        <span class="n">micro_ep_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;f0_ep&quot;</span><span class="p">,</span> <span class="s2">&quot;s0_ep&quot;</span><span class="p">,</span> <span class="s2">&quot;n0_ep&quot;</span><span class="p">]:</span>
+            <span class="n">attr</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">attr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">micro_ep_kwargs</span><span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;_ep&quot;</span><span class="p">)]</span> <span class="o">=</span> <span class="n">attr</span>
+        <span class="k">if</span> <span class="n">micro_kwargs</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;microstructure_ep&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">(</span><span class="o">**</span><span class="n">micro_ep_kwargs</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="SlabGeometry"><a class="viewcode-back" href="../../api.html#simcardems.geometry.SlabGeometry">[docs]</a><span class="k">class</span> <span class="nc">SlabGeometry</span><span class="p">(</span><span class="n">BaseGeometry</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<div class="viewcode-block" id="SlabGeometry.default_markers"><a class="viewcode-back" href="../../api.html#simcardems.geometry.SlabGeometry.default_markers">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">default_markers</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;X0&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="s2">&quot;X1&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+            <span class="s2">&quot;Y0&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+            <span class="s2">&quot;Z0&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+        <span class="p">}</span></div>
+
+    <span class="k">def</span> <span class="nf">_default_microstructure</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">lx</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-        <span class="n">ly</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-        <span class="n">lz</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-        <span class="n">dx</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-        <span class="n">num_refinements</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-        <span class="n">mechanics_mesh</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">ep_mesh</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">lx</span> <span class="o">=</span> <span class="n">lx</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ly</span> <span class="o">=</span> <span class="n">ly</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">lz</span> <span class="o">=</span> <span class="n">lz</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">dx</span> <span class="o">=</span> <span class="n">dx</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">num_refinements</span> <span class="o">=</span> <span class="n">num_refinements</span>
+        <span class="n">fiber_space</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">mesh</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">create_slab_microstructure</span><span class="p">(</span><span class="n">fiber_space</span><span class="o">=</span><span class="n">fiber_space</span><span class="p">,</span> <span class="n">mesh</span><span class="o">=</span><span class="n">mesh</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">mechanics_mesh</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">mechanics_mesh</span> <span class="o">=</span> <span class="n">create_boxmesh</span><span class="p">(</span><span class="n">Lx</span><span class="o">=</span><span class="n">lx</span><span class="p">,</span> <span class="n">Ly</span><span class="o">=</span><span class="n">ly</span><span class="p">,</span> <span class="n">Lz</span><span class="o">=</span><span class="n">lz</span><span class="p">,</span> <span class="n">dx</span><span class="o">=</span><span class="n">dx</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">pass</span>
-            <span class="c1"># TODO: Should we do some validation?</span>
-            <span class="c1"># Perhaps we should also make the other parameters optional</span>
+    <span class="k">def</span> <span class="nf">_default_ffun</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mesh</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">create_slab_facet_function</span><span class="p">(</span>
+            <span class="n">mesh</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;lx&quot;</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">markers</span><span class="p">,</span>
+        <span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">mechanics_mesh</span> <span class="o">=</span> <span class="n">mechanics_mesh</span>
-        <span class="k">if</span> <span class="n">ep_mesh</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="c1"># TODO: Do some validation.</span>
-            <span class="c1"># For example we should make sure that num_refinements are correct</span>
-            <span class="c1"># and the the ep mesh has the same partition as the mechanics mesh</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_ep_mesh</span> <span class="o">=</span> <span class="n">ep_mesh</span>
+    <span class="k">def</span> <span class="nf">_default_mesh</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">create_boxmesh</span><span class="p">(</span>
+            <span class="o">**</span><span class="p">{</span>
+                <span class="n">k</span><span class="p">:</span> <span class="n">v</span>
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;lx&quot;</span><span class="p">,</span> <span class="s2">&quot;ly&quot;</span><span class="p">,</span> <span class="s2">&quot;lz&quot;</span><span class="p">,</span> <span class="s2">&quot;dx&quot;</span><span class="p">]</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="SlabGeometry.default_parameters"><a class="viewcode-back" href="../../api.html#simcardems.geometry.SlabGeometry.default_parameters">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">default_parameters</span><span class="p">():</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">lx</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>
+            <span class="n">ly</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
+            <span class="n">lz</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>
+            <span class="n">dx</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+            <span class="n">fiber_space</span><span class="o">=</span><span class="s2">&quot;DG_1&quot;</span><span class="p">,</span>
+            <span class="n">num_refinements</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">mesh_type</span><span class="o">=</span><span class="n">MeshTypes</span><span class="o">.</span><span class="n">slab</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="SlabGeometry.validate"><a class="viewcode-back" href="../../api.html#simcardems.geometry.SlabGeometry.validate">[docs]</a>    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(&quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;lx=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">lx</span><span class="si">}</span><span class="s2">, &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;ly=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ly</span><span class="si">}</span><span class="s2">, &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;lz=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">lz</span><span class="si">}</span><span class="s2">, &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;dx=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dx</span><span class="si">}</span><span class="s2">, &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;num_refinements=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">num_refinements</span><span class="si">}</span><span class="s2">)&quot;</span>
-        <span class="p">)</span>
+            <span class="sa">f</span><span class="s2">&quot;lx=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;lx&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;ly=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;ly&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;lz=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;lz&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;dx=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;dx&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;num_refinements=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;num_refinements&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="p">)</span></div>
 
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="create_slab_facet_function"><a class="viewcode-back" href="../../api.html#simcardems.geometry.create_slab_facet_function">[docs]</a><span class="k">def</span> <span class="nf">create_slab_facet_function</span><span class="p">(</span>
+    <span class="n">mesh</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">,</span>
+    <span class="n">lx</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">markers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">markers</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">markers</span> <span class="o">=</span> <span class="n">SlabGeometry</span><span class="o">.</span><span class="n">default_markers</span><span class="p">()</span>
+    <span class="c1"># Define domain to apply dirichlet boundary conditions</span>
+    <span class="n">left</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">CompiledSubDomain</span><span class="p">(</span><span class="s2">&quot;near(x[0], 0) &amp;&amp; on_boundary&quot;</span><span class="p">)</span>
+    <span class="n">right</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">CompiledSubDomain</span><span class="p">(</span><span class="s2">&quot;near(x[0], lx) &amp;&amp; on_boundary&quot;</span><span class="p">,</span> <span class="n">lx</span><span class="o">=</span><span class="n">lx</span><span class="p">)</span>
+    <span class="n">plane_y0</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">CompiledSubDomain</span><span class="p">(</span><span class="s2">&quot;near(x[1], 0) &amp;&amp; on_boundary&quot;</span><span class="p">)</span>
+    <span class="n">plane_z0</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">CompiledSubDomain</span><span class="p">(</span><span class="s2">&quot;near(x[2], 0) &amp;&amp; on_boundary&quot;</span><span class="p">)</span>
+
+    <span class="n">ffun</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">(</span><span class="s2">&quot;size_t&quot;</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">mesh</span><span class="o">.</span><span class="n">topology</span><span class="p">()</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">ffun</span><span class="o">.</span><span class="n">set_all</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">left</span><span class="o">.</span><span class="n">mark</span><span class="p">(</span><span class="n">ffun</span><span class="p">,</span> <span class="n">markers</span><span class="p">[</span><span class="s2">&quot;X0&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">right</span><span class="o">.</span><span class="n">mark</span><span class="p">(</span><span class="n">ffun</span><span class="p">,</span> <span class="n">markers</span><span class="p">[</span><span class="s2">&quot;X1&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">plane_y0</span><span class="o">.</span><span class="n">mark</span><span class="p">(</span><span class="n">ffun</span><span class="p">,</span> <span class="n">markers</span><span class="p">[</span><span class="s2">&quot;Y0&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">plane_z0</span><span class="o">.</span><span class="n">mark</span><span class="p">(</span><span class="n">ffun</span><span class="p">,</span> <span class="n">markers</span><span class="p">[</span><span class="s2">&quot;Z0&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">ffun</span></div>
+
+
+<div class="viewcode-block" id="create_slab_microstructure"><a class="viewcode-back" href="../../api.html#simcardems.geometry.create_slab_microstructure">[docs]</a><span class="k">def</span> <span class="nf">create_slab_microstructure</span><span class="p">(</span><span class="n">fiber_space</span><span class="p">,</span> <span class="n">mesh</span><span class="p">):</span>
+
+    <span class="n">family</span><span class="p">,</span> <span class="n">degree</span> <span class="o">=</span> <span class="n">fiber_space</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Set up microstructure&quot;</span><span class="p">)</span>
+    <span class="n">V_f</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">VectorFunctionSpace</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">family</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">degree</span><span class="p">))</span>
+    <span class="n">f0</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span>
+        <span class="n">dolfin</span><span class="o">.</span><span class="n">Expression</span><span class="p">(</span>
+            <span class="p">(</span><span class="s2">&quot;1.0&quot;</span><span class="p">,</span> <span class="s2">&quot;0.0&quot;</span><span class="p">,</span> <span class="s2">&quot;0.0&quot;</span><span class="p">),</span>
+            <span class="n">degree</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">cell</span><span class="o">=</span><span class="n">mesh</span><span class="o">.</span><span class="n">ufl_cell</span><span class="p">(),</span>
+        <span class="p">),</span>
+        <span class="n">V_f</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">s0</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span>
+        <span class="n">dolfin</span><span class="o">.</span><span class="n">Expression</span><span class="p">(</span>
+            <span class="p">(</span><span class="s2">&quot;0.0&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0&quot;</span><span class="p">,</span> <span class="s2">&quot;0.0&quot;</span><span class="p">),</span>
+            <span class="n">degree</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">cell</span><span class="o">=</span><span class="n">mesh</span><span class="o">.</span><span class="n">ufl_cell</span><span class="p">(),</span>
+        <span class="p">),</span>
+        <span class="n">V_f</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">n0</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span>
+        <span class="n">dolfin</span><span class="o">.</span><span class="n">Expression</span><span class="p">(</span>
+            <span class="p">(</span><span class="s2">&quot;0.0&quot;</span><span class="p">,</span> <span class="s2">&quot;0.0&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0&quot;</span><span class="p">),</span>
+            <span class="n">degree</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">cell</span><span class="o">=</span><span class="n">mesh</span><span class="o">.</span><span class="n">ufl_cell</span><span class="p">(),</span>
+        <span class="p">),</span>
+        <span class="n">V_f</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="c1"># Collect the microstructure</span>
+    <span class="k">return</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">(</span><span class="n">f0</span><span class="o">=</span><span class="n">f0</span><span class="p">,</span> <span class="n">s0</span><span class="o">=</span><span class="n">s0</span><span class="p">,</span> <span class="n">n0</span><span class="o">=</span><span class="n">n0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="LeftVentricularGeometry"><a class="viewcode-back" href="../../api.html#simcardems.geometry.LeftVentricularGeometry">[docs]</a><span class="k">class</span> <span class="nc">LeftVentricularGeometry</span><span class="p">(</span><span class="n">BaseGeometry</span><span class="p">):</span>
+<div class="viewcode-block" id="LeftVentricularGeometry.default_markers"><a class="viewcode-back" href="../../api.html#simcardems.geometry.LeftVentricularGeometry.default_markers">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">default_markers</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;lx&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">lx</span><span class="p">,</span>
-            <span class="s2">&quot;ly&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ly</span><span class="p">,</span>
-            <span class="s2">&quot;lz&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">lz</span><span class="p">,</span>
-            <span class="s2">&quot;dx&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">dx</span><span class="p">,</span>
-            <span class="s2">&quot;num_refinements&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_refinements</span><span class="p">,</span>
+            <span class="s2">&quot;BASE&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+            <span class="s2">&quot;ENDO&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+            <span class="s2">&quot;EPI&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
         <span class="p">}</span></div>
+
+    <span class="k">def</span> <span class="nf">_default_microstructure</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">fiber_space</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">mesh</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">_default_ffun</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mesh</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">_default_mesh</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+<div class="viewcode-block" id="LeftVentricularGeometry.default_parameters"><a class="viewcode-back" href="../../api.html#simcardems.geometry.LeftVentricularGeometry.default_parameters">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">default_parameters</span><span class="p">():</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;num_refinements&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;fiber_space&quot;</span><span class="p">:</span> <span class="s2">&quot;P_1&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;fibers_angle_endo&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">60.0</span><span class="p">,</span>
+            <span class="s2">&quot;fibers_angle_epi&quot;</span><span class="p">:</span> <span class="mf">60.0</span><span class="p">,</span>
+            <span class="s2">&quot;mesh_type&quot;</span><span class="p">:</span> <span class="n">MeshTypes</span><span class="o">.</span><span class="n">lv_ellipsoid</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="s2">&quot;mu_apex_endo&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.141592653589793</span><span class="p">,</span>
+            <span class="s2">&quot;mu_apex_epi&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.141592653589793</span><span class="p">,</span>
+            <span class="s2">&quot;mu_base_endo&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">1.2722641256100204</span><span class="p">,</span>
+            <span class="s2">&quot;mu_base_epi&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">1.318116071652818</span><span class="p">,</span>
+            <span class="s2">&quot;psize_ref&quot;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span>
+            <span class="s2">&quot;r_long_endo&quot;</span><span class="p">:</span> <span class="mf">17.0</span><span class="p">,</span>
+            <span class="s2">&quot;r_long_epi&quot;</span><span class="p">:</span> <span class="mf">20.0</span><span class="p">,</span>
+            <span class="s2">&quot;r_short_endo&quot;</span><span class="p">:</span> <span class="mf">7.0</span><span class="p">,</span>
+            <span class="s2">&quot;r_short_epi&quot;</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+<div class="viewcode-block" id="LeftVentricularGeometry.validate"><a class="viewcode-back" href="../../api.html#simcardems.geometry.LeftVentricularGeometry.validate">[docs]</a>    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(parameters=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="si">}</span><span class="s2">)&quot;</span></div>
 </pre></div>
 
               </div>

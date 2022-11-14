@@ -14,17 +14,24 @@ Options:
   --help     Show this message and exit.
 
 Commands:
+  gui
   postprocess
   run
+  run-benchmark
   run-json
 ```
 to see all commands.
 Run run a simulation using command line arguments you can use the `run` command. You can execute
 ```
 $ python3 -m simcardems run --help
-Usage: python -m simcardems run [OPTIONS]
+Usage: python -m simcardems run [OPTIONS] GEOMETRY_PATH
 
 Options:
+  -s, --geometry-schema-path TEXT
+                                  Schema for the geometry. If not provided it
+                                  will assume that this file has the same file
+                                  name as `geometry-path` but with the suffix
+                                  `.json`.
   -o, --outdir PATH               Output directory
   --dt FLOAT                      Time step
   -T, --end-time FLOAT            End-time of simulation
@@ -34,10 +41,6 @@ Options:
   --set_material TEXT             Choose material properties for mechanics
                                   model (default is HolzapfelOgden, option is
                                   Guccione
-  -dx FLOAT                       Spatial discretization
-  -lx FLOAT                       Size of mesh in x-direction
-  -ly FLOAT                       Size of mesh in y-direction
-  -lz FLOAT                       Size of mesh in z-direction
   --bnd_cond [dirichlet|rigid]    Boundary conditions for the mechanics
                                   problem
   --load_state                    If load existing state if exists, otherwise
@@ -65,22 +68,22 @@ Options:
                                   condition
   --traction FLOAT                Set value of traction for Neumann boundary
                                   condition
-  --help                          Show this message and exit.
+  --help                          Show this message and exit.his message and exit.
 ```
 to see all options.
-For example if you want to run a simulations with `T 1000`, then use
+For example if you want to run a simulations with `T 100`, using the slab geometry in the demo folder, then use
 ```
-python3 -m simcardems run -T 1000
+python3 -m simcardems run -T 100 demos/geometries/slab.h5
 ```
 You can also specify a json file containing all the settings, e.g a file called `args.json` with the following content
 
 ```json
 {
     "T": 100,
-    "outdir": "results",
+    "geometry_path": "demos/geometries/slab.h5",
+    "outdir": "results_rigid",
     "bnd_cond": "rigid",
     "dt": 0.02,
-    "dx": 0.2
 }
 ```
 and then run the simulation `run-json` command

@@ -56,7 +56,7 @@ const thebe_selector_output = ".output, .cell_output"
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Graphical user interface" href="gui.html" />
+    <link rel="next" title="Left ventricular geometry" href="ventricular_geometry.html" />
     <link rel="prev" title="Run using Docker" href="docker.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
@@ -179,6 +179,11 @@ const thebe_selector_output = ".output, .cell_output"
  <li class="toctree-l1 current active">
   <a class="current reference internal" href="#">
    Release test
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="ventricular_geometry.html">
+   Left ventricular geometry
   </a>
  </li>
  <li class="toctree-l1">
@@ -369,14 +374,15 @@ const thebe_selector_output = ".output, .cell_output"
 We also make this runner take in an argument <code class="docutils literal notranslate"><span class="pre">T_release</span></code> that will be the the time when we trigger the rapid length reduction. We also store the pre-stretch variable which is the variable we will change when applying the rapid length reduction.
 Also, we can only do this on a slab type geometry so we add an extra test for that.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ReleaseRunner</span><span class="p">(</span><span class="n">simcardems</span><span class="o">.</span><span class="n">Runner</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">T_release</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">T_release</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_T_release</span> <span class="o">=</span> <span class="n">T_release</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pre_stretch</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">pre_stretch</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_stretch</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">conf</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
         <span class="c1"># Make sure we have a SlabGeometry</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">geometry</span><span class="p">,</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">SlabGeometry</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Lx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">lx</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Lx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;lx&quot;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_print_message</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="k">def</span> <span class="nf">_post_mechanics_solve</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -406,8 +412,19 @@ Now we can set up the main function</p>
 </pre></div>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="n">outdir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;release_test_results&quot;</span><span class="p">)</span>
-    <span class="n">config</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">Config</span><span class="p">(</span><span class="n">outdir</span><span class="o">=</span><span class="n">outdir</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">pre_stretch</span><span class="o">=</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="mf">0.1</span><span class="p">))</span>
+    <span class="c1"># Get path to this file</span>
+    <span class="n">here</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span>
+    <span class="n">outdir</span> <span class="o">=</span> <span class="n">here</span> <span class="o">/</span> <span class="s2">&quot;release_test_results&quot;</span>
+    <span class="n">geometry_path</span> <span class="o">=</span> <span class="n">here</span> <span class="o">/</span> <span class="s2">&quot;geometries/slab.h5&quot;</span>
+    <span class="n">geometry_schema_path</span> <span class="o">=</span> <span class="n">here</span> <span class="o">/</span> <span class="s2">&quot;geometries/slab.json&quot;</span>
+
+    <span class="n">config</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">Config</span><span class="p">(</span>
+        <span class="n">outdir</span><span class="o">=</span><span class="n">outdir</span><span class="p">,</span>
+        <span class="n">T</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+        <span class="n">pre_stretch</span><span class="o">=</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="mf">0.1</span><span class="p">),</span>
+        <span class="n">geometry_path</span><span class="o">=</span><span class="n">geometry_path</span><span class="p">,</span>
+        <span class="n">geometry_schema_path</span><span class="o">=</span><span class="n">geometry_schema_path</span><span class="p">,</span>
+    <span class="p">)</span>
     <span class="n">main</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
     <span class="n">postprocess</span><span class="p">(</span><span class="n">outdir</span><span class="o">=</span><span class="n">outdir</span><span class="p">)</span>
 </pre></div>
@@ -456,10 +473,10 @@ Now we can set up the main function</p>
             <p class="prev-next-title">Run using Docker</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="gui.html" title="next page">
+    <a class='right-next' id="next-link" href="ventricular_geometry.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Graphical user interface</p>
+        <p class="prev-next-title">Left ventricular geometry</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>

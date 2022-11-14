@@ -178,6 +178,11 @@ const thebe_selector_output = ".output, .cell_output"
   </a>
  </li>
  <li class="toctree-l1">
+  <a class="reference internal" href="../../ventricular_geometry.html">
+   Left ventricular geometry
+  </a>
+ </li>
+ <li class="toctree-l1">
   <a class="reference internal" href="../../gui.html">
    Graphical user interface
   </a>
@@ -314,16 +319,17 @@ const thebe_selector_output = ".output, .cell_output"
               <div>
                 
   <h1>Source code for simcardems.setup_models</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span></span><span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">typing</span>
-<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">NamedTuple</span>
 
 <span class="kn">import</span> <span class="nn">cbcbeat</span>
 <span class="kn">import</span> <span class="nn">dolfin</span>
 <span class="kn">import</span> <span class="nn">pulse</span>
 <span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
 
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">config</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">em_model</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">ep_model</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">geometry</span>
@@ -331,25 +337,25 @@ const thebe_selector_output = ".output, .cell_output"
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">mechanics_model</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">save_load_functions</span> <span class="k">as</span> <span class="n">io</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">utils</span>
-<span class="kn">from</span> <span class="nn">.config</span> <span class="kn">import</span> <span class="n">Config</span>
+<span class="kn">from</span> <span class="nn">.em_model</span> <span class="kn">import</span> <span class="n">EMCoupling</span>
 <span class="kn">from</span> <span class="nn">.ORdmm_Land</span> <span class="kn">import</span> <span class="n">ORdmm_Land</span> <span class="k">as</span> <span class="n">CellModel</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
-<span class="n">EMState</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span>
-    <span class="s2">&quot;EMState&quot;</span><span class="p">,</span>
-    <span class="p">[</span><span class="s2">&quot;coupling&quot;</span><span class="p">,</span> <span class="s2">&quot;solver&quot;</span><span class="p">,</span> <span class="s2">&quot;mech_heart&quot;</span><span class="p">,</span> <span class="s2">&quot;t0&quot;</span><span class="p">],</span>
-<span class="p">)</span>
+
+<div class="viewcode-block" id="EMState"><a class="viewcode-back" href="../../api.html#simcardems.setup_models.EMState">[docs]</a><span class="k">class</span> <span class="nc">EMState</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="n">coupling</span><span class="p">:</span> <span class="n">EMCoupling</span>
+    <span class="n">solver</span><span class="p">:</span> <span class="n">cbcbeat</span><span class="o">.</span><span class="n">SplittingSolver</span>
+    <span class="n">mech_heart</span><span class="p">:</span> <span class="n">pulse</span><span class="o">.</span><span class="n">MechanicsProblem</span>
+    <span class="n">geometry</span><span class="p">:</span> <span class="n">geometry</span><span class="o">.</span><span class="n">BaseGeometry</span>
+    <span class="n">t0</span><span class="p">:</span> <span class="nb">float</span></div>
 
 
-<div class="viewcode-block" id="setup_EM_model"><a class="viewcode-back" href="../../api.html#simcardems.setup_models.setup_EM_model">[docs]</a><span class="k">def</span> <span class="nf">setup_EM_model</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">Config</span><span class="p">):</span>
+<div class="viewcode-block" id="setup_EM_model"><a class="viewcode-back" href="../../api.html#simcardems.setup_models.setup_EM_model">[docs]</a><span class="k">def</span> <span class="nf">setup_EM_model</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="p">):</span>
 
-    <span class="n">geo</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="n">SlabGeometry</span><span class="p">(</span>
-        <span class="n">lx</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">lx</span><span class="p">,</span>
-        <span class="n">ly</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">ly</span><span class="p">,</span>
-        <span class="n">lz</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">lz</span><span class="p">,</span>
-        <span class="n">dx</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">dx</span><span class="p">,</span>
-        <span class="n">num_refinements</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">num_refinements</span><span class="p">,</span>
+    <span class="n">geo</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="n">load_geometry</span><span class="p">(</span>
+        <span class="n">mesh_path</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">geometry_path</span><span class="p">,</span>
+        <span class="n">schema_path</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">geometry_schema_path</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">coupling</span> <span class="o">=</span> <span class="n">em_model</span><span class="o">.</span><span class="n">EMCoupling</span><span class="p">(</span><span class="n">geo</span><span class="p">)</span>
@@ -369,7 +375,8 @@ const thebe_selector_output = ".output, .cell_output"
 
     <span class="n">mech_heart</span> <span class="o">=</span> <span class="n">setup_mechanics_solver</span><span class="p">(</span>
         <span class="n">coupling</span><span class="o">=</span><span class="n">coupling</span><span class="p">,</span>
-        <span class="n">bnd_cond</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">bnd_cond</span><span class="p">,</span>
+        <span class="n">geo</span><span class="o">=</span><span class="n">geo</span><span class="p">,</span>
+        <span class="n">bnd_rigid</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">bnd_rigid</span><span class="p">,</span>
         <span class="n">cell_params</span><span class="o">=</span><span class="n">solver</span><span class="o">.</span><span class="n">ode_solver</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span>
         <span class="n">pre_stretch</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">pre_stretch</span><span class="p">,</span>
         <span class="n">traction</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">traction</span><span class="p">,</span>
@@ -384,22 +391,24 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="n">coupling</span><span class="o">=</span><span class="n">coupling</span><span class="p">,</span>
         <span class="n">solver</span><span class="o">=</span><span class="n">solver</span><span class="p">,</span>
         <span class="n">mech_heart</span><span class="o">=</span><span class="n">mech_heart</span><span class="p">,</span>
+        <span class="n">geometry</span><span class="o">=</span><span class="n">geo</span><span class="p">,</span>
         <span class="n">t0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
     <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="setup_mechanics_solver"><a class="viewcode-back" href="../../api.html#simcardems.setup_models.setup_mechanics_solver">[docs]</a><span class="k">def</span> <span class="nf">setup_mechanics_solver</span><span class="p">(</span>
     <span class="n">coupling</span><span class="p">:</span> <span class="n">em_model</span><span class="o">.</span><span class="n">EMCoupling</span><span class="p">,</span>
-    <span class="n">bnd_cond</span><span class="p">:</span> <span class="n">mechanics_model</span><span class="o">.</span><span class="n">BoundaryConditions</span><span class="p">,</span>
+    <span class="n">geo</span><span class="p">:</span> <span class="n">geometry</span><span class="o">.</span><span class="n">BaseGeometry</span><span class="p">,</span>
     <span class="n">cell_params</span><span class="p">,</span>
+    <span class="n">bnd_rigid</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">bnd_rigid</span><span class="p">,</span>
     <span class="n">pre_stretch</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">traction</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">spring</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">fix_right_plane</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">Config</span><span class="o">.</span><span class="n">fix_right_plane</span><span class="p">,</span>
-    <span class="n">mechanics_ode_scheme</span><span class="p">:</span> <span class="n">land_model</span><span class="o">.</span><span class="n">Scheme</span> <span class="o">=</span> <span class="n">Config</span><span class="o">.</span><span class="n">mechanics_ode_scheme</span><span class="p">,</span>
+    <span class="n">fix_right_plane</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">fix_right_plane</span><span class="p">,</span>
+    <span class="n">mechanics_ode_scheme</span><span class="p">:</span> <span class="n">land_model</span><span class="o">.</span><span class="n">Scheme</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">mechanics_ode_scheme</span><span class="p">,</span>
     <span class="n">set_material</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="n">linear_solver</span><span class="o">=</span><span class="s2">&quot;mumps&quot;</span><span class="p">,</span>
-    <span class="n">use_custom_newton_solver</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">Config</span><span class="o">.</span><span class="n">mechanics_use_custom_newton_solver</span><span class="p">,</span>
+    <span class="n">use_custom_newton_solver</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">mechanics_use_custom_newton_solver</span><span class="p">,</span>
     <span class="n">Zetas_prev</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">Zetaw_prev</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">lmbda_prev</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -408,26 +417,6 @@ const thebe_selector_output = ".output, .cell_output"
     <span class="sd">&quot;&quot;&quot;Setup mechanics model with dirichlet boundary conditions or rigid motion.&quot;&quot;&quot;</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Set up mechanics model&quot;</span><span class="p">)</span>
 
-    <span class="n">microstructure</span> <span class="o">=</span> <span class="n">mechanics_model</span><span class="o">.</span><span class="n">setup_microstructure</span><span class="p">(</span><span class="n">coupling</span><span class="o">.</span><span class="n">mech_mesh</span><span class="p">)</span>
-
-    <span class="n">marker_functions</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">bcs</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">if</span> <span class="n">bnd_cond</span> <span class="o">==</span> <span class="n">mechanics_model</span><span class="o">.</span><span class="n">BoundaryConditions</span><span class="o">.</span><span class="n">dirichlet</span><span class="p">:</span>
-        <span class="n">bcs</span><span class="p">,</span> <span class="n">marker_functions</span> <span class="o">=</span> <span class="n">mechanics_model</span><span class="o">.</span><span class="n">setup_diriclet_bc</span><span class="p">(</span>
-            <span class="n">mesh</span><span class="o">=</span><span class="n">coupling</span><span class="o">.</span><span class="n">mech_mesh</span><span class="p">,</span>
-            <span class="n">pre_stretch</span><span class="o">=</span><span class="n">pre_stretch</span><span class="p">,</span>
-            <span class="n">traction</span><span class="o">=</span><span class="n">traction</span><span class="p">,</span>
-            <span class="n">spring</span><span class="o">=</span><span class="n">spring</span><span class="p">,</span>
-            <span class="n">fix_right_plane</span><span class="o">=</span><span class="n">fix_right_plane</span><span class="p">,</span>
-        <span class="p">)</span>
-    <span class="c1"># Create the geometry</span>
-    <span class="n">geometry</span> <span class="o">=</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Geometry</span><span class="p">(</span>
-        <span class="n">mesh</span><span class="o">=</span><span class="n">coupling</span><span class="o">.</span><span class="n">mech_mesh</span><span class="p">,</span>
-        <span class="n">microstructure</span><span class="o">=</span><span class="n">microstructure</span><span class="p">,</span>
-        <span class="n">marker_functions</span><span class="o">=</span><span class="n">marker_functions</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="c1"># Create the material</span>
-    <span class="c1"># material_parameters = pulse.HolzapfelOgden.default_parameters()</span>
     <span class="c1"># Use parameters from Biaxial test in Holzapfel 2019 (Table 1).</span>
     <span class="n">material_parameters</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
         <span class="n">a</span><span class="o">=</span><span class="mf">2.28</span><span class="p">,</span>
@@ -441,9 +430,9 @@ const thebe_selector_output = ".output, .cell_output"
     <span class="p">)</span>
 
     <span class="n">active_model</span> <span class="o">=</span> <span class="n">land_model</span><span class="o">.</span><span class="n">LandModel</span><span class="p">(</span>
-        <span class="n">f0</span><span class="o">=</span><span class="n">microstructure</span><span class="o">.</span><span class="n">f0</span><span class="p">,</span>
-        <span class="n">s0</span><span class="o">=</span><span class="n">microstructure</span><span class="o">.</span><span class="n">s0</span><span class="p">,</span>
-        <span class="n">n0</span><span class="o">=</span><span class="n">microstructure</span><span class="o">.</span><span class="n">n0</span><span class="p">,</span>
+        <span class="n">f0</span><span class="o">=</span><span class="n">geo</span><span class="o">.</span><span class="n">f0</span><span class="p">,</span>
+        <span class="n">s0</span><span class="o">=</span><span class="n">geo</span><span class="o">.</span><span class="n">s0</span><span class="p">,</span>
+        <span class="n">n0</span><span class="o">=</span><span class="n">geo</span><span class="o">.</span><span class="n">n0</span><span class="p">,</span>
         <span class="n">eta</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
         <span class="n">parameters</span><span class="o">=</span><span class="n">cell_params</span><span class="p">,</span>
         <span class="n">XS</span><span class="o">=</span><span class="n">coupling</span><span class="o">.</span><span class="n">XS_mech</span><span class="p">,</span>
@@ -472,16 +461,15 @@ const thebe_selector_output = ".output, .cell_output"
             <span class="n">active_model</span><span class="o">=</span><span class="n">active_model</span><span class="p">,</span>
         <span class="p">)</span>
 
-    <span class="n">Problem</span> <span class="o">=</span> <span class="n">mechanics_model</span><span class="o">.</span><span class="n">MechanicsProblem</span>
-    <span class="k">if</span> <span class="n">bnd_cond</span> <span class="o">==</span> <span class="n">mechanics_model</span><span class="o">.</span><span class="n">BoundaryConditions</span><span class="o">.</span><span class="n">rigid</span><span class="p">:</span>
-        <span class="n">Problem</span> <span class="o">=</span> <span class="n">mechanics_model</span><span class="o">.</span><span class="n">RigidMotionProblem</span>
-
-    <span class="n">verbose</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">getEffectiveLevel</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span>
-    <span class="n">problem</span> <span class="o">=</span> <span class="n">Problem</span><span class="p">(</span>
-        <span class="n">geometry</span><span class="p">,</span>
-        <span class="n">material</span><span class="p">,</span>
-        <span class="n">bcs</span><span class="p">,</span>
-        <span class="n">solver_parameters</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;linear_solver&quot;</span><span class="p">:</span> <span class="n">linear_solver</span><span class="p">,</span> <span class="s2">&quot;verbose&quot;</span><span class="p">:</span> <span class="n">verbose</span><span class="p">},</span>
+    <span class="n">problem</span> <span class="o">=</span> <span class="n">mechanics_model</span><span class="o">.</span><span class="n">create_slab_problem</span><span class="p">(</span>
+        <span class="n">material</span><span class="o">=</span><span class="n">material</span><span class="p">,</span>
+        <span class="n">geo</span><span class="o">=</span><span class="n">geo</span><span class="p">,</span>
+        <span class="n">bnd_rigid</span><span class="o">=</span><span class="n">bnd_rigid</span><span class="p">,</span>
+        <span class="n">pre_stretch</span><span class="o">=</span><span class="n">pre_stretch</span><span class="p">,</span>
+        <span class="n">traction</span><span class="o">=</span><span class="n">traction</span><span class="p">,</span>
+        <span class="n">spring</span><span class="o">=</span><span class="n">spring</span><span class="p">,</span>
+        <span class="n">fix_right_plane</span><span class="o">=</span><span class="n">fix_right_plane</span><span class="p">,</span>
+        <span class="n">linear_solver</span><span class="o">=</span><span class="n">linear_solver</span><span class="p">,</span>
         <span class="n">use_custom_newton_solver</span><span class="o">=</span><span class="n">use_custom_newton_solver</span><span class="p">,</span>
     <span class="p">)</span>
 
@@ -501,16 +489,16 @@ const thebe_selector_output = ".output, .cell_output"
 <div class="viewcode-block" id="setup_ep_solver"><a class="viewcode-back" href="../../api.html#simcardems.setup_models.setup_ep_solver">[docs]</a><span class="k">def</span> <span class="nf">setup_ep_solver</span><span class="p">(</span>
     <span class="n">dt</span><span class="p">,</span>
     <span class="n">coupling</span><span class="p">,</span>
-    <span class="n">scheme</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">ep_ode_scheme</span><span class="p">,</span>
-    <span class="n">theta</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">ep_theta</span><span class="p">,</span>
-    <span class="n">preconditioner</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">ep_preconditioner</span><span class="p">,</span>
+    <span class="n">scheme</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">ep_ode_scheme</span><span class="p">,</span>
+    <span class="n">theta</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">ep_theta</span><span class="p">,</span>
+    <span class="n">preconditioner</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">ep_preconditioner</span><span class="p">,</span>
     <span class="n">cell_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">cell_inits</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">cell_init_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">drug_factors_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">popu_factors_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">disease_state</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">disease_state</span><span class="p">,</span>
-    <span class="n">PCL</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">PCL</span><span class="p">,</span>
+    <span class="n">disease_state</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">disease_state</span><span class="p">,</span>
+    <span class="n">PCL</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">PCL</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="n">ps</span> <span class="o">=</span> <span class="n">ep_model</span><span class="o">.</span><span class="n">setup_splitting_solver_parameters</span><span class="p">(</span>
         <span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">,</span>
@@ -558,44 +546,45 @@ const thebe_selector_output = ".output, .cell_output"
 <div class="viewcode-block" id="Runner"><a class="viewcode-back" href="../../api.html#simcardems.setup_models.Runner">[docs]</a><span class="k">class</span> <span class="nc">Runner</span><span class="p">:</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">config</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">Config</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">conf</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">empty</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 
-        <span class="k">if</span> <span class="n">config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">config</span> <span class="o">=</span> <span class="n">Config</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">conf</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conf</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="n">config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="n">conf</span>
 
         <span class="k">if</span> <span class="n">empty</span><span class="p">:</span>
             <span class="k">return</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_state_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">outdir</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;state.h5&quot;</span><span class="p">)</span>
-        <span class="n">reset</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">config</span><span class="o">.</span><span class="n">load_state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">outdir</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;state.h5&quot;</span><span class="p">)</span>
+        <span class="n">reset</span> <span class="o">=</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">load_state</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">reset</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
             <span class="c1"># Load state</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Load previously saved state&quot;</span><span class="p">)</span>
-            <span class="n">coupling</span><span class="p">,</span> <span class="n">ep_solver</span><span class="p">,</span> <span class="n">mech_heart</span><span class="p">,</span> <span class="n">t0</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">load_state</span><span class="p">(</span>
+            <span class="n">coupling</span><span class="p">,</span> <span class="n">ep_solver</span><span class="p">,</span> <span class="n">mech_heart</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">t0</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">load_state</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_state_path</span><span class="p">,</span>
-                <span class="n">config</span><span class="o">.</span><span class="n">drug_factors_file</span><span class="p">,</span>
-                <span class="n">config</span><span class="o">.</span><span class="n">popu_factors_file</span><span class="p">,</span>
-                <span class="n">config</span><span class="o">.</span><span class="n">disease_state</span><span class="p">,</span>
-                <span class="n">config</span><span class="o">.</span><span class="n">PCL</span><span class="p">,</span>  <span class="c1"># Set bcl from cli</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">drug_factors_file</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">popu_factors_file</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">disease_state</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">PCL</span><span class="p">,</span>  <span class="c1"># Set bcl from cli</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Create a new state&quot;</span><span class="p">)</span>
             <span class="c1"># Create a new state</span>
-            <span class="n">coupling</span><span class="p">,</span> <span class="n">ep_solver</span><span class="p">,</span> <span class="n">mech_heart</span><span class="p">,</span> <span class="n">t0</span> <span class="o">=</span> <span class="n">setup_EM_model</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+            <span class="n">coupling</span><span class="p">,</span> <span class="n">ep_solver</span><span class="p">,</span> <span class="n">mech_heart</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">t0</span> <span class="o">=</span> <span class="n">setup_EM_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="p">:</span> <span class="n">em_model</span><span class="o">.</span><span class="n">EMCoupling</span> <span class="o">=</span> <span class="n">coupling</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ep_solver</span><span class="p">:</span> <span class="n">cbcbeat</span><span class="o">.</span><span class="n">SplittingSolver</span> <span class="o">=</span> <span class="n">ep_solver</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mech_heart</span><span class="p">:</span> <span class="n">mechanics_model</span><span class="o">.</span><span class="n">MechanicsProblem</span> <span class="o">=</span> <span class="n">mech_heart</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">geometry</span> <span class="o">=</span> <span class="n">geo</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_t0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">t0</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_reset</span> <span class="o">=</span> <span class="n">reset</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_setup_assigners</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">outdir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">outdir</span>
 
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting at t0=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_t0</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
@@ -606,14 +595,6 @@ const thebe_selector_output = ".output, .cell_output"
     <span class="nd">@_dt</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">_dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">value</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">_bnd_cond</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">bnd_cond</span>
-
-    <span class="nd">@_bnd_cond</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">_bnd_cond</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">bnd_cond</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">outdir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -655,6 +636,7 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="n">coupling</span><span class="p">:</span> <span class="n">em_model</span><span class="o">.</span><span class="n">EMCoupling</span><span class="p">,</span>
         <span class="n">ep_solver</span><span class="p">:</span> <span class="n">cbcbeat</span><span class="o">.</span><span class="n">SplittingSolver</span><span class="p">,</span>
         <span class="n">mech_heart</span><span class="p">:</span> <span class="n">mechanics_model</span><span class="o">.</span><span class="n">MechanicsProblem</span><span class="p">,</span>
+        <span class="n">geo</span><span class="p">:</span> <span class="n">geometry</span><span class="o">.</span><span class="n">BaseGeometry</span><span class="p">,</span>
         <span class="n">reset</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">t0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
     <span class="p">):</span>
@@ -662,11 +644,11 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="n">obj</span><span class="o">.</span><span class="n">coupling</span> <span class="o">=</span> <span class="n">coupling</span>
         <span class="n">obj</span><span class="o">.</span><span class="n">ep_solver</span> <span class="o">=</span> <span class="n">ep_solver</span>
         <span class="n">obj</span><span class="o">.</span><span class="n">mech_heart</span> <span class="o">=</span> <span class="n">mech_heart</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">geometry</span> <span class="o">=</span> <span class="n">geo</span>
         <span class="n">obj</span><span class="o">.</span><span class="n">_t0</span> <span class="o">=</span> <span class="n">t0</span>
 
         <span class="n">obj</span><span class="o">.</span><span class="n">_reset</span> <span class="o">=</span> <span class="n">reset</span>
         <span class="n">obj</span><span class="o">.</span><span class="n">_dt</span> <span class="o">=</span> <span class="n">ep_solver</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;MonodomainSolver&quot;</span><span class="p">][</span><span class="s2">&quot;default_timestep&quot;</span><span class="p">]</span>
-        <span class="n">obj</span><span class="o">.</span><span class="n">_bnd_cond</span> <span class="o">=</span> <span class="n">mech_heart</span><span class="o">.</span><span class="n">boundary_condition</span>
         <span class="n">obj</span><span class="o">.</span><span class="n">_setup_assigners</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">obj</span></div>
 
@@ -686,7 +668,7 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="bp">self</span><span class="o">.</span><span class="n">_pre_XS</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_preXS_assigner</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">setup_assigner</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_vs</span><span class="p">,</span> <span class="mi">40</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_pre_XW</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_preXW_assigner</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">setup_assigner</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_vs</span><span class="p">,</span> <span class="mi">41</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_u_subspace_index</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bnd_cond</span> <span class="o">==</span> <span class="s2">&quot;rigid&quot;</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_u_subspace_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mech_heart</span><span class="o">.</span><span class="n">u_subspace_index</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_u</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_u_assigner</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">setup_assigner</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mech_heart</span><span class="o">.</span><span class="n">state</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_u_subspace_index</span><span class="p">,</span>
@@ -720,9 +702,8 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="kn">from</span> <span class="nn">.datacollector</span> <span class="kn">import</span> <span class="n">DataCollector</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">collector</span> <span class="o">=</span> <span class="n">DataCollector</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_outdir</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">mech_mesh</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">ep_mesh</span><span class="p">,</span>
+            <span class="n">outdir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_outdir</span><span class="p">,</span>
+            <span class="n">geo</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">geometry</span><span class="p">,</span>
             <span class="n">reset_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_reset</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">for</span> <span class="n">group</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">f</span> <span class="ow">in</span> <span class="p">[</span>
@@ -810,21 +791,31 @@ const thebe_selector_output = ".output, .cell_output"
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_post_mechanics_solve</span><span class="p">()</span>
 
+<div class="viewcode-block" id="Runner.save_state"><a class="viewcode-back" href="../../api.html#simcardems.setup_models.Runner.save_state">[docs]</a>    <span class="k">def</span> <span class="nf">save_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="n">io</span><span class="o">.</span><span class="n">save_state</span><span class="p">(</span>
+            <span class="n">path</span><span class="p">,</span>
+            <span class="n">solver</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ep_solver</span><span class="p">,</span>
+            <span class="n">mech_heart</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mech_heart</span><span class="p">,</span>
+            <span class="n">geo</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">geometry</span><span class="p">,</span>
+            <span class="n">dt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dt</span><span class="p">,</span>
+            <span class="n">t0</span><span class="o">=</span><span class="n">TimeStepper</span><span class="o">.</span><span class="n">ns2ms</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">),</span>
+        <span class="p">)</span></div>
+
 <div class="viewcode-block" id="Runner.solve"><a class="viewcode-back" href="../../api.html#simcardems.setup_models.Runner.solve">[docs]</a>    <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">T</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Config</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
-        <span class="n">save_freq</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Config</span><span class="o">.</span><span class="n">save_freq</span><span class="p">,</span>
-        <span class="n">show_progress_bar</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">Config</span><span class="o">.</span><span class="n">show_progress_bar</span><span class="p">,</span>
+        <span class="n">T</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
+        <span class="n">save_freq</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">save_freq</span><span class="p">,</span>
+        <span class="n">show_progress_bar</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">show_progress_bar</span><span class="p">,</span>
         <span class="n">st_progress</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_outdir&quot;</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Please set the output directory&quot;</span><span class="p">)</span>
 
         <span class="c1"># Truncate</span>
-        <span class="k">if</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;residual.txt&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
-            <span class="n">fr</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;residual.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
-            <span class="n">fr</span><span class="o">.</span><span class="n">truncate</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-            <span class="n">fr</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="c1"># if Path(&quot;residual.txt&quot;).is_file():</span>
+        <span class="c1">#     fr = open(&quot;residual.txt&quot;, &quot;w&quot;)</span>
+        <span class="c1">#     fr.truncate(0)</span>
+        <span class="c1">#     fr.close()</span>
 
         <span class="n">save_it</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">save_freq</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dt</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">create_time_stepper</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">use_ns</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">st_progress</span><span class="o">=</span><span class="n">st_progress</span><span class="p">)</span>
@@ -834,11 +825,11 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="p">)</span>
 
         <span class="c1"># Store initial state</span>
-        <span class="n">save_state_every_n_beat</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># Save state every fifth beat</span>
-        <span class="n">five_beats</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">TimeStepper</span><span class="o">.</span><span class="n">ms2ns</span><span class="p">(</span><span class="n">save_state_every_n_beat</span> <span class="o">*</span> <span class="mf">1000.0</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_stepper</span><span class="o">.</span><span class="n">dt</span>
-        <span class="p">)</span>
-        <span class="n">beat_nr</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># save_state_every_n_beat = 5  # Save state every fifth beat</span>
+        <span class="c1"># five_beats = (</span>
+        <span class="c1">#     TimeStepper.ms2ns(save_state_every_n_beat * 1000.0) / self._time_stepper.dt</span>
+        <span class="c1"># )</span>
+        <span class="c1"># beat_nr = 0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mech_heart</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">active</span><span class="o">.</span><span class="n">start_time</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">t0</span><span class="p">,</span> <span class="n">t</span><span class="p">))</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pbar</span><span class="p">):</span>
@@ -867,44 +858,30 @@ const thebe_selector_output = ".output, .cell_output"
                 <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">()</span>
 
             <span class="c1"># Store state every 5 beats</span>
-            <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">five_beats</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">io</span><span class="o">.</span><span class="n">save_state</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_state_path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;state_</span><span class="si">{</span><span class="n">beat_nr</span><span class="si">}</span><span class="s2">beat.h5&quot;</span><span class="p">,</span>
-                    <span class="p">),</span>
-                    <span class="n">solver</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ep_solver</span><span class="p">,</span>
-                    <span class="n">mech_heart</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mech_heart</span><span class="p">,</span>
-                    <span class="n">coupling</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="p">,</span>
-                    <span class="n">dt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dt</span><span class="p">,</span>
-                    <span class="n">bnd_cond</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_bnd_cond</span><span class="p">,</span>
-                    <span class="n">t0</span><span class="o">=</span><span class="n">TimeStepper</span><span class="o">.</span><span class="n">ns2ms</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">),</span>
-                <span class="p">)</span>
-                <span class="n">beat_nr</span> <span class="o">+=</span> <span class="n">save_state_every_n_beat</span>
+            <span class="c1"># if i &gt; 0 and (i + 1) % five_beats == 0:</span>
+            <span class="c1">#     self.save_state(</span>
+            <span class="c1">#         self._state_path.parent.joinpath(</span>
+            <span class="c1">#             f&quot;state_{beat_nr}beat.h5&quot;,</span>
+            <span class="c1">#         ),</span>
+            <span class="c1">#     )</span>
+            <span class="c1">#     beat_nr += save_state_every_n_beat</span>
 
-            <span class="c1"># Residual file : End of line after each time step</span>
-            <span class="k">if</span> <span class="p">(</span>
-                <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;residual.txt&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span>
-                <span class="ow">and</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">dolfin</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
-            <span class="p">):</span>
-                <span class="n">fr</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;residual.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span>
-                <span class="n">fr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="n">fr</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="c1"># # Residual file : End of line after each time step</span>
+            <span class="c1"># if (</span>
+            <span class="c1">#     Path(&quot;residual.txt&quot;).is_file()</span>
+            <span class="c1">#     and dolfin.MPI.rank(dolfin.MPI.comm_world) == 0</span>
+            <span class="c1"># ):</span>
+            <span class="c1">#     fr = open(&quot;residual.txt&quot;, &quot;a&quot;)</span>
+            <span class="c1">#     fr.write(&quot;\n&quot;)</span>
+            <span class="c1">#     fr.close()</span>
 
-        <span class="n">io</span><span class="o">.</span><span class="n">save_state</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_state_path</span><span class="p">,</span>
-            <span class="n">solver</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ep_solver</span><span class="p">,</span>
-            <span class="n">mech_heart</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mech_heart</span><span class="p">,</span>
-            <span class="n">coupling</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="p">,</span>
-            <span class="n">dt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dt</span><span class="p">,</span>
-            <span class="n">bnd_cond</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_bnd_cond</span><span class="p">,</span>
-            <span class="n">t0</span><span class="o">=</span><span class="n">TimeStepper</span><span class="o">.</span><span class="n">ns2ms</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">),</span>
-        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_state</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state_path</span><span class="p">)</span></div></div>
 
         <span class="c1"># Copy residual file to output dir (if exists)</span>
-        <span class="k">if</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;residual.txt&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
-            <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_outdir</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;residual.txt&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span>
-                <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;residual.txt&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">(),</span>
-            <span class="p">)</span></div></div>
+        <span class="c1"># if Path(&quot;residual.txt&quot;).is_file():</span>
+        <span class="c1">#     Path(self._outdir).joinpath(&quot;residual.txt&quot;).write_text(</span>
+        <span class="c1">#         Path(&quot;residual.txt&quot;).read_text(),</span>
+        <span class="c1">#     )</span>
 
 
 <span class="k">class</span> <span class="nc">_tqdm</span><span class="p">:</span>
@@ -968,7 +945,7 @@ const thebe_selector_output = ".output, .cell_output"
 
     <span class="nd">@T</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">T</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">t0</span> <span class="o">&gt;=</span> <span class="n">T</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">t0</span> <span class="o">&gt;</span> <span class="n">T</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Start time has to be lower than end time&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_T</span> <span class="o">=</span> <span class="n">T</span>
 
@@ -983,6 +960,8 @@ const thebe_selector_output = ".output, .cell_output"
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">total_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">t0</span><span class="p">):</span>
+            <span class="k">return</span> <span class="mi">0</span>
         <span class="k">return</span> <span class="nb">round</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">t0</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1032,7 +1011,7 @@ const thebe_selector_output = ".output, .cell_output"
 
 <div class="viewcode-block" id="create_progressbar"><a class="viewcode-back" href="../../api.html#simcardems.setup_models.create_progressbar">[docs]</a><span class="k">def</span> <span class="nf">create_progressbar</span><span class="p">(</span>
     <span class="n">time_stepper</span><span class="p">:</span> <span class="n">TimeStepper</span><span class="p">,</span>
-    <span class="n">show_progress_bar</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">Config</span><span class="o">.</span><span class="n">show_progress_bar</span><span class="p">,</span>
+    <span class="n">show_progress_bar</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">show_progress_bar</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="k">if</span> <span class="n">show_progress_bar</span><span class="p">:</span>
         <span class="c1"># Show progressbar</span>

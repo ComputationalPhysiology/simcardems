@@ -178,6 +178,11 @@ const thebe_selector_output = ".output, .cell_output"
   </a>
  </li>
  <li class="toctree-l1">
+  <a class="reference internal" href="ventricular_geometry.html">
+   Left ventricular geometry
+  </a>
+ </li>
+ <li class="toctree-l1">
   <a class="reference internal" href="gui.html">
    Graphical user interface
   </a>
@@ -338,8 +343,6 @@ const thebe_selector_output = ".output, .cell_output"
  | <a href="#U"><strong>U</strong></a>
  | <a href="#V"><strong>V</strong></a>
  | <a href="#W"><strong>W</strong></a>
- | <a href="#X"><strong>X</strong></a>
- | <a href="#Y"><strong>Y</strong></a>
  | <a href="#Z"><strong>Z</strong></a>
  
 </div>
@@ -378,32 +381,14 @@ const thebe_selector_output = ".output, .cell_output"
 </li>
       <li><a href="api.html#simcardems.land_model.Scheme.bd">bd (simcardems.land_model.Scheme attribute)</a>
 </li>
-      <li><a href="api.html#simcardems.Config.bnd_cond">bnd_cond (simcardems.Config attribute)</a>
-
-      <ul>
-        <li><a href="api.html#simcardems.config.Config.bnd_cond">(simcardems.config.Config attribute)</a>
-</li>
-      </ul></li>
-      <li><a href="api.html#simcardems.postprocess.Boundary.boundaries">boundaries (simcardems.postprocess.Boundary property)</a>
-</li>
-      <li><a href="api.html#simcardems.postprocess.Boundary">Boundary (class in simcardems.postprocess)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#simcardems.mechanics_model.MechanicsProblem.boundary_condition">boundary_condition (simcardems.mechanics_model.MechanicsProblem attribute)</a>
+      <li><a href="api.html#simcardems.Config.bnd_rigid">bnd_rigid (simcardems.Config attribute)</a>
 
       <ul>
-        <li><a href="api.html#simcardems.mechanics_model.RigidMotionProblem.boundary_condition">(simcardems.mechanics_model.RigidMotionProblem attribute)</a>
-</li>
-        <li><a href="api.html#simcardems.MechanicsProblem.boundary_condition">(simcardems.MechanicsProblem attribute)</a>
-</li>
-        <li><a href="api.html#simcardems.RigidMotionProblem.boundary_condition">(simcardems.RigidMotionProblem attribute)</a>
+        <li><a href="api.html#simcardems.config.Config.bnd_rigid">(simcardems.config.Config attribute)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#simcardems.mechanics_model.BoundaryConditions">BoundaryConditions (class in simcardems.mechanics_model)</a>
-</li>
-      <li><a href="api.html#simcardems.postprocess.BoundaryNodes">BoundaryNodes (class in simcardems.postprocess)</a>
-</li>
   </ul></td>
 </tr></table>
 
@@ -416,14 +401,6 @@ const thebe_selector_output = ".output, .cell_output"
         <li><a href="api.html#simcardems.config.Config.cell_init_file">(simcardems.config.Config attribute)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#simcardems.postprocess.Boundary.center">center (simcardems.postprocess.Boundary property)</a>
-
-      <ul>
-        <li><a href="api.html#simcardems.postprocess.BoundaryNodes.center">(simcardems.postprocess.BoundaryNodes attribute)</a>
-</li>
-      </ul></li>
-      <li><a href="api.html#simcardems.postprocess.center_func">center_func() (in module simcardems.postprocess)</a>
-</li>
       <li><a href="api.html#simcardems.save_load_functions.check_file_exists">check_file_exists() (in module simcardems.save_load_functions)</a>
 </li>
       <li><a href="api.html#simcardems.MechanicsNewtonSolver.check_overloads_called">check_overloads_called() (simcardems.MechanicsNewtonSolver method)</a>
@@ -448,8 +425,6 @@ const thebe_selector_output = ".output, .cell_output"
         <li><a href="api.html#simcardems.newton_solver.MechanicsNewtonSolver.converged">(simcardems.newton_solver.MechanicsNewtonSolver method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#simcardems.setup_models.EMState.coupling">coupling (simcardems.setup_models.EMState attribute)</a>
 </li>
       <li><a href="api.html#simcardems.em_model.EMCoupling.coupling_to_ep">coupling_to_ep() (simcardems.em_model.EMCoupling method)</a>
@@ -458,6 +433,8 @@ const thebe_selector_output = ".output, .cell_output"
         <li><a href="api.html#simcardems.EMCoupling.coupling_to_ep">(simcardems.EMCoupling method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#simcardems.em_model.EMCoupling.coupling_to_mechanics">coupling_to_mechanics() (simcardems.em_model.EMCoupling method)</a>
 
       <ul>
@@ -467,6 +444,12 @@ const thebe_selector_output = ".output, .cell_output"
       <li><a href="api.html#simcardems.geometry.create_boxmesh">create_boxmesh() (in module simcardems.geometry)</a>
 </li>
       <li><a href="api.html#simcardems.setup_models.create_progressbar">create_progressbar() (in module simcardems.setup_models)</a>
+</li>
+      <li><a href="api.html#simcardems.geometry.create_slab_facet_function">create_slab_facet_function() (in module simcardems.geometry)</a>
+</li>
+      <li><a href="api.html#simcardems.geometry.create_slab_microstructure">create_slab_microstructure() (in module simcardems.geometry)</a>
+</li>
+      <li><a href="api.html#simcardems.mechanics_model.create_slab_problem">create_slab_problem() (in module simcardems.mechanics_model)</a>
 </li>
       <li><a href="api.html#simcardems.Runner.create_time_stepper">create_time_stepper() (simcardems.Runner method)</a>
 
@@ -512,6 +495,14 @@ const thebe_selector_output = ".output, .cell_output"
 </li>
       <li><a href="api.html#simcardems.ORdmm_Land.ORdmm_Land.default_initial_conditions">default_initial_conditions() (simcardems.ORdmm_Land.ORdmm_Land static method)</a>
 </li>
+      <li><a href="api.html#simcardems.geometry.BaseGeometry.default_markers">default_markers() (simcardems.geometry.BaseGeometry static method)</a>
+
+      <ul>
+        <li><a href="api.html#simcardems.geometry.LeftVentricularGeometry.default_markers">(simcardems.geometry.LeftVentricularGeometry static method)</a>
+</li>
+        <li><a href="api.html#simcardems.geometry.SlabGeometry.default_markers">(simcardems.geometry.SlabGeometry static method)</a>
+</li>
+      </ul></li>
       <li><a href="api.html#simcardems.ep_model.default_microstructure">default_microstructure() (in module simcardems.ep_model)</a>
 </li>
       <li><a href="api.html#simcardems.default_parameters">default_parameters() (in module simcardems)</a>
@@ -519,22 +510,28 @@ const thebe_selector_output = ".output, .cell_output"
       <ul>
         <li><a href="api.html#simcardems.config.default_parameters">(in module simcardems.config)</a>
 </li>
+        <li><a href="api.html#simcardems.geometry.BaseGeometry.default_parameters">(simcardems.geometry.BaseGeometry static method)</a>
+</li>
+        <li><a href="api.html#simcardems.geometry.LeftVentricularGeometry.default_parameters">(simcardems.geometry.LeftVentricularGeometry static method)</a>
+</li>
+        <li><a href="api.html#simcardems.geometry.SlabGeometry.default_parameters">(simcardems.geometry.SlabGeometry static method)</a>
+</li>
         <li><a href="api.html#simcardems.ORdmm_Land.ORdmm_Land.default_parameters">(simcardems.ORdmm_Land.ORdmm_Land static method)</a>
 </li>
       </ul></li>
+      <li><a href="api.html#simcardems.geometry.BaseGeometry.default_schema">default_schema() (simcardems.geometry.BaseGeometry static method)</a>
+</li>
       <li><a href="api.html#simcardems.MechanicsNewtonSolver.default_solver_parameters">default_solver_parameters() (simcardems.MechanicsNewtonSolver static method)</a>
 
       <ul>
         <li><a href="api.html#simcardems.newton_solver.MechanicsNewtonSolver.default_solver_parameters">(simcardems.newton_solver.MechanicsNewtonSolver static method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#simcardems.ep_model.define_conductivity_tensor">define_conductivity_tensor() (in module simcardems.ep_model)</a>
 </li>
       <li><a href="api.html#simcardems.save_load_functions.dict_to_h5">dict_to_h5() (in module simcardems.save_load_functions)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#simcardems.mechanics_model.BoundaryConditions.dirichlet">dirichlet (simcardems.mechanics_model.BoundaryConditions attribute)</a>
 </li>
       <li><a href="api.html#simcardems.Config.disease_state">disease_state (simcardems.Config attribute)</a>
 
@@ -554,6 +551,8 @@ const thebe_selector_output = ".output, .cell_output"
         <li><a href="api.html#simcardems.config.Config.drug_factors_file">(simcardems.config.Config attribute)</a>
 </li>
       </ul></li>
+      <li><a href="api.html#simcardems.geometry.BaseGeometry.ds">ds (simcardems.geometry.BaseGeometry property)</a>
+</li>
       <li><a href="api.html#simcardems.Config.dt">dt (simcardems.Config attribute)</a>
 
       <ul>
@@ -574,12 +573,10 @@ const thebe_selector_output = ".output, .cell_output"
         <li><a href="api.html#simcardems.setup_models.Runner.dt_mechanics">(simcardems.setup_models.Runner property)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#simcardems.Config.dx">dx (simcardems.Config attribute)</a>
-
-      <ul>
-        <li><a href="api.html#simcardems.config.Config.dx">(simcardems.config.Config attribute)</a>
+      <li><a href="api.html#simcardems.geometry.BaseGeometry.dump">dump() (simcardems.geometry.BaseGeometry method)</a>
 </li>
-      </ul></li>
+      <li><a href="api.html#simcardems.geometry.BaseGeometry.dx">dx (simcardems.geometry.BaseGeometry property)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -598,9 +595,13 @@ const thebe_selector_output = ".output, .cell_output"
 </li>
       <li><a href="api.html#simcardems.datacollector.DataGroups.ep">ep (simcardems.datacollector.DataGroups attribute)</a>
 </li>
-      <li><a href="api.html#simcardems.em_model.EMCoupling.ep_mesh">ep_mesh (simcardems.em_model.EMCoupling property)</a>
+      <li><a href="api.html#simcardems.datacollector.DataLoader.ep_mesh">ep_mesh (simcardems.datacollector.DataLoader property)</a>
 
       <ul>
+        <li><a href="api.html#simcardems.DataLoader.ep_mesh">(simcardems.DataLoader property)</a>
+</li>
+        <li><a href="api.html#simcardems.em_model.EMCoupling.ep_mesh">(simcardems.em_model.EMCoupling property)</a>
+</li>
         <li><a href="api.html#simcardems.EMCoupling.ep_mesh">(simcardems.EMCoupling property)</a>
 </li>
         <li><a href="api.html#simcardems.geometry.BaseGeometry.ep_mesh">(simcardems.geometry.BaseGeometry property)</a>
@@ -638,6 +639,12 @@ const thebe_selector_output = ".output, .cell_output"
 </li>
       <li><a href="api.html#simcardems.postprocess.extract_traces">extract_traces() (in module simcardems.postprocess)</a>
 </li>
+      <li><a href="api.html#simcardems.datacollector.DataLoader.extract_value">extract_value() (simcardems.datacollector.DataLoader method)</a>
+
+      <ul>
+        <li><a href="api.html#simcardems.DataLoader.extract_value">(simcardems.DataLoader method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -646,7 +653,13 @@ const thebe_selector_output = ".output, .cell_output"
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#simcardems.ORdmm_Land.ORdmm_Land.F">F() (simcardems.ORdmm_Land.ORdmm_Land method)</a>
 </li>
+      <li><a href="api.html#simcardems.geometry.BaseGeometry.f0">f0 (simcardems.geometry.BaseGeometry property)</a>
+</li>
+      <li><a href="api.html#simcardems.geometry.BaseGeometry.f0_ep">f0_ep (simcardems.geometry.BaseGeometry property)</a>
+</li>
       <li><a href="api.html#simcardems.land_model.Scheme.fd">fd (simcardems.land_model.Scheme attribute)</a>
+</li>
+      <li><a href="api.html#simcardems.geometry.BaseGeometry.ffun">ffun (simcardems.geometry.BaseGeometry property)</a>
 </li>
       <li><a href="api.html#simcardems.ep_model.file_exist">file_exist() (in module simcardems.ep_model)</a>
 </li>
@@ -654,10 +667,10 @@ const thebe_selector_output = ".output, .cell_output"
 </li>
       <li><a href="api.html#simcardems.postprocess.find_decaytime">find_decaytime() (in module simcardems.postprocess)</a>
 </li>
-      <li><a href="api.html#simcardems.postprocess.find_duration">find_duration() (in module simcardems.postprocess)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#simcardems.postprocess.find_duration">find_duration() (in module simcardems.postprocess)</a>
+</li>
       <li><a href="api.html#simcardems.postprocess.find_ttp">find_ttp() (in module simcardems.postprocess)</a>
 </li>
       <li><a href="api.html#simcardems.Config.fix_right_plane">fix_right_plane (simcardems.Config attribute)</a>
@@ -666,7 +679,11 @@ const thebe_selector_output = ".output, .cell_output"
         <li><a href="api.html#simcardems.config.Config.fix_right_plane">(simcardems.config.Config attribute)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#simcardems.mechanics_model.float_to_constant">float_to_constant() (in module simcardems.mechanics_model)</a>
+      <li><a href="api.html#simcardems.utils.float_to_constant">float_to_constant() (in module simcardems.utils)</a>
+</li>
+      <li><a href="api.html#simcardems.geometry.BaseGeometry.from_files">from_files() (simcardems.geometry.BaseGeometry class method)</a>
+</li>
+      <li><a href="api.html#simcardems.geometry.BaseGeometry.from_geometry">from_geometry() (simcardems.geometry.BaseGeometry class method)</a>
 </li>
       <li><a href="api.html#simcardems.Runner.from_models">from_models() (simcardems.Runner class method)</a>
 
@@ -680,16 +697,28 @@ const thebe_selector_output = ".output, .cell_output"
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#simcardems.geometry.Geometry">Geometry (class in simcardems.geometry)</a>
+      <li><a href="api.html#simcardems.setup_models.EMState.geometry">geometry (simcardems.setup_models.EMState attribute)</a>
 </li>
+      <li><a href="api.html#simcardems.Config.geometry_path">geometry_path (simcardems.Config attribute)</a>
+
+      <ul>
+        <li><a href="api.html#simcardems.config.Config.geometry_path">(simcardems.config.Config attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="api.html#simcardems.Config.geometry_schema_path">geometry_schema_path (simcardems.Config attribute)</a>
+
+      <ul>
+        <li><a href="api.html#simcardems.config.Config.geometry_schema_path">(simcardems.config.Config attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#simcardems.datacollector.DataLoader.get">get() (simcardems.datacollector.DataLoader method)</a>
 
       <ul>
         <li><a href="api.html#simcardems.DataLoader.get">(simcardems.DataLoader method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#simcardems.postprocess.get_biomarkers">get_biomarkers() (in module simcardems.postprocess)</a>
 </li>
       <li><a href="api.html#simcardems.utils.getLogger">getLogger() (in module simcardems.utils)</a>
@@ -740,19 +769,21 @@ const thebe_selector_output = ".output, .cell_output"
         <li><a href="api.html#simcardems.land_model.LandModel">(class in simcardems.land_model)</a>
 </li>
       </ul></li>
+      <li><a href="api.html#simcardems.geometry.LeftVentricularGeometry">LeftVentricularGeometry (class in simcardems.geometry)</a>
+</li>
       <li><a href="api.html#simcardems.Config.linear_mechanics_solver">linear_mechanics_solver (simcardems.Config attribute)</a>
 
       <ul>
         <li><a href="api.html#simcardems.config.Config.linear_mechanics_solver">(simcardems.config.Config attribute)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#simcardems.save_load_functions.load_cell_params_from_h5">load_cell_params_from_h5() (in module simcardems.save_load_functions)</a>
+      <li><a href="api.html#simcardems.geometry.load_geometry">load_geometry() (in module simcardems.geometry)</a>
 </li>
       <li><a href="api.html#simcardems.save_load_functions.load_initial_conditions_from_h5">load_initial_conditions_from_h5() (in module simcardems.save_load_functions)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#simcardems.ep_model.load_json">load_json() (in module simcardems.ep_model)</a>
-</li>
-      <li><a href="api.html#simcardems.postprocess.load_mesh">load_mesh() (in module simcardems.postprocess)</a>
 </li>
       <li><a href="api.html#simcardems.Config.load_state">load_state (simcardems.Config attribute)</a>
 
@@ -760,11 +791,7 @@ const thebe_selector_output = ".output, .cell_output"
         <li><a href="api.html#simcardems.config.Config.load_state">(simcardems.config.Config attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#simcardems.save_load_functions.load_state">load_state() (in module simcardems.save_load_functions)</a>
-</li>
-      <li><a href="api.html#simcardems.postprocess.load_times">load_times() (in module simcardems.postprocess)</a>
 </li>
       <li><a href="api.html#simcardems.utils.local_project">local_project() (in module simcardems.utils)</a>
 </li>
@@ -772,24 +799,6 @@ const thebe_selector_output = ".output, .cell_output"
 
       <ul>
         <li><a href="api.html#simcardems.config.Config.loglevel">(simcardems.config.Config attribute)</a>
-</li>
-      </ul></li>
-      <li><a href="api.html#simcardems.Config.lx">lx (simcardems.Config attribute)</a>
-
-      <ul>
-        <li><a href="api.html#simcardems.config.Config.lx">(simcardems.config.Config attribute)</a>
-</li>
-      </ul></li>
-      <li><a href="api.html#simcardems.Config.ly">ly (simcardems.Config attribute)</a>
-
-      <ul>
-        <li><a href="api.html#simcardems.config.Config.ly">(simcardems.config.Config attribute)</a>
-</li>
-      </ul></li>
-      <li><a href="api.html#simcardems.Config.lz">lz (simcardems.Config attribute)</a>
-
-      <ul>
-        <li><a href="api.html#simcardems.config.Config.lz">(simcardems.config.Config attribute)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -802,19 +811,27 @@ const thebe_selector_output = ".output, .cell_output"
 </li>
       <li><a href="api.html#simcardems.postprocess.make_xdmffiles">make_xdmffiles() (in module simcardems.postprocess)</a>
 </li>
+      <li><a href="api.html#simcardems.geometry.BaseGeometry.marker_functions">marker_functions (simcardems.geometry.BaseGeometry property)</a>
+</li>
       <li><a href="api.html#simcardems.ORdmm_Land.Max">Max() (in module simcardems.ORdmm_Land)</a>
 </li>
       <li><a href="api.html#simcardems.setup_models.EMState.mech_heart">mech_heart (simcardems.setup_models.EMState attribute)</a>
 </li>
-      <li><a href="api.html#simcardems.em_model.EMCoupling.mech_mesh">mech_mesh (simcardems.em_model.EMCoupling property)</a>
+      <li><a href="api.html#simcardems.save_load_functions.mech_heart_to_bnd_cond">mech_heart_to_bnd_cond() (in module simcardems.save_load_functions)</a>
+</li>
+      <li><a href="api.html#simcardems.datacollector.DataLoader.mech_mesh">mech_mesh (simcardems.datacollector.DataLoader property)</a>
 
       <ul>
+        <li><a href="api.html#simcardems.DataLoader.mech_mesh">(simcardems.DataLoader property)</a>
+</li>
+        <li><a href="api.html#simcardems.em_model.EMCoupling.mech_mesh">(simcardems.em_model.EMCoupling property)</a>
+</li>
         <li><a href="api.html#simcardems.EMCoupling.mech_mesh">(simcardems.EMCoupling property)</a>
 </li>
       </ul></li>
       <li><a href="api.html#simcardems.datacollector.DataGroups.mechanics">mechanics (simcardems.datacollector.DataGroups attribute)</a>
 </li>
-      <li><a href="api.html#simcardems.geometry.BaseGeometry.mechanics_mesh">mechanics_mesh (simcardems.geometry.BaseGeometry attribute)</a>
+      <li><a href="api.html#simcardems.geometry.BaseGeometry.mechanics_mesh">mechanics_mesh (simcardems.geometry.BaseGeometry property)</a>
 </li>
       <li><a href="api.html#simcardems.Config.mechanics_ode_scheme">mechanics_ode_scheme (simcardems.Config attribute)</a>
 
@@ -860,6 +877,12 @@ const thebe_selector_output = ".output, .cell_output"
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#simcardems.geometry.BaseGeometry.mesh">mesh (simcardems.geometry.BaseGeometry property)</a>
+</li>
+      <li><a href="api.html#simcardems.geometry.BaseGeometry.microstructure">microstructure (simcardems.geometry.BaseGeometry property)</a>
+</li>
+      <li><a href="api.html#simcardems.geometry.BaseGeometry.microstructure_ep">microstructure_ep (simcardems.geometry.BaseGeometry property)</a>
+</li>
       <li><a href="api.html#simcardems.ORdmm_Land.Min">Min() (in module simcardems.ORdmm_Land)</a>
 </li>
       <li>
@@ -913,14 +936,16 @@ const thebe_selector_output = ".output, .cell_output"
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#simcardems.geometry.BaseGeometry.n0">n0 (simcardems.geometry.BaseGeometry property)</a>
+</li>
+      <li><a href="api.html#simcardems.geometry.BaseGeometry.n0_ep">n0_ep (simcardems.geometry.BaseGeometry property)</a>
+</li>
       <li><a href="api.html#simcardems.DataCollector.names">names (simcardems.DataCollector property)</a>
 
       <ul>
         <li><a href="api.html#simcardems.datacollector.DataCollector.names">(simcardems.datacollector.DataCollector property)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#simcardems.postprocess.Boundary.nodes">nodes() (simcardems.postprocess.Boundary static method)</a>
-</li>
       <li><a href="api.html#simcardems.setup_models.TimeStepper.ns2ms">ns2ms() (simcardems.setup_models.TimeStepper static method)</a>
 
       <ul>
@@ -934,7 +959,7 @@ const thebe_selector_output = ".output, .cell_output"
       <ul>
         <li><a href="api.html#simcardems.config.Config.num_refinements">(simcardems.config.Config attribute)</a>
 </li>
-        <li><a href="api.html#simcardems.geometry.BaseGeometry.num_refinements">(simcardems.geometry.BaseGeometry attribute)</a>
+        <li><a href="api.html#simcardems.geometry.BaseGeometry.num_refinements">(simcardems.geometry.BaseGeometry property)</a>
 </li>
       </ul></li>
       <li><a href="api.html#simcardems.ORdmm_Land.ORdmm_Land.num_states">num_states() (simcardems.ORdmm_Land.ORdmm_Land method)</a>
@@ -954,6 +979,8 @@ const thebe_selector_output = ".output, .cell_output"
       <ul>
         <li><a href="api.html#simcardems.config.Config.outdir">(simcardems.config.Config attribute)</a>
 </li>
+        <li><a href="api.html#simcardems.geometry.BaseGeometry.outdir">(simcardems.geometry.BaseGeometry property)</a>
+</li>
         <li><a href="api.html#simcardems.Runner.outdir">(simcardems.Runner property)</a>
 </li>
         <li><a href="api.html#simcardems.setup_models.Runner.outdir">(simcardems.setup_models.Runner property)</a>
@@ -965,14 +992,6 @@ const thebe_selector_output = ".output, .cell_output"
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#simcardems.geometry.BaseGeometry.parameters">parameters (simcardems.geometry.BaseGeometry property)</a>
-
-      <ul>
-        <li><a href="api.html#simcardems.geometry.SlabGeometry.parameters">(simcardems.geometry.SlabGeometry property)</a>
-</li>
-      </ul></li>
-      <li><a href="api.html#simcardems.geometry.Geometry.parameters">parameters() (simcardems.geometry.Geometry method)</a>
-</li>
       <li><a href="api.html#simcardems.Config.PCL">PCL (simcardems.Config attribute)</a>
 
       <ul>
@@ -981,12 +1000,12 @@ const thebe_selector_output = ".output, .cell_output"
       </ul></li>
       <li><a href="api.html#simcardems.postprocess.plot_peaks">plot_peaks() (in module simcardems.postprocess)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#simcardems.postprocess.plot_population">plot_population() (in module simcardems.postprocess)</a>
 </li>
       <li><a href="api.html#simcardems.postprocess.plot_state_traces">plot_state_traces() (in module simcardems.postprocess)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#simcardems.Config.popu_factors_file">popu_factors_file (simcardems.Config attribute)</a>
 
       <ul>
@@ -1037,14 +1056,14 @@ const thebe_selector_output = ".output, .cell_output"
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#simcardems.mechanics_model.resolve_boundary_conditions">resolve_boundary_conditions() (in module simcardems.mechanics_model)</a>
+</li>
       <li><a href="api.html#simcardems.DataCollector.results_file">results_file (simcardems.DataCollector property)</a>
 
       <ul>
         <li><a href="api.html#simcardems.datacollector.DataCollector.results_file">(simcardems.datacollector.DataCollector property)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#simcardems.mechanics_model.BoundaryConditions.rigid">rigid (simcardems.mechanics_model.BoundaryConditions attribute)</a>
-</li>
       <li><a href="api.html#simcardems.mechanics_model.RigidMotionProblem.rigid_motion_term">rigid_motion_term() (simcardems.mechanics_model.RigidMotionProblem method)</a>
 
       <ul>
@@ -1069,9 +1088,9 @@ const thebe_selector_output = ".output, .cell_output"
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#simcardems.save_load_functions.save_cell_params_to_h5">save_cell_params_to_h5() (in module simcardems.save_load_functions)</a>
+      <li><a href="api.html#simcardems.geometry.BaseGeometry.s0">s0 (simcardems.geometry.BaseGeometry property)</a>
 </li>
-      <li><a href="api.html#simcardems.save_load_functions.save_cell_params_to_xml">save_cell_params_to_xml() (in module simcardems.save_load_functions)</a>
+      <li><a href="api.html#simcardems.geometry.BaseGeometry.s0_ep">s0_ep (simcardems.geometry.BaseGeometry property)</a>
 </li>
       <li><a href="api.html#simcardems.Config.save_freq">save_freq (simcardems.Config attribute)</a>
 
@@ -1082,11 +1101,13 @@ const thebe_selector_output = ".output, .cell_output"
       <li><a href="api.html#simcardems.postprocess.save_popu_json">save_popu_json() (in module simcardems.postprocess)</a>
 </li>
       <li><a href="api.html#simcardems.save_load_functions.save_state">save_state() (in module simcardems.save_load_functions)</a>
+
+      <ul>
+        <li><a href="api.html#simcardems.Runner.save_state">(simcardems.Runner method)</a>
 </li>
-      <li><a href="api.html#simcardems.save_load_functions.save_state_variables_to_h5">save_state_variables_to_h5() (in module simcardems.save_load_functions)</a>
+        <li><a href="api.html#simcardems.setup_models.Runner.save_state">(simcardems.setup_models.Runner method)</a>
 </li>
-      <li><a href="api.html#simcardems.save_load_functions.save_state_variables_to_xml">save_state_variables_to_xml() (in module simcardems.save_load_functions)</a>
-</li>
+      </ul></li>
       <li><a href="api.html#simcardems.land_model.Scheme">Scheme (class in simcardems.land_model)</a>
 </li>
       <li><a href="api.html#simcardems.Config.set_material">set_material (simcardems.Config attribute)</a>
@@ -1097,8 +1118,6 @@ const thebe_selector_output = ".output, .cell_output"
       </ul></li>
       <li><a href="api.html#simcardems.utils.setup_assigner">setup_assigner() (in module simcardems.utils)</a>
 </li>
-      <li><a href="api.html#simcardems.mechanics_model.setup_diriclet_bc">setup_diriclet_bc() (in module simcardems.mechanics_model)</a>
-</li>
       <li><a href="api.html#simcardems.setup_models.setup_EM_model">setup_EM_model() (in module simcardems.setup_models)</a>
 </li>
       <li><a href="api.html#simcardems.ep_model.setup_ep_model">setup_ep_model() (in module simcardems.ep_model)</a>
@@ -1106,8 +1125,6 @@ const thebe_selector_output = ".output, .cell_output"
       <li><a href="api.html#simcardems.setup_models.setup_ep_solver">setup_ep_solver() (in module simcardems.setup_models)</a>
 </li>
       <li><a href="api.html#simcardems.setup_models.setup_mechanics_solver">setup_mechanics_solver() (in module simcardems.setup_models)</a>
-</li>
-      <li><a href="api.html#simcardems.mechanics_model.setup_microstructure">setup_microstructure() (in module simcardems.mechanics_model)</a>
 </li>
       <li><a href="api.html#simcardems.ep_model.setup_splitting_solver_parameters">setup_splitting_solver_parameters() (in module simcardems.ep_model)</a>
 </li>
@@ -1359,6 +1376,16 @@ const thebe_selector_output = ".output, .cell_output"
 <h2 id="U">U</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#simcardems.mechanics_model.MechanicsProblem.u_subspace_index">u_subspace_index (simcardems.mechanics_model.MechanicsProblem property)</a>
+
+      <ul>
+        <li><a href="api.html#simcardems.mechanics_model.RigidMotionProblem.u_subspace_index">(simcardems.mechanics_model.RigidMotionProblem property)</a>
+</li>
+        <li><a href="api.html#simcardems.MechanicsProblem.u_subspace_index">(simcardems.MechanicsProblem property)</a>
+</li>
+        <li><a href="api.html#simcardems.RigidMotionProblem.u_subspace_index">(simcardems.RigidMotionProblem property)</a>
+</li>
+      </ul></li>
       <li><a href="api.html#simcardems.mechanics_model.MechanicsProblem.update_lmbda_prev">update_lmbda_prev() (simcardems.mechanics_model.MechanicsProblem method)</a>
 
       <ul>
@@ -1371,14 +1398,14 @@ const thebe_selector_output = ".output, .cell_output"
         <li><a href="api.html#simcardems.LandModel.update_prev">(simcardems.LandModel method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#simcardems.MechanicsNewtonSolver_ODE.update_solution">update_solution() (simcardems.MechanicsNewtonSolver_ODE method)</a>
 
       <ul>
         <li><a href="api.html#simcardems.newton_solver.MechanicsNewtonSolver_ODE.update_solution">(simcardems.newton_solver.MechanicsNewtonSolver_ODE method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#simcardems.land_model.LandModel.update_time">update_time() (simcardems.land_model.LandModel method)</a>
 
       <ul>
@@ -1403,6 +1430,16 @@ const thebe_selector_output = ".output, .cell_output"
 <h2 id="V">V</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#simcardems.geometry.BaseGeometry.validate">validate() (simcardems.geometry.BaseGeometry method)</a>
+
+      <ul>
+        <li><a href="api.html#simcardems.geometry.LeftVentricularGeometry.validate">(simcardems.geometry.LeftVentricularGeometry method)</a>
+</li>
+        <li><a href="api.html#simcardems.geometry.SlabGeometry.validate">(simcardems.geometry.SlabGeometry method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#simcardems.ORdmm_Land.vs_functions_to_dict">vs_functions_to_dict() (in module simcardems.ORdmm_Land)</a>
 </li>
   </ul></td>
@@ -1420,46 +1457,6 @@ const thebe_selector_output = ".output, .cell_output"
   </ul></td>
 </tr></table>
 
-<h2 id="X">X</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#simcardems.postprocess.Boundary.xmax">xmax (simcardems.postprocess.Boundary property)</a>
-
-      <ul>
-        <li><a href="api.html#simcardems.postprocess.BoundaryNodes.xmax">(simcardems.postprocess.BoundaryNodes attribute)</a>
-</li>
-      </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#simcardems.postprocess.Boundary.xmin">xmin (simcardems.postprocess.Boundary property)</a>
-
-      <ul>
-        <li><a href="api.html#simcardems.postprocess.BoundaryNodes.xmin">(simcardems.postprocess.BoundaryNodes attribute)</a>
-</li>
-      </ul></li>
-  </ul></td>
-</tr></table>
-
-<h2 id="Y">Y</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#simcardems.postprocess.Boundary.ymax">ymax (simcardems.postprocess.Boundary property)</a>
-
-      <ul>
-        <li><a href="api.html#simcardems.postprocess.BoundaryNodes.ymax">(simcardems.postprocess.BoundaryNodes attribute)</a>
-</li>
-      </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#simcardems.postprocess.Boundary.ymin">ymin (simcardems.postprocess.Boundary property)</a>
-
-      <ul>
-        <li><a href="api.html#simcardems.postprocess.BoundaryNodes.ymin">(simcardems.postprocess.BoundaryNodes attribute)</a>
-</li>
-      </ul></li>
-  </ul></td>
-</tr></table>
-
 <h2 id="Z">Z</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -1469,24 +1466,12 @@ const thebe_selector_output = ".output, .cell_output"
         <li><a href="api.html#simcardems.LandModel.Zetas">(simcardems.LandModel property)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#simcardems.land_model.LandModel.Zetaw">Zetaw (simcardems.land_model.LandModel property)</a>
 
       <ul>
         <li><a href="api.html#simcardems.LandModel.Zetaw">(simcardems.LandModel property)</a>
-</li>
-      </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#simcardems.postprocess.Boundary.zmax">zmax (simcardems.postprocess.Boundary property)</a>
-
-      <ul>
-        <li><a href="api.html#simcardems.postprocess.BoundaryNodes.zmax">(simcardems.postprocess.BoundaryNodes attribute)</a>
-</li>
-      </ul></li>
-      <li><a href="api.html#simcardems.postprocess.Boundary.zmin">zmin (simcardems.postprocess.Boundary property)</a>
-
-      <ul>
-        <li><a href="api.html#simcardems.postprocess.BoundaryNodes.zmin">(simcardems.postprocess.BoundaryNodes attribute)</a>
 </li>
       </ul></li>
   </ul></td>
