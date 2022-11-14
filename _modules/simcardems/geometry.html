@@ -344,6 +344,10 @@ const thebe_selector_output = ".output, .cell_output"
     <span class="n">schema_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">utils</span><span class="o">.</span><span class="n">PathLike</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;BaseGeometry&quot;</span><span class="p">:</span>
 
+    <span class="k">if</span> <span class="n">mesh_path</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+        <span class="c1"># Use default slab geometry</span>
+        <span class="k">return</span> <span class="n">SlabGeometry</span><span class="p">()</span>
+
     <span class="k">if</span> <span class="n">schema_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">schema_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">mesh_path</span><span class="p">)</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">&quot;.json&quot;</span><span class="p">)</span>
 
