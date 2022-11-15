@@ -220,10 +220,7 @@ class Simulation:
         st.header("Mechanics solver")
         cols_mech = st.columns(4)
         with cols_mech[0]:
-            bnd_cond = st.selectbox(
-                "Boundary conditions",
-                simcardems.config.SlabBoundaryConditionTypes._member_names_,
-            )
+            bnd_rigid = st.checkbox("Rigid motion conditions")
         with cols_mech[1]:
             add_pre_stretch = st.checkbox("Add pre stretch")
             pre_stretch = None
@@ -243,7 +240,7 @@ class Simulation:
                 spring = st.number_input("Spring value", 0)
 
         return {
-            "bnd_cond": bnd_cond,
+            "bnd_rigid": bnd_rigid,
             "pre_stretch": pre_stretch,
             "traction": traction,
             "spring": spring,

@@ -59,19 +59,19 @@ def create_slab_boundary_conditions(
                 W.sub(0).sub(0),
                 dolfin.Constant(0.0),
                 geo.ffun,
-                geo.markers["X0"][1],
+                geo.markers["X0"][0],
             ),
             dolfin.DirichletBC(
                 W.sub(0).sub(1),  # u_y
                 dolfin.Constant(0.0),
                 geo.ffun,
-                geo.markers["Y0"][1],
+                geo.markers["Y0"][0],
             ),
             dolfin.DirichletBC(
                 W.sub(0).sub(2),  # u_z
                 dolfin.Constant(0.0),
                 geo.ffun,
-                geo.markers["Z0"][1],
+                geo.markers["Z0"][0],
             ),
         ]
 
