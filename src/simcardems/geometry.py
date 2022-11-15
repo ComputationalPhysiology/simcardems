@@ -23,6 +23,10 @@ def load_geometry(
     schema_path: Optional[utils.PathLike] = None,
 ) -> "BaseGeometry":
 
+    if mesh_path == "":
+        # Use default slab geometry
+        return SlabGeometry()
+
     if schema_path is None:
         schema_path = Path(mesh_path).with_suffix(".json")
 
