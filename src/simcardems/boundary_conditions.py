@@ -32,7 +32,7 @@ def create_slab_boundary_conditions(
         Value representing the stiffness of the string, by default None
     fix_right_plane : bool, optional
         Fix the right plane so that it is not able to move in any direction
-        except the x-direction, by default True
+        except the x-direction, by default False
 
 
     Notes
