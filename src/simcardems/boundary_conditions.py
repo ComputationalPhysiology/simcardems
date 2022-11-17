@@ -82,7 +82,7 @@ def create_slab_boundary_conditions(
                         W.sub(0).sub(0),  # u_x
                         dolfin.Constant(0.0),
                         geo.ffun,
-                        geo.markers["X1"][1],
+                        geo.markers["X1"][0],
                     ),
                 ],
             )
@@ -93,7 +93,7 @@ def create_slab_boundary_conditions(
                     W.sub(0).sub(0),
                     utils.float_to_constant(pre_stretch),
                     geo.ffun,
-                    geo.markers["X1"][1],
+                    geo.markers["X1"][0],
                 ),
             )
         return bcs
@@ -103,7 +103,7 @@ def create_slab_boundary_conditions(
         neumann_bc.append(
             pulse.NeumannBC(
                 traction=utils.float_to_constant(traction),
-                marker=geo.markers["X1"][1],
+                marker=geo.markers["X1"][0],
             ),
         )
 
@@ -112,7 +112,7 @@ def create_slab_boundary_conditions(
         robin_bc.append(
             pulse.RobinBC(
                 value=utils.float_to_constant(spring),
-                marker=geo.markers["X1"][1],
+                marker=geo.markers["X1"][0],
             ),
         )
 
