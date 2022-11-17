@@ -154,6 +154,12 @@ def cli():
     type=float,
     help="Set value of traction for Neumann boundary condition",
 )
+@click.option(
+    "--fix_right_plane",
+    is_flag=True,
+    default=config.Config.fix_right_plane,
+    help="Fix right plane in fiber direction (only usable for slab)",
+)
 def run(
     geometry_path: utils.PathLike,
     geometry_schema_path: typing.Optional[utils.PathLike],
@@ -177,6 +183,7 @@ def run(
     pcl: float,
     spring: float,
     traction: float,
+    fix_right_plane: bool,
 ):
     conf = config.Config(
         geometry_path=geometry_path,
@@ -187,6 +194,7 @@ def run(
         bnd_rigid=bnd_rigid,
         spring=spring,
         traction=traction,
+        fix_right_plane=fix_right_plane,
         load_state=load_state,
         cell_init_file=cell_init_file,
         show_progress_bar=show_progress_bar,

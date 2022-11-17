@@ -74,17 +74,14 @@ def create_slab_boundary_conditions(
                 geo.markers["Z0"][0],
             ),
         ]
-
         if fix_right_plane:
-            bcs.extend(
-                [
-                    dolfin.DirichletBC(
-                        W.sub(0).sub(0),  # u_x
-                        dolfin.Constant(0.0),
-                        geo.ffun,
-                        geo.markers["X1"][0],
-                    ),
-                ],
+            bcs.append(
+                dolfin.DirichletBC(
+                    W.sub(0).sub(0),  # u_x
+                    dolfin.Constant(0.0),
+                    geo.ffun,
+                    geo.markers["X1"][0],
+                ),
             )
 
         if pre_stretch is not None:
