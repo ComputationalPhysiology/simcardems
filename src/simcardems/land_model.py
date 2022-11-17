@@ -11,7 +11,7 @@ class Scheme(str, Enum):
     analytic = "analytic"
 
 
-def _Zeta(Zeta_prev, A, c, dLambda, dt, scheme: Scheme):
+def advance_Zeta(Zeta_prev, A, c, dLambda, dt, scheme: Scheme):
 
     if scheme == Scheme.analytic:
         return Zeta_prev * dolfin.exp(-c * dt) + (A * dLambda / c * dt) * (
@@ -43,7 +43,7 @@ class LandModel(pulse.ActiveModel):
     ):
         super().__init__(f0=f0, s0=s0, n0=n0)
         self._eta = eta
-        self.function_space = dolfin.FunctionSpace(mesh, "CG", 1)
+        self.cg1_space = dolfin.FunctionSpace(mesh, "CG", 1)
 
         self.XS = XS
         self.XW = XW
@@ -52,24 +52,24 @@ class LandModel(pulse.ActiveModel):
         self._t_prev = 0.0
         self._scheme = scheme
 
-        self._dLambda = dolfin.Function(self.function_space)
-        self.lmbda_prev = dolfin.Function(self.function_space)
+        self._dLambda = dolfin.Function(self.cg1_space)
+        self.lmbda_prev = dolfin.Function(self.cg1_space)
         self.lmbda_prev.vector()[:] = 1.0
         if lmbda is not None:
             self.lmbda_prev.assign(lmbda)
-        self.lmbda = dolfin.Function(self.function_space)
+        self.lmbda = dolfin.Function(self.cg1_space)
 
-        self._Zetas = dolfin.Function(self.function_space)
-        self.Zetas_prev = dolfin.Function(self.function_space)
+        self._Zetas = dolfin.Function(self.cg1_space)
+        self.Zetas_prev = dolfin.Function(self.cg1_space)
         if Zetas is not None:
             self.Zetas_prev.assign(Zetas)
 
-        self._Zetaw = dolfin.Function(self.function_space)
-        self.Zetaw_prev = dolfin.Function(self.function_space)
+        self._Zetaw = dolfin.Function(self.cg1_space)
+        self.Zetaw_prev = dolfin.Function(self.cg1_space)
         if Zetaw is not None:
             self.Zetaw_prev.assign(Zetaw)
 
-        self.Ta_current = dolfin.Function(self.function_space, name="Ta")
+        self.Ta_current = dolfin.Function(self.cg1_space, name="Ta")
 
     @property
     def dLambda(self):
@@ -130,7 +130,7 @@ class LandModel(pulse.ActiveModel):
         )
 
     def update_Zetas(self):
-        self._Zetas.vector()[:] = _Zeta(
+        self._Zetas.vector()[:] = advance_Zeta(
             self.Zetas_prev.vector(),
             self.As,
             self.cs,
@@ -144,7 +144,7 @@ class LandModel(pulse.ActiveModel):
         return self._Zetas
 
     def update_Zetaw(self):
-        self._Zetaw.vector()[:] = _Zeta(
+        self._Zetaw.vector()[:] = advance_Zeta(
             self.Zetaw_prev.vector(),
             self.Aw,
             self.cw,
@@ -178,8 +178,9 @@ class LandModel(pulse.ActiveModel):
     def update_prev(self):
         self.Zetas_prev.vector()[:] = self.Zetas.vector()
         self.Zetaw_prev.vector()[:] = self.Zetaw.vector()
+        # Use previous displacements
         self.lmbda_prev.vector()[:] = self.lmbda.vector()
-        self.Ta_current.assign(dolfin.project(self.Ta, self.function_space))
+        self.Ta_current.assign(dolfin.project(self.Ta, self.cg1_space))
 
     @property
     def Ta(self):
@@ -209,7 +210,15 @@ class LandModel(pulse.ActiveModel):
 
         C = F.T * F
         f = F * self.f0
-        self.lmbda.assign(dolfin.project(dolfin.sqrt(f**2), self.function_space))
+
+        # self.lmbda.assign(dolfin.project(dolfin.sqrt(f**2), self.function_space))
+
+        self.lmbda.assign(
+            dolfin.project(
+                dolfin.sqrt(f**2),
+                self.cg1_space,
+            ),
+        )
         self.update_Zetas()
         self.update_Zetaw()
 

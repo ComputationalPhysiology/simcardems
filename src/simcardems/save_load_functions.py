@@ -162,6 +162,7 @@ def load_state(
     mech_state = dolfin.Function(W)
 
     V = dolfin.FunctionSpace(geo.mechanics_mesh, "CG", 1)
+
     lmbda_prev = dolfin.Function(V, name="lambda")
     Zetas_prev = dolfin.Function(V, name="Zetas")
     Zetaw_prev = dolfin.Function(V, name="Zetaw")
