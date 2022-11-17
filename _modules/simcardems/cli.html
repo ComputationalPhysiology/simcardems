@@ -475,6 +475,12 @@ const thebe_selector_output = ".output, .cell_output"
     <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
     <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Set value of traction for Neumann boundary condition&quot;</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
+    <span class="s2">&quot;--fix_right_plane&quot;</span><span class="p">,</span>
+    <span class="n">is_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">default</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">fix_right_plane</span><span class="p">,</span>
+    <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Fix right plane in fiber direction (only usable for slab)&quot;</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="k">def</span> <span class="nf">run</span><span class="p">(</span>
     <span class="n">geometry_path</span><span class="p">:</span> <span class="n">utils</span><span class="o">.</span><span class="n">PathLike</span><span class="p">,</span>
     <span class="n">geometry_schema_path</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">utils</span><span class="o">.</span><span class="n">PathLike</span><span class="p">],</span>
@@ -498,6 +504,7 @@ const thebe_selector_output = ".output, .cell_output"
     <span class="n">pcl</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">spring</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">traction</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">fix_right_plane</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="n">conf</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="p">(</span>
         <span class="n">geometry_path</span><span class="o">=</span><span class="n">geometry_path</span><span class="p">,</span>
@@ -508,6 +515,7 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="n">bnd_rigid</span><span class="o">=</span><span class="n">bnd_rigid</span><span class="p">,</span>
         <span class="n">spring</span><span class="o">=</span><span class="n">spring</span><span class="p">,</span>
         <span class="n">traction</span><span class="o">=</span><span class="n">traction</span><span class="p">,</span>
+        <span class="n">fix_right_plane</span><span class="o">=</span><span class="n">fix_right_plane</span><span class="p">,</span>
         <span class="n">load_state</span><span class="o">=</span><span class="n">load_state</span><span class="p">,</span>
         <span class="n">cell_init_file</span><span class="o">=</span><span class="n">cell_init_file</span><span class="p">,</span>
         <span class="n">show_progress_bar</span><span class="o">=</span><span class="n">show_progress_bar</span><span class="p">,</span>
