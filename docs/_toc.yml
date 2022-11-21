@@ -18,7 +18,9 @@ parts:
     - file: "simple_demo"
     - file: "cli"
     - file: "docker"
+    - file: "initial_conditions_demo"
     - file: "release_test"
+    - file: "drug_effects_demo"
     - file: "ventricular_geometry"
     - file: "gui"
 
