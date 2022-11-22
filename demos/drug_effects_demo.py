@@ -34,40 +34,6 @@ config = simcardems.Config(
 )
 
 
-# This will set :
-#
-# ```
-# {'PCL': 1000,
-#  'T': 1000,
-#  'bnd_rigid': False,
-#  'cell_init_file': '',
-#  'disease_state': 'healthy',
-#  'drug_factors_file': '',
-#  'dt': 0.05,
-#  'ep_ode_scheme': 'GRL1',
-#  'ep_preconditioner': 'sor',
-#  'ep_theta': 0.5,
-#  'fix_right_plane': False,
-#  'geometry_path': 'demos/geometries/slab.h5',
-#  'geometry_schema_path': 'demos/geometries/slab.json',
-#  'linear_mechanics_solver': 'mumps',
-#  'load_state': False,
-#  'loglevel': 20,
-#  'mechanics_ode_scheme': <Scheme.analytic: 'analytic'>,
-#  'mechanics_use_continuation': False,
-#  'mechanics_use_custom_newton_solver': False,
-#  'num_refinements': 1,
-#  'outdir': PosixPath('results_drug_demo'),
-#  'popu_factors_file': 'demos/drug_factors/drug_factors.json',
-#  'pre_stretch': None,
-#  'save_freq': 1,
-#  'set_material': '',
-#  'show_progress_bar': True,
-#  'spring': None,
-#  'traction': None}
-# ```
-
-
 # Print current configuration
 pprint.pprint(config.as_dict())
 
