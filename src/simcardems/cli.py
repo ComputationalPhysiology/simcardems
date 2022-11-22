@@ -83,7 +83,7 @@ def cli():
     "-IC",
     "--cell_init_file",
     default=config.Config.cell_init_file,
-    type=str,
+    type=click.Path(),
     help=(
         "Path to file containing initial conditions (json or h5 file). "
         "If none is provided then the default initial conditions will be used"
@@ -103,14 +103,14 @@ def cli():
 @click.option(
     "--drug_factors_file",
     default=config.Config.drug_factors_file,
-    type=str,
-    help="Set drugs scaling factors (json file)",
+    type=click.Path(),
+    help="Path to drugs scaling factors file (json)",
 )
 @click.option(
     "--popu_factors_file",
     default=config.Config.popu_factors_file,
-    type=str,
-    help="Set population scaling factors (json file)",
+    type=click.Path(),
+    help="Path to population scaling factors file (json)",
 )
 @click.option(
     "--disease_state",
@@ -174,8 +174,8 @@ def run(
     loglevel: int,
     num_refinements: int,
     set_material: str,
-    drug_factors_file: str,
-    popu_factors_file: str,
+    drug_factors_file: utils.PathLike,
+    popu_factors_file: utils.PathLike,
     disease_state: str,
     mechanics_ode_scheme: land_model.Scheme,
     mechanics_use_continuation: bool,
