@@ -280,7 +280,14 @@ def make_xdmffiles(results_file):
             try:
                 for t in tqdm.tqdm(loader.time_stamps):
                     f = loader.get(group, name, t)
-                    xdmf.write(f, float(t))
+                    xdmf.write_checkpoint(
+                        f,
+                        name,
+                        float(t),
+                        dolfin.XDMFFile.Encoding.HDF5,
+                        True,
+                    )
+
             except RuntimeError:
                 logger.info(f"Could not save {name}")
 
