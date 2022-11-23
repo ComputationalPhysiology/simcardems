@@ -73,6 +73,7 @@ docs: ## generate Sphinx HTML documentation, including API docs
 	jupytext demos/simple_demo.py -o docs/simple_demo.md
 	jupytext demos/ventricular_geometry.py -o docs/ventricular_geometry.md
 	jupytext demos/initial_conditions_demo.py -o docs/initial_conditions_demo.md
+	jupytext demos/drug_effects_demo.py -o docs/drug_effects_demo.md
 	mkdir -p docs/_build
 	cp -r benchmarks docs/_build/
 	jupyter book build -W docs
