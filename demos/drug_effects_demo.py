@@ -76,5 +76,5 @@ simcardems.postprocess.plot_state_traces(outdir.joinpath("results.h5"), "center"
 simcardems.postprocess.make_xdmffiles(outdir.joinpath("results.h5"))
 
 #
-# The `xdmf` files are can be opened in [Paraview](https://www.paraview.org/download/) to visualize the different variables such as in {numref}`Figure {number} <drug-demo-paraview>`.
+# The `xdmf` files are can be opened in [Paraview](https://www.paraview.org/download/) to visualize the different variables.
 #
