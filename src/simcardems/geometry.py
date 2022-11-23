@@ -577,27 +577,15 @@ def create_slab_microstructure(fiber_space, mesh):
     logger.debug("Set up microstructure")
     V_f = dolfin.VectorFunctionSpace(mesh, family, int(degree))
     f0 = dolfin.interpolate(
-        dolfin.Expression(
-            ("1.0", "0.0", "0.0"),
-            degree=1,
-            cell=mesh.ufl_cell(),
-        ),
+        dolfin.Constant((1, 0, 0)),
         V_f,
     )
     s0 = dolfin.interpolate(
-        dolfin.Expression(
-            ("0.0", "1.0", "0.0"),
-            degree=1,
-            cell=mesh.ufl_cell(),
-        ),
+        dolfin.Constant((0, 1, 0)),
         V_f,
     )
     n0 = dolfin.interpolate(
-        dolfin.Expression(
-            ("0.0", "0.0", "1.0"),
-            degree=1,
-            cell=mesh.ufl_cell(),
-        ),
+        dolfin.Constant((0, 0, 1)),
         V_f,
     )
     # Collect the microstructure
