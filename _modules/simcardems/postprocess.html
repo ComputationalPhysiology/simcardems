@@ -601,7 +601,14 @@ const thebe_selector_output = ".output, .cell_output"
             <span class="k">try</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="o">.</span><span class="n">tqdm</span><span class="p">(</span><span class="n">loader</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">):</span>
                     <span class="n">f</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
-                    <span class="n">xdmf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>
+                    <span class="n">xdmf</span><span class="o">.</span><span class="n">write_checkpoint</span><span class="p">(</span>
+                        <span class="n">f</span><span class="p">,</span>
+                        <span class="n">name</span><span class="p">,</span>
+                        <span class="nb">float</span><span class="p">(</span><span class="n">t</span><span class="p">),</span>
+                        <span class="n">dolfin</span><span class="o">.</span><span class="n">XDMFFile</span><span class="o">.</span><span class="n">Encoding</span><span class="o">.</span><span class="n">HDF5</span><span class="p">,</span>
+                        <span class="kc">True</span><span class="p">,</span>
+                    <span class="p">)</span>
+
             <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not save </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
