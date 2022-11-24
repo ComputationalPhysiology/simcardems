@@ -1,5 +1,5 @@
 {
-    "scale_drug_INa":-10.0,
+    "scale_drug_INa":0.1,
     "scale_drug_INaL":1.0,
     "scale_drug_Ito":1.0,
     "scale_drug_ICaL":1.0,

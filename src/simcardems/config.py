@@ -27,8 +27,8 @@ class Config:
     loglevel: int = logging.INFO
     num_refinements: int = 1
     set_material: str = ""
-    drug_factors_file: str = ""
-    popu_factors_file: str = ""
+    drug_factors_file: utils.PathLike = ""
+    popu_factors_file: utils.PathLike = ""
     disease_state: str = "healthy"
     mechanics_ode_scheme: land_model.Scheme = land_model.Scheme.analytic
     ep_ode_scheme: str = "GRL1"
