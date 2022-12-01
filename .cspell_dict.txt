@@ -43,6 +43,7 @@ CaMKt
 cansr
 cao
 capfd
+cardioactive
 cardiomyocites
 cardiomyocytes
 cass
@@ -55,6 +56,7 @@ cellmodel
 cellmodels
 celltype
 cmdnmax
+CMISS
 codecov
 computationalphysiology
 conda
@@ -94,6 +96,7 @@ duration
 dvdt
 dxrf
 dxrs
+electrophysiological
 Elsevier
 emcoupling
 endo
@@ -262,7 +265,9 @@ mode
 modelparams
 monodomain
 mpio
+multigrid
 multiselect
+myocytes
 nai
 nao
 nass
@@ -278,6 +283,8 @@ ntm
 ntrpn
 numpyfy
 onlylastbeat
+opencarp
+opencmiss
 ORdmm_Land
 outdir
 outpath
@@ -376,6 +383,7 @@ silico
 simcardems
 Simcardio
 Simula
+simvascular
 splittingsolver
 streamlit
 subk
@@ -411,6 +419,7 @@ txrf
 txrs
 uflacs
 undiseased
+updegrove
 usecols
 v
 Varr
