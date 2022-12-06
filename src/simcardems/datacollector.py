@@ -2,7 +2,6 @@ from enum import Enum
 from pathlib import Path
 from typing import Dict
 from typing import List
-from typing import Optional
 from typing import Union
 
 import dolfin
@@ -147,11 +146,11 @@ class DataLoader:
             }
 
             if "residual" in h5file:
-                self._residual = np.array(
-                    [h5file["residual"][k][...] for k in h5file["residual"].keys()],
-                )
+                self._residual = [
+                    h5file["residual"][k][...] for k in h5file["residual"].keys()
+                ]
             else:
-                self._residual = None
+                self._residual = []
 
         self._h5file = dolfin.HDF5File(
             self.ep_mesh.mpi_comm(),
@@ -163,7 +162,7 @@ class DataLoader:
         self.value_extractor = ValueExtractor(self.geo)
 
     @property
-    def residual(self) -> Optional[np.ndarray]:
+    def residual(self) -> List[np.ndarray]:
         return self._residual
 
     @property

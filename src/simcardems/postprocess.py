@@ -178,7 +178,7 @@ def plot_state_traces(results_file: utils.PathLike, reduction: str = "average"):
     ax2[1, 3].set_xlabel("Time [ms]")
 
     # If there is a residual.txt file: load and plot these results
-    if loader.residual is not None:
+    if loader.residual:
 
         # Back to initial dt and time points
         # dt = 0.05  # FIXME: Do we really want to hardcode in this value?
