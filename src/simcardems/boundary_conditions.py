@@ -8,6 +8,9 @@ from . import geometry
 from . import utils
 
 
+logger = utils.getLogger(__name__)
+
+
 def create_slab_boundary_conditions(
     geo: geometry.SlabGeometry,
     pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
@@ -51,6 +54,12 @@ def create_slab_boundary_conditions(
     spring.
 
     """
+
+    logger.debug(
+        f"Calling create_slab_boundary_conditions geo: {geo!r}, traction: "
+        f"{traction!r}, spring: {spring!r}, pre_stretch: {pre_stretch!r} "
+        f"and fix_right_plane: {fix_right_plane}",
+    )
 
     def dirichlet_bc(W):
         # BC with fixing left size
@@ -125,6 +134,11 @@ def create_lv_boundary_conditions(
     traction: typing.Union[dolfin.Constant, float] = None,
     spring: typing.Union[dolfin.Constant, float] = None,
 ):
+    logger.debug(
+        "Calling create_lv_boundary_conditions with geo: "
+        f"{geo!r}, traction: {traction!r} and spring: {spring!r}",
+    )
+
     def dirichlet_bc(W):
         # Completely fix the base
         return [

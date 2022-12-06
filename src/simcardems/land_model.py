@@ -4,6 +4,11 @@ import dolfin
 import pulse
 import ufl
 
+from . import utils
+
+
+logger = utils.getLogger(__name__)
+
 
 class Scheme(str, Enum):
     fd = "fd"
@@ -41,6 +46,7 @@ class LandModel(pulse.ActiveModel):
         scheme: Scheme = Scheme.analytic,
         **kwargs,
     ):
+        logger.debug("Initialize Land Model")
         super().__init__(f0=f0, s0=s0, n0=n0)
         self._eta = eta
         self.function_space = dolfin.FunctionSpace(mesh, "CG", 1)
@@ -73,6 +79,7 @@ class LandModel(pulse.ActiveModel):
 
     @property
     def dLambda(self):
+        logger.debug("Evaluate dLambda")
         self._dLambda.vector()[:] = self.lmbda.vector() - self.lmbda_prev.vector()
         return self._dLambda
 
@@ -130,6 +137,7 @@ class LandModel(pulse.ActiveModel):
         )
 
     def update_Zetas(self):
+        logger.debug("update Zetas")
         self._Zetas.vector()[:] = _Zeta(
             self.Zetas_prev.vector(),
             self.As,
@@ -144,6 +152,7 @@ class LandModel(pulse.ActiveModel):
         return self._Zetas
 
     def update_Zetaw(self):
+        logger.debug("update Zetaw")
         self._Zetaw.vector()[:] = _Zeta(
             self.Zetaw_prev.vector(),
             self.Aw,
@@ -172,10 +181,12 @@ class LandModel(pulse.ActiveModel):
         self._t = t
 
     def update_time(self, t):
+        logger.debug("update time")
         self._t_prev = self.t
         self._t = t
 
     def update_prev(self):
+        logger.debug("update previous")
         self.Zetas_prev.vector()[:] = self.Zetas.vector()
         self.Zetaw_prev.vector()[:] = self.Zetaw.vector()
         self.lmbda_prev.vector()[:] = self.lmbda.vector()
@@ -183,6 +194,7 @@ class LandModel(pulse.ActiveModel):
 
     @property
     def Ta(self):
+        logger.debug("Evaluate Ta")
         Tref = self._parameters["Tref"]
         rs = self._parameters["rs"]
         scale_popu_Tref = self._parameters["scale_popu_Tref"]
@@ -206,7 +218,7 @@ class LandModel(pulse.ActiveModel):
 
     def Wactive(self, F, **kwargs):
         """Active stress energy"""
-
+        logger.debug("Compute active stress energy")
         C = F.T * F
         f = F * self.f0
         self.lmbda.assign(dolfin.project(dolfin.sqrt(f**2), self.function_space))

@@ -27,6 +27,7 @@ class Config:
     loglevel: int = logging.INFO
     num_refinements: int = 1
     set_material: str = ""
+    debug_mode: bool = False
     drug_factors_file: utils.PathLike = ""
     popu_factors_file: utils.PathLike = ""
     disease_state: str = "healthy"

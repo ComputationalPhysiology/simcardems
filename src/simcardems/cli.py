@@ -3,7 +3,6 @@ import typing
 from pathlib import Path
 
 import click
-import dolfin
 
 from . import config
 from . import land_model
@@ -94,6 +93,12 @@ def cli():
     default=config.Config.loglevel,
     type=int,
     help="How much printing. DEBUG: 10, INFO:20 (default), WARNING: 30",
+)
+@click.option(
+    "--debug-mode",
+    default=config.Config.debug_mode,
+    type=bool,
+    help="Run in debug mode. Save more output",
 )
 @click.option(
     "--show_progress_bar/--hide_progress_bar",
@@ -240,12 +245,6 @@ def main(conf: typing.Optional[config.Config]):
     outdir.mkdir(exist_ok=True)
     with open(outdir.joinpath("parameters.json"), "w") as f:
         json.dump(info_dict, f, default=post.json_serial)
-
-    # Disable warnings
-    from . import set_log_level
-
-    set_log_level(conf.loglevel)
-    dolfin.set_log_level(conf.loglevel + 10)  # TODO: Make it possible to set this?
 
     runner = Runner(conf=conf)
 

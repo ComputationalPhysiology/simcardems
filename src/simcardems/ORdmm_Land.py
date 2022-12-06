@@ -44,7 +44,7 @@ class ORdmm_Land(CardiacCellModel):
          init_conditions (dict, :py:class:`dolfin.Mesh`, optional)
            optional initial conditions
         """
-
+        logger.debug("Initialize ORdmm Land model")
         super().__init__(params, init_conditions)
 
     @staticmethod
@@ -314,7 +314,7 @@ class ORdmm_Land(CardiacCellModel):
         Original gotran transmembrane current dV/dt
         """
         time = time if time else Constant(0.0)
-
+        logger.debug("Evaluate transmembrane current")
         # Assign states
         assert len(s) == 48
         (
@@ -823,6 +823,7 @@ class ORdmm_Land(CardiacCellModel):
         """
         Right hand side for ODE system
         """
+        logger.debug("Evaluate RHS")
         time = time if time else Constant(0.0)
 
         # Assign states

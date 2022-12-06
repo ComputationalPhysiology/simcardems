@@ -2,9 +2,11 @@ from enum import Enum
 from pathlib import Path
 from typing import Dict
 from typing import List
+from typing import Optional
 from typing import Union
 
 import dolfin
+import numpy as np
 from dolfin import FiniteElement  # noqa: F401
 from dolfin import tetrahedron  # noqa: F401
 from dolfin import VectorElement  # noqa: F401
@@ -87,6 +89,13 @@ class DataCollector:
                     f = self._functions[group][name]
                     h5file.write(f, f"{group}/{name}/{t_str}")
 
+    def save_residual(self, residual, index):
+        logger.debug("Save residual")
+        with h5pyfile(self._results_file, "a") as h5file:
+            if "residual" not in h5file:
+                h5file.create_group("residual")
+            h5file["residual"].create_dataset(str(index), data=residual)
+
 
 class DataLoader:
     def __init__(self, h5name) -> None:
@@ -137,6 +146,13 @@ class DataLoader:
                 for group, names in self.names.items()
             }
 
+            if "residual" in h5file:
+                self._residual = np.array(
+                    [h5file["residual"][k][...] for k in h5file["residual"].keys()],
+                )
+            else:
+                self._residual = None
+
         self._h5file = dolfin.HDF5File(
             self.ep_mesh.mpi_comm(),
             self._h5name.as_posix(),
@@ -145,6 +161,10 @@ class DataLoader:
 
         self._create_functions()
         self.value_extractor = ValueExtractor(self.geo)
+
+    @property
+    def residual(self) -> Optional[np.ndarray]:
+        return self._residual
 
     @property
     def ep_mesh(self):

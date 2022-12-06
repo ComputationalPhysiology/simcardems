@@ -64,6 +64,7 @@ def setup_EM_model(config: config.Config):
         set_material=config.set_material,
         mechanics_ode_scheme=config.mechanics_ode_scheme,
         use_custom_newton_solver=config.mechanics_use_custom_newton_solver,
+        debug_mode=config.debug_mode,
     )
 
     return EMState(
@@ -84,6 +85,7 @@ def setup_mechanics_solver(
     traction: typing.Union[dolfin.Constant, float] = None,
     spring: typing.Union[dolfin.Constant, float] = None,
     fix_right_plane: bool = config.Config.fix_right_plane,
+    debug_mode: bool = config.Config.debug_mode,
     mechanics_ode_scheme: land_model.Scheme = config.Config.mechanics_ode_scheme,
     set_material: str = "",
     linear_solver="mumps",
@@ -140,7 +142,7 @@ def setup_mechanics_solver(
             active_model=active_model,
         )
 
-    problem = mechanics_model.create_slab_problem(
+    problem = mechanics_model.create_problem(
         material=material,
         geo=geo,
         bnd_rigid=bnd_rigid,
@@ -150,6 +152,7 @@ def setup_mechanics_solver(
         fix_right_plane=fix_right_plane,
         linear_solver=linear_solver,
         use_custom_newton_solver=use_custom_newton_solver,
+        debug_mode=debug_mode,
     )
 
     if state_prev is not None:
@@ -234,6 +237,10 @@ class Runner:
             conf = config.Config()
 
         self._config = conf
+
+        from . import set_log_level
+
+        set_log_level(conf.loglevel)
 
         if empty:
             return
@@ -404,6 +411,8 @@ class Runner:
             ("mechanics", "XW_mech", self.coupling.XW_mech),
         ]:
             self.collector.register(group, name, f)
+
+        self.mech_heart.solver.register_datacollector(self.collector)
 
     @property
     def dt_mechanics(self):
