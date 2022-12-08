@@ -54,7 +54,7 @@ class Projector:
             u (dolfin.Function): The function to project into
             f (ufl.core.expr.Expr): The ufl expression to project
         """
-b = dolfin.assemble(ufl.inner(f, self._v) * self._dx, tensor=self._b)
+        b = dolfin.assemble(ufl.inner(f, self._v) * self._dx, tensor=self._b)
         self.solver.solve(u.vector(), b.vector())
 
 
