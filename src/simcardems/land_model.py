@@ -26,11 +26,11 @@ class Projector:
         """
         u = dolfin.TrialFunction(V)
         self._v = dolfin.TestFunction(V)
-        self._dx = dolfin.Measure("dx", domain=V.mesh)
+        self._dx = dolfin.Measure("dx", domain=V.mesh())
         self._b = dolfin.Function(V)
         self._A = dolfin.assemble(ufl.inner(u, self._v) * self._dx)
         lu_methods = dolfin.lu_solver_methods().keys()
-        krylov_methods = dolfin.krylov_solver_methods()
+        krylov_methods = dolfin.krylov_solver_methods().keys()
         if solver_type == "lu" or solver_type in lu_methods:
             if preconditioner_type != "default":
                 raise RuntimeError("LUSolver cannot be preconditioned")
@@ -56,7 +56,7 @@ class Projector:
             u (dolfin.Function): The function to project into
             f (ufl.core.expr.Expr): The ufl expression to project
         """
-        dolfin.assemble(ufl.inner(f, self._v) * self._dx, tensor=self._b)
+        dolfin.assemble(ufl.inner(f, self._v) * self._dx, tensor=self._b.vector())
         self.solver.solve(u.vector(), self._b.vector())
 
 
@@ -268,7 +268,6 @@ class LandModel(pulse.ActiveModel):
         self._projector.project(self.lmbda, dolfin.sqrt(f**2))
         self.update_Zetas()
         self.update_Zetaw()
-        assert False
         return pulse.material.active_model.Wactive_transversally(
             Ta=self.Ta,
             C=C,
