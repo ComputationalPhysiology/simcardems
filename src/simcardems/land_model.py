@@ -3,6 +3,52 @@ from enum import Enum
 import dolfin
 import pulse
 import ufl
+import numpy
+
+
+class Projector():
+    def __init__(self, V: dolfin.FunctionSpace, solver_type: str = "lu", preconditioner_type: str = "default"):
+        """
+        Projection class caching solver and matrix assembly
+
+        Args:
+            V (dolfin.FunctionSpace): Function-space to project in to
+            solver_type (str, optional): Type of solver. Defaults to "lu".
+            preconditioner_type (str, optional): Type of preconditioner. Defaults to "default".
+
+        Raises:
+            RuntimeError: _description_
+        """
+        u = dolfin.TrialFunction(V)
+        self._v = dolfin.TestFunction(V)
+        self._dx = dolfin.Measure("dx", domain=V.mesh)
+        self._b = dolfin.Function(V)
+        self._A = dolfin.assemble(ufl.inner(u, self._v) * self._dx)
+        lu_methods = dolfin.lu_solver_methods().keys()
+        krylov_methods = dolfin.krylov_solver_methods()
+        if solver_type == "lu" or solver_type in lu_methods:
+            if preconditioner_type != "default":
+                raise RuntimeError("LUSolver cannot be preconditioned")
+            self.solver = dolfin.LUSolver(self._A, "default")
+        elif solver_type in krylov_methods:
+            self.solver = dolfin.PETScKrylovSolver(
+                self._A, solver_type, preconditioner_type)
+        else:
+            raise RuntimeError(
+                f"Unknown solver type: {solver_type}, method has to be lu"
+                + f", or {numpy.hstack(lu_methods, krylov_methods)}")
+        self.solver.set_operator(self._A)
+
+    def project(self, u: dolfin.Function, f: ufl.core.expr.Expr):
+        """
+        Project `f` into `u`.
+
+        Args:
+            u (dolfin.Function): The function to project into
+            f (ufl.core.expr.Expr): The ufl expression to project
+        """
+        b = dolfin.assemble(ufl.inner(f, self._v) * self.dx, tensor=self._b)
+        self.solver.solve(u.vector(), b.vector())
 
 from . import utils
 
@@ -76,6 +122,7 @@ class LandModel(pulse.ActiveModel):
             self.Zetaw_prev.assign(Zetaw)
 
         self.Ta_current = dolfin.Function(self.function_space, name="Ta")
+        self._projector = Projector(self.function_space)
 
     @property
     def dLambda(self):
@@ -190,7 +237,7 @@ class LandModel(pulse.ActiveModel):
         self.Zetas_prev.vector()[:] = self.Zetas.vector()
         self.Zetaw_prev.vector()[:] = self.Zetaw.vector()
         self.lmbda_prev.vector()[:] = self.lmbda.vector()
-        self.Ta_current.assign(dolfin.project(self.Ta, self.function_space))
+        self._projector.project(self.Ta_current, self.Ta)
 
     @property
     def Ta(self):
@@ -221,10 +268,10 @@ class LandModel(pulse.ActiveModel):
         logger.debug("Compute active stress energy")
         C = F.T * F
         f = F * self.f0
-        self.lmbda.assign(dolfin.project(dolfin.sqrt(f**2), self.function_space))
+        self._projector.project(self.lmbda, dolfin.sqrt(f**2))
         self.update_Zetas()
         self.update_Zetaw()
-
+        assert (False)
         return pulse.material.active_model.Wactive_transversally(
             Ta=self.Ta,
             C=C,
