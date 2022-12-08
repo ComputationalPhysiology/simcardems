@@ -70,15 +70,15 @@ class EMCoupling:
 
     def coupling_to_mechanics(self):
         logger.debug("Interpolate mechanics")
-        self.XS_mech.assign(dolfin.interpolate(self.XS_ep, self.V_mech))
-        self.XW_mech.assign(dolfin.interpolate(self.XW_ep, self.V_mech))
+        self.XS_mech.interpolate(self.XS_ep)
+        self.XW_mech.interpolate(self.XW_ep)
         logger.debug("Done interpolating mechanics")
 
     def mechanics_to_coupling(self):
         logger.debug("Interpolate EP")
-        self.lmbda_ep.assign(dolfin.interpolate(self.lmbda_mech, self.V_ep))
-        self.Zetas_ep.assign(dolfin.interpolate(self.Zetas_mech, self.V_ep))
-        self.Zetaw_ep.assign(dolfin.interpolate(self.Zetaw_mech, self.V_ep))
+        self.lmbda_ep.interpolate(self.lmbda_mech)
+        self.Zetas_ep.interpolate(self.Zetas_mech)
+        self.Zetaw_ep.interpolate(self.Zetaw_mech)
         logger.debug("Done interpolating EP")
 
     def coupling_to_ep(self):
