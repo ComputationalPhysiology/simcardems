@@ -15,7 +15,7 @@ class MechanicsNewtonSolver(dolfin.NewtonSolver):
         update_cb=None,
         parameters=None,
     ):
-        logger.debug("Initialize NewtonSolver with parameters: {parameters!r}")
+        logger.debug(f"Initialize NewtonSolver with parameters: {parameters!r}")
         dolfin.PETScOptions.clear()
         self._problem = problem
         self._state = state
