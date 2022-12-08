@@ -1,13 +1,18 @@
 from enum import Enum
 
 import dolfin
+import numpy
 import pulse
 import ufl
-import numpy
 
 
-class Projector():
-    def __init__(self, V: dolfin.FunctionSpace, solver_type: str = "lu", preconditioner_type: str = "default"):
+class Projector:
+    def __init__(
+        self,
+        V: dolfin.FunctionSpace,
+        solver_type: str = "lu",
+        preconditioner_type: str = "default",
+    ):
         """
         Projection class caching solver and matrix assembly
 
@@ -32,11 +37,13 @@ class Projector():
             self.solver = dolfin.LUSolver(self._A, "default")
         elif solver_type in krylov_methods:
             self.solver = dolfin.PETScKrylovSolver(
-                self._A, solver_type, preconditioner_type)
+                self._A, solver_type, preconditioner_type,
+            )
         else:
             raise RuntimeError(
                 f"Unknown solver type: {solver_type}, method has to be lu"
-                + f", or {numpy.hstack(lu_methods, krylov_methods)}")
+                + f", or {numpy.hstack(lu_methods, krylov_methods)}",
+            )
         self.solver.set_operator(self._A)
 
     def project(self, u: dolfin.Function, f: ufl.core.expr.Expr):
@@ -271,7 +278,7 @@ class LandModel(pulse.ActiveModel):
         self._projector.project(self.lmbda, dolfin.sqrt(f**2))
         self.update_Zetas()
         self.update_Zetaw()
-        assert (False)
+        assert False
         return pulse.material.active_model.Wactive_transversally(
             Ta=self.Ta,
             C=C,
