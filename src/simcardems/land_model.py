@@ -37,7 +37,9 @@ class Projector:
             self.solver = dolfin.LUSolver(self._A, "default")
         elif solver_type in krylov_methods:
             self.solver = dolfin.PETScKrylovSolver(
-                self._A, solver_type, preconditioner_type,
+                self._A,
+                solver_type,
+                preconditioner_type,
             )
         else:
             raise RuntimeError(
