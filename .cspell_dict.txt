@@ -164,6 +164,7 @@ Hookean
 hs
 hsp
 hssp
+hstack
 hyperelastic
 icntl
 iF
