@@ -3,7 +3,6 @@ import typing
 
 import dolfin
 import pulse
-from mpi4py import MPI
 
 from . import boundary_conditions
 from . import config
@@ -37,9 +36,9 @@ class ContinuationBasedMechanicsProblem(pulse.MechanicsProblem):
             s0, s1 = self.old_states
 
             denominator = dolfin.assemble((c1 - c0) ** 2 * dolfin.dx)
-            max_denom = self.geometry.mesh.mpi_comm().allreduce(denominator, op=MPI.MAX)
+            # max_denom = self.geometry.mesh.mpi_comm().allreduce(denominator, op=MPI.MAX)
 
-            if max_denom > tol:
+            if denominator > tol:
                 numerator = dolfin.assemble((control - c0) ** 2 * dolfin.dx)
                 delta = numerator / denominator
                 self.state.vector().zero()
