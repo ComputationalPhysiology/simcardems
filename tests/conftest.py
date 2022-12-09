@@ -4,8 +4,20 @@ from unittest import mock
 import dolfin
 import pytest
 import simcardems
+from _pytest.mark import Mark
 
 _here = Path(__file__).absolute().parent
+
+# Run slow tests last https://stackoverflow.com/a/61539510
+empty_mark = Mark("", [], {})
+
+
+def by_slow_marker(item):
+    return item.get_closest_marker("slow", default=empty_mark)
+
+
+def pytest_collection_modifyitems(items):
+    items.sort(key=by_slow_marker, reverse=False)
 
 
 @pytest.fixture(scope="session")
