@@ -4,6 +4,8 @@ import dolfin
 import pulse
 import ufl
 
+from .utils import Projector
+
 
 class Scheme(str, Enum):
     fd = "fd"
@@ -70,6 +72,7 @@ class LandModel(pulse.ActiveModel):
             self.Zetaw_prev.assign(Zetaw)
 
         self.Ta_current = dolfin.Function(self.function_space, name="Ta")
+        self._projector = Projector(self.function_space)
 
     @property
     def dLambda(self):
@@ -179,7 +182,7 @@ class LandModel(pulse.ActiveModel):
         self.Zetas_prev.vector()[:] = self.Zetas.vector()
         self.Zetaw_prev.vector()[:] = self.Zetaw.vector()
         self.lmbda_prev.vector()[:] = self.lmbda.vector()
-        self.Ta_current.assign(dolfin.project(self.Ta, self.function_space))
+        self._projector.project(self.Ta_current, self.Ta)
 
     @property
     def Ta(self):
@@ -209,10 +212,9 @@ class LandModel(pulse.ActiveModel):
 
         C = F.T * F
         f = F * self.f0
-        self.lmbda.assign(dolfin.project(dolfin.sqrt(f**2), self.function_space))
+        self._projector.project(self.lmbda, dolfin.sqrt(f**2))
         self.update_Zetas()
         self.update_Zetaw()
-
         return pulse.material.active_model.Wactive_transversally(
             Ta=self.Ta,
             C=C,
