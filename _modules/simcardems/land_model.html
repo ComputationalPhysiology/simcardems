@@ -335,6 +335,8 @@ const thebe_selector_output = ".output, .cell_output"
 <span class="kn">import</span> <span class="nn">pulse</span>
 <span class="kn">import</span> <span class="nn">ufl</span>
 
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">Projector</span>
+
 
 <div class="viewcode-block" id="Scheme"><a class="viewcode-back" href="../../api.html#simcardems.config.Scheme">[docs]</a><span class="k">class</span> <span class="nc">Scheme</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
     <span class="n">fd</span> <span class="o">=</span> <span class="s2">&quot;fd&quot;</span>
@@ -401,6 +403,7 @@ const thebe_selector_output = ".output, .cell_output"
             <span class="bp">self</span><span class="o">.</span><span class="n">Zetaw_prev</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">Zetaw</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">Ta_current</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">function_space</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Ta&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_projector</span> <span class="o">=</span> <span class="n">Projector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">function_space</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">dLambda</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -510,7 +513,7 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="bp">self</span><span class="o">.</span><span class="n">Zetas_prev</span><span class="o">.</span><span class="n">vector</span><span class="p">()[:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Zetas</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Zetaw_prev</span><span class="o">.</span><span class="n">vector</span><span class="p">()[:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Zetaw</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lmbda_prev</span><span class="o">.</span><span class="n">vector</span><span class="p">()[:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lmbda</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Ta_current</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">dolfin</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Ta</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">function_space</span><span class="p">))</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_projector</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Ta_current</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ta</span><span class="p">)</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">Ta</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -540,10 +543,9 @@ const thebe_selector_output = ".output, .cell_output"
 
         <span class="n">C</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">F</span>
         <span class="n">f</span> <span class="o">=</span> <span class="n">F</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">f0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">lmbda</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">dolfin</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">dolfin</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">f</span><span class="o">**</span><span class="mi">2</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">function_space</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_projector</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lmbda</span><span class="p">,</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">f</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_Zetas</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_Zetaw</span><span class="p">()</span>
-
         <span class="k">return</span> <span class="n">pulse</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">active_model</span><span class="o">.</span><span class="n">Wactive_transversally</span><span class="p">(</span>
             <span class="n">Ta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Ta</span><span class="p">,</span>
             <span class="n">C</span><span class="o">=</span><span class="n">C</span><span class="p">,</span>
