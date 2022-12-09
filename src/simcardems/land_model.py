@@ -4,9 +4,8 @@ import dolfin
 import pulse
 import ufl
 
-from .utils import Projector
-
 from . import utils
+from .utils import Projector
 
 
 logger = utils.getLogger(__name__)
