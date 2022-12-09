@@ -5,7 +5,6 @@ import pulse
 import ufl
 
 from . import utils
-from .utils import Projector
 
 
 logger = utils.getLogger(__name__)
@@ -77,7 +76,7 @@ class LandModel(pulse.ActiveModel):
             self.Zetaw_prev.assign(Zetaw)
 
         self.Ta_current = dolfin.Function(self.function_space, name="Ta")
-        self._projector = Projector(self.function_space)
+        self._projector = utils.Projector(self.function_space)
 
     @property
     def dLambda(self):
