@@ -44,15 +44,28 @@ def extract_traces(loader: DataLoader, reduction: str = "average"):
 
     all_names = {
         "mechanics": [
-            "lmbda",
-            "Ta",
-            "Zetas_mech",
-            "Zetaw_mech",
-            "XS_mech",
-            "XW_mech",
+            # "lmbda",
+            # "Ta",
+            # "Zetas_mech",
+            # "Zetaw_mech",
+            # "XS_mech",
+            # "XW_mech",
             "u",
         ],
-        "ep": ["V", "Ca", "XS", "XW", "CaTrpn", "TmB", "Cd", "Zetas", "Zetaw"],
+        "ep": [
+            "V",
+            "Ca",
+            "XS",
+            "XW",
+            "CaTrpn",
+            "TmB",
+            "Cd",
+            "Zetas",
+            "Zetaw",
+            "lmbda",
+            "dLambda",
+            "Ta",
+        ],
     }
 
     values = {
@@ -81,13 +94,12 @@ def extract_traces(loader: DataLoader, reduction: str = "average"):
                     reduction=reduction,
                 )
 
-    values["mechanics"]["inv_lmbda"] = 1 - values["mechanics"]["lmbda"]
+    # values["mechanics"]["inv_lmbda"] = 1 - values["mechanics"]["lmbda"]
     return values
 
 
 def plot_state_traces(results_file: utils.PathLike, reduction: str = "average"):
-    fig, ax = plt.subplots(2, 2, figsize=(10, 8), sharex=True)
-    fig2, ax2 = plt.subplots(2, 4, figsize=(10, 8), sharex=True)
+
     results_file = Path(results_file)
     if not results_file.is_file():
         raise FileNotFoundError(f"File {results_file} does not exist")
@@ -105,77 +117,44 @@ def plot_state_traces(results_file: utils.PathLike, reduction: str = "average"):
             values["ep"]["Ca"],
             0.0002,
         )
+    fig, axs = plt.subplots(2, 2, figsize=(10, 8), sharex=True)
 
-    ax[0, 0].plot(times, values["mechanics"]["lmbda"])
-    ax[0, 1].plot(times, values["mechanics"]["Ta"])
-    ax[1, 0].plot(times, values["ep"]["V"])
-    ax[1, 1].plot(times, values["ep"]["Ca"])
+    for i, (group, key) in enumerate(
+        (("ep", "lmbda"), ("ep", "Ta"), ("ep", "V"), ("ep", "Ca")),
+    ):
+        ax = axs.flatten()[i]
+        y = values[group][key]
+        ax.plot(times, y)
+        if key == "lmbda":
+            ax.set_title(r"$\lambda$")
+            ax.set_ylim(min(0.9, min(y)), max(1.1, max(y)))
+        else:
+            ax.set_title(key)
+        ax.grid()
 
-    ax[0, 0].set_title(r"$\lambda$")
-    ax[0, 1].set_title("Ta")
-    ax[1, 0].set_title("V")
-    ax[1, 1].set_title("Ca")
-    for axi in ax.flatten():
-        axi.grid()
-        if False:
-            axi.set_xlim([0, 5000])
-    ax[1, 0].set_xlabel("Time [ms]")
-    ax[1, 1].set_xlabel("Time [ms]")
-    ax[0, 0].set_ylim(
-        [
-            min(0.9, min(values["mechanics"]["lmbda"][1:])),
-            max(1.1, max(values["mechanics"]["lmbda"][1:])),
-        ],
-    )
+    axs[1, 0].set_xlabel("Time [ms]")
+    axs[1, 1].set_xlabel("Time [ms]")
+    fig.savefig(outdir.joinpath("state_traces_center.png"), dpi=300)
 
-    ax2[0, 0].plot(times, values["ep"]["XS"], linestyle="solid", color="blue")
-    ax2[0, 0].plot(
-        times,
-        values["mechanics"]["XS_mech"],
-        linestyle="dotted",
-        color="orange",
-    )
-    ax2[0, 1].plot(times, values["ep"]["CaTrpn"], linestyle="solid", color="blue")
-    ax2[0, 2].plot(times, values["ep"]["TmB"], linestyle="solid", color="blue")
-    ax2[0, 3].plot(times, values["ep"]["Zetas"], linestyle="solid", color="blue")
-    ax2[0, 3].plot(
-        times,
-        values["mechanics"]["Zetas_mech"],
-        linestyle="dotted",
-        color="orange",
-    )
-    ax2[1, 0].plot(times, values["ep"]["XW"], linestyle="solid", color="blue")
-    ax2[1, 0].plot(
-        times,
-        values["mechanics"]["XW_mech"],
-        linestyle="dotted",
-        color="orange",
-    )
-    ax2[1, 1].plot(times, values["ep"]["Cd"], linestyle="solid", color="blue")
-    ax2[1, 3].plot(times, values["ep"]["Zetaw"], linestyle="solid", color="blue")
-    ax2[1, 3].plot(
-        times,
-        values["mechanics"]["Zetaw_mech"],
-        linestyle="dotted",
-        color="orange",
-    )
+    fig2, ax2 = plt.subplots(2, 4, figsize=(10, 8), sharex=True)
+    for i, (group, key, linestyle, color) in enumerate(
+        (
+            ("ep", "XS", "solid", "blue"),
+            ("ep", "XS", "solid", "blue"),
+            ("ep", "CaTrpn", "solid", "blue"),
+            ("ep", "TmB", "solid", "blue"),
+            ("ep", "Zetas", "solid", "blue"),
+            ("ep", "Zetaw", "solid", "blue"),
+            ("ep", "Cd", "solid", "blue"),
+        ),
+    ):
+        ax = ax2.flatten()[i]
+        ax.plot(times, values[group][key], linestyle=linestyle, color=color)
+        ax.set_title(key)
+        ax.grid()
 
-    ax2[0, 0].set_title("XS")
-    ax2[0, 1].set_title("CaTrpn")
-    ax2[0, 2].set_title("TmB")
-    ax2[0, 3].set_title("Zetas")
-    ax2[1, 0].set_title("XW")
-    ax2[1, 1].set_title("Cd")
-    # ax2[1, 2].set_title("")
-    ax2[1, 3].set_title("Zetaw")
-    for axi in ax2.flatten():
-        axi.grid()
-        if False:
-            axi.set_xlim([0, 5000])
-    ax2[1, 0].set_xlabel("Time [ms]")
-    ax2[1, 1].set_xlabel("Time [ms]")
-    ax2[1, 2].set_xlabel("Time [ms]")
-    ax2[1, 3].set_xlabel("Time [ms]")
+    for i in range(4):
+        ax2[1, i].set_xlabel("Time [ms]")
 
     # If there is a residual.txt file: load and plot these results
     if loader.residual:

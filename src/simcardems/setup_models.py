@@ -12,12 +12,13 @@ from . import config
 from . import em_model
 from . import ep_model
 from . import geometry
-from . import land_model
 from . import mechanics_model
 from . import save_load_functions as io
 from . import utils
 from .em_model import EMCoupling
 from .ORdmm_Land import ORdmm_Land as CellModel
+
+# from . import land_model
 
 logger = utils.getLogger(__name__)
 
@@ -62,7 +63,7 @@ def setup_EM_model(config: config.Config):
         spring=config.spring,
         fix_right_plane=config.fix_right_plane,
         set_material=config.set_material,
-        mechanics_ode_scheme=config.mechanics_ode_scheme,
+        # mechanics_ode_scheme=config.mechanics_ode_scheme,
         use_custom_newton_solver=config.mechanics_use_custom_newton_solver,
         debug_mode=config.debug_mode,
     )
@@ -86,13 +87,9 @@ def setup_mechanics_solver(
     spring: typing.Union[dolfin.Constant, float] = None,
     fix_right_plane: bool = config.Config.fix_right_plane,
     debug_mode: bool = config.Config.debug_mode,
-    mechanics_ode_scheme: land_model.Scheme = config.Config.mechanics_ode_scheme,
     set_material: str = "",
     linear_solver="mumps",
     use_custom_newton_solver: bool = config.Config.mechanics_use_custom_newton_solver,
-    Zetas_prev=None,
-    Zetaw_prev=None,
-    lmbda_prev=None,
     state_prev=None,
 ):
     """Setup mechanics model with dirichlet boundary conditions or rigid motion."""
@@ -110,25 +107,33 @@ def setup_mechanics_solver(
         b_fs=0.0,
     )
 
-    active_model = land_model.LandModel(
+    V = dolfin.FunctionSpace(geo.mesh, "CG", 1)
+    Ta = dolfin.Function(V)
+    # active_model = land_model.LandModel(
+    #     f0=geo.f0,
+    #     s0=geo.s0,
+    #     n0=geo.n0,
+    #     eta=0,
+    #     parameters=cell_params,
+    #     XS=coupling.XS_mech,
+    #     XW=coupling.XW_mech,
+    #     mesh=coupling.mech_mesh,
+    #     scheme=mechanics_ode_scheme,
+    #     Zetas=Zetas_prev,
+    #     Zetaw=Zetaw_prev,
+    #     lmbda=lmbda_prev,
+    # )
+
+    material_kwargs = dict(
+        active_model="active_stress",
+        activation=Ta,
         f0=geo.f0,
         s0=geo.s0,
         n0=geo.n0,
-        eta=0,
-        parameters=cell_params,
-        XS=coupling.XS_mech,
-        XW=coupling.XW_mech,
-        mesh=coupling.mech_mesh,
-        scheme=mechanics_ode_scheme,
-        Zetas=Zetas_prev,
-        Zetaw=Zetaw_prev,
-        lmbda=lmbda_prev,
-    )
-
-    material = pulse.HolzapfelOgden(
-        active_model=active_model,
         parameters=material_parameters,
     )
+
+    material = pulse.HolzapfelOgden(**material_kwargs)
 
     if set_material == "Guccione":
         material_parameters = pulse.Guccione.default_parameters()
@@ -137,10 +142,7 @@ def setup_mechanics_solver(
         material_parameters["bfs"] = 4.0
         material_parameters["bt"] = 2.0
 
-        material = pulse.Guccione(
-            params=material_parameters,
-            active_model=active_model,
-        )
+        material = pulse.Guccione(**material_kwargs)
 
     problem = mechanics_model.create_problem(
         material=material,
@@ -202,8 +204,9 @@ def setup_ep_solver(
     )
 
     cell_inits["lmbda"] = coupling.lmbda_ep
-    cell_inits["Zetas"] = coupling.Zetas_ep
-    cell_inits["Zetaw"] = coupling.Zetaw_ep
+    cell_inits["dLambda"] = coupling.dLambda_ep
+    # cell_inits["Zetas"] = coupling.Zetas_ep
+    # cell_inits["Zetaw"] = coupling.Zetaw_ep
 
     cellmodel = CellModel(init_conditions=cell_inits, params=cell_params)
 
@@ -350,6 +353,7 @@ class Runner:
         self._Cd, self._Cd_assigner = utils.setup_assigner(self._vs, 44)
         self._Zetas, self._Zetas_assigner = utils.setup_assigner(self._vs, 47)
         self._Zetaw, self._Zetaw_assigner = utils.setup_assigner(self._vs, 48)
+        self._lmbda, self._lmbda_assigner = utils.setup_assigner(self._vs, 49)
 
         self._pre_XS, self._preXS_assigner = utils.setup_assigner(self._vs, 40)
         self._pre_XW, self._preXW_assigner = utils.setup_assigner(self._vs, 41)
@@ -377,6 +381,7 @@ class Runner:
         self._Cd_assigner.assign(self._Cd, utils.sub_function(self._vs, 44))
         self._Zetas_assigner.assign(self._Zetas, utils.sub_function(self._vs, 47))
         self._Zetaw_assigner.assign(self._Zetaw, utils.sub_function(self._vs, 48))
+        self._lmbda_assigner.assign(self._lmbda, utils.sub_function(self._vs, 49))
 
     def store(self):
         # Assign u, v and Ca for postprocessing
@@ -396,8 +401,8 @@ class Runner:
             ("mechanics", "u", self._u),
             ("ep", "V", self._v),
             ("ep", "Ca", self._Ca),
-            ("mechanics", "lmbda", self.coupling.lmbda_mech),
-            ("mechanics", "Ta", self.mech_heart.material.active.Ta_current),
+            # ("mechanics", "lmbda", self.coupling.lmbda_mech),
+            # ("mechanics", "Ta", self.mech_heart.material.active.Ta_current),
             ("ep", "XS", self._XS),
             ("ep", "XW", self._XW),
             ("ep", "CaTrpn", self._CaTrpn),
@@ -405,10 +410,13 @@ class Runner:
             ("ep", "Cd", self._Cd),
             ("ep", "Zetas", self._Zetas),
             ("ep", "Zetaw", self._Zetaw),
-            ("mechanics", "Zetas_mech", self.coupling.Zetas_mech),
-            ("mechanics", "Zetaw_mech", self.coupling.Zetaw_mech),
-            ("mechanics", "XS_mech", self.coupling.XS_mech),
-            ("mechanics", "XW_mech", self.coupling.XW_mech),
+            ("ep", "lmbda", self._lmbda),
+            ("ep", "dLambda", self.coupling.dLambda_ep),
+            ("ep", "Ta", self.coupling.Ta_ep),
+            # ("mechanics", "Zetas_mech", self.coupling.Zetas_mech),
+            # ("mechanics", "Zetaw_mech", self.coupling.Zetaw_mech),
+            # ("mechanics", "XS_mech", self.coupling.XS_mech),
+            # ("mechanics", "XW_mech", self.coupling.XW_mech),
         ]:
             self.collector.register(group, name, f)
 
@@ -431,25 +439,25 @@ class Runner:
         return True  # self._t <= 10.0 or max(self.coupling.XS_ep.vector()) >= 0.0005 or max(self.coupling.XW_ep.vector()) >= 0.002
 
     def _pre_mechanics_solve(self) -> None:
-        self._preXS_assigner.assign(self._pre_XS, utils.sub_function(self._vs, 40))
-        self._preXW_assigner.assign(self._pre_XW, utils.sub_function(self._vs, 41))
+        # self._preXS_assigner.assign(self._pre_XS, utils.sub_function(self._vs, 40))
+        # self._preXW_assigner.assign(self._pre_XW, utils.sub_function(self._vs, 41))
 
         self.coupling.coupling_to_mechanics()
-        self.mech_heart.material.active.update_time(self.t)
+        # self.mech_heart.material.active.update_time(self.t)
 
     def _post_mechanics_solve(self) -> None:
 
         # Update previous active tension
-        self.mech_heart.material.active.update_prev()
+        # self.mech_heart.material.active.update_prev()
         self.coupling.mechanics_to_coupling()
         self.coupling.coupling_to_ep()
 
     def _solve_mechanics(self):
         self._pre_mechanics_solve()
-        if self._config.mechanics_use_continuation:
-            self.mech_heart.solve_for_control(self.coupling.XS_ep)
-        else:
-            self.mech_heart.solve()
+        # if self._config.mechanics_use_continuation:
+        #     self.mech_heart.solve_for_control(self.coupling.XS_ep)
+        # else:
+        self.mech_heart.solve()
         # converged = False
 
         # current_t = float(self.mech_heart.material.active.t)
@@ -518,7 +526,7 @@ class Runner:
         #     TimeStepper.ms2ns(save_state_every_n_beat * 1000.0) / self._time_stepper.dt
         # )
         # beat_nr = 0
-        self.mech_heart.material.active.start_time(self.t)
+        # self.mech_heart.material.active.start_time(self.t)
 
         for (i, (t0, t)) in enumerate(pbar):
             logger.debug(
@@ -532,9 +540,9 @@ class Runner:
                 logger.debug(
                     (
                         f"Solve mechanics model at step {i} from "
-                        f"{TimeStepper.ns2ms(self.mech_heart.material.active.t):.2f} ms"
-                        f" to {TimeStepper.ns2ms(self.t):.2f} ms with timestep "
-                        f"{self.dt_mechanics:.5f} ms"
+                        # f"{TimeStepper.ns2ms(self.mech_heart.material.active.t):.2f} ms"
+                        # f" to {TimeStepper.ns2ms(self.t):.2f} ms with timestep "
+                        # f"{self.dt_mechanics:.5f} ms"
                     ),
                 )
                 self._solve_mechanics()

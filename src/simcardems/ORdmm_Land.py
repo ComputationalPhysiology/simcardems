@@ -302,9 +302,10 @@ class ORdmm_Land(CardiacCellModel):
                 ("TmB", 1),
                 ("Cd", 0),
                 ("cai", 0.0001),
-                ("lmbda", 1),
                 ("Zetas", 0),
                 ("Zetaw", 0),
+                ("lmbda", 1),
+                ("dLambda", 0),
             ],
         )
         return ic
@@ -316,7 +317,7 @@ class ORdmm_Land(CardiacCellModel):
         time = time if time else Constant(0.0)
         logger.debug("Evaluate transmembrane current")
         # Assign states
-        assert len(s) == 48
+        assert len(s) == 49
         (
             CaMKt,
             m,
@@ -363,9 +364,10 @@ class ORdmm_Land(CardiacCellModel):
             TmB,
             Cd,
             cai,
-            lmbda,
             Zetas,
             Zetaw,
+            lmbda,
+            dLambda,
         ) = s
 
         # Assign parameters
@@ -827,7 +829,7 @@ class ORdmm_Land(CardiacCellModel):
         time = time if time else Constant(0.0)
 
         # Assign states
-        assert len(s) == 48
+        assert len(s) == 49
         (
             CaMKt,
             m,
@@ -874,9 +876,10 @@ class ORdmm_Land(CardiacCellModel):
             TmB,
             Cd,
             cai,
-            lmbda,
             Zetas,
             Zetaw,
+            lmbda,
+            dLambda,
         ) = s
 
         # Assign parameters
@@ -960,10 +963,10 @@ class ORdmm_Land(CardiacCellModel):
         kmcsqn = self._parameters["kmcsqn"]
         trpnmax = self._parameters["trpnmax"]
         Beta1 = self._parameters["Beta1"]
-
+        Tot_A = self._parameters["Tot_A"]
         Trpn50 = self._parameters["Trpn50"]
         cat50_ref = self._parameters["cat50_ref"]
-
+        # dLambda = self._parameters["dLambda"]
         etal = self._parameters["etal"]
         etas = self._parameters["etas"]
         gammas = self._parameters["gammas"]
@@ -976,12 +979,9 @@ class ORdmm_Land(CardiacCellModel):
         ntm = self._parameters["ntm"]
         ntrpn = self._parameters["ntrpn"]
         p_k = self._parameters["p_k"]
-
+        phi = self._parameters["phi"]
         rs = self._parameters["rs"]
         rw = self._parameters["rw"]
-
-        # Zetas = self._parameters["Zetas"]
-        # Zetaw = self._parameters["Zetaw"]
 
         # Drug factor
         scale_drug_INa = self._parameters["scale_drug_INa"]
@@ -1040,7 +1040,7 @@ class ORdmm_Land(CardiacCellModel):
         HF_scaling_cat50_ref = self._parameters["HF_scaling_cat50_ref"]
 
         # Init return args
-        F_expressions = [dolfin.Constant(0.0)] * 48
+        F_expressions = [dolfin.Constant(0.0)] * 49
 
         # Expressions for the cell geometry component
         vcell = 3140.0 * L * (rad * rad)
@@ -1582,6 +1582,11 @@ class ORdmm_Land(CardiacCellModel):
             * (-1.0 + 1.0 / (rs * scale_popu_rs))
         )
 
+        Aw = Tot_A * rs / (rs + rw * (1 - rs))
+        As = Aw
+        cw = kuw * phi * (1 - rw) / rw
+        cs = kws * phi * rw * (1 - rs) / rs
+
         lambda_min12 = ufl.conditional(ufl.lt(lmbda, 1.2), lmbda, 1.2)
         XS = ufl.conditional(ufl.lt(XS, 0.0), 0.0, XS)
         XW = ufl.conditional(ufl.lt(XW, 0.0), 0.0, XW)
@@ -1653,11 +1658,88 @@ class ORdmm_Land(CardiacCellModel):
             + 0.5 * (-ICab - IpCa - Isac_P_ns / 3.0 + 2.0 * INaCa_i) * Acap / (F * vmyo)
         ) * Bcai
 
+        F_expressions[44] = dLambda * As - Zetas * cs
+        F_expressions[45] = dLambda * Aw - Zetaw * cw
+        # State 46 and 47 is lambda and dLambda respectively
+
         # Return results
         return as_vector(F_expressions)
 
+    def Ta(self, vs, time=None):
+        time = time if time else Constant(0.0)
+
+        # Assign states
+        assert len(vs) == 50
+        (
+            v,
+            CaMKt,
+            m,
+            hf,
+            hs,
+            j,
+            hsp,
+            jp,
+            mL,
+            hL,
+            hLp,
+            a,
+            iF,
+            iS,
+            ap,
+            iFp,
+            iSp,
+            d,
+            ff,
+            fs,
+            fcaf,
+            fcas,
+            jca,
+            ffp,
+            fcafp,
+            nca,
+            xrf,
+            xrs,
+            xs1,
+            xs2,
+            xk1,
+            Jrelnp,
+            Jrelp,
+            nai,
+            nass,
+            ki,
+            kss,
+            cass,
+            cansr,
+            cajsr,
+            XS,
+            XW,
+            CaTrpn,
+            TmB,
+            Cd,
+            cai,
+            Zetas,
+            Zetaw,
+            lmbda,
+            dLambda,
+        ) = vs
+
+        Tref = self._parameters["Tref"]
+        rs = self._parameters["rs"]
+        Beta0 = self._parameters["Beta0"]
+
+        _min = ufl.min_value
+        _max = ufl.max_value
+        if isinstance(lmbda, (int, float)):
+            _min = min
+            _max = max
+        lmbda = _min(1.2, lmbda)
+        h_lambda_prima = 1 + Beta0 * (lmbda + _min(lmbda, 0.87) - 1.87)
+        h_lambda = _max(0, h_lambda_prima)
+
+        return h_lambda * (Tref / rs) * (XS * (Zetas + 1) + XW * Zetaw)
+
     def num_states(self):
-        return 48
+        return 49
 
     def __str__(self):
         return "ORdmm_Land_em_coupling cardiac cell model"

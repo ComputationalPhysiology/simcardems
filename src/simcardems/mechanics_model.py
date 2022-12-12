@@ -123,7 +123,7 @@ class MechanicsProblem(ContinuationBasedMechanicsProblem):
         self.solver = cls(
             problem=self._problem,
             state=self.state,
-            update_cb=self.material.active.update_prev,
+            # update_cb=self.material.active.update_prev,
             parameters=self.solver_parameters,
         )
 
