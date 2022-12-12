@@ -81,7 +81,7 @@ class MechanicsProblem(ContinuationBasedMechanicsProblem):
         self.state = dolfin.Function(self.state_space, name="state")
         self.state_test = dolfin.TestFunction(self.state_space)
 
-    def _init_forms(self):
+    def _init_forms(self, init_solver: bool = True):
         u, p = dolfin.split(self.state)
 
         # Some mechanical quantities
@@ -105,7 +105,8 @@ class MechanicsProblem(ContinuationBasedMechanicsProblem):
             self.state,
             dolfin.TrialFunction(self.state_space),
         )
-        self._init_solver()
+        if init_solver:
+            self._init_solver()
 
     def _init_solver(self):
         self._problem = pulse.NonlinearProblem(
@@ -127,9 +128,8 @@ class MechanicsProblem(ContinuationBasedMechanicsProblem):
         )
 
     def solve(self):
-        self._init_forms()
+        self._init_forms(init_solver=False)
         newton_iteration, newton_converged = self.solver.solve()
-        # DEBUGGING
         getattr(self.solver, "check_overloads_called", None)
         return newton_iteration, newton_converged
 
@@ -161,7 +161,7 @@ class RigidMotionProblem(MechanicsProblem):
         self.bcs = pulse.BoundaryConditions()
         self._dirichlet_bc = []
 
-    def _init_forms(self):
+    def _init_forms(self, init_solver: bool = True):
         # Displacement and hydrostatic_pressure; 3rd space for rigid motion component
         p, u, r = dolfin.split(self.state)
         q, v, z = dolfin.split(self.state_test)
@@ -196,7 +196,8 @@ class RigidMotionProblem(MechanicsProblem):
             self.state,
             dolfin.TrialFunction(self.state_space),
         )
-        self._init_solver()
+        if init_solver:
+            self._init_solver()
 
     def rigid_motion_term(mesh, u, r):
         position = dolfin.SpatialCoordinate(mesh)
@@ -238,7 +239,7 @@ def resolve_boundary_conditions(
         raise NotImplementedError
 
 
-def create_slab_problem(
+def create_problem(
     material: pulse.Material,
     geo: geometry.BaseGeometry,
     bnd_rigid: bool = config.Config.bnd_rigid,
@@ -248,6 +249,7 @@ def create_slab_problem(
     fix_right_plane: bool = config.Config.fix_right_plane,
     linear_solver="mumps",
     use_custom_newton_solver: bool = config.Config.mechanics_use_custom_newton_solver,
+    debug_mode=config.Config.debug_mode,
 ) -> MechanicsProblem:
     Problem = MechanicsProblem
     if bnd_rigid:
@@ -271,6 +273,10 @@ def create_slab_problem(
         geo,
         material,
         bcs,
-        solver_parameters={"linear_solver": linear_solver, "verbose": verbose},
+        solver_parameters={
+            "linear_solver": linear_solver,
+            "verbose": verbose,
+            "debug": debug_mode,
+        },
         use_custom_newton_solver=use_custom_newton_solver,
     )

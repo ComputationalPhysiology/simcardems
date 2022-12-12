@@ -42,23 +42,44 @@ def set_log_level(level):
     from daiquiri import set_default_log_levels
 
     loggers = [
-        "simcardems.cli.logger",
-        "simcardems.datacollector.logger",
-        "simcardems.ep_model.logger",
-        "simcardems.em_model.logger",
-        "simcardems.mechanics_model.logger",
-        "simcardems.ORdmm_Land.logger",
-        "simcardems.postprocess.logger",
-        "simcardems.save_load_functions.logger",
-        "simcardems.utils.logger",
+        "simcardems.benchmark.logger"
+        "simcardems.boundary_conditions.logger"
+        "simcardems.cli.logger"
+        "simcardems.config.logger"
+        "simcardems.datacollector.logger"
+        "simcardems.em_model.logger"
+        "simcardems.ep_model.logger"
+        "simcardems.geometry.logger"
+        "simcardems.gui.logger"
+        "simcardems.land_model.logger"
+        "simcardems.mechanics_model.logger"
+        "simcardems.newton_solver.logger"
+        "simcardems.postprocess.logger"
+        "simcardems.save_load_functions.logger"
+        "simcardems.setup_models.logger"
+        "simcardems.utils.logger"
+        "simcardems.value_extractor.logger",
     ]
     _pulse.set_log_level(level)
     _daiquiri.setup(level=level)
+
+    if level < _logging.INFO:
+        # Turn on INFO for dolfin
+        _dolfin.set_log_level(_logging.INFO)
+
+    # If debug level turn on more logging
+    if level < _logging.DEBUG:
+        _dolfin.set_log_level(_logging.DEBUG)
+        for module in ["FFC", "UFL"]:
+            _logger = _logging.getLogger(module)
+            _logger.setLevel(_logging.INFO)
+
     set_default_log_levels((logger, level) for logger in loggers)
 
 
 set_log_level(_logging.INFO)
 
+_dolfin.set_log_level(_logging.WARNING)
 for module in ["matplotlib", "h5py", "FFC", "UFL"]:
     _logger = _logging.getLogger(module)
     _logger.setLevel(_logging.WARNING)

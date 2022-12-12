@@ -243,6 +243,7 @@ leftbottom
 lightcoral
 linalg
 linestyle
+linspace
 lmbda
 loadtxt
 loglevel
@@ -320,6 +321,7 @@ qca
 qna
 R
 rad
+Rdmm
 relp
 Remedios
 repolarisation

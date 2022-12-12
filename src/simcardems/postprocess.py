@@ -178,20 +178,23 @@ def plot_state_traces(results_file: utils.PathLike, reduction: str = "average"):
     ax2[1, 3].set_xlabel("Time [ms]")
 
     # If there is a residual.txt file: load and plot these results
-    if outdir.joinpath("residual.txt").is_file():
-        residual0 = np.loadtxt(outdir.joinpath("residual.txt"), usecols=0)
-
-        residual_file = open(outdir.joinpath("residual.txt"), "r")
-        residual_data = residual_file.readlines()
-        residualN = []
-        for line in residual_data:
-            if line.strip().split("\t")[-1] != "":
-                residualN.append(float(line.strip().split("\t")[-1]))
-        residual_file.close()
+    if loader.residual:
 
         # Back to initial dt and time points
-        dt = 0.05
-        times_dt = np.arange(times[0], times[0] + residual0.size * dt, dt)
+        # dt = 0.05  # FIXME: Do we really want to hardcode in this value?
+        # times_dt = np.arange(
+        #     times[0],
+        #     times[0] + len(loader.residual) * dt,
+        #     dt,
+        # )
+        # Change this to linspace so that we know that we have the right
+        # number of points
+        times_dt = np.linspace(times[0], times[-1], len(loader.residual))
+
+        # First residual
+        residual0 = [res[0] for res in loader.residual]
+        # Final residual
+        residualN = [res[-1] for res in loader.residual]
 
         ax00r = ax[0, 0].twinx()
         ax00r.plot(

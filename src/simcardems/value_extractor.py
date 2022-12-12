@@ -5,15 +5,20 @@ from enum import Enum
 import dolfin
 import numpy as np
 
+from . import utils
 from .geometry import BaseGeometry
 from .geometry import LeftVentricularGeometry
 from .geometry import SlabGeometry
+
+
+logger = utils.getLogger(__name__)
 
 
 class ValueExtractor:
     def __init__(self, geo: BaseGeometry):
         self.geo = geo
         self.volume = dolfin.assemble(dolfin.Constant(1.0) * dolfin.dx(domain=geo.mesh))
+        logger.debug("Creating ValueExtractor with geo: {geo!r}")
 
         if isinstance(self.geo, SlabGeometry):
             self.boundary: Boundary = SlabBoundary(geo.mesh)

@@ -1,6 +1,11 @@
 import dolfin
 import pulse
 
+from . import utils
+
+
+logger = utils.getLogger(__name__)
+
 
 class MechanicsNewtonSolver(dolfin.NewtonSolver):
     def __init__(
@@ -10,11 +15,11 @@ class MechanicsNewtonSolver(dolfin.NewtonSolver):
         update_cb=None,
         parameters=None,
     ):
+        logger.debug(f"Initialize NewtonSolver with parameters: {parameters!r}")
         dolfin.PETScOptions.clear()
         self._problem = problem
         self._state = state
         self._update_cb = update_cb
-        self._parameters = parameters
 
         # Initializing Newton solver (parent class)
         self.petsc_solver = dolfin.PETScKrylovSolver()
@@ -23,9 +28,13 @@ class MechanicsNewtonSolver(dolfin.NewtonSolver):
             self.petsc_solver,
             dolfin.PETScFactory.instance(),
         )
+        self._handle_parameters(parameters)
 
+    def _handle_parameters(self, parameters):
         # Setting default parameters
         params = MechanicsNewtonSolver_ODE.default_solver_parameters()
+        params.update(parameters)
+
         for k, v in params.items():
             if self.parameters.has_parameter(k):
                 self.parameters[k] = v
@@ -48,6 +57,11 @@ class MechanicsNewtonSolver(dolfin.NewtonSolver):
             self.parameters["krylov_solver"]["monitor_convergence"] = True
             dolfin.PETScOptions.set("ksp_monitor_true_residual")
         self.linear_solver().set_from_options()
+        self._residual_index = 0
+        self._residuals = []
+
+    def register_datacollector(self, datacollector):
+        self._datacollector = datacollector
 
     @staticmethod
     def default_solver_parameters():
@@ -82,23 +96,44 @@ class MechanicsNewtonSolver(dolfin.NewtonSolver):
     def converged(self, r, p, i):
         self._converged_called = True
 
+        res = r.norm("l2")
+        logger.debug(f"Mechanics solver residual: {res}")
+
         if self.debug:
-            if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
-                # Print all residuals
-                residual = r.norm("l2")
-                with open("residual.txt", "a") as rfile:
-                    rfile.write(str(residual) + "\t")
+            if not hasattr(self, "_datacollector"):
+                logger.debug("No datacollector registered with the NewtonSolver")
+
+            else:
+                self._residuals.append(res)
 
         return super().converged(r, p, i)
+
+    def save_residuals(self) -> None:
+        if not self.debug:
+            # Only used in debug mode
+            return
+        if not hasattr(self, "_datacollector"):
+            logger.debug("No datacollector registered with the NewtonSolver")
+
+        else:
+            self._datacollector.save_residual(
+                self._residuals,
+                index=self._residual_index,
+            )
+            self._residual_index += 1
+            self._residuals.clear()
 
     def solver_setup(self, A, J, p, i):
         self._solver_setup_called = True
         super().solver_setup(A, J, p, i)
 
     def solve(self):
+        logger.debug("Solving mechanics")
         self._solve_called = True
         ret = super().solve(self._problem, self._state.vector())
         self._state.vector().apply("insert")
+        logger.debug("Done solving mechanics")
+        self.save_residuals()
         return ret
 
     # DEBUGGING
