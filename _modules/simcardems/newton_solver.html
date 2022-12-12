@@ -332,6 +332,11 @@ const thebe_selector_output = ".output, .cell_output"
 <span></span><span class="kn">import</span> <span class="nn">dolfin</span>
 <span class="kn">import</span> <span class="nn">pulse</span>
 
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">utils</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
 
 <div class="viewcode-block" id="MechanicsNewtonSolver"><a class="viewcode-back" href="../../api.html#simcardems.newton_solver.MechanicsNewtonSolver">[docs]</a><span class="k">class</span> <span class="nc">MechanicsNewtonSolver</span><span class="p">(</span><span class="n">dolfin</span><span class="o">.</span><span class="n">NewtonSolver</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -341,11 +346,11 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="n">update_cb</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">parameters</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Initialize NewtonSolver with parameters: </span><span class="si">{</span><span class="n">parameters</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">dolfin</span><span class="o">.</span><span class="n">PETScOptions</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_problem</span> <span class="o">=</span> <span class="n">problem</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="n">state</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_update_cb</span> <span class="o">=</span> <span class="n">update_cb</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span> <span class="o">=</span> <span class="n">parameters</span>
 
         <span class="c1"># Initializing Newton solver (parent class)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">petsc_solver</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">PETScKrylovSolver</span><span class="p">()</span>
@@ -354,9 +359,13 @@ const thebe_selector_output = ".output, .cell_output"
             <span class="bp">self</span><span class="o">.</span><span class="n">petsc_solver</span><span class="p">,</span>
             <span class="n">dolfin</span><span class="o">.</span><span class="n">PETScFactory</span><span class="o">.</span><span class="n">instance</span><span class="p">(),</span>
         <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_handle_parameters</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
 
+    <span class="k">def</span> <span class="nf">_handle_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameters</span><span class="p">):</span>
         <span class="c1"># Setting default parameters</span>
         <span class="n">params</span> <span class="o">=</span> <span class="n">MechanicsNewtonSolver_ODE</span><span class="o">.</span><span class="n">default_solver_parameters</span><span class="p">()</span>
+        <span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
+
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">has_parameter</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
@@ -379,6 +388,11 @@ const thebe_selector_output = ".output, .cell_output"
             <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;krylov_solver&quot;</span><span class="p">][</span><span class="s2">&quot;monitor_convergence&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="n">dolfin</span><span class="o">.</span><span class="n">PETScOptions</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;ksp_monitor_true_residual&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">linear_solver</span><span class="p">()</span><span class="o">.</span><span class="n">set_from_options</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_residual_index</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_residuals</span> <span class="o">=</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="MechanicsNewtonSolver.register_datacollector"><a class="viewcode-back" href="../../api.html#simcardems.newton_solver.MechanicsNewtonSolver.register_datacollector">[docs]</a>    <span class="k">def</span> <span class="nf">register_datacollector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datacollector</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_datacollector</span> <span class="o">=</span> <span class="n">datacollector</span></div>
 
 <div class="viewcode-block" id="MechanicsNewtonSolver.default_solver_parameters"><a class="viewcode-back" href="../../api.html#simcardems.newton_solver.MechanicsNewtonSolver.default_solver_parameters">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">default_solver_parameters</span><span class="p">():</span>
@@ -413,23 +427,44 @@ const thebe_selector_output = ".output, .cell_output"
 <div class="viewcode-block" id="MechanicsNewtonSolver.converged"><a class="viewcode-back" href="../../api.html#simcardems.newton_solver.MechanicsNewtonSolver.converged">[docs]</a>    <span class="k">def</span> <span class="nf">converged</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_converged_called</span> <span class="o">=</span> <span class="kc">True</span>
 
+        <span class="n">res</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="s2">&quot;l2&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mechanics solver residual: </span><span class="si">{</span><span class="n">res</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">dolfin</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="c1"># Print all residuals</span>
-                <span class="n">residual</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="s2">&quot;l2&quot;</span><span class="p">)</span>
-                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;residual.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">rfile</span><span class="p">:</span>
-                    <span class="n">rfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">residual</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_datacollector&quot;</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;No datacollector registered with the NewtonSolver&quot;</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_residuals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">converged</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MechanicsNewtonSolver.save_residuals"><a class="viewcode-back" href="../../api.html#simcardems.newton_solver.MechanicsNewtonSolver.save_residuals">[docs]</a>    <span class="k">def</span> <span class="nf">save_residuals</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+            <span class="c1"># Only used in debug mode</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_datacollector&quot;</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;No datacollector registered with the NewtonSolver&quot;</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_datacollector</span><span class="o">.</span><span class="n">save_residual</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_residuals</span><span class="p">,</span>
+                <span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_residual_index</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_residual_index</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_residuals</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="MechanicsNewtonSolver.solver_setup"><a class="viewcode-back" href="../../api.html#simcardems.newton_solver.MechanicsNewtonSolver.solver_setup">[docs]</a>    <span class="k">def</span> <span class="nf">solver_setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_solver_setup_called</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">solver_setup</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="MechanicsNewtonSolver.solve"><a class="viewcode-back" href="../../api.html#simcardems.newton_solver.MechanicsNewtonSolver.solve">[docs]</a>    <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Solving mechanics&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_solve_called</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="n">ret</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_problem</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">vector</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="s2">&quot;insert&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Done solving mechanics&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_residuals</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">ret</span></div>
 
     <span class="c1"># DEBUGGING</span>

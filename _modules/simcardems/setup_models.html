@@ -395,6 +395,7 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="n">set_material</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">set_material</span><span class="p">,</span>
         <span class="n">mechanics_ode_scheme</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">mechanics_ode_scheme</span><span class="p">,</span>
         <span class="n">use_custom_newton_solver</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">mechanics_use_custom_newton_solver</span><span class="p">,</span>
+        <span class="n">debug_mode</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">debug_mode</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">EMState</span><span class="p">(</span>
@@ -415,6 +416,7 @@ const thebe_selector_output = ".output, .cell_output"
     <span class="n">traction</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">spring</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">fix_right_plane</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">fix_right_plane</span><span class="p">,</span>
+    <span class="n">debug_mode</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">debug_mode</span><span class="p">,</span>
     <span class="n">mechanics_ode_scheme</span><span class="p">:</span> <span class="n">land_model</span><span class="o">.</span><span class="n">Scheme</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">mechanics_ode_scheme</span><span class="p">,</span>
     <span class="n">set_material</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="n">linear_solver</span><span class="o">=</span><span class="s2">&quot;mumps&quot;</span><span class="p">,</span>
@@ -471,7 +473,7 @@ const thebe_selector_output = ".output, .cell_output"
             <span class="n">active_model</span><span class="o">=</span><span class="n">active_model</span><span class="p">,</span>
         <span class="p">)</span>
 
-    <span class="n">problem</span> <span class="o">=</span> <span class="n">mechanics_model</span><span class="o">.</span><span class="n">create_slab_problem</span><span class="p">(</span>
+    <span class="n">problem</span> <span class="o">=</span> <span class="n">mechanics_model</span><span class="o">.</span><span class="n">create_problem</span><span class="p">(</span>
         <span class="n">material</span><span class="o">=</span><span class="n">material</span><span class="p">,</span>
         <span class="n">geo</span><span class="o">=</span><span class="n">geo</span><span class="p">,</span>
         <span class="n">bnd_rigid</span><span class="o">=</span><span class="n">bnd_rigid</span><span class="p">,</span>
@@ -481,6 +483,7 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="n">fix_right_plane</span><span class="o">=</span><span class="n">fix_right_plane</span><span class="p">,</span>
         <span class="n">linear_solver</span><span class="o">=</span><span class="n">linear_solver</span><span class="p">,</span>
         <span class="n">use_custom_newton_solver</span><span class="o">=</span><span class="n">use_custom_newton_solver</span><span class="p">,</span>
+        <span class="n">debug_mode</span><span class="o">=</span><span class="n">debug_mode</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">state_prev</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -565,6 +568,10 @@ const thebe_selector_output = ".output, .cell_output"
             <span class="n">conf</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="n">conf</span>
+
+        <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">set_log_level</span>
+
+        <span class="n">set_log_level</span><span class="p">(</span><span class="n">conf</span><span class="o">.</span><span class="n">loglevel</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">empty</span><span class="p">:</span>
             <span class="k">return</span>
@@ -735,6 +742,8 @@ const thebe_selector_output = ".output, .cell_output"
             <span class="p">(</span><span class="s2">&quot;mechanics&quot;</span><span class="p">,</span> <span class="s2">&quot;XW_mech&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">XW_mech</span><span class="p">),</span>
         <span class="p">]:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">collector</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">mech_heart</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">register_datacollector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">collector</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">dt_mechanics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>

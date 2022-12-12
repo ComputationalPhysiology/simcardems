@@ -334,7 +334,6 @@ const thebe_selector_output = ".output, .cell_output"
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 
 <span class="kn">import</span> <span class="nn">click</span>
-<span class="kn">import</span> <span class="nn">dolfin</span>
 
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">config</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">land_model</span>
@@ -427,6 +426,12 @@ const thebe_selector_output = ".output, .cell_output"
     <span class="n">help</span><span class="o">=</span><span class="s2">&quot;How much printing. DEBUG: 10, INFO:20 (default), WARNING: 30&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
+    <span class="s2">&quot;--debug-mode&quot;</span><span class="p">,</span>
+    <span class="n">default</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">debug_mode</span><span class="p">,</span>
+    <span class="nb">type</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span>
+    <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Run in debug mode. Save more output&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
     <span class="s2">&quot;--show_progress_bar/--hide_progress_bar&quot;</span><span class="p">,</span>
     <span class="n">default</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">show_progress_bar</span><span class="p">,</span>
     <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Shows or hide the progress bar.&quot;</span><span class="p">,</span>
@@ -503,6 +508,7 @@ const thebe_selector_output = ".output, .cell_output"
     <span class="n">show_progress_bar</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="n">save_freq</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">loglevel</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">debug_mode</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="n">num_refinements</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">set_material</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">drug_factors_file</span><span class="p">:</span> <span class="n">utils</span><span class="o">.</span><span class="n">PathLike</span><span class="p">,</span>
@@ -531,6 +537,7 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="n">show_progress_bar</span><span class="o">=</span><span class="n">show_progress_bar</span><span class="p">,</span>
         <span class="n">save_freq</span><span class="o">=</span><span class="n">save_freq</span><span class="p">,</span>
         <span class="n">loglevel</span><span class="o">=</span><span class="n">loglevel</span><span class="p">,</span>
+        <span class="n">debug_mode</span><span class="o">=</span><span class="n">debug_mode</span><span class="p">,</span>
         <span class="n">num_refinements</span><span class="o">=</span><span class="n">num_refinements</span><span class="p">,</span>
         <span class="n">set_material</span><span class="o">=</span><span class="n">set_material</span><span class="p">,</span>
         <span class="n">drug_factors_file</span><span class="o">=</span><span class="n">drug_factors_file</span><span class="p">,</span>
@@ -571,12 +578,6 @@ const thebe_selector_output = ".output, .cell_output"
     <span class="n">outdir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">outdir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;parameters.json&quot;</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">info_dict</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">post</span><span class="o">.</span><span class="n">json_serial</span><span class="p">)</span>
-
-    <span class="c1"># Disable warnings</span>
-    <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">set_log_level</span>
-
-    <span class="n">set_log_level</span><span class="p">(</span><span class="n">conf</span><span class="o">.</span><span class="n">loglevel</span><span class="p">)</span>
-    <span class="n">dolfin</span><span class="o">.</span><span class="n">set_log_level</span><span class="p">(</span><span class="n">conf</span><span class="o">.</span><span class="n">loglevel</span> <span class="o">+</span> <span class="mi">10</span><span class="p">)</span>  <span class="c1"># TODO: Make it possible to set this?</span>
 
     <span class="n">runner</span> <span class="o">=</span> <span class="n">Runner</span><span class="p">(</span><span class="n">conf</span><span class="o">=</span><span class="n">conf</span><span class="p">)</span>
 

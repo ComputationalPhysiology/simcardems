@@ -412,7 +412,7 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state_space</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;state&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">state_test</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">TestFunction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state_space</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_init_forms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_init_forms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init_solver</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
         <span class="n">u</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>
 
         <span class="c1"># Some mechanical quantities</span>
@@ -436,7 +436,8 @@ const thebe_selector_output = ".output, .cell_output"
             <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span>
             <span class="n">dolfin</span><span class="o">.</span><span class="n">TrialFunction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state_space</span><span class="p">),</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_init_solver</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">init_solver</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_init_solver</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_init_solver</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_problem</span> <span class="o">=</span> <span class="n">pulse</span><span class="o">.</span><span class="n">NonlinearProblem</span><span class="p">(</span>
@@ -458,9 +459,8 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="p">)</span>
 
 <div class="viewcode-block" id="MechanicsProblem.solve"><a class="viewcode-back" href="../../api.html#simcardems.mechanics_model.MechanicsProblem.solve">[docs]</a>    <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_init_forms</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_forms</span><span class="p">(</span><span class="n">init_solver</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">newton_iteration</span><span class="p">,</span> <span class="n">newton_converged</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
-        <span class="c1"># DEBUGGING</span>
         <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="p">,</span> <span class="s2">&quot;check_overloads_called&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">newton_iteration</span><span class="p">,</span> <span class="n">newton_converged</span></div>
 
@@ -492,7 +492,7 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="bp">self</span><span class="o">.</span><span class="n">bcs</span> <span class="o">=</span> <span class="n">pulse</span><span class="o">.</span><span class="n">BoundaryConditions</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_dirichlet_bc</span> <span class="o">=</span> <span class="p">[]</span>
 
-    <span class="k">def</span> <span class="nf">_init_forms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_init_forms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init_solver</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
         <span class="c1"># Displacement and hydrostatic_pressure; 3rd space for rigid motion component</span>
         <span class="n">p</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">r</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>
         <span class="n">q</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state_test</span><span class="p">)</span>
@@ -527,7 +527,8 @@ const thebe_selector_output = ".output, .cell_output"
             <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span>
             <span class="n">dolfin</span><span class="o">.</span><span class="n">TrialFunction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state_space</span><span class="p">),</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_init_solver</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">init_solver</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_init_solver</span><span class="p">()</span>
 
 <div class="viewcode-block" id="RigidMotionProblem.rigid_motion_term"><a class="viewcode-back" href="../../api.html#simcardems.mechanics_model.RigidMotionProblem.rigid_motion_term">[docs]</a>    <span class="k">def</span> <span class="nf">rigid_motion_term</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span>
         <span class="n">position</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">SpatialCoordinate</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
@@ -569,7 +570,7 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 
-<div class="viewcode-block" id="create_slab_problem"><a class="viewcode-back" href="../../api.html#simcardems.mechanics_model.create_slab_problem">[docs]</a><span class="k">def</span> <span class="nf">create_slab_problem</span><span class="p">(</span>
+<div class="viewcode-block" id="create_problem"><a class="viewcode-back" href="../../api.html#simcardems.mechanics_model.create_problem">[docs]</a><span class="k">def</span> <span class="nf">create_problem</span><span class="p">(</span>
     <span class="n">material</span><span class="p">:</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Material</span><span class="p">,</span>
     <span class="n">geo</span><span class="p">:</span> <span class="n">geometry</span><span class="o">.</span><span class="n">BaseGeometry</span><span class="p">,</span>
     <span class="n">bnd_rigid</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">bnd_rigid</span><span class="p">,</span>
@@ -579,6 +580,7 @@ const thebe_selector_output = ".output, .cell_output"
     <span class="n">fix_right_plane</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">fix_right_plane</span><span class="p">,</span>
     <span class="n">linear_solver</span><span class="o">=</span><span class="s2">&quot;mumps&quot;</span><span class="p">,</span>
     <span class="n">use_custom_newton_solver</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">mechanics_use_custom_newton_solver</span><span class="p">,</span>
+    <span class="n">debug_mode</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">debug_mode</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MechanicsProblem</span><span class="p">:</span>
     <span class="n">Problem</span> <span class="o">=</span> <span class="n">MechanicsProblem</span>
     <span class="k">if</span> <span class="n">bnd_rigid</span><span class="p">:</span>
@@ -602,7 +604,11 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="n">geo</span><span class="p">,</span>
         <span class="n">material</span><span class="p">,</span>
         <span class="n">bcs</span><span class="p">,</span>
-        <span class="n">solver_parameters</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;linear_solver&quot;</span><span class="p">:</span> <span class="n">linear_solver</span><span class="p">,</span> <span class="s2">&quot;verbose&quot;</span><span class="p">:</span> <span class="n">verbose</span><span class="p">},</span>
+        <span class="n">solver_parameters</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;linear_solver&quot;</span><span class="p">:</span> <span class="n">linear_solver</span><span class="p">,</span>
+            <span class="s2">&quot;verbose&quot;</span><span class="p">:</span> <span class="n">verbose</span><span class="p">,</span>
+            <span class="s2">&quot;debug&quot;</span><span class="p">:</span> <span class="n">debug_mode</span><span class="p">,</span>
+        <span class="p">},</span>
         <span class="n">use_custom_newton_solver</span><span class="o">=</span><span class="n">use_custom_newton_solver</span><span class="p">,</span>
     <span class="p">)</span></div>
 </pre></div>

@@ -509,20 +509,23 @@ const thebe_selector_output = ".output, .cell_output"
     <span class="n">ax2</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Time [ms]&quot;</span><span class="p">)</span>
 
     <span class="c1"># If there is a residual.txt file: load and plot these results</span>
-    <span class="k">if</span> <span class="n">outdir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;residual.txt&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
-        <span class="n">residual0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">outdir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;residual.txt&quot;</span><span class="p">),</span> <span class="n">usecols</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-
-        <span class="n">residual_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">outdir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;residual.txt&quot;</span><span class="p">),</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
-        <span class="n">residual_data</span> <span class="o">=</span> <span class="n">residual_file</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
-        <span class="n">residualN</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">residual_data</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-                <span class="n">residualN</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
-        <span class="n">residual_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">loader</span><span class="o">.</span><span class="n">residual</span><span class="p">:</span>
 
         <span class="c1"># Back to initial dt and time points</span>
-        <span class="n">dt</span> <span class="o">=</span> <span class="mf">0.05</span>
-        <span class="n">times_dt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">times</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">times</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">residual0</span><span class="o">.</span><span class="n">size</span> <span class="o">*</span> <span class="n">dt</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
+        <span class="c1"># dt = 0.05  # FIXME: Do we really want to hardcode in this value?</span>
+        <span class="c1"># times_dt = np.arange(</span>
+        <span class="c1">#     times[0],</span>
+        <span class="c1">#     times[0] + len(loader.residual) * dt,</span>
+        <span class="c1">#     dt,</span>
+        <span class="c1"># )</span>
+        <span class="c1"># Change this to linspace so that we know that we have the right</span>
+        <span class="c1"># number of points</span>
+        <span class="n">times_dt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">times</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">times</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">loader</span><span class="o">.</span><span class="n">residual</span><span class="p">))</span>
+
+        <span class="c1"># First residual</span>
+        <span class="n">residual0</span> <span class="o">=</span> <span class="p">[</span><span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">loader</span><span class="o">.</span><span class="n">residual</span><span class="p">]</span>
+        <span class="c1"># Final residual</span>
+        <span class="n">residualN</span> <span class="o">=</span> <span class="p">[</span><span class="n">res</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">loader</span><span class="o">.</span><span class="n">residual</span><span class="p">]</span>
 
         <span class="n">ax00r</span> <span class="o">=</span> <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>
         <span class="n">ax00r</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>

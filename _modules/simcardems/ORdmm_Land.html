@@ -375,7 +375,7 @@ const thebe_selector_output = ".output, .cell_output"
 <span class="sd">         init_conditions (dict, :py:class:`dolfin.Mesh`, optional)</span>
 <span class="sd">           optional initial conditions</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Initialize ORdmm Land model&quot;</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">init_conditions</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ORdmm_Land.default_parameters"><a class="viewcode-back" href="../../api.html#simcardems.ORdmm_Land.ORdmm_Land.default_parameters">[docs]</a>    <span class="nd">@staticmethod</span>
@@ -645,7 +645,7 @@ const thebe_selector_output = ".output, .cell_output"
 <span class="sd">        Original gotran transmembrane current dV/dt</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">time</span> <span class="o">=</span> <span class="n">time</span> <span class="k">if</span> <span class="n">time</span> <span class="k">else</span> <span class="n">Constant</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
-
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Evaluate transmembrane current&quot;</span><span class="p">)</span>
         <span class="c1"># Assign states</span>
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="mi">48</span>
         <span class="p">(</span>
@@ -1154,6 +1154,7 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Right hand side for ODE system</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Evaluate RHS&quot;</span><span class="p">)</span>
         <span class="n">time</span> <span class="o">=</span> <span class="n">time</span> <span class="k">if</span> <span class="n">time</span> <span class="k">else</span> <span class="n">Constant</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
 
         <span class="c1"># Assign states</span>

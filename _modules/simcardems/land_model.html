@@ -335,7 +335,10 @@ const thebe_selector_output = ".output, .cell_output"
 <span class="kn">import</span> <span class="nn">pulse</span>
 <span class="kn">import</span> <span class="nn">ufl</span>
 
-<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">Projector</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">utils</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="Scheme"><a class="viewcode-back" href="../../api.html#simcardems.config.Scheme">[docs]</a><span class="k">class</span> <span class="nc">Scheme</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
@@ -374,6 +377,7 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="n">scheme</span><span class="p">:</span> <span class="n">Scheme</span> <span class="o">=</span> <span class="n">Scheme</span><span class="o">.</span><span class="n">analytic</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Initialize Land Model&quot;</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">f0</span><span class="o">=</span><span class="n">f0</span><span class="p">,</span> <span class="n">s0</span><span class="o">=</span><span class="n">s0</span><span class="p">,</span> <span class="n">n0</span><span class="o">=</span><span class="n">n0</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_eta</span> <span class="o">=</span> <span class="n">eta</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">function_space</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">FunctionSpace</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="s2">&quot;CG&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
@@ -403,10 +407,11 @@ const thebe_selector_output = ".output, .cell_output"
             <span class="bp">self</span><span class="o">.</span><span class="n">Zetaw_prev</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">Zetaw</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">Ta_current</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">function_space</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Ta&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_projector</span> <span class="o">=</span> <span class="n">Projector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">function_space</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_projector</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">Projector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">function_space</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">dLambda</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Evaluate dLambda&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_dLambda</span><span class="o">.</span><span class="n">vector</span><span class="p">()[:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lmbda</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">lmbda_prev</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dLambda</span>
 
@@ -464,6 +469,7 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="p">)</span>
 
 <div class="viewcode-block" id="LandModel.update_Zetas"><a class="viewcode-back" href="../../api.html#simcardems.config.LandModel.update_Zetas">[docs]</a>    <span class="k">def</span> <span class="nf">update_Zetas</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;update Zetas&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_Zetas</span><span class="o">.</span><span class="n">vector</span><span class="p">()[:]</span> <span class="o">=</span> <span class="n">_Zeta</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">Zetas_prev</span><span class="o">.</span><span class="n">vector</span><span class="p">(),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">As</span><span class="p">,</span>
@@ -478,6 +484,7 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Zetas</span>
 
 <div class="viewcode-block" id="LandModel.update_Zetaw"><a class="viewcode-back" href="../../api.html#simcardems.config.LandModel.update_Zetaw">[docs]</a>    <span class="k">def</span> <span class="nf">update_Zetaw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;update Zetaw&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_Zetaw</span><span class="o">.</span><span class="n">vector</span><span class="p">()[:]</span> <span class="o">=</span> <span class="n">_Zeta</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">Zetaw_prev</span><span class="o">.</span><span class="n">vector</span><span class="p">(),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">Aw</span><span class="p">,</span>
@@ -506,10 +513,12 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="bp">self</span><span class="o">.</span><span class="n">_t</span> <span class="o">=</span> <span class="n">t</span></div>
 
 <div class="viewcode-block" id="LandModel.update_time"><a class="viewcode-back" href="../../api.html#simcardems.config.LandModel.update_time">[docs]</a>    <span class="k">def</span> <span class="nf">update_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;update time&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_t_prev</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_t</span> <span class="o">=</span> <span class="n">t</span></div>
 
 <div class="viewcode-block" id="LandModel.update_prev"><a class="viewcode-back" href="../../api.html#simcardems.config.LandModel.update_prev">[docs]</a>    <span class="k">def</span> <span class="nf">update_prev</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;update previous&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Zetas_prev</span><span class="o">.</span><span class="n">vector</span><span class="p">()[:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Zetas</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Zetaw_prev</span><span class="o">.</span><span class="n">vector</span><span class="p">()[:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Zetaw</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lmbda_prev</span><span class="o">.</span><span class="n">vector</span><span class="p">()[:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lmbda</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span>
@@ -517,6 +526,7 @@ const thebe_selector_output = ".output, .cell_output"
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">Ta</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Evaluate Ta&quot;</span><span class="p">)</span>
         <span class="n">Tref</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;Tref&quot;</span><span class="p">]</span>
         <span class="n">rs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;rs&quot;</span><span class="p">]</span>
         <span class="n">scale_popu_Tref</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;scale_popu_Tref&quot;</span><span class="p">]</span>
@@ -540,7 +550,7 @@ const thebe_selector_output = ".output, .cell_output"
 
 <div class="viewcode-block" id="LandModel.Wactive"><a class="viewcode-back" href="../../api.html#simcardems.config.LandModel.Wactive">[docs]</a>    <span class="k">def</span> <span class="nf">Wactive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Active stress energy&quot;&quot;&quot;</span>
-
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Compute active stress energy&quot;</span><span class="p">)</span>
         <span class="n">C</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">F</span>
         <span class="n">f</span> <span class="o">=</span> <span class="n">F</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">f0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_projector</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lmbda</span><span class="p">,</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">f</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
