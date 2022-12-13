@@ -99,8 +99,7 @@ def mech_heart_to_bnd_cond(mech_heart: mechanics_model.MechanicsProblem):
 
 def save_state(
     path,
-    solver,
-    mech_heart,
+    coupling: em_model.EMCoupling,
     geo: geometry.BaseGeometry,
     dt=0.02,
     t0=0,
@@ -112,18 +111,23 @@ def save_state(
     geo.dump(path)
     logger.debug("Save using dolfin.HDF5File")
 
-    with dolfin.HDF5File(solver.VS.mesh().mpi_comm(), path.as_posix(), "a") as h5file:
-        h5file.write(mech_heart.material.active.lmbda_prev, "/em/lmbda_prev")
-        h5file.write(mech_heart.material.active.Zetas_prev, "/em/Zetas_prev")
-        h5file.write(mech_heart.material.active.Zetaw_prev, "/em/Zetaw_prev")
-
-        h5file.write(solver.vs, "/ep/vs")
-        h5file.write(mech_heart.state, "/mechanics/state")
+    with dolfin.HDF5File(
+        coupling.ep_solver.VS.mesh().mpi_comm(),
+        path.as_posix(),
+        "a",
+    ) as h5file:
+        h5file.write(coupling.lmbda_ep_prev, "/em/lmbda_prev")
+        h5file.write(coupling.ep_solver.vs, "/ep/vs")
+        h5file.write(coupling.mech_solver.state, "/mechanics/state")
 
     bnd_cond_dict = dict([("dirichlet", 0), ("rigid", 1)])
-    bnd_cond = mech_heart_to_bnd_cond(mech_heart)
+    bnd_cond = mech_heart_to_bnd_cond(coupling.mech_solver)
     logger.debug("Save using h5py")
-    dict_to_h5(solver.ode_solver._model.parameters(), path, "ep/cell_params")
+    dict_to_h5(
+        coupling.ep_solver.ode_solver._model.parameters(),
+        path,
+        "ep/cell_params",
+    )
     dict_to_h5(
         dict(
             dt=dt,
@@ -161,21 +165,18 @@ def load_state(
     W = dolfin.FunctionSpace(geo.mechanics_mesh, eval(mech_signature))
     mech_state = dolfin.Function(W)
 
-    V = dolfin.FunctionSpace(geo.mechanics_mesh, "CG", 1)
-    lmbda_prev = dolfin.Function(V, name="lambda")
-    Zetas_prev = dolfin.Function(V, name="Zetas")
-    Zetaw_prev = dolfin.Function(V, name="Zetaw")
+    V = dolfin.FunctionSpace(geo.ep_mesh, "CG", 1)
+    lmbda = dolfin.Function(V, name="lambda")
     logger.debug("Load functions")
     with dolfin.HDF5File(geo.ep_mesh.mpi_comm(), path.as_posix(), "r") as h5file:
         h5file.read(vs, "/ep/vs")
         h5file.read(mech_state, "/mechanics/state")
-        h5file.read(lmbda_prev, "/em/lmbda_prev")
-        h5file.read(Zetas_prev, "/em/Zetas_prev")
-        h5file.read(Zetaw_prev, "/em/Zetaw_prev")
+        h5file.read(lmbda, "/em/lmbda_prev")
     cell_inits = vs_functions_to_dict(vs)
 
     coupling = em_model.EMCoupling(
         geometry=geo,
+        lmbda=lmbda,
     )
     solver = setup_models.setup_ep_solver(
         state_params["dt"],
@@ -194,13 +195,10 @@ def load_state(
         coupling=coupling,
         geo=geo,
         bnd_rigid=bnd_cond_dict[state_params["bnd_cond"]],
-        cell_params=solver.ode_solver._model.parameters(),
-        Zetas_prev=Zetas_prev,
-        Zetaw_prev=Zetaw_prev,
-        lmbda_prev=lmbda_prev,
         state_prev=mech_state,
     )
-
+    mech_heart.state.assign(mech_state)
+    coupling.register_mech_model(mech_heart)
     coupling.coupling_to_mechanics()
 
     return setup_models.EMState(

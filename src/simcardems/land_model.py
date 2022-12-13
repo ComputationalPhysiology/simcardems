@@ -10,6 +10,20 @@ from . import utils
 logger = utils.getLogger(__name__)
 
 
+def Ta(XS, XW, Zetas, Zetaw, lmbda, Tref, rs, Beta0):
+
+    _min = ufl.min_value
+    _max = ufl.max_value
+    if isinstance(lmbda, (int, float)):
+        _min = min
+        _max = max
+    lmbda = _min(1.2, lmbda)
+    h_lambda_prima = 1 + Beta0 * (lmbda + _min(lmbda, 0.87) - 1.87)
+    h_lambda = _max(0, h_lambda_prima)
+
+    return h_lambda * (Tref / rs) * (XS * (Zetas + 1) + XW * Zetaw)
+
+
 class Scheme(str, Enum):
     fd = "fd"
     bd = "bd"

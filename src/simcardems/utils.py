@@ -75,7 +75,7 @@ class Projector:
             )
         self.solver.set_operator(self._A)
 
-    def project(self, u: dolfin.Function, f: ufl.core.expr.Expr):
+    def project(self, u: dolfin.Function, f: ufl.core.expr.Expr) -> None:
         """
         Project `f` into `u`.
 
@@ -85,6 +85,9 @@ class Projector:
         """
         dolfin.assemble(ufl.inner(f, self._v) * self._dx, tensor=self._b.vector())
         self.solver.solve(u.vector(), self._b.vector())
+
+    def __call__(self, u: dolfin.Function, f: ufl.core.expr.Expr) -> None:
+        self.project(u=u, f=f)
 
 
 def enum2str(x, EnumCls):

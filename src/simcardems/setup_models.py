@@ -57,13 +57,11 @@ def setup_EM_model(config: config.Config):
         coupling=coupling,
         geo=geo,
         bnd_rigid=config.bnd_rigid,
-        cell_params=solver.ode_solver._model.parameters(),
         pre_stretch=config.pre_stretch,
         traction=config.traction,
         spring=config.spring,
         fix_right_plane=config.fix_right_plane,
         set_material=config.set_material,
-        # mechanics_ode_scheme=config.mechanics_ode_scheme,
         use_custom_newton_solver=config.mechanics_use_custom_newton_solver,
         debug_mode=config.debug_mode,
     )
@@ -80,7 +78,6 @@ def setup_EM_model(config: config.Config):
 def setup_mechanics_solver(
     coupling: em_model.EMCoupling,
     geo: geometry.BaseGeometry,
-    cell_params,
     bnd_rigid: bool = config.Config.bnd_rigid,
     pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
     traction: typing.Union[dolfin.Constant, float] = None,
@@ -351,9 +348,8 @@ class Runner:
         self._CaTrpn, self._CaTrpn_assigner = utils.setup_assigner(self._vs, 42)
         self._TmB, self._TmB_assigner = utils.setup_assigner(self._vs, 43)
         self._Cd, self._Cd_assigner = utils.setup_assigner(self._vs, 44)
-        self._Zetas, self._Zetas_assigner = utils.setup_assigner(self._vs, 47)
-        self._Zetaw, self._Zetaw_assigner = utils.setup_assigner(self._vs, 48)
-        self._lmbda, self._lmbda_assigner = utils.setup_assigner(self._vs, 49)
+        self._Zetas, self._Zetas_assigner = utils.setup_assigner(self._vs, 46)
+        self._Zetaw, self._Zetaw_assigner = utils.setup_assigner(self._vs, 47)
 
         self._pre_XS, self._preXS_assigner = utils.setup_assigner(self._vs, 40)
         self._pre_XW, self._preXW_assigner = utils.setup_assigner(self._vs, 41)
@@ -364,6 +360,7 @@ class Runner:
             self._u_subspace_index,
         )
         self._assign_displacement()
+        self.Ta_prev = dolfin.Function(self.coupling.V_mech)
 
     def _assign_displacement(self):
         self._u_assigner.assign(
@@ -379,9 +376,8 @@ class Runner:
         self._CaTrpn_assigner.assign(self._CaTrpn, utils.sub_function(self._vs, 42))
         self._TmB_assigner.assign(self._TmB, utils.sub_function(self._vs, 43))
         self._Cd_assigner.assign(self._Cd, utils.sub_function(self._vs, 44))
-        self._Zetas_assigner.assign(self._Zetas, utils.sub_function(self._vs, 47))
-        self._Zetaw_assigner.assign(self._Zetaw, utils.sub_function(self._vs, 48))
-        self._lmbda_assigner.assign(self._lmbda, utils.sub_function(self._vs, 49))
+        self._Zetas_assigner.assign(self._Zetas, utils.sub_function(self._vs, 46))
+        self._Zetaw_assigner.assign(self._Zetaw, utils.sub_function(self._vs, 47))
 
     def store(self):
         # Assign u, v and Ca for postprocessing
@@ -402,7 +398,7 @@ class Runner:
             ("ep", "V", self._v),
             ("ep", "Ca", self._Ca),
             # ("mechanics", "lmbda", self.coupling.lmbda_mech),
-            # ("mechanics", "Ta", self.mech_heart.material.active.Ta_current),
+            ("mechanics", "Ta", self.coupling.Ta_mech),
             ("ep", "XS", self._XS),
             ("ep", "XW", self._XW),
             ("ep", "CaTrpn", self._CaTrpn),
@@ -410,13 +406,13 @@ class Runner:
             ("ep", "Cd", self._Cd),
             ("ep", "Zetas", self._Zetas),
             ("ep", "Zetaw", self._Zetaw),
-            ("ep", "lmbda", self._lmbda),
+            ("ep", "lmbda", self.coupling.lmbda_ep),
             ("ep", "dLambda", self.coupling.dLambda_ep),
-            ("ep", "Ta", self.coupling.Ta_ep),
-            # ("mechanics", "Zetas_mech", self.coupling.Zetas_mech),
-            # ("mechanics", "Zetaw_mech", self.coupling.Zetaw_mech),
-            # ("mechanics", "XS_mech", self.coupling.XS_mech),
-            # ("mechanics", "XW_mech", self.coupling.XW_mech),
+            # ("ep", "Ta", self.coupling.Ta_ep),
+            # ("mechanics", "Zetas", self.coupling.Zetas_mech),
+            # ("mechanics", "Zetaw", self.coupling.Zetaw_mech),
+            # ("mechanics", "XS", self.coupling.XS_mech),
+            # ("mechanics", "XW", self.coupling.XW_mech),
         ]:
             self.collector.register(group, name, f)
 
@@ -430,30 +426,37 @@ class Runner:
 
         # Update these states that are needed in the Mechanics solver
         self.coupling.ep_to_coupling()
+        self.coupling.coupling_to_mechanics()
 
         # XS_norm = utils.compute_norm(self.coupling.XS_ep, self._pre_XS)
         # XW_norm = utils.compute_norm(self.coupling.XW_ep, self._pre_XW)
 
         # dt for the mechanics model should not be larger than 1 ms
         # return (XS_norm + XW_norm >= 0.05) #or self.dt_mechanics > 0.1
-        return True  # self._t <= 10.0 or max(self.coupling.XS_ep.vector()) >= 0.0005 or max(self.coupling.XW_ep.vector()) >= 0.002
+        # return True  # self._t <= 10.0 or max(self.coupling.XS_ep.vector()) >= 0.0005 or max(self.coupling.XW_ep.vector()) >= 0.002
+        # diff = dolfin.assemble((self.Ta_prev - self.coupling.Ta_mech) ** 2 * dolfin.dx)
+        # TODO: make it possible to set this tolerance
+        if utils.compute_norm(self.Ta_prev, self.coupling.Ta_mech) > 0.001:
+            self.Ta_prev.vector()[:] = self.coupling.Ta_mech.vector()
+            return True
+        return False
 
     def _pre_mechanics_solve(self) -> None:
         # self._preXS_assigner.assign(self._pre_XS, utils.sub_function(self._vs, 40))
         # self._preXW_assigner.assign(self._pre_XW, utils.sub_function(self._vs, 41))
 
-        self.coupling.coupling_to_mechanics()
+        pass
         # self.mech_heart.material.active.update_time(self.t)
 
     def _post_mechanics_solve(self) -> None:
 
-        # Update previous active tension
-        # self.mech_heart.material.active.update_prev()
+        # Update previous lmbda
+        self.coupling.update_prev()
         self.coupling.mechanics_to_coupling()
         self.coupling.coupling_to_ep()
 
     def _solve_mechanics(self):
-        self._pre_mechanics_solve()
+
         # if self._config.mechanics_use_continuation:
         #     self.mech_heart.solve_for_control(self.coupling.XS_ep)
         # else:
@@ -490,8 +493,7 @@ class Runner:
     def save_state(self, path):
         io.save_state(
             path,
-            solver=self.ep_solver,
-            mech_heart=self.mech_heart,
+            coupling=self.coupling,
             geo=self.geometry,
             dt=self._dt,
             t0=TimeStepper.ns2ms(self.t),
