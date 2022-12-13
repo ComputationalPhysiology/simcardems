@@ -1658,8 +1658,8 @@ class ORdmm_Land(CardiacCellModel):
             + 0.5 * (-ICab - IpCa - Isac_P_ns / 3.0 + 2.0 * INaCa_i) * Acap / (F * vmyo)
         ) * Bcai
 
-        F_expressions[44] = dLambda * As - Zetas * cs
-        F_expressions[45] = dLambda * Aw - Zetaw * cw
+        F_expressions[45] = dLambda * As - Zetas * cs
+        F_expressions[46] = dLambda * Aw - Zetaw * cw
         # State 46 and 47 is lambda and dLambda respectively
 
         # Return results

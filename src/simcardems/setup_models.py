@@ -353,6 +353,8 @@ class Runner:
 
         self._pre_XS, self._preXS_assigner = utils.setup_assigner(self._vs, 40)
         self._pre_XW, self._preXW_assigner = utils.setup_assigner(self._vs, 41)
+        self._pre_Zetas, self._preZetas_assigner = utils.setup_assigner(self._vs, 46)
+        self._pre_Zetaw, self._preZetaw_assigner = utils.setup_assigner(self._vs, 47)
 
         self._u_subspace_index = self.mech_heart.u_subspace_index
         self._u, self._u_assigner = utils.setup_assigner(
@@ -426,26 +428,34 @@ class Runner:
 
         # Update these states that are needed in the Mechanics solver
         self.coupling.ep_to_coupling()
-        self.coupling.coupling_to_mechanics()
 
-        # XS_norm = utils.compute_norm(self.coupling.XS_ep, self._pre_XS)
-        # XW_norm = utils.compute_norm(self.coupling.XW_ep, self._pre_XW)
+        XS_norm = utils.compute_norm(self.coupling.XS_ep, self._pre_XS)
+        XW_norm = utils.compute_norm(self.coupling.XW_ep, self._pre_XW)
+        # Zetas_norm = utils.compute_norm(self.coupling.Zetas_ep, self._pre_Zetas)
+        # Zetaw_norm = utils.compute_norm(self.coupling.Zetaw_ep, self._pre_Zetaw)
 
         # dt for the mechanics model should not be larger than 1 ms
-        # return (XS_norm + XW_norm >= 0.05) #or self.dt_mechanics > 0.1
+
+        # TODO: make it possible to set this tolerance
+        # breakpoint()
+        print(XW_norm + XS_norm, XW_norm + XS_norm > 0.05)
+        return XW_norm + XS_norm >= 0.05
+        # print(Zetaw_norm + Zetas_norm, Zetaw_norm + Zetas_norm > 0.05)
+        # return Zetaw_norm + Zetas_norm >= 0.05  # or self.dt_mechanics > 0.1
         # return True  # self._t <= 10.0 or max(self.coupling.XS_ep.vector()) >= 0.0005 or max(self.coupling.XW_ep.vector()) >= 0.002
         # diff = dolfin.assemble((self.Ta_prev - self.coupling.Ta_mech) ** 2 * dolfin.dx)
-        # TODO: make it possible to set this tolerance
-        if utils.compute_norm(self.Ta_prev, self.coupling.Ta_mech) > 0.001:
-            self.Ta_prev.vector()[:] = self.coupling.Ta_mech.vector()
-            return True
-        return False
+
+        # if utils.compute_norm(self.Ta_prev, self.coupling.Ta_mech) > 0.001:
+        # self.Ta_prev.vector()[:] = self.coupling.Ta_mech.vector()
+        # return True
+        # return False
 
     def _pre_mechanics_solve(self) -> None:
-        # self._preXS_assigner.assign(self._pre_XS, utils.sub_function(self._vs, 40))
-        # self._preXW_assigner.assign(self._pre_XW, utils.sub_function(self._vs, 41))
-
-        pass
+        self._preXS_assigner.assign(self._pre_XS, utils.sub_function(self._vs, 40))
+        self._preXW_assigner.assign(self._pre_XW, utils.sub_function(self._vs, 41))
+        # self._preXS_assigner.assign(self._pre_Zetas, utils.sub_function(self._vs, 46))
+        # self._preXW_assigner.assign(self._pre_Zetaw, utils.sub_function(self._vs, 47))
+        self.coupling.coupling_to_mechanics()
         # self.mech_heart.material.active.update_time(self.t)
 
     def _post_mechanics_solve(self) -> None:
@@ -456,38 +466,8 @@ class Runner:
         self.coupling.coupling_to_ep()
 
     def _solve_mechanics(self):
-
-        # if self._config.mechanics_use_continuation:
-        #     self.mech_heart.solve_for_control(self.coupling.XS_ep)
-        # else:
+        self._pre_mechanics_solve()
         self.mech_heart.solve()
-        # converged = False
-
-        # current_t = float(self.mech_heart.material.active.t)
-        # target_t = self._t
-        # dt = self.dt_mechanics
-        # while not converged:
-        #     t = current_t + dt
-        #     self.mech_heart.material.active.update_time(t)
-        #     try:
-        #         self.mech_heart.solve()
-        #     except pulse.mechanicsproblem.SolverDidNotConverge:
-        #         logger.warning(f"Failed to solve mechanics problem with dt={dt}")
-        #         dt /= 2
-        #         logger.warning(f"Try with dt={dt}")
-        #         if dt < 1e-6:
-        #             logger.warning("dt is too small. Good bye")
-        #             raise
-
-        #     else:
-        #         if abs(t - target_t) < 1e-12:
-        #             # We have reached the target
-        #             converged = True
-        #         # Update dt so that we hit the target next time
-        #         current_t = t
-        #         dt = target_t - t
-        #         self.mech_heart.material.active.update_prev()
-
         self._post_mechanics_solve()
 
     def save_state(self, path):

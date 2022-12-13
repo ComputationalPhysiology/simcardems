@@ -133,9 +133,6 @@ class MechanicsProblem(ContinuationBasedMechanicsProblem):
         getattr(self.solver, "check_overloads_called", None)
         return newton_iteration, newton_converged
 
-    def update_lmbda_prev(self):
-        self.lmbda_prev.vector()[:] = self.lmbda.vector()
-
 
 class RigidMotionProblem(MechanicsProblem):
     def _init_spaces(self):
