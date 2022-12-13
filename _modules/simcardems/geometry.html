@@ -389,6 +389,7 @@ const thebe_selector_output = ".output, .cell_output"
     <span class="n">redistribute</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">:</span>
 
+    <span class="n">dolfin</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;refinement_algorithm&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;plaza_with_parent_facets&quot;</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_refinements</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Performing refinement </span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">mesh</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">refine</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">redistribute</span><span class="o">=</span><span class="n">redistribute</span><span class="p">)</span>
@@ -428,6 +429,7 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="n">microstructure</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">microstructure_ep</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">ffun</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ffun_ep</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">markers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">outdir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">utils</span><span class="o">.</span><span class="n">PathLike</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -442,9 +444,9 @@ const thebe_selector_output = ".output, .cell_output"
             <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">mechanics_mesh</span> <span class="o">=</span> <span class="n">mechanics_mesh</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ep_mesh</span> <span class="o">=</span> <span class="n">ep_mesh</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">ffun</span> <span class="o">=</span> <span class="n">ffun</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ep_mesh</span> <span class="o">=</span> <span class="n">ep_mesh</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ffun_ep</span> <span class="o">=</span> <span class="n">ffun_ep</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">microstructure</span> <span class="o">=</span> <span class="n">microstructure</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">microstructure_ep</span> <span class="o">=</span> <span class="n">microstructure_ep</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
@@ -484,6 +486,12 @@ const thebe_selector_output = ".output, .cell_output"
                 <span class="n">is_meshfunction</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
                 <span class="n">mesh_key</span><span class="o">=</span><span class="s2">&quot;mesh&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;ffun_ep&quot;</span><span class="p">:</span> <span class="n">H5Path</span><span class="p">(</span>
+                <span class="n">h5group</span><span class="o">=</span><span class="s2">&quot;/geometry/meshfunctions/ffun_ep&quot;</span><span class="p">,</span>
+                <span class="n">is_meshfunction</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                <span class="n">mesh_key</span><span class="o">=</span><span class="s2">&quot;ep_mesh&quot;</span><span class="p">,</span>
             <span class="p">),</span>
             <span class="s2">&quot;f0&quot;</span><span class="p">:</span> <span class="n">H5Path</span><span class="p">(</span>
                 <span class="n">h5group</span><span class="o">=</span><span class="s2">&quot;/geometry/microstructure/mechanics/f0&quot;</span><span class="p">,</span>
@@ -528,8 +536,8 @@ const thebe_selector_output = ".output, .cell_output"
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span> <span class="nf">_default_microstructure</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">fiber_space</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">mesh</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">,</span>
+        <span class="n">ffun</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">:</span>
         <span class="o">...</span>
 
@@ -583,12 +591,10 @@ const thebe_selector_output = ".output, .cell_output"
     <span class="k">def</span> <span class="nf">_get_microstructure_if_None</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">mesh</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">,</span>
+        <span class="n">ffun</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">,</span>
         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">:</span>
-        <span class="n">microstructure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_microstructure</span><span class="p">(</span>
-            <span class="n">fiber_space</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;fiber_space&quot;</span><span class="p">],</span>
-            <span class="n">mesh</span><span class="o">=</span><span class="n">mesh</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="n">microstructure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_microstructure</span><span class="p">(</span><span class="n">mesh</span><span class="o">=</span><span class="n">mesh</span><span class="p">,</span> <span class="n">ffun</span><span class="o">=</span><span class="n">ffun</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;microstructure</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">.h5&quot;</span>
@@ -608,17 +614,21 @@ const thebe_selector_output = ".output, .cell_output"
 
     <span class="nd">@microstructure_ep</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">microstructure_ep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">microstructure</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">microstructure</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">microstructure</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">microstructure</span><span class="o">.</span><span class="n">f0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">microstructure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interpolate_microstructure</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_microstructure_ep</span> <span class="o">=</span> <span class="n">microstructure</span>
 
     <span class="k">def</span> <span class="nf">_interpolate_microstructure</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">:</span>
         <span class="n">element</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f0</span><span class="o">.</span><span class="n">ufl_element</span><span class="p">()</span>
-        <span class="n">V</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">FunctionSpace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ep_mesh</span><span class="p">,</span> <span class="n">element</span><span class="p">)</span>
-        <span class="n">f0</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f0</span><span class="p">,</span> <span class="n">V</span><span class="p">)</span>
-        <span class="n">s0</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">s0</span><span class="p">,</span> <span class="n">V</span><span class="p">)</span>
-        <span class="n">n0</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n0</span><span class="p">,</span> <span class="n">V</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">(</span><span class="n">f0</span><span class="o">=</span><span class="n">f0</span><span class="p">,</span> <span class="n">s0</span><span class="o">=</span><span class="n">s0</span><span class="p">,</span> <span class="n">n0</span><span class="o">=</span><span class="n">n0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">element</span><span class="o">.</span><span class="n">family</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;Quadrature&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_microstructure</span><span class="p">(</span><span class="n">mesh</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ep_mesh</span><span class="p">,</span> <span class="n">ffun</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ffun_ep</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">V</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">FunctionSpace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ep_mesh</span><span class="p">,</span> <span class="n">element</span><span class="p">)</span>
+
+            <span class="n">f0</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f0</span><span class="p">,</span> <span class="n">V</span><span class="p">)</span>
+            <span class="n">s0</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">s0</span><span class="p">,</span> <span class="n">V</span><span class="p">)</span>
+            <span class="n">n0</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n0</span><span class="p">,</span> <span class="n">V</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">(</span><span class="n">f0</span><span class="o">=</span><span class="n">f0</span><span class="p">,</span> <span class="n">s0</span><span class="o">=</span><span class="n">s0</span><span class="p">,</span> <span class="n">n0</span><span class="o">=</span><span class="n">n0</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">microstructure</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">:</span>
@@ -629,6 +639,7 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="k">if</span> <span class="n">microstructure</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">microstructure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_microstructure_if_None</span><span class="p">(</span>
                 <span class="n">mesh</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mechanics_mesh</span><span class="p">,</span>
+                <span class="n">ffun</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ffun</span><span class="p">,</span>
                 <span class="n">label</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_microstructure</span> <span class="o">=</span> <span class="n">microstructure</span>
@@ -696,8 +707,8 @@ const thebe_selector_output = ".output, .cell_output"
     <span class="k">def</span> <span class="nf">ep_mesh</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mesh</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">mesh</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_ep_mesh</span> <span class="o">=</span> <span class="n">refine_mesh</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">mechanics_mesh</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;num_refinements&quot;</span><span class="p">],</span>
+                <span class="n">mesh</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mechanics_mesh</span><span class="p">,</span>
+                <span class="n">num_refinements</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;num_refinements&quot;</span><span class="p">],</span>
             <span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">mesh_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span> <span class="o">/</span> <span class="s2">&quot;ep_mesh.xdmf&quot;</span>
@@ -706,6 +717,17 @@ const thebe_selector_output = ".output, .cell_output"
 
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_ep_mesh</span> <span class="o">=</span> <span class="n">mesh</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ffun_ep</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ffun_ep</span>  <span class="c1"># type: ignore</span>
+
+    <span class="nd">@ffun_ep</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">ffun_ep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ffun</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">ffun</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ffun_ep</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">adapt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ffun</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ep_mesh</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ffun_ep</span> <span class="o">=</span> <span class="n">ffun</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">outdir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
@@ -753,6 +775,8 @@ const thebe_selector_output = ".output, .cell_output"
             <span class="n">ffun</span> <span class="o">=</span> <span class="n">create_slab_facet_function</span><span class="p">(</span>
                 <span class="n">mesh</span><span class="p">,</span>
                 <span class="n">lx</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;lx&quot;</span><span class="p">],</span>
+                <span class="n">ly</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;ly&quot;</span><span class="p">],</span>
+                <span class="n">lz</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;lz&quot;</span><span class="p">],</span>
                 <span class="n">markers</span><span class="o">=</span><span class="n">markers</span><span class="p">,</span>
             <span class="p">)</span>
 
@@ -796,6 +820,7 @@ const thebe_selector_output = ".output, .cell_output"
             <span class="p">(</span><span class="s2">&quot;ep_mesh&quot;</span><span class="p">,</span> <span class="s2">&quot;ep_mesh&quot;</span><span class="p">),</span>
             <span class="p">(</span><span class="s2">&quot;markers&quot;</span><span class="p">,</span> <span class="s2">&quot;markers&quot;</span><span class="p">),</span>
             <span class="p">(</span><span class="s2">&quot;ffun&quot;</span><span class="p">,</span> <span class="s2">&quot;ffun&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;ffun_ep&quot;</span><span class="p">,</span> <span class="s2">&quot;ffun_ep&quot;</span><span class="p">),</span>
         <span class="p">]:</span>
             <span class="n">attr</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">attr_geo</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">attr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -827,21 +852,34 @@ const thebe_selector_output = ".output, .cell_output"
             <span class="s2">&quot;X0&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
             <span class="s2">&quot;X1&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
             <span class="s2">&quot;Y0&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
-            <span class="s2">&quot;Z0&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+            <span class="s2">&quot;Y1&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+            <span class="s2">&quot;Z0&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
+            <span class="s2">&quot;Z1&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span>
         <span class="p">}</span></div>
 
     <span class="k">def</span> <span class="nf">_default_microstructure</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">fiber_space</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">mesh</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">,</span>
+        <span class="n">ffun</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">create_slab_microstructure</span><span class="p">(</span><span class="n">fiber_space</span><span class="o">=</span><span class="n">fiber_space</span><span class="p">,</span> <span class="n">mesh</span><span class="o">=</span><span class="n">mesh</span><span class="p">)</span>
+        <span class="kn">from</span> <span class="nn">cardiac_geometries</span> <span class="kn">import</span> <span class="n">slab_fibers</span>
+
+        <span class="k">return</span> <span class="n">slab_fibers</span><span class="o">.</span><span class="n">create_microstructure</span><span class="p">(</span>
+            <span class="n">function_space</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;fiber_space&quot;</span><span class="p">],</span>
+            <span class="n">mesh</span><span class="o">=</span><span class="n">mesh</span><span class="p">,</span>
+            <span class="n">ffun</span><span class="o">=</span><span class="n">ffun</span><span class="p">,</span>
+            <span class="n">markers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">markers</span><span class="p">,</span>
+            <span class="n">alpha_endo</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;fibers_angle_endo&quot;</span><span class="p">],</span>
+            <span class="n">alpha_epi</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;fibers_angle_epi&quot;</span><span class="p">],</span>
+        <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_default_ffun</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mesh</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">create_slab_facet_function</span><span class="p">(</span>
-            <span class="n">mesh</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;lx&quot;</span><span class="p">],</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">markers</span><span class="p">,</span>
+            <span class="n">mesh</span><span class="o">=</span><span class="n">mesh</span><span class="p">,</span>
+            <span class="n">lx</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;lx&quot;</span><span class="p">],</span>
+            <span class="n">ly</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;ly&quot;</span><span class="p">],</span>
+            <span class="n">lz</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;lz&quot;</span><span class="p">],</span>
+            <span class="n">markers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">markers</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_default_mesh</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">:</span>
@@ -860,7 +898,9 @@ const thebe_selector_output = ".output, .cell_output"
             <span class="n">ly</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
             <span class="n">lz</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>
             <span class="n">dx</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
-            <span class="n">fiber_space</span><span class="o">=</span><span class="s2">&quot;DG_1&quot;</span><span class="p">,</span>
+            <span class="n">fibers_angle_endo</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">fibers_angle_epi</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">fiber_space</span><span class="o">=</span><span class="s2">&quot;Quadrature_3&quot;</span><span class="p">,</span>
             <span class="n">num_refinements</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
             <span class="n">mesh_type</span><span class="o">=</span><span class="n">MeshTypes</span><span class="o">.</span><span class="n">slab</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
         <span class="p">)</span></div>
@@ -882,23 +922,31 @@ const thebe_selector_output = ".output, .cell_output"
 <div class="viewcode-block" id="create_slab_facet_function"><a class="viewcode-back" href="../../api.html#simcardems.geometry.create_slab_facet_function">[docs]</a><span class="k">def</span> <span class="nf">create_slab_facet_function</span><span class="p">(</span>
     <span class="n">mesh</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">,</span>
     <span class="n">lx</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">ly</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">lz</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">markers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">:</span>
     <span class="k">if</span> <span class="n">markers</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">markers</span> <span class="o">=</span> <span class="n">SlabGeometry</span><span class="o">.</span><span class="n">default_markers</span><span class="p">()</span>
     <span class="c1"># Define domain to apply dirichlet boundary conditions</span>
-    <span class="n">left</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">CompiledSubDomain</span><span class="p">(</span><span class="s2">&quot;near(x[0], 0) &amp;&amp; on_boundary&quot;</span><span class="p">)</span>
-    <span class="n">right</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">CompiledSubDomain</span><span class="p">(</span><span class="s2">&quot;near(x[0], lx) &amp;&amp; on_boundary&quot;</span><span class="p">,</span> <span class="n">lx</span><span class="o">=</span><span class="n">lx</span><span class="p">)</span>
-    <span class="n">plane_y0</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">CompiledSubDomain</span><span class="p">(</span><span class="s2">&quot;near(x[1], 0) &amp;&amp; on_boundary&quot;</span><span class="p">)</span>
-    <span class="n">plane_z0</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">CompiledSubDomain</span><span class="p">(</span><span class="s2">&quot;near(x[2], 0) &amp;&amp; on_boundary&quot;</span><span class="p">)</span>
+    <span class="n">x0</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">CompiledSubDomain</span><span class="p">(</span><span class="s2">&quot;near(x[0], 0) &amp;&amp; on_boundary&quot;</span><span class="p">)</span>
+    <span class="n">x1</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">CompiledSubDomain</span><span class="p">(</span><span class="s2">&quot;near(x[0], lx) &amp;&amp; on_boundary&quot;</span><span class="p">,</span> <span class="n">lx</span><span class="o">=</span><span class="n">lx</span><span class="p">)</span>
+    <span class="n">y0</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">CompiledSubDomain</span><span class="p">(</span><span class="s2">&quot;near(x[1], 0) &amp;&amp; on_boundary&quot;</span><span class="p">)</span>
+    <span class="n">y1</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">CompiledSubDomain</span><span class="p">(</span><span class="s2">&quot;near(x[1], ly) &amp;&amp; on_boundary&quot;</span><span class="p">,</span> <span class="n">ly</span><span class="o">=</span><span class="n">ly</span><span class="p">)</span>
+    <span class="n">z0</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">CompiledSubDomain</span><span class="p">(</span><span class="s2">&quot;near(x[2], 0) &amp;&amp; on_boundary&quot;</span><span class="p">)</span>
+    <span class="n">z1</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">CompiledSubDomain</span><span class="p">(</span><span class="s2">&quot;near(x[2], lz) &amp;&amp; on_boundary&quot;</span><span class="p">,</span> <span class="n">lz</span><span class="o">=</span><span class="n">lz</span><span class="p">)</span>
 
     <span class="n">ffun</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">(</span><span class="s2">&quot;size_t&quot;</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">mesh</span><span class="o">.</span><span class="n">topology</span><span class="p">()</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
     <span class="n">ffun</span><span class="o">.</span><span class="n">set_all</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
-    <span class="n">left</span><span class="o">.</span><span class="n">mark</span><span class="p">(</span><span class="n">ffun</span><span class="p">,</span> <span class="n">markers</span><span class="p">[</span><span class="s2">&quot;X0&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
-    <span class="n">right</span><span class="o">.</span><span class="n">mark</span><span class="p">(</span><span class="n">ffun</span><span class="p">,</span> <span class="n">markers</span><span class="p">[</span><span class="s2">&quot;X1&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
-    <span class="n">plane_y0</span><span class="o">.</span><span class="n">mark</span><span class="p">(</span><span class="n">ffun</span><span class="p">,</span> <span class="n">markers</span><span class="p">[</span><span class="s2">&quot;Y0&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
-    <span class="n">plane_z0</span><span class="o">.</span><span class="n">mark</span><span class="p">(</span><span class="n">ffun</span><span class="p">,</span> <span class="n">markers</span><span class="p">[</span><span class="s2">&quot;Z0&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">x0</span><span class="o">.</span><span class="n">mark</span><span class="p">(</span><span class="n">ffun</span><span class="p">,</span> <span class="n">markers</span><span class="p">[</span><span class="s2">&quot;X0&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">x1</span><span class="o">.</span><span class="n">mark</span><span class="p">(</span><span class="n">ffun</span><span class="p">,</span> <span class="n">markers</span><span class="p">[</span><span class="s2">&quot;X1&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">y0</span><span class="o">.</span><span class="n">mark</span><span class="p">(</span><span class="n">ffun</span><span class="p">,</span> <span class="n">markers</span><span class="p">[</span><span class="s2">&quot;Y0&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">y1</span><span class="o">.</span><span class="n">mark</span><span class="p">(</span><span class="n">ffun</span><span class="p">,</span> <span class="n">markers</span><span class="p">[</span><span class="s2">&quot;Y1&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">z0</span><span class="o">.</span><span class="n">mark</span><span class="p">(</span><span class="n">ffun</span><span class="p">,</span> <span class="n">markers</span><span class="p">[</span><span class="s2">&quot;Z0&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">z1</span><span class="o">.</span><span class="n">mark</span><span class="p">(</span><span class="n">ffun</span><span class="p">,</span> <span class="n">markers</span><span class="p">[</span><span class="s2">&quot;Z1&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
     <span class="k">return</span> <span class="n">ffun</span></div>
 
 
@@ -934,10 +982,23 @@ const thebe_selector_output = ".output, .cell_output"
 
     <span class="k">def</span> <span class="nf">_default_microstructure</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">fiber_space</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">mesh</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">,</span>
+        <span class="n">ffun</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+        <span class="kn">from</span> <span class="nn">cardiac_geometries</span> <span class="kn">import</span> <span class="n">lv_ellipsoid_fibers</span>
+
+        <span class="k">return</span> <span class="n">lv_ellipsoid_fibers</span><span class="o">.</span><span class="n">create_microstructure</span><span class="p">(</span>
+            <span class="n">function_space</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;fiber_space&quot;</span><span class="p">],</span>
+            <span class="n">mesh</span><span class="o">=</span><span class="n">mesh</span><span class="p">,</span>
+            <span class="n">ffun</span><span class="o">=</span><span class="n">ffun</span><span class="p">,</span>
+            <span class="n">markers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">markers</span><span class="p">,</span>
+            <span class="n">r_short_endo</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;r_short_endo&quot;</span><span class="p">],</span>
+            <span class="n">r_short_epi</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;r_short_epi&quot;</span><span class="p">],</span>
+            <span class="n">r_long_endo</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;r_long_endo&quot;</span><span class="p">],</span>
+            <span class="n">r_long_epi</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;r_long_epi&quot;</span><span class="p">],</span>
+            <span class="n">alpha_endo</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;fibers_angle_endo&quot;</span><span class="p">],</span>
+            <span class="n">alpha_epi</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;fibers_angle_epi&quot;</span><span class="p">],</span>
+        <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_default_ffun</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mesh</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
@@ -949,7 +1010,7 @@ const thebe_selector_output = ".output, .cell_output"
     <span class="k">def</span> <span class="nf">default_parameters</span><span class="p">():</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;num_refinements&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-            <span class="s2">&quot;fiber_space&quot;</span><span class="p">:</span> <span class="s2">&quot;P_1&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;fiber_space&quot;</span><span class="p">:</span> <span class="s2">&quot;Quadrature_3&quot;</span><span class="p">,</span>
             <span class="s2">&quot;fibers_angle_endo&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">60.0</span><span class="p">,</span>
             <span class="s2">&quot;fibers_angle_epi&quot;</span><span class="p">:</span> <span class="mf">60.0</span><span class="p">,</span>
             <span class="s2">&quot;mesh_type&quot;</span><span class="p">:</span> <span class="n">MeshTypes</span><span class="o">.</span><span class="n">lv_ellipsoid</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
