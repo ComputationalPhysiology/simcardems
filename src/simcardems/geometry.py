@@ -58,6 +58,7 @@ def refine_mesh(
     redistribute: bool = False,
 ) -> dolfin.Mesh:
 
+    dolfin.parameters["refinement_algorithm"] = "plaza_with_parent_facets"
     for i in range(num_refinements):
         logger.info(f"Performing refinement {i+1}")
         mesh = dolfin.refine(mesh, redistribute=redistribute)
@@ -97,6 +98,7 @@ class BaseGeometry(abc.ABC):
         microstructure: Optional[pulse.Microstructure] = None,
         microstructure_ep: Optional[pulse.Microstructure] = None,
         ffun: Optional[dolfin.MeshFunction] = None,
+        ffun_ep: Optional[dolfin.MeshFunction] = None,
         markers: Optional[Dict[str, Tuple[int, int]]] = None,
         outdir: Optional[utils.PathLike] = None,
     ) -> None:
@@ -111,9 +113,9 @@ class BaseGeometry(abc.ABC):
             self.parameters.update(parameters)
 
         self.mechanics_mesh = mechanics_mesh
-        self.ep_mesh = ep_mesh
-
         self.ffun = ffun
+        self.ep_mesh = ep_mesh
+        self.ffun_ep = ffun_ep
         self.microstructure = microstructure
         self.microstructure_ep = microstructure_ep
         self.validate()
@@ -153,6 +155,12 @@ class BaseGeometry(abc.ABC):
                 is_meshfunction=True,
                 dim=2,
                 mesh_key="mesh",
+            ),
+            "ffun_ep": H5Path(
+                h5group="/geometry/meshfunctions/ffun_ep",
+                is_meshfunction=True,
+                dim=2,
+                mesh_key="ep_mesh",
             ),
             "f0": H5Path(
                 h5group="/geometry/microstructure/mechanics/f0",
@@ -197,8 +205,8 @@ class BaseGeometry(abc.ABC):
     @abc.abstractmethod
     def _default_microstructure(
         self,
-        fiber_space: str,
         mesh: dolfin.Mesh,
+        ffun: dolfin.MeshFunction,
     ) -> pulse.Microstructure:
         ...
 
@@ -252,12 +260,10 @@ class BaseGeometry(abc.ABC):
     def _get_microstructure_if_None(
         self,
         mesh: dolfin.Mesh,
+        ffun: dolfin.MeshFunction,
         label: str,
     ) -> pulse.Microstructure:
-        microstructure = self._default_microstructure(
-            fiber_space=self.parameters["fiber_space"],
-            mesh=mesh,
-        )
+        microstructure = self._default_microstructure(mesh=mesh, ffun=ffun)
 
         if self.outdir is not None:
             path = self.outdir / f"microstructure{label}.h5"
@@ -277,17 +283,21 @@ class BaseGeometry(abc.ABC):
 
     @microstructure_ep.setter
     def microstructure_ep(self, microstructure: Optional[pulse.Microstructure]) -> None:
-        if microstructure is None:
+        if microstructure is None or microstructure.f0 is None:
             microstructure = self._interpolate_microstructure()
         self._microstructure_ep = microstructure
 
     def _interpolate_microstructure(self) -> pulse.Microstructure:
         element = self.f0.ufl_element()
-        V = dolfin.FunctionSpace(self.ep_mesh, element)
-        f0 = dolfin.interpolate(self.f0, V)
-        s0 = dolfin.interpolate(self.s0, V)
-        n0 = dolfin.interpolate(self.n0, V)
-        return pulse.Microstructure(f0=f0, s0=s0, n0=n0)
+        if element.family() == "Quadrature":
+            return self._default_microstructure(mesh=self.ep_mesh, ffun=self.ffun_ep)
+        else:
+            V = dolfin.FunctionSpace(self.ep_mesh, element)
+
+            f0 = dolfin.interpolate(self.f0, V)
+            s0 = dolfin.interpolate(self.s0, V)
+            n0 = dolfin.interpolate(self.n0, V)
+            return pulse.Microstructure(f0=f0, s0=s0, n0=n0)
 
     @property
     def microstructure(self) -> pulse.Microstructure:
@@ -298,6 +308,7 @@ class BaseGeometry(abc.ABC):
         if microstructure is None:
             microstructure = self._get_microstructure_if_None(
                 mesh=self.mechanics_mesh,
+                ffun=self.ffun,
                 label="",
             )
         self._microstructure = microstructure
@@ -365,8 +376,8 @@ class BaseGeometry(abc.ABC):
     def ep_mesh(self, mesh: Optional[dolfin.Mesh]) -> None:
         if mesh is None:
             self._ep_mesh = refine_mesh(
-                self.mechanics_mesh,
-                self.parameters["num_refinements"],
+                mesh=self.mechanics_mesh,
+                num_refinements=self.parameters["num_refinements"],
             )
             if self.outdir is not None:
                 mesh_path = self.outdir / "ep_mesh.xdmf"
@@ -375,6 +386,17 @@ class BaseGeometry(abc.ABC):
 
         else:
             self._ep_mesh = mesh
+
+    @property
+    def ffun_ep(self) -> dolfin.MeshFunction:
+        return self._ffun_ep  # type: ignore
+
+    @ffun_ep.setter
+    def ffun_ep(self, ffun: Optional[dolfin.MeshFunction]) -> None:
+        if ffun is None:
+            self._ffun_ep = dolfin.adapt(self.ffun, self.ep_mesh)
+        else:
+            self._ffun_ep = ffun
 
     @property
     def outdir(self) -> Optional[Path]:
@@ -422,6 +444,8 @@ class BaseGeometry(abc.ABC):
             ffun = create_slab_facet_function(
                 mesh,
                 lx=parameters["lx"],
+                ly=parameters["ly"],
+                lz=parameters["lz"],
                 markers=markers,
             )
 
@@ -465,6 +489,7 @@ class BaseGeometry(abc.ABC):
             ("ep_mesh", "ep_mesh"),
             ("markers", "markers"),
             ("ffun", "ffun"),
+            ("ffun_ep", "ffun_ep"),
         ]:
             attr = getattr(geo, attr_geo, None)
             if attr is not None:
@@ -496,21 +521,34 @@ class SlabGeometry(BaseGeometry):
             "X0": (2, 1),
             "X1": (2, 2),
             "Y0": (2, 3),
-            "Z0": (2, 4),
+            "Y1": (2, 4),
+            "Z0": (2, 5),
+            "Z1": (2, 6),
         }
 
     def _default_microstructure(
         self,
-        fiber_space: str,
         mesh: dolfin.Mesh,
+        ffun: dolfin.MeshFunction,
     ) -> pulse.Microstructure:
-        return create_slab_microstructure(fiber_space=fiber_space, mesh=mesh)
+        from cardiac_geometries import slab_fibers
+
+        return slab_fibers.create_microstructure(
+            function_space=self.parameters["fiber_space"],
+            mesh=mesh,
+            ffun=ffun,
+            markers=self.markers,
+            alpha_endo=self.parameters["fibers_angle_endo"],
+            alpha_epi=self.parameters["fibers_angle_epi"],
+        )
 
     def _default_ffun(self, mesh: dolfin.Mesh) -> dolfin.MeshFunction:
         return create_slab_facet_function(
-            mesh,
-            self.parameters["lx"],
-            self.markers,
+            mesh=mesh,
+            lx=self.parameters["lx"],
+            ly=self.parameters["ly"],
+            lz=self.parameters["lz"],
+            markers=self.markers,
         )
 
     def _default_mesh(self) -> dolfin.Mesh:
@@ -529,7 +567,9 @@ class SlabGeometry(BaseGeometry):
             ly=0.7,
             lz=0.3,
             dx=0.2,
-            fiber_space="DG_1",
+            fibers_angle_endo=0,
+            fibers_angle_epi=0,
+            fiber_space="Quadrature_3",
             num_refinements=1,
             mesh_type=MeshTypes.slab.value,
         )
@@ -551,23 +591,31 @@ class SlabGeometry(BaseGeometry):
 def create_slab_facet_function(
     mesh: dolfin.Mesh,
     lx: float,
+    ly: float,
+    lz: float,
     markers: Optional[Dict[str, Tuple[int, int]]] = None,
 ) -> dolfin.MeshFunction:
     if markers is None:
         markers = SlabGeometry.default_markers()
     # Define domain to apply dirichlet boundary conditions
-    left = dolfin.CompiledSubDomain("near(x[0], 0) && on_boundary")
-    right = dolfin.CompiledSubDomain("near(x[0], lx) && on_boundary", lx=lx)
-    plane_y0 = dolfin.CompiledSubDomain("near(x[1], 0) && on_boundary")
-    plane_z0 = dolfin.CompiledSubDomain("near(x[2], 0) && on_boundary")
+    x0 = dolfin.CompiledSubDomain("near(x[0], 0) && on_boundary")
+    x1 = dolfin.CompiledSubDomain("near(x[0], lx) && on_boundary", lx=lx)
+    y0 = dolfin.CompiledSubDomain("near(x[1], 0) && on_boundary")
+    y1 = dolfin.CompiledSubDomain("near(x[1], ly) && on_boundary", ly=ly)
+    z0 = dolfin.CompiledSubDomain("near(x[2], 0) && on_boundary")
+    z1 = dolfin.CompiledSubDomain("near(x[2], lz) && on_boundary", lz=lz)
 
     ffun = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim() - 1)
     ffun.set_all(0)
 
-    left.mark(ffun, markers["X0"][1])
-    right.mark(ffun, markers["X1"][1])
-    plane_y0.mark(ffun, markers["Y0"][1])
-    plane_z0.mark(ffun, markers["Z0"][1])
+    x0.mark(ffun, markers["X0"][1])
+    x1.mark(ffun, markers["X1"][1])
+
+    y0.mark(ffun, markers["Y0"][1])
+    y1.mark(ffun, markers["Y1"][1])
+
+    z0.mark(ffun, markers["Z0"][1])
+    z1.mark(ffun, markers["Z1"][1])
     return ffun
 
 
@@ -603,10 +651,23 @@ class LeftVentricularGeometry(BaseGeometry):
 
     def _default_microstructure(
         self,
-        fiber_space: str,
         mesh: dolfin.Mesh,
+        ffun: dolfin.MeshFunction,
     ) -> pulse.Microstructure:
-        raise NotImplementedError
+        from cardiac_geometries import lv_ellipsoid_fibers
+
+        return lv_ellipsoid_fibers.create_microstructure(
+            function_space=self.parameters["fiber_space"],
+            mesh=mesh,
+            ffun=ffun,
+            markers=self.markers,
+            r_short_endo=self.parameters["r_short_endo"],
+            r_short_epi=self.parameters["r_short_epi"],
+            r_long_endo=self.parameters["r_long_endo"],
+            r_long_epi=self.parameters["r_long_epi"],
+            alpha_endo=self.parameters["fibers_angle_endo"],
+            alpha_epi=self.parameters["fibers_angle_epi"],
+        )
 
     def _default_ffun(self, mesh: dolfin.Mesh) -> dolfin.MeshFunction:
         raise NotImplementedError
@@ -618,7 +679,7 @@ class LeftVentricularGeometry(BaseGeometry):
     def default_parameters():
         return {
             "num_refinements": 1,
-            "fiber_space": "P_1",
+            "fiber_space": "Quadrature_3",
             "fibers_angle_endo": -60.0,
             "fibers_angle_epi": 60.0,
             "mesh_type": MeshTypes.lv_ellipsoid.value,
