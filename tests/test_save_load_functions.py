@@ -80,7 +80,6 @@ def test_save_and_load_state(
     mech_heart = simcardems.setup_models.setup_mechanics_solver(
         coupling=coupling,
         geo=geo,
-        cell_params=cell_params,
     )
 
     runner = simcardems.setup_models.Runner.from_models(
@@ -102,8 +101,7 @@ def test_save_and_load_state(
 
     slf.save_state(
         dummyfile,
-        solver=ep_solver,
-        mech_heart=mech_heart,
+        coupling=coupling,
         geo=geo,
         dt=dt,
         t0=t0,
@@ -124,9 +122,15 @@ def test_save_and_load_state(
     assert simcardems.utils.compute_norm(coupling.vs, coupling_.vs) < 1e-12
     assert simcardems.utils.compute_norm(coupling.XS_mech, coupling_.XS_mech) < 1e-12
     assert simcardems.utils.compute_norm(coupling.XW_mech, coupling_.XW_mech) < 1e-12
+
     assert (
-        simcardems.utils.compute_norm(coupling.lmbda_mech, coupling_.lmbda_mech) < 1e-12
+        simcardems.utils.compute_norm(
+            coupling.lmbda_mech_func,
+            coupling_.lmbda_mech_func,
+        )
+        < 1e-12
     )
+
     assert (
         simcardems.utils.compute_norm(coupling.Zetas_mech, coupling_.Zetas_mech) < 1e-12
     )
@@ -162,7 +166,6 @@ def test_load_state_with_new_parameters_uses_new_parameters(
 
     mech_heart = simcardems.setup_models.setup_mechanics_solver(
         coupling=coupling,
-        cell_params=cell_params,
         geo=geo,
     )
 
@@ -180,8 +183,7 @@ def test_load_state_with_new_parameters_uses_new_parameters(
 
     slf.save_state(
         dummyfile,
-        solver=ep_solver,
-        mech_heart=mech_heart,
+        coupling=coupling,
         geo=geo,
         dt=dt,
         t0=t0,

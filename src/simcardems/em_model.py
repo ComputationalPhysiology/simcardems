@@ -25,6 +25,7 @@ class EMCoupling:
         self.XW_mech = dolfin.Function(self.V_mech, name="XW_mech")
         self.Zetas_mech = dolfin.Function(self.V_mech, name="Zetas_mech")
         self.Zetaw_mech = dolfin.Function(self.V_mech, name="Zetaw_mech")
+        self._lmbda_mech_func = dolfin.Function(self.V_mech, name="Zetaw_mech")
 
         self.V_ep = dolfin.FunctionSpace(self.ep_mesh, "CG", 1)
         self.XS_ep = dolfin.Function(self.V_ep, name="XS_ep")
@@ -67,6 +68,11 @@ class EMCoupling:
         F = dolfin.grad(self.u_mech) + dolfin.Identity(3)
         f = F * self.geometry.f0
         return dolfin.sqrt(f**2)
+
+    @property
+    def lmbda_mech_func(self):
+        self._projector_V_mech(self._lmbda_mech_func, self.lmbda_mech)
+        return self._lmbda_mech_func
 
     def update_prev(self):
         # Update previous lmbda

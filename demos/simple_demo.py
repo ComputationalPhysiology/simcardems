@@ -27,7 +27,7 @@ config = simcardems.Config(
     outdir=outdir,
     geometry_path=geometry_path,
     geometry_schema_path=geometry_schema_path,
-    T=15,
+    T=1000,
     load_state=True,
 )
 
@@ -69,8 +69,8 @@ config = simcardems.Config(
 # Print current configuration
 pprint.pprint(config.as_dict())
 
-runner = simcardems.Runner(config)
-runner.solve(T=config.T, save_freq=config.save_freq, show_progress_bar=True)
+# runner = simcardems.Runner(config)
+# runner.solve(T=config.T, save_freq=config.save_freq, show_progress_bar=True)
 
 
 # This will create the output directory `results_simple_demo` with the following output

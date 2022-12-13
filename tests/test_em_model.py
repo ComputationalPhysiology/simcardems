@@ -15,6 +15,5 @@ def test_em_model(coupling, ep_solver, cell_params, geo, bnd_rigid):
         simcardems.setup_models.setup_mechanics_solver(
             coupling=coupling,
             bnd_rigid=bnd_rigid,
-            cell_params=cell_params,
             geo=geo,
         )
