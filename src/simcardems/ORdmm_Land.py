@@ -34,7 +34,14 @@ def vs_functions_to_dict(vs):
 
 
 class ORdmm_Land(CardiacCellModel):
-    def __init__(self, params=None, init_conditions=None):
+    def __init__(
+        self,
+        lmbda: dolfin.Function,
+        Zetas: dolfin.Function,
+        Zetaw: dolfin.Function,
+        params=None,
+        init_conditions=None,
+    ):
         """
         Create cardiac cell model
 
@@ -46,6 +53,9 @@ class ORdmm_Land(CardiacCellModel):
         """
         logger.debug("Initialize ORdmm Land model")
         super().__init__(params, init_conditions)
+        self.lmbda = lmbda
+        self.Zetas = Zetas
+        self.Zetaw = Zetaw
 
     @staticmethod
     def default_parameters(disease_state: str = "healthy") -> Dict[str, float]:
@@ -302,9 +312,6 @@ class ORdmm_Land(CardiacCellModel):
                 ("TmB", 1),
                 ("Cd", 0),
                 ("cai", 0.0001),
-                ("lmbda", 1),
-                ("Zetas", 0),
-                ("Zetaw", 0),
             ],
         )
         return ic
@@ -316,7 +323,7 @@ class ORdmm_Land(CardiacCellModel):
         time = time if time else Constant(0.0)
         logger.debug("Evaluate transmembrane current")
         # Assign states
-        assert len(s) == 48
+        assert len(s) == 45
         (
             CaMKt,
             m,
@@ -363,9 +370,6 @@ class ORdmm_Land(CardiacCellModel):
             TmB,
             Cd,
             cai,
-            lmbda,
-            Zetas,
-            Zetaw,
         ) = s
 
         # Assign parameters
@@ -769,15 +773,15 @@ class ORdmm_Land(CardiacCellModel):
         Gsac_k = (0.2882 * 800.0 / 210.0) * scale_drug_Isack  # Pueyo endo
 
         Isac_P_ns = ufl.conditional(
-            ufl.lt(lmbda, 1.0),
+            ufl.lt(self.lmbda, 1.0),
             0.0,
-            Gsac_ns * ((lmbda - 1.0) / (lambda_max - 1.0)) * (v - Esac_ns),
+            Gsac_ns * ((self.lmbda - 1.0) / (lambda_max - 1.0)) * (v - Esac_ns),
         )
         Isac_P_k = ufl.conditional(
-            ufl.lt(lmbda, 1.0),
+            ufl.lt(self.lmbda, 1.0),
             0.0,
             Gsac_k
-            * ((lmbda - 1.0) / (lambda_max - 1.0))
+            * ((self.lmbda - 1.0) / (lambda_max - 1.0))
             * (1.0 / (1.0 + ufl.exp((19.05 - v) / (29.98)))),
         )
 
@@ -827,7 +831,7 @@ class ORdmm_Land(CardiacCellModel):
         time = time if time else Constant(0.0)
 
         # Assign states
-        assert len(s) == 48
+        assert len(s) == 45
         (
             CaMKt,
             m,
@@ -874,9 +878,6 @@ class ORdmm_Land(CardiacCellModel):
             TmB,
             Cd,
             cai,
-            lmbda,
-            Zetas,
-            Zetaw,
         ) = s
 
         # Assign parameters
@@ -1040,7 +1041,7 @@ class ORdmm_Land(CardiacCellModel):
         HF_scaling_cat50_ref = self._parameters["HF_scaling_cat50_ref"]
 
         # Init return args
-        F_expressions = [dolfin.Constant(0.0)] * 48
+        F_expressions = [dolfin.Constant(0.0)] * 45
 
         # Expressions for the cell geometry component
         vcell = 3140.0 * L * (rad * rad)
@@ -1483,15 +1484,15 @@ class ORdmm_Land(CardiacCellModel):
         lambda_max = 1.1
         Gsac_k = (0.2882 * 800.0 / 210.0) * scale_drug_Isack  # Pueyo endo
         Isac_P_ns = ufl.conditional(
-            ufl.lt(lmbda, 1.0),
+            ufl.lt(self.lmbda, 1.0),
             0.0,
-            Gsac_ns * ((lmbda - 1.0) / (lambda_max - 1.0)) * (v - Esac_ns),
+            Gsac_ns * ((self.lmbda - 1.0) / (lambda_max - 1.0)) * (v - Esac_ns),
         )
         Isac_P_k = ufl.conditional(
-            ufl.lt(lmbda, 1.0),
+            ufl.lt(self.lmbda, 1.0),
             0.0,
             Gsac_k
-            * ((lmbda - 1.0) / (lambda_max - 1.0))
+            * ((self.lmbda - 1.0) / (lambda_max - 1.0))
             * (1.0 / (1.0 + ufl.exp((19.05 - v) / (29.98)))),
         )
 
@@ -1582,17 +1583,21 @@ class ORdmm_Land(CardiacCellModel):
             * (-1.0 + 1.0 / (rs * scale_popu_rs))
         )
 
-        lambda_min12 = ufl.conditional(ufl.lt(lmbda, 1.2), lmbda, 1.2)
+        lambda_min12 = ufl.conditional(ufl.lt(self.lmbda, 1.2), self.lmbda, 1.2)
         XS = ufl.conditional(ufl.lt(XS, 0.0), 0.0, XS)
         XW = ufl.conditional(ufl.lt(XW, 0.0), 0.0, XW)
 
         XU = 1.0 - TmB - XS - XW
-        gammawu = gammaw * abs(Zetaw)
+        gammawu = gammaw * abs(self.Zetaw)
         # gammasu = gammas*ufl.conditional(ufl.gt(Zetas*(ufl.gt(Zetas, 0)), (-1 -\
         #     Zetas)*(ufl.lt(Zetas, -1))), Zetas*(ufl.gt(Zetas, 0)), (-1 -\
         #     Zetas)*(ufl.lt(Zetas, -1)))
-        zetas1 = Zetas * ufl.conditional(ufl.gt(Zetas, 0.0), 1.0, 0.0)
-        zetas2 = (-1.0 - Zetas) * ufl.conditional(ufl.lt(Zetas, -1.0), 1.0, 0.0)
+        zetas1 = self.Zetas * ufl.conditional(ufl.gt(self.Zetas, 0.0), 1.0, 0.0)
+        zetas2 = (-1.0 - self.Zetas) * ufl.conditional(
+            ufl.lt(self.Zetas, -1.0),
+            1.0,
+            0.0,
+        )
         gammasu = gammas * Max(zetas1, zetas2)
 
         F_expressions[39] = kws * scale_popu_kws * XW - XS * gammasu - XS * ksu
@@ -1657,7 +1662,7 @@ class ORdmm_Land(CardiacCellModel):
         return as_vector(F_expressions)
 
     def num_states(self):
-        return 48
+        return 45
 
     def __str__(self):
         return "ORdmm_Land_em_coupling cardiac cell model"

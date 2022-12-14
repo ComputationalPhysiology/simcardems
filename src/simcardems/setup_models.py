@@ -201,11 +201,13 @@ def setup_ep_solver(
         cell_init_file=cell_init_file,
     )
 
-    cell_inits["lmbda"] = coupling.lmbda_ep
-    cell_inits["Zetas"] = coupling.Zetas_ep
-    cell_inits["Zetaw"] = coupling.Zetaw_ep
-
-    cellmodel = CellModel(init_conditions=cell_inits, params=cell_params)
+    cellmodel = CellModel(
+        init_conditions=cell_inits,
+        params=cell_params,
+        lmbda=coupling.lmbda_ep,
+        Zetas=coupling.Zetas_ep,
+        Zetaw=coupling.Zetaw_ep,
+    )
 
     # Set-up cardiac model
     ep_heart = ep_model.setup_ep_model(cellmodel, coupling.ep_mesh, PCL=PCL)
