@@ -159,6 +159,6 @@ class EMCoupling:
 
     def coupling_to_ep(self):
         logger.debug("Transfer variables from coupling to EP")
-        dolfin.assign(utils.sub_function(self.ep_solver.vs, 48), self.lmbda_ep)
-        dolfin.assign(utils.sub_function(self.ep_solver.vs, 49), self.dLambda_ep)
+        # dolfin.assign(utils.sub_function(self.ep_solver.vs, 48), self.lmbda_ep)
+        # dolfin.assign(utils.sub_function(self.ep_solver.vs, 49), self.dLambda_ep)
         logger.debug("Done transferring variables from coupling to EP")

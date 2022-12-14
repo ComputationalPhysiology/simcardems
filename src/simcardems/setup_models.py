@@ -200,12 +200,12 @@ def setup_ep_solver(
         cell_init_file=cell_init_file,
     )
 
-    cell_inits["lmbda"] = coupling.lmbda_ep
-    cell_inits["dLambda"] = coupling.dLambda_ep
-    # cell_inits["Zetas"] = coupling.Zetas_ep
-    # cell_inits["Zetaw"] = coupling.Zetaw_ep
-
-    cellmodel = CellModel(init_conditions=cell_inits, params=cell_params)
+    cellmodel = CellModel(
+        init_conditions=cell_inits,
+        params=cell_params,
+        lmbda=coupling.lmbda_ep,
+        dLambda=coupling.dLambda_ep,
+    )
 
     # Set-up cardiac model
     ep_heart = ep_model.setup_ep_model(cellmodel, coupling.ep_mesh, PCL=PCL)
@@ -434,21 +434,7 @@ class Runner:
         # Zetas_norm = utils.compute_norm(self.coupling.Zetas_ep, self._pre_Zetas)
         # Zetaw_norm = utils.compute_norm(self.coupling.Zetaw_ep, self._pre_Zetaw)
 
-        # dt for the mechanics model should not be larger than 1 ms
-
-        # TODO: make it possible to set this tolerance
-        # breakpoint()
-        print(XW_norm + XS_norm, XW_norm + XS_norm > 0.05)
         return XW_norm + XS_norm >= 0.05
-        # print(Zetaw_norm + Zetas_norm, Zetaw_norm + Zetas_norm > 0.05)
-        # return Zetaw_norm + Zetas_norm >= 0.05  # or self.dt_mechanics > 0.1
-        # return True  # self._t <= 10.0 or max(self.coupling.XS_ep.vector()) >= 0.0005 or max(self.coupling.XW_ep.vector()) >= 0.002
-        # diff = dolfin.assemble((self.Ta_prev - self.coupling.Ta_mech) ** 2 * dolfin.dx)
-
-        # if utils.compute_norm(self.Ta_prev, self.coupling.Ta_mech) > 0.001:
-        # self.Ta_prev.vector()[:] = self.coupling.Ta_mech.vector()
-        # return True
-        # return False
 
     def _pre_mechanics_solve(self) -> None:
         self._preXS_assigner.assign(self._pre_XS, utils.sub_function(self._vs, 40))
@@ -456,7 +442,6 @@ class Runner:
         # self._preXS_assigner.assign(self._pre_Zetas, utils.sub_function(self._vs, 46))
         # self._preXW_assigner.assign(self._pre_Zetaw, utils.sub_function(self._vs, 47))
         self.coupling.coupling_to_mechanics()
-        # self.mech_heart.material.active.update_time(self.t)
 
     def _post_mechanics_solve(self) -> None:
 
