@@ -52,6 +52,7 @@ class ORdmm_Land(CardiacCellModel):
            optional initial conditions
         """
         logger.debug("Initialize ORdmm Land model")
+
         super().__init__(params, init_conditions)
         self.lmbda = lmbda
         self.Zetas = Zetas

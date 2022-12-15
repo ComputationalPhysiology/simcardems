@@ -350,8 +350,8 @@ class Runner:
         self._CaTrpn, self._CaTrpn_assigner = utils.setup_assigner(self._vs, 42)
         self._TmB, self._TmB_assigner = utils.setup_assigner(self._vs, 43)
         self._Cd, self._Cd_assigner = utils.setup_assigner(self._vs, 44)
-        self._Zetas, self._Zetas_assigner = utils.setup_assigner(self._vs, 47)
-        self._Zetaw, self._Zetaw_assigner = utils.setup_assigner(self._vs, 48)
+        # self._Zetas, self._Zetas_assigner = utils.setup_assigner(self._vs, 47)
+        # self._Zetaw, self._Zetaw_assigner = utils.setup_assigner(self._vs, 48)
 
         self._pre_XS, self._preXS_assigner = utils.setup_assigner(self._vs, 40)
         self._pre_XW, self._preXW_assigner = utils.setup_assigner(self._vs, 41)
@@ -377,8 +377,8 @@ class Runner:
         self._CaTrpn_assigner.assign(self._CaTrpn, utils.sub_function(self._vs, 42))
         self._TmB_assigner.assign(self._TmB, utils.sub_function(self._vs, 43))
         self._Cd_assigner.assign(self._Cd, utils.sub_function(self._vs, 44))
-        self._Zetas_assigner.assign(self._Zetas, utils.sub_function(self._vs, 47))
-        self._Zetaw_assigner.assign(self._Zetaw, utils.sub_function(self._vs, 48))
+        # self._Zetas_assigner.assign(self._Zetas, utils.sub_function(self._vs, 47))
+        # self._Zetaw_assigner.assign(self._Zetaw, utils.sub_function(self._vs, 48))
 
     def store(self):
         # Assign u, v and Ca for postprocessing
@@ -405,8 +405,8 @@ class Runner:
             ("ep", "CaTrpn", self._CaTrpn),
             ("ep", "TmB", self._TmB),
             ("ep", "Cd", self._Cd),
-            ("ep", "Zetas", self._Zetas),
-            ("ep", "Zetaw", self._Zetaw),
+            ("ep", "Zetas", self.coupling.Zetas_ep),
+            ("ep", "Zetaw", self.coupling.Zetas_ep),
             ("mechanics", "Zetas_mech", self.coupling.Zetas_mech),
             ("mechanics", "Zetaw_mech", self.coupling.Zetaw_mech),
             ("mechanics", "XS_mech", self.coupling.XS_mech),
