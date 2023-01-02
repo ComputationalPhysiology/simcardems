@@ -50,10 +50,6 @@ class EMCoupling:
         logger.debug("Registering mech model")
         self._mech_solver = solver
 
-        self.Zetas_mech = solver.material.active.Zetas_prev
-        self.Zetaw_mech = solver.material.active.Zetaw_prev
-        self.lmbda_mech = solver.material.active.lmbda_prev
-
         # Note sure why we need to do this for the LV?
         self.lmbda_mech.set_allow_extrapolation(True)
         self.Zetas_mech.set_allow_extrapolation(True)

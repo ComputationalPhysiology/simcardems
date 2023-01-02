@@ -435,12 +435,38 @@ class Runner:
         self.coupling.coupling_to_mechanics()
         self.mech_heart.material.active.update_time(self.t)
 
-    def _post_mechanics_solve(self) -> None:
+        # Update zetas_prev, zetaw_prev and lmbda_prev with previous solutions
+        self.mech_heart.material.active.Zetas_prev.vector()[
+            :
+        ] = self.coupling.Zetas_mech.vector()
+        self.mech_heart.material.active.Zetaw_prev.vector()[
+            :
+        ] = self.coupling.Zetaw_mech.vector()
+        self.mech_heart.material.active.lmbda_prev.vector()[
+            :
+        ] = self.coupling.lmbda_mech.vector()
 
+        # Update zetas, zetaw and lmbda in coupling
+        self.coupling.Zetas_mech.vector()[
+            :
+        ] = self.mech_heart.material.active.Zetas.vector()
+        self.coupling.Zetaw_mech.vector()[
+            :
+        ] = self.mech_heart.material.active.Zetaw.vector()
+        self.coupling.lmbda_mech.vector()[
+            :
+        ] = self.mech_heart.material.active.lmbda.vector()
+
+    def _post_mechanics_solve(self) -> None:
         # Update previous active tension
         self.mech_heart.material.active.update_prev()
+
+        # Update zetas, zetaw and lmbda in coupling with new solution
+        self.coupling.Zetas_mech.assign(self.mech_heart.material.active.Zetas)
+        self.coupling.Zetaw_mech.assign(self.mech_heart.material.active.Zetaw)
+        self.coupling.lmbda_mech.assign(self.mech_heart.material.active.lmbda)
+
         self.coupling.mechanics_to_coupling()
-        self.coupling.coupling_to_ep()
 
     def _solve_mechanics(self):
         self._pre_mechanics_solve()

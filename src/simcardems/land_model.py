@@ -188,9 +188,6 @@ class LandModel(pulse.ActiveModel):
 
     def update_prev(self):
         logger.debug("update previous")
-        self.Zetas_prev.vector()[:] = self.Zetas.vector()
-        self.Zetaw_prev.vector()[:] = self.Zetaw.vector()
-        self.lmbda_prev.vector()[:] = self.lmbda.vector()
         self._projector.project(self.Ta_current, self.Ta)
 
     @property
