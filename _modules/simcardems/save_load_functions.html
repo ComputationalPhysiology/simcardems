@@ -508,6 +508,7 @@ const thebe_selector_output = ".output, .cell_output"
     <span class="n">coupling</span> <span class="o">=</span> <span class="n">em_model</span><span class="o">.</span><span class="n">EMCoupling</span><span class="p">(</span>
         <span class="n">geometry</span><span class="o">=</span><span class="n">geo</span><span class="p">,</span>
     <span class="p">)</span>
+
     <span class="n">solver</span> <span class="o">=</span> <span class="n">setup_models</span><span class="o">.</span><span class="n">setup_ep_solver</span><span class="p">(</span>
         <span class="n">state_params</span><span class="p">[</span><span class="s2">&quot;dt&quot;</span><span class="p">],</span>
         <span class="n">coupling</span><span class="p">,</span>
@@ -531,8 +532,6 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="n">lmbda_prev</span><span class="o">=</span><span class="n">lmbda_prev</span><span class="p">,</span>
         <span class="n">state_prev</span><span class="o">=</span><span class="n">mech_state</span><span class="p">,</span>
     <span class="p">)</span>
-
-    <span class="n">coupling</span><span class="o">.</span><span class="n">coupling_to_mechanics</span><span class="p">()</span>
 
     <span class="k">return</span> <span class="n">setup_models</span><span class="o">.</span><span class="n">EMState</span><span class="p">(</span>
         <span class="n">coupling</span><span class="o">=</span><span class="n">coupling</span><span class="p">,</span>
