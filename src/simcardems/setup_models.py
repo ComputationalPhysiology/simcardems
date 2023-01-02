@@ -201,11 +201,13 @@ def setup_ep_solver(
         cell_init_file=cell_init_file,
     )
 
-    cell_inits["lmbda"] = coupling.lmbda_ep
-    cell_inits["Zetas"] = coupling.Zetas_ep
-    cell_inits["Zetaw"] = coupling.Zetaw_ep
-
-    cellmodel = CellModel(init_conditions=cell_inits, params=cell_params)
+    cellmodel = CellModel(
+        init_conditions=cell_inits,
+        params=cell_params,
+        lmbda=coupling.lmbda_ep,
+        Zetas=coupling.Zetas_ep,
+        Zetaw=coupling.Zetaw_ep,
+    )
 
     # Set-up cardiac model
     ep_heart = ep_model.setup_ep_model(cellmodel, coupling.ep_mesh, PCL=PCL)
@@ -348,8 +350,6 @@ class Runner:
         self._CaTrpn, self._CaTrpn_assigner = utils.setup_assigner(self._vs, 42)
         self._TmB, self._TmB_assigner = utils.setup_assigner(self._vs, 43)
         self._Cd, self._Cd_assigner = utils.setup_assigner(self._vs, 44)
-        self._Zetas, self._Zetas_assigner = utils.setup_assigner(self._vs, 47)
-        self._Zetaw, self._Zetaw_assigner = utils.setup_assigner(self._vs, 48)
 
         self._pre_XS, self._preXS_assigner = utils.setup_assigner(self._vs, 40)
         self._pre_XW, self._preXW_assigner = utils.setup_assigner(self._vs, 41)
@@ -375,8 +375,6 @@ class Runner:
         self._CaTrpn_assigner.assign(self._CaTrpn, utils.sub_function(self._vs, 42))
         self._TmB_assigner.assign(self._TmB, utils.sub_function(self._vs, 43))
         self._Cd_assigner.assign(self._Cd, utils.sub_function(self._vs, 44))
-        self._Zetas_assigner.assign(self._Zetas, utils.sub_function(self._vs, 47))
-        self._Zetaw_assigner.assign(self._Zetaw, utils.sub_function(self._vs, 48))
 
     def store(self):
         # Assign u, v and Ca for postprocessing
@@ -403,8 +401,8 @@ class Runner:
             ("ep", "CaTrpn", self._CaTrpn),
             ("ep", "TmB", self._TmB),
             ("ep", "Cd", self._Cd),
-            ("ep", "Zetas", self._Zetas),
-            ("ep", "Zetaw", self._Zetaw),
+            ("ep", "Zetas", self.coupling.Zetas_ep),
+            ("ep", "Zetaw", self.coupling.Zetaw_ep),
             ("mechanics", "Zetas_mech", self.coupling.Zetas_mech),
             ("mechanics", "Zetaw_mech", self.coupling.Zetaw_mech),
             ("mechanics", "XS_mech", self.coupling.XS_mech),
@@ -450,33 +448,6 @@ class Runner:
             self.mech_heart.solve_for_control(self.coupling.XS_ep)
         else:
             self.mech_heart.solve()
-        # converged = False
-
-        # current_t = float(self.mech_heart.material.active.t)
-        # target_t = self._t
-        # dt = self.dt_mechanics
-        # while not converged:
-        #     t = current_t + dt
-        #     self.mech_heart.material.active.update_time(t)
-        #     try:
-        #         self.mech_heart.solve()
-        #     except pulse.mechanicsproblem.SolverDidNotConverge:
-        #         logger.warning(f"Failed to solve mechanics problem with dt={dt}")
-        #         dt /= 2
-        #         logger.warning(f"Try with dt={dt}")
-        #         if dt < 1e-6:
-        #             logger.warning("dt is too small. Good bye")
-        #             raise
-
-        #     else:
-        #         if abs(t - target_t) < 1e-12:
-        #             # We have reached the target
-        #             converged = True
-        #         # Update dt so that we hit the target next time
-        #         current_t = t
-        #         dt = target_t - t
-        #         self.mech_heart.material.active.update_prev()
-
         self._post_mechanics_solve()
 
     def save_state(self, path):
@@ -498,12 +469,6 @@ class Runner:
     ):
         if not hasattr(self, "_outdir"):
             raise RuntimeError("Please set the output directory")
-
-        # Truncate
-        # if Path("residual.txt").is_file():
-        #     fr = open("residual.txt", "w")
-        #     fr.truncate(0)
-        #     fr.close()
 
         save_it = int(save_freq / self._dt)
         self.create_time_stepper(T, use_ns=True, st_progress=st_progress)
@@ -554,22 +519,7 @@ class Runner:
             #     )
             #     beat_nr += save_state_every_n_beat
 
-            # # Residual file : End of line after each time step
-            # if (
-            #     Path("residual.txt").is_file()
-            #     and dolfin.MPI.rank(dolfin.MPI.comm_world) == 0
-            # ):
-            #     fr = open("residual.txt", "a")
-            #     fr.write("\n")
-            #     fr.close()
-
         self.save_state(self._state_path)
-
-        # Copy residual file to output dir (if exists)
-        # if Path("residual.txt").is_file():
-        #     Path(self._outdir).joinpath("residual.txt").write_text(
-        #         Path("residual.txt").read_text(),
-        #     )
 
 
 class _tqdm:

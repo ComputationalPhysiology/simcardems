@@ -177,6 +177,7 @@ def load_state(
     coupling = em_model.EMCoupling(
         geometry=geo,
     )
+
     solver = setup_models.setup_ep_solver(
         state_params["dt"],
         coupling,
@@ -200,8 +201,6 @@ def load_state(
         lmbda_prev=lmbda_prev,
         state_prev=mech_state,
     )
-
-    coupling.coupling_to_mechanics()
 
     return setup_models.EMState(
         coupling=coupling,

@@ -83,7 +83,4 @@ class EMCoupling:
 
     def coupling_to_ep(self):
         logger.debug("Update EP")
-        dolfin.assign(utils.sub_function(self._ep_solver.vs, 46), self.lmbda_ep)
-        dolfin.assign(utils.sub_function(self._ep_solver.vs, 47), self.Zetas_ep)
-        dolfin.assign(utils.sub_function(self._ep_solver.vs, 48), self.Zetaw_ep)
         logger.debug("Done updating EP")
