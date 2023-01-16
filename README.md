@@ -19,7 +19,7 @@ See [Installation instructions](https://computationalphysiology.github.io/simcar
 
 ## Getting started
 
-See [the demos](https://computationalphysiology.github.io/simcardems/demo.html)
+See [the demos](https://computationalphysiology.github.io/simcardems/simple_demo.html)
 
 ## Documentation
 
