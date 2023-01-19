@@ -364,9 +364,9 @@ def extract_last_beat(y, time, pacing, return_interval=False):
         lastbeat = allbeats
         interval = (time[0], time[-1])
 
-    start = next(i for i, t in enumerate(time) if i >= interval[0])
+    start = next(i for i, t in enumerate(time) if t >= interval[0])
     try:
-        end = next(i for i, t in enumerate(time) if i >= interval[1])
+        end = next(i for i, t in enumerate(time) if t >= interval[1])
     except StopIteration:
         end = len(time)
 
