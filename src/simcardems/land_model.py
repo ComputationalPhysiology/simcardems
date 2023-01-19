@@ -82,6 +82,8 @@ class LandModel(pulse.ActiveModel):
     def dLambda(self):
         logger.debug("Evaluate dLambda")
         self._dLambda.vector()[:] = self.lmbda.vector() - self.lmbda_prev.vector()
+        if self._dLambda.vector().norm("linf") < 1e-12:
+            self._dLambda.vector()[:] = 0.0
         return self._dLambda
 
     @property
