@@ -332,6 +332,7 @@ const thebe_selector_output = ".output, .cell_output"
 <span></span><span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
 
 <span class="kn">import</span> <span class="nn">dolfin</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pulse</span>
 <span class="kn">import</span> <span class="nn">ufl</span>
 
@@ -375,6 +376,7 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="n">n0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">eta</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
         <span class="n">scheme</span><span class="p">:</span> <span class="n">Scheme</span> <span class="o">=</span> <span class="n">Scheme</span><span class="o">.</span><span class="n">analytic</span><span class="p">,</span>
+        <span class="n">dLambda_tol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-12</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Initialize Land Model&quot;</span><span class="p">)</span>
@@ -408,11 +410,15 @@ const thebe_selector_output = ".output, .cell_output"
 
         <span class="bp">self</span><span class="o">.</span><span class="n">Ta_current</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">function_space</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Ta&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_projector</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">Projector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">function_space</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dLambda_tol</span> <span class="o">=</span> <span class="n">dLambda_tol</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">dLambda</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Evaluate dLambda&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_dLambda</span><span class="o">.</span><span class="n">vector</span><span class="p">()[:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lmbda</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">lmbda_prev</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dLambda</span><span class="o">.</span><span class="n">vector</span><span class="p">()[</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dLambda</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">get_local</span><span class="p">())</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dLambda_tol</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dLambda</span>
 
     <span class="nd">@property</span>
