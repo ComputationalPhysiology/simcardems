@@ -1,9 +1,9 @@
 from enum import Enum
 
 import dolfin
+import numpy as np
 import pulse
 import ufl
-import numpy as np
 
 from . import utils
 
