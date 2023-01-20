@@ -219,6 +219,10 @@ class BaseGeometry(abc.ABC):
         ...
 
     @property
+    def facet_normal(self) -> dolfin.FacetNormal:
+        return dolfin.FacetNormal(self.mesh)
+
+    @property
     def mesh(self) -> dolfin.Mesh:
         return self.mechanics_mesh
 
