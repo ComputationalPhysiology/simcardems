@@ -3,6 +3,7 @@ from enum import Enum
 import dolfin
 import pulse
 import ufl
+import numpy as np
 
 from . import utils
 
@@ -44,6 +45,7 @@ class LandModel(pulse.ActiveModel):
         n0=None,
         eta=0,
         scheme: Scheme = Scheme.analytic,
+        dLambda_tol: float = 1e-12,
         **kwargs,
     ):
         logger.debug("Initialize Land Model")
@@ -77,13 +79,15 @@ class LandModel(pulse.ActiveModel):
 
         self.Ta_current = dolfin.Function(self.function_space, name="Ta")
         self._projector = utils.Projector(self.function_space)
+        self._dLambda_tol = dLambda_tol
 
     @property
     def dLambda(self):
         logger.debug("Evaluate dLambda")
         self._dLambda.vector()[:] = self.lmbda.vector() - self.lmbda_prev.vector()
-        if self._dLambda.vector().norm("linf") < 1e-12:
-            self._dLambda.vector()[:] = 0.0
+        self._dLambda.vector()[
+            np.where(np.abs(self._dLambda.vector().get_local()) < self._dLambda_tol)[0]
+        ] = 0.0
         return self._dLambda
 
     @property
