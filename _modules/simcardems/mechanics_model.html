@@ -414,6 +414,7 @@ const thebe_selector_output = ".output, .cell_output"
 
     <span class="k">def</span> <span class="nf">_init_forms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init_solver</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
         <span class="n">u</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>
+        <span class="n">v</span><span class="p">,</span> <span class="n">q</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state_test</span><span class="p">)</span>
 
         <span class="c1"># Some mechanical quantities</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_F</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">variable</span><span class="p">(</span><span class="n">pulse</span><span class="o">.</span><span class="n">DeformationGradient</span><span class="p">(</span><span class="n">u</span><span class="p">))</span>
@@ -429,6 +430,10 @@ const thebe_selector_output = ".output, .cell_output"
             <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">state_test</span><span class="p">,</span>
         <span class="p">)</span>
+
+        <span class="n">external_work</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_external_work</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">external_work</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_virtual_work</span> <span class="o">+=</span> <span class="n">external_work</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_dirichlet_bc</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_jacobian</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">derivative</span><span class="p">(</span>
@@ -511,6 +516,10 @@ const thebe_selector_output = ".output, .cell_output"
             <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">state_test</span><span class="p">,</span>
         <span class="p">)</span>
+
+        <span class="n">external_work</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_external_work</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">external_work</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_virtual_work</span> <span class="o">+=</span> <span class="n">external_work</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_virtual_work</span> <span class="o">+=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">derivative</span><span class="p">(</span>
             <span class="n">RigidMotionProblem</span><span class="o">.</span><span class="n">rigid_motion_term</span><span class="p">(</span>

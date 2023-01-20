@@ -550,6 +550,10 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="o">...</span>
 
     <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">facet_normal</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">FacetNormal</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">FacetNormal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">mesh</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mechanics_mesh</span>
 
