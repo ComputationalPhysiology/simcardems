@@ -243,6 +243,7 @@ leftbottom
 lightcoral
 linalg
 linestyle
+linf
 linspace
 lmbda
 loadtxt
