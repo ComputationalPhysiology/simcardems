@@ -11,7 +11,8 @@ from cbcbeat.cellmodels import CardiacCellModel
 from dolfin import as_vector
 from dolfin import Constant
 
-from . import utils
+from ... import utils
+from .em_model import EMCoupling
 
 logger = utils.getLogger(__name__)
 
@@ -24,18 +25,10 @@ def Min(a, b):
     return (a + b - abs(a - b)) / Constant(2.0)
 
 
-def vs_functions_to_dict(vs):
-    state_names = ORdmm_Land.default_initial_conditions().keys()
-    return {
-        name: utils.sub_function(vs, index) for index, name in enumerate(state_names)
-    }
-
-
-class ORdmm_Land(CardiacCellModel):
+class ORdmmLandExplicit(CardiacCellModel):
     def __init__(
         self,
-        lmbda: dolfin.Function,
-        dLambda: dolfin.Function,
+        coupling: EMCoupling,
         params=None,
         init_conditions=None,
     ):
@@ -49,9 +42,10 @@ class ORdmm_Land(CardiacCellModel):
            optional initial conditions
         """
         logger.debug("Initialize ORdmm Land model")
+
         super().__init__(params, init_conditions)
-        self.lmbda = lmbda
-        self.dLambda = dLambda
+        self.lmbda = coupling.lmbda_ep
+        self.dLambda = coupling.dLambda_ep
 
     @staticmethod
     def default_parameters(disease_state: str = "healthy") -> Dict[str, float]:
@@ -1597,7 +1591,11 @@ class ORdmm_Land(CardiacCellModel):
         #     Zetas)*(ufl.lt(Zetas, -1))), Zetas*(ufl.gt(Zetas, 0)), (-1 -\
         #     Zetas)*(ufl.lt(Zetas, -1)))
         zetas1 = Zetas * ufl.conditional(ufl.gt(Zetas, 0.0), 1.0, 0.0)
-        zetas2 = (-1.0 - Zetas) * ufl.conditional(ufl.lt(Zetas, -1.0), 1.0, 0.0)
+        zetas2 = (-1.0 - Zetas) * ufl.conditional(
+            ufl.lt(Zetas, -1.0),
+            1.0,
+            0.0,
+        )
         gammasu = gammas * Max(zetas1, zetas2)
 
         F_expressions[39] = kws * scale_popu_kws * XW - XS * gammasu - XS * ksu

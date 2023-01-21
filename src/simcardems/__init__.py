@@ -12,13 +12,10 @@ from . import boundary_conditions
 from . import cli
 from . import config
 from . import datacollector
-from . import em_model
 from . import ep_model
 from . import geometry
-from . import land_model
 from . import mechanics_model
 from . import newton_solver
-from . import ORdmm_Land
 from . import postprocess
 from . import save_load_functions
 from . import setup_models
@@ -27,8 +24,6 @@ from .config import Config
 from .config import default_parameters
 from .datacollector import DataCollector
 from .datacollector import DataLoader
-from .em_model import EMCoupling
-from .land_model import LandModel
 from .mechanics_model import MechanicsProblem
 from .mechanics_model import RigidMotionProblem
 from .newton_solver import MechanicsNewtonSolver
@@ -36,6 +31,12 @@ from .newton_solver import MechanicsNewtonSolver_ODE
 from .setup_models import Runner
 from .setup_models import TimeStepper
 from .version import __version__
+
+# from . import em_model
+# from . import land_model
+# from . import ORdmm_Land
+# from .em_model import EMCoupling
+# from .land_model import LandModel
 
 
 def set_log_level(level):
@@ -47,11 +48,11 @@ def set_log_level(level):
         "simcardems.cli.logger"
         "simcardems.config.logger"
         "simcardems.datacollector.logger"
-        "simcardems.em_model.logger"
+        # "simcardems.em_model.logger"
         "simcardems.ep_model.logger"
         "simcardems.geometry.logger"
         "simcardems.gui.logger"
-        "simcardems.land_model.logger"
+        # "simcardems.land_model.logger"
         "simcardems.mechanics_model.logger"
         "simcardems.newton_solver.logger"
         "simcardems.postprocess.logger"
@@ -96,10 +97,10 @@ _warnings.simplefilter("once", _QuadratureRepresentationDeprecationWarning)
 __all__ = [
     "datacollector",
     "boundary_conditions",
-    "em_model",
+    # "em_model",
     "ep_model",
     "mechanics_model",
-    "ORdmm_Land",
+    # "ORdmm_Land",
     "postprocess",
     "geometry",
     "save_load_functions",
@@ -116,7 +117,7 @@ __all__ = [
     "default_parameters",
     "__version__",
     "TimeStepper",
-    "land_model",
+    # "land_model",
     "newton_solver",
     "MechanicsNewtonSolver_ODE",
     "MechanicsNewtonSolver",

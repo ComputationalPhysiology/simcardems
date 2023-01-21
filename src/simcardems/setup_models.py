@@ -9,22 +9,19 @@ import pulse
 from tqdm import tqdm
 
 from . import config
-from . import em_model
 from . import ep_model
 from . import geometry
 from . import mechanics_model
 from . import save_load_functions as io
 from . import utils
-from .em_model import EMCoupling
-from .ORdmm_Land import ORdmm_Land as CellModel
+from .models import em_model
 
-# from . import land_model
 
 logger = utils.getLogger(__name__)
 
 
 class EMState(NamedTuple):
-    coupling: EMCoupling
+    coupling: em_model.BaseEMCoupling
     solver: cbcbeat.SplittingSolver
     mech_heart: pulse.MechanicsProblem
     geometry: geometry.BaseGeometry
@@ -38,7 +35,12 @@ def setup_EM_model(config: config.Config):
         schema_path=config.geometry_schema_path,
     )
 
-    coupling = em_model.EMCoupling(geo)
+    if config.coupling_type == "explicit_ORdmm_Land":
+        from .models.explicit_ORdmm_Land import EMCoupling, CellModel, ActiveModel
+    else:
+        raise ValueError(f"Invalid coupling type: {config.coupling_type}")
+
+    coupling = EMCoupling(geo)
 
     # Set-up solver and time it
     solver = setup_ep_solver(
@@ -49,6 +51,7 @@ def setup_EM_model(config: config.Config):
         popu_factors_file=config.popu_factors_file,
         disease_state=config.disease_state,
         PCL=config.PCL,
+        CellModel=CellModel,
     )
 
     coupling.register_ep_model(solver)
@@ -56,6 +59,7 @@ def setup_EM_model(config: config.Config):
     mech_heart = setup_mechanics_solver(
         coupling=coupling,
         geo=geo,
+        cell_params=solver.ode_solver._model.parameters(),
         bnd_rigid=config.bnd_rigid,
         pre_stretch=config.pre_stretch,
         traction=config.traction,
@@ -64,6 +68,7 @@ def setup_EM_model(config: config.Config):
         set_material=config.set_material,
         use_custom_newton_solver=config.mechanics_use_custom_newton_solver,
         debug_mode=config.debug_mode,
+        ActiveModel=ActiveModel,
     )
 
     return EMState(
@@ -76,8 +81,10 @@ def setup_EM_model(config: config.Config):
 
 
 def setup_mechanics_solver(
-    coupling: em_model.EMCoupling,
+    coupling: em_model.BaseEMCoupling,
     geo: geometry.BaseGeometry,
+    cell_params,
+    ActiveModel,
     bnd_rigid: bool = config.Config.bnd_rigid,
     pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
     traction: typing.Union[dolfin.Constant, float] = None,
@@ -89,6 +96,8 @@ def setup_mechanics_solver(
     use_custom_newton_solver: bool = config.Config.mechanics_use_custom_newton_solver,
     state_prev=None,
 ):
+    if ActiveModel is None:
+        return None
     """Setup mechanics model with dirichlet boundary conditions or rigid motion."""
     logger.info("Set up mechanics model")
 
@@ -104,33 +113,11 @@ def setup_mechanics_solver(
         b_fs=0.0,
     )
 
-    V = dolfin.FunctionSpace(geo.mesh, "CG", 1)
-    Ta = dolfin.Function(V)
-    # active_model = land_model.LandModel(
-    #     f0=geo.f0,
-    #     s0=geo.s0,
-    #     n0=geo.n0,
-    #     eta=0,
-    #     parameters=cell_params,
-    #     XS=coupling.XS_mech,
-    #     XW=coupling.XW_mech,
-    #     mesh=coupling.mech_mesh,
-    #     scheme=mechanics_ode_scheme,
-    #     Zetas=Zetas_prev,
-    #     Zetaw=Zetaw_prev,
-    #     lmbda=lmbda_prev,
-    # )
-
-    material_kwargs = dict(
-        active_model="active_stress",
-        activation=Ta,
-        f0=geo.f0,
-        s0=geo.s0,
-        n0=geo.n0,
+    active_model = ActiveModel(geometry=geo, coupling=coupling, parameters=cell_params)
+    material = pulse.HolzapfelOgden(
+        active_model=active_model,
         parameters=material_parameters,
     )
-
-    material = pulse.HolzapfelOgden(**material_kwargs)
 
     if set_material == "Guccione":
         material_parameters = pulse.Guccione.default_parameters()
@@ -139,7 +126,10 @@ def setup_mechanics_solver(
         material_parameters["bfs"] = 4.0
         material_parameters["bt"] = 2.0
 
-        material = pulse.Guccione(**material_kwargs)
+        material = pulse.Guccione(
+            active_model=active_model,
+            parameters=material_parameters,
+        )
 
     problem = mechanics_model.create_problem(
         material=material,
@@ -169,7 +159,8 @@ def setup_mechanics_solver(
 
 def setup_ep_solver(
     dt,
-    coupling,
+    coupling: em_model.BaseEMCoupling,
+    CellModel,
     scheme=config.Config.ep_ode_scheme,
     theta=config.Config.ep_theta,
     preconditioner=config.Config.ep_preconditioner,
@@ -181,6 +172,8 @@ def setup_ep_solver(
     disease_state=config.Config.disease_state,
     PCL=config.Config.PCL,
 ):
+    if CellModel is None:
+        return None
     ps = ep_model.setup_splitting_solver_parameters(
         theta=theta,
         preconditioner=preconditioner,
@@ -193,22 +186,23 @@ def setup_ep_solver(
         disease_state=disease_state,
         drug_factors_file=drug_factors_file,
         popu_factors_file=popu_factors_file,
+        CellModel=CellModel,
     )
 
     cell_inits = ep_model.handle_cell_inits(
         cell_inits=cell_inits,
         cell_init_file=cell_init_file,
+        CellModel=CellModel,
     )
 
     cellmodel = CellModel(
         init_conditions=cell_inits,
         params=cell_params,
-        lmbda=coupling.lmbda_ep,
-        dLambda=coupling.dLambda_ep,
+        coupling=coupling,
     )
 
     # Set-up cardiac model
-    ep_heart = ep_model.setup_ep_model(cellmodel, coupling.ep_mesh, PCL=PCL)
+    ep_heart = ep_model.setup_ep_model(cellmodel, coupling.geometry.ep_mesh, PCL=PCL)
     timer = dolfin.Timer("SplittingSolver: setup")
 
     solver = cbcbeat.SplittingSolver(ep_heart, params=ps)
@@ -221,7 +215,7 @@ def setup_ep_solver(
     # Output some degrees of freedom
     total_dofs = vs.function_space().dim()
     logger.info("EP model")
-    utils.print_mesh_info(coupling.ep_mesh, total_dofs)
+    utils.print_mesh_info(coupling.geometry.ep_mesh, total_dofs)
     return solver
 
 
@@ -261,7 +255,7 @@ class Runner:
             logger.info("Create a new state")
             # Create a new state
             coupling, ep_solver, mech_heart, geo, t0 = setup_EM_model(self._config)
-        self.coupling: em_model.EMCoupling = coupling
+        self.coupling: em_model.BaseEMCoupling = coupling
         self.ep_solver: cbcbeat.SplittingSolver = ep_solver
         self.mech_heart: mechanics_model.MechanicsProblem = mech_heart
         self.geometry = geo
@@ -319,7 +313,7 @@ class Runner:
     @classmethod
     def from_models(
         cls,
-        coupling: em_model.EMCoupling,
+        coupling: em_model.BaseEMCoupling,
         ep_solver: cbcbeat.SplittingSolver,
         mech_heart: mechanics_model.MechanicsProblem,
         geo: geometry.BaseGeometry,
@@ -340,51 +334,12 @@ class Runner:
 
     def _setup_assigners(self):
         self._time_stepper = None
-        self._vs = self.ep_solver.solution_fields()[1]
-        self._v, self._v_assigner = utils.setup_assigner(self._vs, 0)
-        self._Ca, self._Ca_assigner = utils.setup_assigner(self._vs, 45)
-        self._XS, self._XS_assigner = utils.setup_assigner(self._vs, 40)
-        self._XW, self._XW_assigner = utils.setup_assigner(self._vs, 41)
-        self._CaTrpn, self._CaTrpn_assigner = utils.setup_assigner(self._vs, 42)
-        self._TmB, self._TmB_assigner = utils.setup_assigner(self._vs, 43)
-        self._Cd, self._Cd_assigner = utils.setup_assigner(self._vs, 44)
-        self._Zetas, self._Zetas_assigner = utils.setup_assigner(self._vs, 46)
-        self._Zetaw, self._Zetaw_assigner = utils.setup_assigner(self._vs, 47)
-
-        self._pre_XS, self._preXS_assigner = utils.setup_assigner(self._vs, 40)
-        self._pre_XW, self._preXW_assigner = utils.setup_assigner(self._vs, 41)
-        self._pre_Zetas, self._preZetas_assigner = utils.setup_assigner(self._vs, 46)
-        self._pre_Zetaw, self._preZetaw_assigner = utils.setup_assigner(self._vs, 47)
-
-        self._u_subspace_index = self.mech_heart.u_subspace_index
-        self._u, self._u_assigner = utils.setup_assigner(
-            self.mech_heart.state,
-            self._u_subspace_index,
-        )
-        self._assign_displacement()
-        self.Ta_prev = dolfin.Function(self.coupling.V_mech)
-
-    def _assign_displacement(self):
-        self._u_assigner.assign(
-            self._u,
-            self.mech_heart.state.sub(self._u_subspace_index),
-        )
-
-    def _assign_ep(self):
-        self._v_assigner.assign(self._v, utils.sub_function(self._vs, 0))
-        self._Ca_assigner.assign(self._Ca, utils.sub_function(self._vs, 45))
-        self._XS_assigner.assign(self._XS, utils.sub_function(self._vs, 40))
-        self._XW_assigner.assign(self._XW, utils.sub_function(self._vs, 41))
-        self._CaTrpn_assigner.assign(self._CaTrpn, utils.sub_function(self._vs, 42))
-        self._TmB_assigner.assign(self._TmB, utils.sub_function(self._vs, 43))
-        self._Cd_assigner.assign(self._Cd, utils.sub_function(self._vs, 44))
-        self._Zetas_assigner.assign(self._Zetas, utils.sub_function(self._vs, 46))
-        self._Zetaw_assigner.assign(self._Zetaw, utils.sub_function(self._vs, 47))
+        self.coupling.setup_assigners()
 
     def store(self):
         # Assign u, v and Ca for postprocessing
-        self._assign_displacement()
-        self._assign_ep()
+        self.coupling.assigners.assign()
+
         self.collector.store(TimeStepper.ns2ms(self.t))
 
     def _setup_datacollector(self):
@@ -395,29 +350,7 @@ class Runner:
             geo=self.geometry,
             reset_state=self._reset,
         )
-        for group, name, f in [
-            ("mechanics", "u", self._u),
-            ("ep", "V", self._v),
-            ("ep", "Ca", self._Ca),
-            # ("mechanics", "lmbda", self.coupling.lmbda_mech),
-            ("mechanics", "Ta", self.coupling.Ta_mech),
-            ("ep", "XS", self._XS),
-            ("ep", "XW", self._XW),
-            ("ep", "CaTrpn", self._CaTrpn),
-            ("ep", "TmB", self._TmB),
-            ("ep", "Cd", self._Cd),
-            ("ep", "Zetas", self._Zetas),
-            ("ep", "Zetaw", self._Zetaw),
-            ("ep", "lmbda", self.coupling.lmbda_ep),
-            ("ep", "dLambda", self.coupling.dLambda_ep),
-            # ("ep", "Ta", self.coupling.Ta_ep),
-            # ("mechanics", "Zetas", self.coupling.Zetas_mech),
-            # ("mechanics", "Zetaw", self.coupling.Zetaw_mech),
-            # ("mechanics", "XS", self.coupling.XS_mech),
-            # ("mechanics", "XW", self.coupling.XW_mech),
-        ]:
-            self.collector.register(group, name, f)
-
+        self.coupling.register_datacollector(self.collector)
         self.mech_heart.solver.register_datacollector(self.collector)
 
     @property
@@ -428,19 +361,11 @@ class Runner:
 
         # Update these states that are needed in the Mechanics solver
         self.coupling.ep_to_coupling()
-
-        XS_norm = utils.compute_norm(self.coupling.XS_ep, self._pre_XS)
-        XW_norm = utils.compute_norm(self.coupling.XW_ep, self._pre_XW)
-        # Zetas_norm = utils.compute_norm(self.coupling.Zetas_ep, self._pre_Zetas)
-        # Zetaw_norm = utils.compute_norm(self.coupling.Zetaw_ep, self._pre_Zetaw)
-
-        return XW_norm + XS_norm >= 0.05
+        norm = self.coupling.assigners.compute_pre_norm()
+        return norm >= 0.05
 
     def _pre_mechanics_solve(self) -> None:
-        self._preXS_assigner.assign(self._pre_XS, utils.sub_function(self._vs, 40))
-        self._preXW_assigner.assign(self._pre_XW, utils.sub_function(self._vs, 41))
-        # self._preXS_assigner.assign(self._pre_Zetas, utils.sub_function(self._vs, 46))
-        # self._preXW_assigner.assign(self._pre_Zetaw, utils.sub_function(self._vs, 47))
+        self.coupling.assigners.assign_pre()
         self.coupling.coupling_to_mechanics()
 
     def _post_mechanics_solve(self) -> None:
@@ -452,12 +377,16 @@ class Runner:
 
     def _solve_mechanics(self):
         self._pre_mechanics_solve()
+        # if self._config.mechanics_use_continuation:
+        #     self.mech_heart.solve_for_control(self.coupling.XS_ep)
+        # else:
         self.mech_heart.solve()
         self._post_mechanics_solve()
 
     def save_state(self, path):
         io.save_state(
             path,
+            config=self._config,
             coupling=self.coupling,
             geo=self.geometry,
             dt=self._dt,
@@ -473,12 +402,6 @@ class Runner:
     ):
         if not hasattr(self, "_outdir"):
             raise RuntimeError("Please set the output directory")
-
-        # Truncate
-        # if Path("residual.txt").is_file():
-        #     fr = open("residual.txt", "w")
-        #     fr.truncate(0)
-        #     fr.close()
 
         save_it = int(save_freq / self._dt)
         self.create_time_stepper(T, use_ns=True, st_progress=st_progress)
@@ -529,22 +452,7 @@ class Runner:
             #     )
             #     beat_nr += save_state_every_n_beat
 
-            # # Residual file : End of line after each time step
-            # if (
-            #     Path("residual.txt").is_file()
-            #     and dolfin.MPI.rank(dolfin.MPI.comm_world) == 0
-            # ):
-            #     fr = open("residual.txt", "a")
-            #     fr.write("\n")
-            #     fr.close()
-
         self.save_state(self._state_path)
-
-        # Copy residual file to output dir (if exists)
-        # if Path("residual.txt").is_file():
-        #     Path(self._outdir).joinpath("residual.txt").write_text(
-        #         Path("residual.txt").read_text(),
-        #     )
 
 
 class _tqdm:

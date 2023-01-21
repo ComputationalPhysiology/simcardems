@@ -1,25 +1,42 @@
+from __future__ import annotations
+
+from typing import Dict
 from typing import Optional
+from typing import TYPE_CHECKING
 
 import dolfin
+import ufl
 
-from . import geometry as _geometry
-from . import land_model
-from . import utils
-from .mechanics_model import MechanicsProblem
+from ... import utils
+from ...mechanics_model import MechanicsProblem
+from ..em_model import BaseEMCoupling
+
+if TYPE_CHECKING:
+    from ...datacollector import DataCollector, Assigners
 
 
 logger = utils.getLogger(__name__)
 
 
-class EMCoupling:
-    def __init__(
+def Ta(XS, XW, Zetas, Zetaw, lmbda, Tref, rs, Beta0):
+
+    _min = ufl.min_value
+    _max = ufl.max_value
+    if isinstance(lmbda, (int, float)):
+        _min = min
+        _max = max
+    lmbda = _min(1.2, lmbda)
+    h_lambda_prima = 1 + Beta0 * (lmbda + _min(lmbda, 0.87) - 1.87)
+    h_lambda = _max(0, h_lambda_prima)
+
+    return h_lambda * (Tref / rs) * (XS * (Zetas + 1) + XW * Zetaw)
+
+
+class EMCoupling(BaseEMCoupling):
+    def _post_init(
         self,
-        geometry: _geometry.BaseGeometry,
         lmbda: Optional[dolfin.Function] = None,
     ) -> None:
-        logger.debug("Create EM coupling")
-        self.geometry = geometry
-
         self.V_mech = dolfin.FunctionSpace(self.mech_mesh, "CG", 1)
         self.XS_mech = dolfin.Function(self.V_mech, name="XS_mech")
         self.XW_mech = dolfin.Function(self.V_mech, name="XW_mech")
@@ -36,8 +53,8 @@ class EMCoupling:
         self.Zetas_ep = dolfin.Function(self.V_ep, name="Zetas_ep")
         self.Zetaw_ep = dolfin.Function(self.V_ep, name="Zetaw_ep")
 
-        self.W_ep = dolfin.VectorFunctionSpace(self.ep_mesh, "CG", 2)
-        self.u_ep = dolfin.Function(self.W_ep, name="u_ep")
+        # self.W_ep = dolfin.VectorFunctionSpace(self.ep_mesh, "CG", 2)
+        # self.u_ep = dolfin.Function(self.W_ep, name="u_ep")
 
         self._projector_V_ep = utils.Projector(self.V_ep)
         self._projector_V_mech = utils.Projector(self.V_mech)
@@ -45,6 +62,54 @@ class EMCoupling:
         if lmbda is not None:
             self.lmbda_ep.vector()[:] = lmbda.vector()
             self.lmbda_ep_prev.vector()[:] = lmbda.vector()
+
+    def members(self) -> Dict[str, dolfin.Function]:
+        return {
+            "/em/lmbda_prev": self.lmbda_ep_prev,
+            "/ep/vs": self.ep_solver.vs,
+            "/mechanics/state": self.mech_solver.state,
+        }
+
+    @property
+    def assigners(self) -> Assigners:
+        return self._assigners
+
+    def setup_assigners(self) -> None:
+        from ...datacollector import Assigners
+
+        self._assigners = Assigners(vs=self.vs, mech_state=self.mech_state)
+        for name, group, index in [
+            ("v", "ep", 0),
+            ("Ca", "ep", 45),
+            ("XS", "ep", 45),
+            ("XW", "ep", 45),
+            ("CaTrpn", "ep", 45),
+            ("TmB", "ep", 45),
+            ("Cd", "ep", 45),
+            ("u", "mechanics", self.mech_solver.u_subspace_index),
+        ]:
+            self._assigners.register_subfunction(
+                name=name,
+                group=group,
+                subspace_index=index,
+            )
+
+        for name, group, index in [
+            ("XS", "ep", 45),
+            ("XW", "ep", 45),
+        ]:
+            self._assigners.register_subfunction(
+                name=name,
+                group=group,
+                subspace_index=index,
+                is_pre=True,
+            )
+
+        self._assigners.register_subfunction(
+            name="u",
+            group="mechanics",
+            subspace_index=self._u_subspace_index,
+        )
 
     @property
     def mech_mesh(self):
@@ -112,9 +177,15 @@ class EMCoupling:
             solver.state,
             self._u_subspace_index,
         )
-        self.f0 = solver.material.f0
         self.mechanics_to_coupling()
         logger.debug("Done registering EP model")
+
+    def register_datacollector(self, collector: "DataCollector") -> None:
+        super().register_datacollector(collector=collector)
+
+        collector.register("ep", "lmbda", self.lmbda_ep)
+        collector.register("ep", "dLmbda", self.dLambda_ep)
+        collector.register("mechanics", "Ta", self.Ta_mech)
 
     def ep_to_coupling(self):
         logger.debug("Transfer variables from EP to coupling")
@@ -133,7 +204,7 @@ class EMCoupling:
         self.Zetaw_mech.interpolate(self.Zetaw_ep)
         self._projector_V_mech(
             self.Ta_mech,
-            land_model.Ta(
+            Ta(
                 XS=self.XS_mech,
                 XW=self.XW_mech,
                 Zetas=self.Zetas_mech,
@@ -152,13 +223,12 @@ class EMCoupling:
             self.u_mech,
             utils.sub_function(self.mech_state, self._u_subspace_index),
         )
-        self.u_ep.interpolate(self.u_mech)
-        self._project_lmbda()
+        self.lmbda_ep.interpolate(self.lmbda_mech_func)
+        # self.u_ep.interpolate(self.u_mech)
+        # self._project_lmbda()
 
         logger.debug("Done transferring variables from mechanics to coupling")
 
     def coupling_to_ep(self):
-        logger.debug("Transfer variables from coupling to EP")
-        # dolfin.assign(utils.sub_function(self.ep_solver.vs, 48), self.lmbda_ep)
-        # dolfin.assign(utils.sub_function(self.ep_solver.vs, 49), self.dLambda_ep)
-        logger.debug("Done transferring variables from coupling to EP")
+        logger.debug("Update EP")
+        logger.debug("Done updating EP")

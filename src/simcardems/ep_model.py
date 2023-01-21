@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 from typing import Dict
 from typing import Optional
+from typing import Type
 
 import cbcbeat
 import dolfin
@@ -9,7 +10,8 @@ import pulse
 import ufl
 
 from . import utils
-from .ORdmm_Land import ORdmm_Land as CellModel
+
+# from .ORdmm_Land import ORdmm_Land as CellModel
 
 logger = utils.getLogger(__name__)
 
@@ -194,6 +196,7 @@ def load_json(filename: str):
 
 
 def handle_cell_params(
+    CellModel: Type[cbcbeat.CardiacCellModel],
     cell_params: Optional[Dict[str, float]] = None,
     disease_state: str = "healthy",
     drug_factors_file: str = "",
@@ -225,6 +228,7 @@ def handle_cell_params(
 
 
 def handle_cell_inits(
+    CellModel: Type[cbcbeat.CardiacCellModel],
     cell_inits: Optional[Dict[str, float]] = None,
     cell_init_file: str = "",
 ) -> Dict[str, float]:

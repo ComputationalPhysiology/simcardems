@@ -1,27 +1,18 @@
 from enum import Enum
+from typing import Dict
+from typing import Optional
 
 import dolfin
 import pulse
 import ufl
 
-from . import utils
+from ... import utils
+from ...geometry import BaseGeometry
+from .cell_model import ORdmmLandFull
+from .em_model import EMCoupling
 
 
 logger = utils.getLogger(__name__)
-
-
-def Ta(XS, XW, Zetas, Zetaw, lmbda, Tref, rs, Beta0):
-
-    _min = ufl.min_value
-    _max = ufl.max_value
-    if isinstance(lmbda, (int, float)):
-        _min = min
-        _max = max
-    lmbda = _min(1.2, lmbda)
-    h_lambda_prima = 1 + Beta0 * (lmbda + _min(lmbda, 0.87) - 1.87)
-    h_lambda = _max(0, h_lambda_prima)
-
-    return h_lambda * (Tref / rs) * (XS * (Zetas + 1) + XW * Zetaw)
 
 
 class Scheme(str, Enum):
@@ -46,27 +37,27 @@ def _Zeta(Zeta_prev, A, c, dLambda, dt, scheme: Scheme):
 class LandModel(pulse.ActiveModel):
     def __init__(
         self,
-        XS,
-        XW,
-        parameters,
-        mesh,
+        geometry: BaseGeometry,
+        coupling: EMCoupling,
+        parameters: Optional[Dict[str, float]] = None,
         Zetas=None,
         Zetaw=None,
         lmbda=None,
-        f0=None,
-        s0=None,
-        n0=None,
         eta=0,
         scheme: Scheme = Scheme.analytic,
         **kwargs,
     ):
         logger.debug("Initialize Land Model")
-        super().__init__(f0=f0, s0=s0, n0=n0)
-        self._eta = eta
-        self.function_space = dolfin.FunctionSpace(mesh, "CG", 1)
+        super().__init__(f0=geometry.f0, s0=geometry.s0, n0=geometry.n0)
 
-        self.XS = XS
-        self.XW = XW
+        self._eta = eta
+        self.function_space = dolfin.FunctionSpace(coupling.mech_mesh, "CG", 1)
+
+        self.XS = coupling.XS_mech
+        self.XW = coupling.XW_mech
+        if parameters is None:
+            parameters = ORdmmLandFull.default_parameters()
+
         self._parameters = parameters
         self._t = 0.0
         self._t_prev = 0.0

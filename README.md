@@ -5,6 +5,7 @@
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/ComputationalPhysiology/simcardems/master.svg)](https://results.pre-commit.ci/latest/github/ComputationalPhysiology/simcardems/master)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL_v2.1-blue.svg)](https://www.gnu.org/licenses/lgpl-2.1)
+[![DOI](https://zenodo.org/badge/409220068.svg)](https://zenodo.org/badge/latestdoi/409220068)
 [![status](https://joss.theoj.org/papers/28986461c27b8a76c8ac5a43dc57e8dc/status.svg)](https://joss.theoj.org/papers/28986461c27b8a76c8ac5a43dc57e8dc)
 
 # Simula Cardiac Electro-Mechanics Solver
@@ -18,7 +19,7 @@ See [Installation instructions](https://computationalphysiology.github.io/simcar
 
 ## Getting started
 
-See [the demos](https://computationalphysiology.github.io/simcardems/demo.html)
+See [the demos](https://computationalphysiology.github.io/simcardems/simple_demo.html)
 
 ## Documentation
 

@@ -4,8 +4,9 @@ from dataclasses import dataclass
 
 import dolfin
 
-from . import land_model
 from . import utils
+
+# from . import land_model
 
 
 @dataclass
@@ -31,7 +32,7 @@ class Config:
     drug_factors_file: utils.PathLike = ""
     popu_factors_file: utils.PathLike = ""
     disease_state: str = "healthy"
-    mechanics_ode_scheme: land_model.Scheme = land_model.Scheme.analytic
+    # mechanics_ode_scheme: land_model.Scheme = land_model.Scheme.analytic
     ep_ode_scheme: str = "GRL1"
     ep_preconditioner: str = "sor"
     ep_theta: float = 0.5
@@ -39,6 +40,10 @@ class Config:
     mechanics_use_continuation: bool = False
     mechanics_use_custom_newton_solver: bool = False
     PCL: float = 1000
+    coupling_type: typing.Literal[
+        "fully_coupled_ORdmm_Land",
+        "explicit_ORdmm_Land",
+    ] = "explicit_ORdmm_Land"
 
     def as_dict(self):
         return {k: v for k, v in self.__dict__.items()}

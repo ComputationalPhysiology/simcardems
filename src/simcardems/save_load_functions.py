@@ -8,14 +8,22 @@ from dolfin import MixedElement  # noqa: F401
 from dolfin import tetrahedron  # noqa: F401
 from dolfin import VectorElement  # noqa: F401
 
-from . import em_model
 from . import geometry
 from . import mechanics_model
 from . import setup_models
 from . import utils
-from .ORdmm_Land import vs_functions_to_dict
+from .config import Config
+from .models import em_model
+
+# from .ORdmm_Land import vs_functions_to_dict
 
 logger = utils.getLogger(__name__)
+
+
+def vs_functions_to_dict(vs, state_names):
+    return {
+        name: utils.sub_function(vs, index) for index, name in enumerate(state_names)
+    }
 
 
 @contextlib.contextmanager
@@ -97,9 +105,25 @@ def mech_heart_to_bnd_cond(mech_heart: mechanics_model.MechanicsProblem):
     return "dirichlet"
 
 
+def serialize_dict(d):
+    new_d = {}
+    for k, v in d.items():
+        if isinstance(v, Path):
+            new_d[k] = v.as_posix()
+        elif v is None:
+            # Skip it
+            continue
+        elif isinstance(v, dict):
+            new_d[k] = serialize_dict(v)
+        else:
+            new_d[k] = v
+    return new_d
+
+
 def save_state(
     path,
-    coupling: em_model.EMCoupling,
+    config: Config,
+    coupling: em_model.BaseEMCoupling,
     geo: geometry.BaseGeometry,
     dt=0.02,
     t0=0,
@@ -112,17 +136,17 @@ def save_state(
     logger.debug("Save using dolfin.HDF5File")
 
     with dolfin.HDF5File(
-        coupling.ep_solver.VS.mesh().mpi_comm(),
+        geo.comm(),
         path.as_posix(),
         "a",
     ) as h5file:
-        h5file.write(coupling.lmbda_ep_prev, "/em/lmbda_prev")
-        h5file.write(coupling.ep_solver.vs, "/ep/vs")
-        h5file.write(coupling.mech_solver.state, "/mechanics/state")
+        for name, func in coupling.members().items():
+            h5file.write(func, name)
 
     bnd_cond_dict = dict([("dirichlet", 0), ("rigid", 1)])
     bnd_cond = mech_heart_to_bnd_cond(coupling.mech_solver)
     logger.debug("Save using h5py")
+    dict_to_h5(serialize_dict(config.as_dict()), path, "config")
     dict_to_h5(
         coupling.ep_solver.ode_solver._model.parameters(),
         path,
@@ -156,6 +180,7 @@ def load_state(
     with h5pyfile(path) as h5file:
         state_params = h5_to_dict(h5file["state_params"])
         cell_params = h5_to_dict(h5file["ep"]["cell_params"])
+        config = Config(**h5_to_dict(h5file["config"]))
         vs_signature = h5file["ep"]["vs"].attrs["signature"].decode()
         mech_signature = h5file["mechanics"]["state"].attrs["signature"].decode()
 
@@ -172,12 +197,23 @@ def load_state(
         h5file.read(vs, "/ep/vs")
         h5file.read(mech_state, "/mechanics/state")
         h5file.read(lmbda, "/em/lmbda_prev")
-    cell_inits = vs_functions_to_dict(vs)
 
-    coupling = em_model.EMCoupling(
+    if config.coupling_type == "explicit_ORdmm_Land":
+        from .models.explicit_ORdmm_Land import CellModel, ActiveModel, EMCoupling
+
+    else:
+        raise ValueError(f"Invalid coupling type: {config.coupling_type}")
+
+    cell_inits = vs_functions_to_dict(
+        vs,
+        state_names=CellModel.default_initial_conditions().keys(),
+    )
+
+    coupling = EMCoupling(
         geometry=geo,
         lmbda=lmbda,
     )
+
     solver = setup_models.setup_ep_solver(
         state_params["dt"],
         coupling,
@@ -187,6 +223,7 @@ def load_state(
         popu_factors_file=popu_factors_file,
         disease_state=disease_state,
         PCL=PCL,
+        CellModel=CellModel,
     )
     coupling.register_ep_model(solver)
     bnd_cond_dict = dict([(0, False), (1, True)])
@@ -196,6 +233,8 @@ def load_state(
         geo=geo,
         bnd_rigid=bnd_cond_dict[state_params["bnd_cond"]],
         state_prev=mech_state,
+        cell_params=cell_params,
+        ActiveModel=ActiveModel,
     )
     mech_heart.state.assign(mech_state)
     coupling.register_mech_model(mech_heart)

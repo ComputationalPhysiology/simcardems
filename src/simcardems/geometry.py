@@ -12,6 +12,7 @@ import pulse
 from cardiac_geometries.geometry import Geometry
 from cardiac_geometries.geometry import H5Path
 from cardiac_geometries.geometry import MeshTypes
+from mpi4py import MPI
 
 from . import utils
 
@@ -126,6 +127,9 @@ class BaseGeometry(abc.ABC):
         # TODO: We might add more checks here
         return self.parameters == __o.parameters
 
+    def comm(self) -> MPI.Comm:
+        return self.mesh.mpi_comm()
+
     def validate(self):
         pass
 
@@ -220,6 +224,7 @@ class BaseGeometry(abc.ABC):
 
     @property
     def mesh(self) -> dolfin.Mesh:
+        # FIXME: This should be optional
         return self.mechanics_mesh
 
     @property

@@ -2,10 +2,15 @@ from enum import Enum
 from pathlib import Path
 from typing import Dict
 from typing import List
+from typing import Literal
+from typing import Optional
+from typing import Tuple
 from typing import Union
 
+import cbcbeat
 import dolfin
 import numpy as np
+import pulse
 from dolfin import FiniteElement  # noqa: F401
 from dolfin import tetrahedron  # noqa: F401
 from dolfin import VectorElement  # noqa: F401
@@ -22,6 +27,143 @@ logger = utils.getLogger(__name__)
 class DataGroups(Enum):
     ep = "ep"
     mechanics = "mechanics"
+
+
+class Assigners:
+    """Helper class to assign subfunctions from EP and Mechanics state"""
+
+    def __init__(
+        self,
+        *,
+        vs: Optional[cbcbeat.SplittingSolver] = None,
+        mech_state: Optional[pulse.MechanicsProblem] = None,
+    ) -> None:
+        self.vs = vs
+        self.mech_state = mech_state
+
+        self.functions: Dict[str, Dict[str, dolfin.Function]] = {
+            "ep": {},
+            "mechanics": {},
+        }
+        self.assigners: Dict[str, Dict[str, dolfin.FunctionAssigner]] = {
+            "ep": {},
+            "mechanics": {},
+        }
+        self.subspace_indices: Dict[str, Dict[str, int]] = {
+            "ep": {},
+            "mechanics": {},
+        }
+
+        self.pre_functions: Dict[str, Dict[str, dolfin.Function]] = {
+            "ep": {},
+            "mechanics": {},
+        }
+        self.pre_assigners: Dict[str, Dict[str, dolfin.FunctionAssigner]] = {
+            "ep": {},
+            "mechanics": {},
+        }
+        self.pre_subspace_indices: Dict[str, Dict[str, int]] = {
+            "ep": {},
+            "mechanics": {},
+        }
+
+    def assign(self) -> None:
+        self.assign_mechanics()
+        self.assign_ep()
+
+    def assign_pre(self) -> None:
+        self.assign_pre_mechanics()
+        self.assign_ep()
+
+    def _get(
+        self,
+        is_pre: bool,
+    ) -> Tuple[
+        Dict[str, Dict[str, dolfin.Function]],
+        Dict[str, Dict[str, dolfin.FunctionAssigner]],
+        Dict[str, Dict[str, int]],
+    ]:
+        if is_pre:
+            return (self.pre_functions, self.pre_assigners, self.pre_subspace_indices)
+        else:
+            return (self.functions, self.assigners, self.subspace_indices)
+
+    def _assign_mechanics(self, is_pre: bool) -> None:
+        functions, assigners, subspace_indices = self._get(is_pre)
+
+        keys = assigners["mechanics"].keys()
+        if len(keys) == 0:
+            return
+
+        if self.mech_state is None:
+            raise RuntimeError(
+                "Unable to assign mechanics, no mechanics state registered",
+            )
+        for name in keys:
+            assigner = assigners["mechanics"].get(name)
+            index = subspace_indices["mechanics"].get(name)
+            f = functions["mechanics"].get(name)
+            assigner.assign(f, utils.sub_function(self.mech_state, index))
+
+    def assign_pre_mechanics(self) -> None:
+        self._assign_mechanics(is_pre=True)
+
+    def assign_mechanics(self) -> None:
+        self._assign_mechanics(is_pre=False)
+
+    def _assign_ep(self, is_pre: bool) -> None:
+
+        functions, assigners, subspace_indices = self._get(is_pre)
+
+        keys = assigners["ep"].keys()
+        if len(keys) == 0:
+            return
+        if self.vs is None:
+            raise RuntimeError("Unable to assign EP, no EP state registered")
+
+        for name in keys:
+            assigner = assigners["ep"].get(name)
+            index = subspace_indices["ep"].get(name)
+            f = functions["ep"].get(name)
+
+            assigner.assign(f, utils.sub_function(self.vs, index))
+
+    def assign_pre_ep(self) -> None:
+        self._assign_ep(is_pre=True)
+
+    def assign_ep(self) -> None:
+        self._assign_ep(is_pre=False)
+
+    def compute_pre_norm(self):
+        norm = 0.0
+        hit = False
+        for group in ["ep", "mechanics"]:
+            for name, pre_func in self.pre_functions[group].items():
+                if name in self.functions[group]:
+                    hit = True
+                    norm += utils.compute_norm(self.functions[group][name], pre_func)
+
+        if not hit:
+            # We never computed any norm so we should not interpret
+            # the norm as zero, but rather assume that the norm is large
+            # so that we actually solve in case we rely on this value as
+            # a threshold
+            return np.inf
+        return norm
+
+    def register_subfunction(
+        self,
+        name: str,
+        group: Literal["ep", "mechanics"],
+        subspace_index: int,
+        is_pre: bool = False,
+    ) -> None:
+        func = self.vs if group == "ep" else self.mech_state
+        f, assigner = utils.setup_assigner(func, subspace_index)
+        functions, assigners, subspace_indices = self._get(is_pre)
+        functions[group][name] = f
+        assigners[group][name] = assigner
+        subspace_indices[group][name] = subspace_index
 
 
 class DataCollector:

@@ -5,11 +5,12 @@ from pathlib import Path
 import click
 
 from . import config
-from . import land_model
 from . import postprocess as post
 from . import utils
 from .setup_models import Runner
 from .version import __version__
+
+# from . import land_model
 
 logger = utils.getLogger(__name__)
 
@@ -124,12 +125,6 @@ def cli():
     help="Indicate disease state. Default is healthy. ",
 )
 @click.option(
-    "--mechanics-ode-scheme",
-    default=config.Config.mechanics_ode_scheme,
-    type=click.Choice(land_model.Scheme._member_names_),
-    help="Scheme used to solve the ODEs in the mechanics model",
-)
-@click.option(
     "--mechanics-use-continuation",
     default=config.Config.mechanics_use_continuation,
     type=bool,
@@ -183,7 +178,7 @@ def run(
     drug_factors_file: utils.PathLike,
     popu_factors_file: utils.PathLike,
     disease_state: str,
-    mechanics_ode_scheme: land_model.Scheme,
+    # mechanics_ode_scheme: land_model.Scheme,
     mechanics_use_continuation: bool,
     mechanics_use_custom_newton_solver: bool,
     pcl: float,
@@ -212,7 +207,7 @@ def run(
         drug_factors_file=drug_factors_file,
         popu_factors_file=popu_factors_file,
         disease_state=disease_state,
-        mechanics_ode_scheme=mechanics_ode_scheme,
+        # mechanics_ode_scheme=mechanics_ode_scheme,
         mechanics_use_continuation=mechanics_use_continuation,
         mechanics_use_custom_newton_solver=mechanics_use_custom_newton_solver,
         PCL=pcl,
