@@ -77,3 +77,12 @@ class BaseEMCoupling(abc.ABC):
         for group_name, group in self.assigners.functions.items():
             for func_name, func in group.items():
                 collector.register(group=group_name, name=func_name, f=func)
+
+    def print_mechanics_info(self):
+        pass
+
+    def print_ep_info(self):
+        pass
+
+    def cell_params(self):
+        return {}

@@ -143,21 +143,15 @@ def save_state(
         for name, func in coupling.members().items():
             h5file.write(func, name)
 
-    bnd_cond_dict = dict([("dirichlet", 0), ("rigid", 1)])
-    bnd_cond = mech_heart_to_bnd_cond(coupling.mech_solver)
     logger.debug("Save using h5py")
     dict_to_h5(serialize_dict(config.as_dict()), path, "config")
     dict_to_h5(
-        coupling.ep_solver.ode_solver._model.parameters(),
+        coupling.cell_params(),
         path,
         "ep/cell_params",
     )
     dict_to_h5(
-        dict(
-            dt=dt,
-            bnd_cond=bnd_cond_dict[bnd_cond],
-            t0=t0,
-        ),
+        dict(dt=dt, t0=t0),
         path,
         "state_params",
     )

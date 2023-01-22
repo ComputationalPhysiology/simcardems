@@ -96,9 +96,10 @@ def setup_mechanics_solver(
     use_custom_newton_solver: bool = config.Config.mechanics_use_custom_newton_solver,
     state_prev=None,
 ):
+    """Setup mechanics model with dirichlet boundary conditions or rigid motion."""
+
     if ActiveModel is None:
         return None
-    """Setup mechanics model with dirichlet boundary conditions or rigid motion."""
     logger.info("Set up mechanics model")
 
     # Use parameters from Biaxial test in Holzapfel 2019 (Table 1).
@@ -149,10 +150,7 @@ def setup_mechanics_solver(
 
     problem.solve()
     coupling.register_mech_model(problem)
-
-    total_dofs = problem.state.function_space().dim()
-    logger.info("Mechanics model")
-    utils.print_mesh_info(coupling.mech_mesh, total_dofs)
+    coupling.print_mechanics_info()
 
     return problem
 
@@ -212,10 +210,7 @@ def setup_ep_solver(
     (vs_, vs, vur) = solver.solution_fields()
     vs_.assign(cellmodel.initial_conditions())
 
-    # Output some degrees of freedom
-    total_dofs = vs.function_space().dim()
-    logger.info("EP model")
-    utils.print_mesh_info(coupling.geometry.ep_mesh, total_dofs)
+    coupling.print_ep_info()
     return solver
 
 

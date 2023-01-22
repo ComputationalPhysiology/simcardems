@@ -29,6 +29,20 @@ class DataGroups(Enum):
     mechanics = "mechanics"
 
 
+def assign_item_is_None(
+    f: Optional[dolfin.Function],
+    assigner: Optional[dolfin.FunctionAssigner],
+    index: Optional[int],
+) -> bool:
+    if f is None:
+        return True
+    if assigner is None:
+        return True
+    if index is None:
+        return True
+    return False
+
+
 class Assigners:
     """Helper class to assign subfunctions from EP and Mechanics state"""
 
@@ -103,7 +117,12 @@ class Assigners:
             assigner = assigners["mechanics"].get(name)
             index = subspace_indices["mechanics"].get(name)
             f = functions["mechanics"].get(name)
-            assigner.assign(f, utils.sub_function(self.mech_state, index))
+            if assign_item_is_None(f, assigner, index):
+                continue
+
+            # Could ass a typeguard here: https://peps.python.org/pep-0647/
+            # but this will need python3.10
+            assigner.assign(f, utils.sub_function(self.mech_state, index))  # type: ignore
 
     def assign_pre_mechanics(self) -> None:
         self._assign_mechanics(is_pre=True)
@@ -125,8 +144,12 @@ class Assigners:
             assigner = assigners["ep"].get(name)
             index = subspace_indices["ep"].get(name)
             f = functions["ep"].get(name)
+            if assign_item_is_None(f, assigner, index):
+                continue
 
-            assigner.assign(f, utils.sub_function(self.vs, index))
+            # Could ass a typeguard here: https://peps.python.org/pep-0647/
+            # but this will need python3.10
+            assigner.assign(f, utils.sub_function(self.vs, index))  # type: ignore
 
     def assign_pre_ep(self) -> None:
         self._assign_ep(is_pre=True)

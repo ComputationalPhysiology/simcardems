@@ -79,3 +79,17 @@ class EMCoupling(BaseEMCoupling):
     def coupling_to_ep(self):
         logger.debug("Update EP")
         logger.debug("Done updating EP")
+
+    def print_mechanics_info(self):
+        total_dofs = self.mech_tate.function_space().dim()
+        utils.print_mesh_info(self.mech_mesh, total_dofs)
+        logger.info("Mechanics model")
+
+    def print_ep_info(self):
+        # Output some degrees of freedom
+        total_dofs = self.vs.function_space().dim()
+        logger.info("EP model")
+        utils.print_mesh_info(self.ep_mesh, total_dofs)
+
+    def cell_params(self):
+        return self.ep_solver.ode_solver._model.parameters()

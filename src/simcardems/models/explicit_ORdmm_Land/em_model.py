@@ -74,38 +74,47 @@ class EMCoupling(BaseEMCoupling):
     def assigners(self) -> Assigners:
         return self._assigners
 
+    @assigners.setter
+    def assigners(self, assigners) -> None:
+        self._assigners = assigners
+
     def setup_assigners(self) -> None:
         from ...datacollector import Assigners
 
-        self._assigners = Assigners(vs=self.vs, mech_state=self.mech_state)
-        for name, group, index in [
-            ("v", "ep", 0),
-            ("Ca", "ep", 45),
-            ("XS", "ep", 45),
-            ("XW", "ep", 45),
-            ("CaTrpn", "ep", 45),
-            ("TmB", "ep", 45),
-            ("Cd", "ep", 45),
-            ("u", "mechanics", self.mech_solver.u_subspace_index),
+        self.assigners = Assigners(vs=self.vs, mech_state=self.mech_state)
+        for name, index in [
+            ("v", 0),
+            ("Ca", 45),
+            ("XS", 45),
+            ("XW", 45),
+            ("CaTrpn", 45),
+            ("TmB", 45),
+            ("Cd", 45),
         ]:
-            self._assigners.register_subfunction(
+            self.assigners.register_subfunction(
                 name=name,
-                group=group,
+                group="ep",
                 subspace_index=index,
             )
 
-        for name, group, index in [
-            ("XS", "ep", 45),
-            ("XW", "ep", 45),
+        self.assigners.register_subfunction(
+            name="u",
+            group="mechanics",
+            subspace_index=self.mech_solver.u_subspace_index,
+        )
+
+        for name, index in [
+            ("XS", 45),
+            ("XW", 45),
         ]:
-            self._assigners.register_subfunction(
+            self.assigners.register_subfunction(
                 name=name,
-                group=group,
+                group="ep",
                 subspace_index=index,
                 is_pre=True,
             )
 
-        self._assigners.register_subfunction(
+        self.assigners.register_subfunction(
             name="u",
             group="mechanics",
             subspace_index=self._u_subspace_index,
@@ -232,3 +241,17 @@ class EMCoupling(BaseEMCoupling):
     def coupling_to_ep(self):
         logger.debug("Update EP")
         logger.debug("Done updating EP")
+
+    def print_mechanics_info(self):
+        total_dofs = self.mech_tate.function_space().dim()
+        utils.print_mesh_info(self.mech_mesh, total_dofs)
+        logger.info("Mechanics model")
+
+    def print_ep_info(self):
+        # Output some degrees of freedom
+        total_dofs = self.vs.function_space().dim()
+        logger.info("EP model")
+        utils.print_mesh_info(self.ep_mesh, total_dofs)
+
+    def cell_params(self):
+        return self.ep_solver.ode_solver._model.parameters()

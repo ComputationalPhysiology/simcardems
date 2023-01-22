@@ -11,7 +11,7 @@ from cbcbeat.cellmodels import CardiacCellModel
 from dolfin import as_vector
 from dolfin import Constant
 
-from . import utils
+from ... import utils
 
 logger = utils.getLogger(__name__)
 
@@ -175,7 +175,7 @@ class ORdmmLandPureEp(CardiacCellModel):
                 ("kmtrpn", 0.0005),
                 ("trpnmax", 0.07),
                 ("lmbda", 1.0),
-                ("dLambda", 0.0)
+                ("dLambda", 0.0),
                 # Drug factors
                 ("scale_drug_INa", 1.0),
                 ("scale_drug_INaL", 1.0),
