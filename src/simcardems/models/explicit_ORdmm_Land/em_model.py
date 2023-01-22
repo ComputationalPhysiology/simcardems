@@ -1,18 +1,23 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Dict
 from typing import Optional
 from typing import TYPE_CHECKING
+from typing import Union
 
+import cbcbeat
 import dolfin
 import ufl
 
 from ... import utils
-from ...mechanics_model import MechanicsProblem
+from ...config import Config
+from ...geometry import BaseGeometry
 from ..em_model import BaseEMCoupling
 
 if TYPE_CHECKING:
     from ...datacollector import DataCollector, Assigners
+    from ...mechanics_model import MechanicsProblem
 
 
 logger = utils.getLogger(__name__)
@@ -33,10 +38,13 @@ def Ta(XS, XW, Zetas, Zetaw, lmbda, Tref, rs, Beta0):
 
 
 class EMCoupling(BaseEMCoupling):
-    def _post_init(
+    def __init__(
         self,
+        geometry: BaseGeometry,
         lmbda: Optional[dolfin.Function] = None,
     ) -> None:
+        super().__init__(geometry=geometry)
+
         self.V_mech = dolfin.FunctionSpace(self.mech_mesh, "CG", 1)
         self.XS_mech = dolfin.Function(self.V_mech, name="XS_mech")
         self.XW_mech = dolfin.Function(self.V_mech, name="XW_mech")
@@ -157,7 +165,7 @@ class EMCoupling(BaseEMCoupling):
         f = F * self.geometry.f0_ep
         self._projector_V_ep(self.lmbda_ep, dolfin.project(dolfin.sqrt(f**2)))
 
-    def register_ep_model(self, solver):
+    def register_ep_model(self, solver: cbcbeat.SplittingSolver):
         logger.debug("Registering EP model")
         self.ep_solver = solver
         self.vs = solver.solution_fields()[0]
@@ -243,7 +251,7 @@ class EMCoupling(BaseEMCoupling):
         logger.debug("Done updating EP")
 
     def print_mechanics_info(self):
-        total_dofs = self.mech_tate.function_space().dim()
+        total_dofs = self.mech_state.function_space().dim()
         utils.print_mesh_info(self.mech_mesh, total_dofs)
         logger.info("Mechanics model")
 
@@ -255,3 +263,15 @@ class EMCoupling(BaseEMCoupling):
 
     def cell_params(self):
         return self.ep_solver.ode_solver._model.parameters()
+
+    def save_state(
+        self,
+        path: Union[str, Path],
+        config: Optional[Config] = None,
+        **state_params,
+    ) -> None:
+        ...
+
+    @classmethod
+    def from_state(cls, path: Union[str, Path]) -> EMCoupling:
+        ...

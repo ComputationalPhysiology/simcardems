@@ -1,15 +1,27 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import dolfin
 
 from ... import utils
-from ...mechanics_model import MechanicsProblem
+from ...geometry import BaseGeometry
 from ..em_model import BaseEMCoupling
+
+if TYPE_CHECKING:
+    from ...mechanics_model import MechanicsProblem
 
 
 logger = utils.getLogger(__name__)
 
 
 class EMCoupling(BaseEMCoupling):
-    def _post_init(self):
+    def __init__(
+        self,
+        geometry: BaseGeometry,
+    ) -> None:
+        super().__init__(geometry=geometry)
+
         self.V_mech = dolfin.FunctionSpace(self.mech_mesh, "CG", 1)
         self.XS_mech = dolfin.Function(self.V_mech, name="XS_mech")
         self.XW_mech = dolfin.Function(self.V_mech, name="XW_mech")

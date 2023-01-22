@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import NamedTuple
 
 import cbcbeat
-import dolfin
 import pulse
 from tqdm import tqdm
 
@@ -41,25 +40,25 @@ def setup_EM_model(config: config.Config):
         raise ValueError(f"Invalid coupling type: {config.coupling_type}")
 
     coupling = EMCoupling(geo)
-
-    # Set-up solver and time it
-    solver = setup_ep_solver(
-        dt=config.dt,
+    cellmodel = ep_model.setup_cell_model(
+        cls=CellModel,
         coupling=coupling,
         cell_init_file=config.cell_init_file,
         drug_factors_file=config.drug_factors_file,
         popu_factors_file=config.popu_factors_file,
         disease_state=config.disease_state,
-        PCL=config.PCL,
-        CellModel=CellModel,
     )
 
-    coupling.register_ep_model(solver)
-
-    mech_heart = setup_mechanics_solver(
+    # Set-up solver and time it
+    solver = ep_model.setup_solver(
         coupling=coupling,
-        geo=geo,
-        cell_params=solver.ode_solver._model.parameters(),
+        dt=config.dt,
+        PCL=config.PCL,
+        cellmodel=cellmodel,
+    )
+
+    mech_heart = mechanics_model.setup_solver(
+        coupling=coupling,
         bnd_rigid=config.bnd_rigid,
         pre_stretch=config.pre_stretch,
         traction=config.traction,
@@ -78,140 +77,6 @@ def setup_EM_model(config: config.Config):
         geometry=geo,
         t0=0,
     )
-
-
-def setup_mechanics_solver(
-    coupling: em_model.BaseEMCoupling,
-    geo: geometry.BaseGeometry,
-    cell_params,
-    ActiveModel,
-    bnd_rigid: bool = config.Config.bnd_rigid,
-    pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
-    traction: typing.Union[dolfin.Constant, float] = None,
-    spring: typing.Union[dolfin.Constant, float] = None,
-    fix_right_plane: bool = config.Config.fix_right_plane,
-    debug_mode: bool = config.Config.debug_mode,
-    set_material: str = "",
-    linear_solver="mumps",
-    use_custom_newton_solver: bool = config.Config.mechanics_use_custom_newton_solver,
-    state_prev=None,
-):
-    """Setup mechanics model with dirichlet boundary conditions or rigid motion."""
-
-    if ActiveModel is None:
-        return None
-    logger.info("Set up mechanics model")
-
-    # Use parameters from Biaxial test in Holzapfel 2019 (Table 1).
-    material_parameters = dict(
-        a=2.28,
-        a_f=1.686,
-        b=9.726,
-        b_f=15.779,
-        a_s=0.0,
-        b_s=0.0,
-        a_fs=0.0,
-        b_fs=0.0,
-    )
-
-    active_model = ActiveModel(geometry=geo, coupling=coupling, parameters=cell_params)
-    material = pulse.HolzapfelOgden(
-        active_model=active_model,
-        parameters=material_parameters,
-    )
-
-    if set_material == "Guccione":
-        material_parameters = pulse.Guccione.default_parameters()
-        material_parameters["CC"] = 2.0
-        material_parameters["bf"] = 8.0
-        material_parameters["bfs"] = 4.0
-        material_parameters["bt"] = 2.0
-
-        material = pulse.Guccione(
-            active_model=active_model,
-            parameters=material_parameters,
-        )
-
-    problem = mechanics_model.create_problem(
-        material=material,
-        geo=geo,
-        bnd_rigid=bnd_rigid,
-        pre_stretch=pre_stretch,
-        traction=traction,
-        spring=spring,
-        fix_right_plane=fix_right_plane,
-        linear_solver=linear_solver,
-        use_custom_newton_solver=use_custom_newton_solver,
-        debug_mode=debug_mode,
-    )
-
-    if state_prev is not None:
-        problem.state.assign(state_prev)
-
-    problem.solve()
-    coupling.register_mech_model(problem)
-    coupling.print_mechanics_info()
-
-    return problem
-
-
-def setup_ep_solver(
-    dt,
-    coupling: em_model.BaseEMCoupling,
-    CellModel,
-    scheme=config.Config.ep_ode_scheme,
-    theta=config.Config.ep_theta,
-    preconditioner=config.Config.ep_preconditioner,
-    cell_params=None,
-    cell_inits=None,
-    cell_init_file=None,
-    drug_factors_file=None,
-    popu_factors_file=None,
-    disease_state=config.Config.disease_state,
-    PCL=config.Config.PCL,
-):
-    if CellModel is None:
-        return None
-    ps = ep_model.setup_splitting_solver_parameters(
-        theta=theta,
-        preconditioner=preconditioner,
-        dt=dt,
-        scheme=scheme,
-    )
-
-    cell_params = ep_model.handle_cell_params(
-        cell_params=cell_params,
-        disease_state=disease_state,
-        drug_factors_file=drug_factors_file,
-        popu_factors_file=popu_factors_file,
-        CellModel=CellModel,
-    )
-
-    cell_inits = ep_model.handle_cell_inits(
-        cell_inits=cell_inits,
-        cell_init_file=cell_init_file,
-        CellModel=CellModel,
-    )
-
-    cellmodel = CellModel(
-        init_conditions=cell_inits,
-        params=cell_params,
-        coupling=coupling,
-    )
-
-    # Set-up cardiac model
-    ep_heart = ep_model.setup_ep_model(cellmodel, coupling.geometry.ep_mesh, PCL=PCL)
-    timer = dolfin.Timer("SplittingSolver: setup")
-
-    solver = cbcbeat.SplittingSolver(ep_heart, params=ps)
-
-    timer.stop()
-    # Extract the solution fields and set the initial conditions
-    (vs_, vs, vur) = solver.solution_fields()
-    vs_.assign(cellmodel.initial_conditions())
-
-    coupling.print_ep_info()
-    return solver
 
 
 class Runner:

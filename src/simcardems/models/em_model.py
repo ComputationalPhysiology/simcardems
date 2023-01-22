@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import abc
 import typing
+from pathlib import Path
 
 import cbcbeat
 import dolfin
 import pulse
 
 from .. import utils
+from ..config import Config
 from ..geometry import BaseGeometry
 
 if typing.TYPE_CHECKING:
@@ -20,17 +22,9 @@ class BaseEMCoupling(abc.ABC):
     def __init__(
         self,
         geometry: BaseGeometry,
-        *args,
-        **kwargs,
     ) -> None:
-
         logger.debug("Create EM coupling")
-
         self.geometry = geometry
-        self._post_init(*args, **kwargs)
-
-    def _post_init(self):
-        pass
 
     @abc.abstractmethod
     def members(self) -> typing.Dict[str, dolfin.Function]:
@@ -71,6 +65,20 @@ class BaseEMCoupling(abc.ABC):
     @property
     @abc.abstractmethod
     def assigners(self) -> Assigners:
+        ...
+
+    @abc.abstractmethod
+    def save_state(
+        self,
+        path: typing.Union[str, Path],
+        config: typing.Optional[Config] = None,
+        **state_params,
+    ) -> None:
+        ...
+
+    @classmethod
+    @abc.abstractmethod
+    def from_state(cls, path: typing.Union[str, Path]):
         ...
 
     def register_datacollector(self, collector: DataCollector) -> None:

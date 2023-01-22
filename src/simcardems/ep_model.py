@@ -10,10 +10,71 @@ import pulse
 import ufl
 
 from . import utils
+from .config import Config
+from .models import em_model
 
 # from .ORdmm_Land import ORdmm_Land as CellModel
 
 logger = utils.getLogger(__name__)
+
+
+def setup_cell_model(
+    cls,
+    coupling: em_model.BaseEMCoupling,
+    cell_params=None,
+    cell_inits=None,
+    cell_init_file=None,
+    drug_factors_file=None,
+    popu_factors_file=None,
+    disease_state=Config.disease_state,
+):
+    cell_params = handle_cell_params(
+        cell_params=cell_params,
+        disease_state=disease_state,
+        drug_factors_file=drug_factors_file,
+        popu_factors_file=popu_factors_file,
+        CellModel=cls,
+    )
+
+    cell_inits = handle_cell_inits(
+        cell_inits=cell_inits,
+        cell_init_file=cell_init_file,
+        CellModel=cls,
+    )
+
+    return cls(
+        init_conditions=cell_inits,
+        params=cell_params,
+        coupling=coupling,
+    )
+
+
+def setup_solver(
+    dt,
+    cellmodel: cbcbeat.CardiacCellModel,
+    coupling: em_model.BaseEMCoupling,
+    scheme=Config.ep_ode_scheme,
+    theta=Config.ep_theta,
+    preconditioner=Config.ep_preconditioner,
+    PCL=Config.PCL,
+) -> cbcbeat.SplittingSolver:
+
+    # Set-up cardiac model
+    ps = setup_splitting_solver_parameters(
+        theta=theta,
+        preconditioner=preconditioner,
+        dt=dt,
+        scheme=scheme,
+    )
+    ep_heart = setup_model(cellmodel, coupling.geometry.ep_mesh, PCL=PCL)
+    solver = cbcbeat.SplittingSolver(ep_heart, params=ps)
+    # Extract the solution fields and set the initial conditions
+    (vs_, vs, vur) = solver.solution_fields()
+    vs_.assign(cellmodel.initial_conditions())
+
+    coupling.register_ep_model(solver)
+    coupling.print_ep_info()
+    return solver
 
 
 def default_conductivities():
@@ -77,7 +138,7 @@ def default_microstructure():
     )
 
 
-def setup_ep_model(
+def setup_model(
     cellmodel,
     mesh,
     PCL=1000,

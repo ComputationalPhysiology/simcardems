@@ -8,7 +8,6 @@ import pulse
 import ufl
 
 from ... import utils
-from ...geometry import BaseGeometry
 from .cell_model import ORdmmLandFull
 from .em_model import EMCoupling
 
@@ -38,7 +37,6 @@ def _Zeta(Zeta_prev, A, c, dLambda, dt, scheme: Scheme):
 class LandModel(pulse.ActiveModel):
     def __init__(
         self,
-        geometry: BaseGeometry,
         coupling: EMCoupling,
         parameters: Optional[Dict[str, float]] = None,
         Zetas=None,
@@ -50,7 +48,11 @@ class LandModel(pulse.ActiveModel):
         **kwargs,
     ):
         logger.debug("Initialize Land Model")
-        super().__init__(f0=geometry.f0, s0=geometry.s0, n0=geometry.n0)
+        super().__init__(
+            f0=coupling.geometry.f0,
+            s0=coupling.geometry.s0,
+            n0=coupling.geometry.n0,
+        )
 
         self._eta = eta
         self.function_space = dolfin.FunctionSpace(coupling.mech_mesh, "CG", 1)

@@ -8,11 +8,85 @@ from . import boundary_conditions
 from . import config
 from . import geometry
 from . import utils
+from .models import em_model
 from .newton_solver import MechanicsNewtonSolver
 from .newton_solver import MechanicsNewtonSolver_ODE
 
 
 logger = utils.getLogger(__name__)
+
+
+def setup_solver(
+    coupling: em_model.BaseEMCoupling,
+    ActiveModel,
+    bnd_rigid: bool = config.Config.bnd_rigid,
+    pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
+    traction: typing.Union[dolfin.Constant, float] = None,
+    spring: typing.Union[dolfin.Constant, float] = None,
+    fix_right_plane: bool = config.Config.fix_right_plane,
+    debug_mode: bool = config.Config.debug_mode,
+    set_material: str = "",
+    linear_solver="mumps",
+    use_custom_newton_solver: bool = config.Config.mechanics_use_custom_newton_solver,
+    state_prev=None,
+):
+    """Setup mechanics model with dirichlet boundary conditions or rigid motion."""
+
+    if ActiveModel is None:
+        return None
+    logger.info("Set up mechanics model")
+
+    # Use parameters from Biaxial test in Holzapfel 2019 (Table 1).
+    material_parameters = dict(
+        a=2.28,
+        a_f=1.686,
+        b=9.726,
+        b_f=15.779,
+        a_s=0.0,
+        b_s=0.0,
+        a_fs=0.0,
+        b_fs=0.0,
+    )
+
+    active_model = ActiveModel(coupling=coupling, parameters=coupling.cell_params())
+    material = pulse.HolzapfelOgden(
+        active_model=active_model,
+        parameters=material_parameters,
+    )
+
+    if set_material == "Guccione":
+        material_parameters = pulse.Guccione.default_parameters()
+        material_parameters["CC"] = 2.0
+        material_parameters["bf"] = 8.0
+        material_parameters["bfs"] = 4.0
+        material_parameters["bt"] = 2.0
+
+        material = pulse.Guccione(
+            active_model=active_model,
+            parameters=material_parameters,
+        )
+
+    problem = create_problem(
+        material=material,
+        geo=coupling.geometry,
+        bnd_rigid=bnd_rigid,
+        pre_stretch=pre_stretch,
+        traction=traction,
+        spring=spring,
+        fix_right_plane=fix_right_plane,
+        linear_solver=linear_solver,
+        use_custom_newton_solver=use_custom_newton_solver,
+        debug_mode=debug_mode,
+    )
+
+    if state_prev is not None:
+        problem.state.assign(state_prev)
+
+    problem.solve()
+    coupling.register_mech_model(problem)
+    coupling.print_mechanics_info()
+
+    return problem
 
 
 class ContinuationBasedMechanicsProblem(pulse.MechanicsProblem):

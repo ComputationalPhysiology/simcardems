@@ -15,7 +15,6 @@ from . import utils
 from .config import Config
 from .models import em_model
 
-# from .ORdmm_Land import vs_functions_to_dict
 
 logger = utils.getLogger(__name__)
 
