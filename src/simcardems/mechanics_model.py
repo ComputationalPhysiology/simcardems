@@ -83,6 +83,7 @@ class MechanicsProblem(ContinuationBasedMechanicsProblem):
 
     def _init_forms(self, init_solver: bool = True):
         u, p = dolfin.split(self.state)
+        v, q = dolfin.split(self.state_test)
 
         # Some mechanical quantities
         self._F = dolfin.variable(pulse.DeformationGradient(u))
@@ -98,6 +99,10 @@ class MechanicsProblem(ContinuationBasedMechanicsProblem):
             self.state,
             self.state_test,
         )
+
+        external_work = self._external_work(u, v)
+        if external_work is not None:
+            self._virtual_work += external_work
 
         self._set_dirichlet_bc()
         self._jacobian = dolfin.derivative(
@@ -177,6 +182,10 @@ class RigidMotionProblem(MechanicsProblem):
             self.state,
             self.state_test,
         )
+
+        external_work = self._external_work(u, v)
+        if external_work is not None:
+            self._virtual_work += external_work
 
         self._virtual_work += dolfin.derivative(
             RigidMotionProblem.rigid_motion_term(

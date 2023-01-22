@@ -83,8 +83,8 @@ class MechanicsNewtonSolver(dolfin.NewtonSolver):
             "absolute_tolerance": 1e-5,
             "maximum_iterations": 20,
             "report": False,
-            # },
             "krylov_solver": {
+                "nonzero_initial_guess": True,
                 "absolute_tolerance": 1e-10,
                 "relative_tolerance": 1e-10,
                 "maximum_iterations": 1000,

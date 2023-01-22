@@ -223,6 +223,10 @@ class BaseGeometry(abc.ABC):
         ...
 
     @property
+    def facet_normal(self) -> dolfin.FacetNormal:
+        return dolfin.FacetNormal(self.mesh)
+
+    @property
     def mesh(self) -> dolfin.Mesh:
         # FIXME: This should be optional
         return self.mechanics_mesh
