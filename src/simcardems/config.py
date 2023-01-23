@@ -43,6 +43,7 @@ class Config:
     coupling_type: typing.Literal[
         "fully_coupled_ORdmm_Land",
         "explicit_ORdmm_Land",
+        "pureEP_ORdmm_Land",
     ] = "explicit_ORdmm_Land"
 
     def as_dict(self):

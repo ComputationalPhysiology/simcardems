@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import Tuple
 from typing import TYPE_CHECKING
 
 import dolfin
@@ -19,8 +20,9 @@ class EMCoupling(BaseEMCoupling):
     def __init__(
         self,
         geometry: BaseGeometry,
+        **state_params,
     ) -> None:
-        super().__init__(geometry=geometry)
+        super().__init__(geometry=geometry, **state_params)
 
         self.V_mech = dolfin.FunctionSpace(self.mech_mesh, "CG", 1)
         self.XS_mech = dolfin.Function(self.V_mech, name="XS_mech")
@@ -37,6 +39,10 @@ class EMCoupling(BaseEMCoupling):
         self.Zetaw_ep = dolfin.Function(self.V_ep, name="Zetaw_ep")
 
     @property
+    def coupling_type(self):
+        return "fully_coupled_ORdmm_Land"
+
+    @property
     def mech_mesh(self):
         return self.geometry.mechanics_mesh
 
@@ -46,7 +52,7 @@ class EMCoupling(BaseEMCoupling):
 
     def register_ep_model(self, solver):
         logger.debug("Registering EP model")
-        self._ep_solver = solver
+        self.ep_solver = solver
         self.vs = solver.solution_fields()[0]
         self.XS_ep, self.XS_ep_assigner = utils.setup_assigner(self.vs, 40)
         self.XW_ep, self.XW_ep_assigner = utils.setup_assigner(self.vs, 41)
@@ -55,7 +61,7 @@ class EMCoupling(BaseEMCoupling):
 
     def register_mech_model(self, solver: MechanicsProblem):
         logger.debug("Registering mech model")
-        self._mech_solver = solver
+        self.mech_solver = solver
 
         self.Zetas_mech = solver.material.active.Zetas_prev
         self.Zetaw_mech = solver.material.active.Zetaw_prev
@@ -91,6 +97,18 @@ class EMCoupling(BaseEMCoupling):
     def coupling_to_ep(self):
         logger.debug("Update EP")
         logger.debug("Done updating EP")
+
+    def solve_mechanics(self) -> None:
+        self.mech_solver.solve()
+
+    def solve_ep(self, interval: Tuple[float, float]) -> None:
+        self.ep_solver.step(interval)
+
+    def update_prev_mechanics(self):
+        pass
+
+    def update_prev_ep(self):
+        self.ep_solver.vs_.assign(self.ep_solver.vs)
 
     def print_mechanics_info(self):
         total_dofs = self.mech_tate.function_space().dim()

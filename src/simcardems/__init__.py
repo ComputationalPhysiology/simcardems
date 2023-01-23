@@ -17,8 +17,8 @@ from . import geometry
 from . import mechanics_model
 from . import newton_solver
 from . import postprocess
+from . import runner
 from . import save_load_functions
-from . import setup_models
 from . import utils
 from .config import Config
 from .config import default_parameters
@@ -28,8 +28,8 @@ from .mechanics_model import MechanicsProblem
 from .mechanics_model import RigidMotionProblem
 from .newton_solver import MechanicsNewtonSolver
 from .newton_solver import MechanicsNewtonSolver_ODE
-from .setup_models import Runner
-from .setup_models import TimeStepper
+from .runner import Runner
+from .runner import TimeStepper
 from .version import __version__
 
 # from . import em_model
@@ -112,7 +112,7 @@ __all__ = [
     "EMCoupling",
     "DataCollector",
     "DataLoader",
-    "setup_models",
+    "runner",
     "Runner",
     "default_parameters",
     "__version__",

@@ -7,7 +7,7 @@ import click
 from . import config
 from . import postprocess as post
 from . import utils
-from .setup_models import Runner
+from .runner import Runner
 from .version import __version__
 
 # from . import land_model

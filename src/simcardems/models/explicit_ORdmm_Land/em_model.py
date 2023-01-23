@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Dict
 from typing import Optional
+from typing import Tuple
 from typing import TYPE_CHECKING
 from typing import Union
 
@@ -10,10 +10,12 @@ import cbcbeat
 import dolfin
 import ufl
 
+from .. import em_model
+from ... import geometry as _geometry
+from ... import save_load_functions as io
 from ... import utils
 from ...config import Config
-from ...geometry import BaseGeometry
-from ..em_model import BaseEMCoupling
+
 
 if TYPE_CHECKING:
     from ...datacollector import DataCollector, Assigners
@@ -37,13 +39,14 @@ def Ta(XS, XW, Zetas, Zetaw, lmbda, Tref, rs, Beta0):
     return h_lambda * (Tref / rs) * (XS * (Zetas + 1) + XW * Zetaw)
 
 
-class EMCoupling(BaseEMCoupling):
+class EMCoupling(em_model.BaseEMCoupling):
     def __init__(
         self,
-        geometry: BaseGeometry,
+        geometry: _geometry.BaseGeometry,
         lmbda: Optional[dolfin.Function] = None,
+        **state_params,
     ) -> None:
-        super().__init__(geometry=geometry)
+        super().__init__(geometry=geometry, **state_params)
 
         self.V_mech = dolfin.FunctionSpace(self.mech_mesh, "CG", 1)
         self.XS_mech = dolfin.Function(self.V_mech, name="XS_mech")
@@ -71,12 +74,9 @@ class EMCoupling(BaseEMCoupling):
             self.lmbda_ep.vector()[:] = lmbda.vector()
             self.lmbda_ep_prev.vector()[:] = lmbda.vector()
 
-    def members(self) -> Dict[str, dolfin.Function]:
-        return {
-            "/em/lmbda_prev": self.lmbda_ep_prev,
-            "/ep/vs": self.ep_solver.vs,
-            "/mechanics/state": self.mech_solver.state,
-        }
+    @property
+    def coupling_type(self):
+        return "explicit_ORdmm_Land"
 
     @property
     def assigners(self) -> Assigners:
@@ -156,9 +156,12 @@ class EMCoupling(BaseEMCoupling):
         self._projector_V_mech(self._lmbda_mech_func, self.lmbda_mech)
         return self._lmbda_mech_func
 
-    def update_prev(self):
+    def update_prev_mechanics(self):
         # Update previous lmbda
         self.lmbda_ep_prev.vector()[:] = self.lmbda_ep.vector()
+
+    def update_prev_ep(self):
+        self.ep_solver.vs_.assign(self.ep_solver.vs)
 
     def _project_lmbda(self):
         F = dolfin.grad(self.u_ep) + dolfin.Identity(3)
@@ -203,6 +206,7 @@ class EMCoupling(BaseEMCoupling):
         collector.register("ep", "lmbda", self.lmbda_ep)
         collector.register("ep", "dLmbda", self.dLambda_ep)
         collector.register("mechanics", "Ta", self.Ta_mech)
+        self.mech_solver.solver.register_datacollector(collector)
 
     def ep_to_coupling(self):
         logger.debug("Transfer variables from EP to coupling")
@@ -250,6 +254,12 @@ class EMCoupling(BaseEMCoupling):
         logger.debug("Update EP")
         logger.debug("Done updating EP")
 
+    def solve_mechanics(self) -> None:
+        self.mech_solver.solve()
+
+    def solve_ep(self, interval: Tuple[float, float]) -> None:
+        self.ep_solver.step(interval)
+
     def print_mechanics_info(self):
         total_dofs = self.mech_state.function_space().dim()
         utils.print_mesh_info(self.mech_mesh, total_dofs)
@@ -268,10 +278,82 @@ class EMCoupling(BaseEMCoupling):
         self,
         path: Union[str, Path],
         config: Optional[Config] = None,
-        **state_params,
     ) -> None:
-        ...
+
+        super().save_state(path=path, config=config)
+
+        with dolfin.HDF5File(
+            self.geometry.comm(),
+            Path(path).as_posix(),
+            "a",
+        ) as h5file:
+            h5file.write(self.lmbda_ep_prev, "/em/lmbda_prev")
+            h5file.write(self.ep_solver.vs, "/ep/vs")
+            h5file.write(self.mech_solver.state, "/mechanics/state")
+
+        io.dict_to_h5(
+            self.cell_params(),
+            path,
+            "ep/cell_params",
+        )
 
     @classmethod
-    def from_state(cls, path: Union[str, Path]) -> EMCoupling:
-        ...
+    def from_state(
+        cls,
+        path: Union[str, Path],
+        drug_factors_file: Union[str, Path] = "",
+        popu_factors_file: Union[str, Path] = "",
+        disease_state="healthy",
+        PCL: int = 1000,
+    ) -> em_model.BaseEMCoupling:
+        logger.debug(f"Load state from path {path}")
+        path = Path(path)
+        if not path.is_file():
+            raise FileNotFoundError(f"File {path} does not exist")
+
+        geo = _geometry.load_geometry(path, schema_path=path.with_suffix(".json"))
+        logger.debug("Open file with h5py")
+        with io.h5pyfile(path) as h5file:
+            config = Config(**io.h5_to_dict(h5file["config"]))
+            state_params = io.h5_to_dict(h5file["state_params"])
+            cell_params = io.h5_to_dict(h5file["ep"]["cell_params"])
+            vs_signature = h5file["ep"]["vs"].attrs["signature"].decode()
+            mech_signature = h5file["mechanics"]["state"].attrs["signature"].decode()
+
+        config.drug_factors_file = drug_factors_file
+        config.popu_factors_file = popu_factors_file
+        config.disease_state = disease_state
+        config.PCL = PCL
+
+        VS = dolfin.FunctionSpace(geo.ep_mesh, eval(vs_signature))
+        vs = dolfin.Function(VS)
+
+        W = dolfin.FunctionSpace(geo.mechanics_mesh, eval(mech_signature))
+        mech_state = dolfin.Function(W)
+
+        V = dolfin.FunctionSpace(geo.ep_mesh, "CG", 1)
+        lmbda = dolfin.Function(V, name="lambda")
+        logger.debug("Load functions")
+        with dolfin.HDF5File(geo.ep_mesh.mpi_comm(), path.as_posix(), "r") as h5file:
+            h5file.read(vs, "/ep/vs")
+            h5file.read(mech_state, "/mechanics/state")
+            h5file.read(lmbda, "/em/lmbda_prev")
+
+        from . import CellModel, ActiveModel
+
+        cell_inits = io.vs_functions_to_dict(
+            vs,
+            state_names=CellModel.default_initial_conditions().keys(),
+        )
+
+        return em_model.setup_EM_model(
+            cls_EMCoupling=cls,
+            cls_CellModel=CellModel,
+            cls_ActiveModel=ActiveModel,
+            geometry=geo,
+            config=config,
+            cell_inits=cell_inits,
+            cell_params=cell_params,
+            mech_state_init=mech_state,
+            state_params=state_params,
+        )

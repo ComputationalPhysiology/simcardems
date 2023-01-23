@@ -1,7 +1,12 @@
 import contextlib
 import warnings
 from pathlib import Path
+from typing import Dict
+from typing import Optional
+from typing import Type
+from typing import Union
 
+import cbcbeat
 import dolfin
 from dolfin import FiniteElement  # noqa: F401
 from dolfin import MixedElement  # noqa: F401
@@ -10,7 +15,6 @@ from dolfin import VectorElement  # noqa: F401
 
 from . import geometry
 from . import mechanics_model
-from . import setup_models
 from . import utils
 from .config import Config
 from .models import em_model
@@ -122,10 +126,8 @@ def serialize_dict(d):
 def save_state(
     path,
     config: Config,
-    coupling: em_model.BaseEMCoupling,
     geo: geometry.BaseGeometry,
-    dt=0.02,
-    t0=0,
+    state_params: Optional[Dict[str, float]] = None,
 ):
     path = Path(path)
     utils.remove_file(path)
@@ -134,26 +136,11 @@ def save_state(
     geo.dump(path)
     logger.debug("Save using dolfin.HDF5File")
 
-    with dolfin.HDF5File(
-        geo.comm(),
-        path.as_posix(),
-        "a",
-    ) as h5file:
-        for name, func in coupling.members().items():
-            h5file.write(func, name)
-
     logger.debug("Save using h5py")
     dict_to_h5(serialize_dict(config.as_dict()), path, "config")
-    dict_to_h5(
-        coupling.cell_params(),
-        path,
-        "ep/cell_params",
-    )
-    dict_to_h5(
-        dict(dt=dt, t0=t0),
-        path,
-        "state_params",
-    )
+    if state_params is None:
+        state_params = {}
+    dict_to_h5(serialize_dict(state_params), path, "state_params")
 
 
 def load_state(
@@ -167,82 +154,28 @@ def load_state(
     path = Path(path)
     if not path.is_file():
         raise FileNotFoundError(f"File {path} does not exist")
-
     geo = geometry.load_geometry(path, schema_path=path.with_suffix(".json"))
     logger.debug("Open file with h5py")
     with h5pyfile(path) as h5file:
-        state_params = h5_to_dict(h5file["state_params"])
-        cell_params = h5_to_dict(h5file["ep"]["cell_params"])
         config = Config(**h5_to_dict(h5file["config"]))
-        vs_signature = h5file["ep"]["vs"].attrs["signature"].decode()
-        mech_signature = h5file["mechanics"]["state"].attrs["signature"].decode()
+        state_params = h5_to_dict(h5file["state_params"])
 
-    VS = dolfin.FunctionSpace(geo.ep_mesh, eval(vs_signature))
-    vs = dolfin.Function(VS)
+    config.drug_factors_file = drug_factors_file
+    config.popu_factors_file = popu_factors_file
+    config.disease_state = disease_state
+    config.PCL = PCL
 
-    W = dolfin.FunctionSpace(geo.mechanics_mesh, eval(mech_signature))
-    mech_state = dolfin.Function(W)
-
-    V = dolfin.FunctionSpace(geo.ep_mesh, "CG", 1)
-    lmbda = dolfin.Function(V, name="lambda")
-    logger.debug("Load functions")
-    with dolfin.HDF5File(geo.ep_mesh.mpi_comm(), path.as_posix(), "r") as h5file:
-        h5file.read(vs, "/ep/vs")
-        h5file.read(mech_state, "/mechanics/state")
-        h5file.read(lmbda, "/em/lmbda_prev")
-
-    if config.coupling_type == "explicit_ORdmm_Land":
-        from .models.explicit_ORdmm_Land import CellModel, ActiveModel, EMCoupling
-
-    else:
-        raise ValueError(f"Invalid coupling type: {config.coupling_type}")
-
-    cell_inits = vs_functions_to_dict(
-        vs,
-        state_names=CellModel.default_initial_conditions().keys(),
-    )
-
-    coupling = EMCoupling(
+    return em_model.setup_EM_model_from_config(
+        config=config,
         geometry=geo,
-        lmbda=lmbda,
-    )
-
-    solver = setup_models.setup_ep_solver(
-        state_params["dt"],
-        coupling,
-        cell_params=cell_params,
-        cell_inits=cell_inits,
-        drug_factors_file=drug_factors_file,
-        popu_factors_file=popu_factors_file,
-        disease_state=disease_state,
-        PCL=PCL,
-        CellModel=CellModel,
-    )
-    coupling.register_ep_model(solver)
-    bnd_cond_dict = dict([(0, False), (1, True)])
-
-    mech_heart = setup_models.setup_mechanics_solver(
-        coupling=coupling,
-        geo=geo,
-        bnd_rigid=bnd_cond_dict[state_params["bnd_cond"]],
-        state_prev=mech_state,
-        cell_params=cell_params,
-        ActiveModel=ActiveModel,
-    )
-    mech_heart.state.assign(mech_state)
-    coupling.register_mech_model(mech_heart)
-    coupling.coupling_to_mechanics()
-
-    return setup_models.EMState(
-        coupling=coupling,
-        solver=solver,
-        mech_heart=mech_heart,
-        geometry=geo,
-        t0=state_params["t0"],
+        state_params=state_params,
     )
 
 
-def load_initial_conditions_from_h5(path):
+def load_initial_conditions_from_h5(
+    path: Union[str, Path],
+    CellModel: Type[cbcbeat.CardiacCellModel],
+):
     path = Path(path)
     if not path.is_file():
         raise FileNotFoundError(f"File {path} does not exist")
@@ -261,4 +194,7 @@ def load_initial_conditions_from_h5(path):
     with dolfin.HDF5File(mesh.mpi_comm(), path.as_posix(), "r") as h5file:
         h5file.read(vs, "/ep/vs")
 
-    return vs_functions_to_dict(vs)
+    return vs_functions_to_dict(
+        vs,
+        state_names=CellModel.default_initial_conditions().keys(),
+    )

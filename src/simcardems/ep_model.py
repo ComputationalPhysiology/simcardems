@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import json
 from pathlib import Path
 from typing import Dict
 from typing import Optional
 from typing import Type
+from typing import TYPE_CHECKING
 
 import cbcbeat
 import dolfin
@@ -11,7 +14,9 @@ import ufl
 
 from . import utils
 from .config import Config
-from .models import em_model
+
+if TYPE_CHECKING:
+    from .models.em_model import BaseEMCoupling
 
 # from .ORdmm_Land import ORdmm_Land as CellModel
 
@@ -20,7 +25,7 @@ logger = utils.getLogger(__name__)
 
 def setup_cell_model(
     cls,
-    coupling: em_model.BaseEMCoupling,
+    coupling: BaseEMCoupling,
     cell_params=None,
     cell_inits=None,
     cell_init_file=None,
@@ -52,7 +57,7 @@ def setup_cell_model(
 def setup_solver(
     dt,
     cellmodel: cbcbeat.CardiacCellModel,
-    coupling: em_model.BaseEMCoupling,
+    coupling: BaseEMCoupling,
     scheme=Config.ep_ode_scheme,
     theta=Config.ep_theta,
     preconditioner=Config.ep_preconditioner,
@@ -301,7 +306,10 @@ def handle_cell_inits(
         cell_inits_tmp.update(load_json(cell_init_file))
         from .save_load_functions import load_initial_conditions_from_h5
 
-        cell_inits = load_initial_conditions_from_h5(cell_init_file)
+        cell_inits = load_initial_conditions_from_h5(
+            cell_init_file,
+            CellModel=CellModel,
+        )
 
     # FIXME: This is a bit confusing, since it will overwrite the
     # inputs from the cell_init_file. There should be only one way to
