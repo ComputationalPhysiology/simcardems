@@ -57,7 +57,7 @@ class ReleaseRunner(simcardems.Runner):
     def _post_mechanics_solve(self) -> None:
         # Convert internal time for nanoseconds to milliseconds
         # And apply release when time is greater then T release
-        if self._time_stepper.ns2ms(self.t) >= self._T_release:
+        if simcardems.TimeStepper.ns2ms(self.t) >= self._T_release:
             if self._print_message:
                 # Make sure message is only printed once
                 print("Release")
