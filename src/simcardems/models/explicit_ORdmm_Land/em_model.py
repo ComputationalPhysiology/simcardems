@@ -24,8 +24,8 @@ from ...config import Config
 
 
 if TYPE_CHECKING:
-    from ...datacollector import DataCollector, Assigners
-    from ...mechanics_model import MechanicsProblem
+    from ... import datacollector
+    from ... import mechanics_model
 
 
 logger = utils.getLogger(__name__)
@@ -117,7 +117,7 @@ class EMCoupling(em_model.BaseEMCoupling):
         return "explicit_ORdmm_Land"
 
     @property
-    def assigners(self) -> Assigners:
+    def assigners(self) -> datacollector.Assigners:
         return self._assigners
 
     @assigners.setter
@@ -222,7 +222,7 @@ class EMCoupling(em_model.BaseEMCoupling):
             self.coupling_to_mechanics()
         logger.debug("Done registering EP model")
 
-    def register_mech_model(self, solver: MechanicsProblem):
+    def register_mech_model(self, solver: mechanics_model.MechanicsProblem):
         logger.debug("Registering mech model")
         self.mech_solver = solver
         self.Ta_mech = self.mech_solver.material.activation
@@ -239,7 +239,7 @@ class EMCoupling(em_model.BaseEMCoupling):
             self.coupling_to_mechanics()
         logger.debug("Done registering EP model")
 
-    def register_datacollector(self, collector: "DataCollector") -> None:
+    def register_datacollector(self, collector: datacollector.DataCollector) -> None:
         super().register_datacollector(collector=collector)
 
         collector.register("ep", "lmbda", self.lmbda_ep)

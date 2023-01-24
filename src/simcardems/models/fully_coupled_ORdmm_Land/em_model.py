@@ -24,9 +24,8 @@ from ..em_model import BaseEMCoupling
 from ..em_model import setup_EM_model
 
 if TYPE_CHECKING:
-    from ...mechanics_model import MechanicsProblem
-    from ...datacollector import DataCollector, Assigners
-
+    from ... import mechanics_model
+    from ... import datacollector
 
 logger = utils.getLogger(__name__)
 
@@ -101,7 +100,7 @@ class EMCoupling(BaseEMCoupling):
         return self.ep_solver.solution_fields()[0]
 
     @property
-    def assigners(self) -> Assigners:
+    def assigners(self) -> datacollector.Assigners:
         return self._assigners
 
     @assigners.setter
@@ -155,7 +154,7 @@ class EMCoupling(BaseEMCoupling):
         self.coupling_to_mechanics()
         logger.debug("Done registering EP model")
 
-    def register_mech_model(self, solver: MechanicsProblem):
+    def register_mech_model(self, solver: mechanics_model.MechanicsProblem):
         logger.debug("Registering mech model")
         self.mech_solver = solver
 
@@ -224,7 +223,7 @@ class EMCoupling(BaseEMCoupling):
     def cell_params(self):
         return self.ep_solver.ode_solver._model.parameters()
 
-    def register_datacollector(self, collector: "DataCollector") -> None:
+    def register_datacollector(self, collector: datacollector.DataCollector) -> None:
         super().register_datacollector(collector=collector)
 
         collector.register("ep", "Zetas", self.Zetas_ep)

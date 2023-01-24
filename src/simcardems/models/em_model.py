@@ -17,7 +17,7 @@ from ..config import Config
 from ..time_stepper import TimeStepper
 
 if typing.TYPE_CHECKING:
-    from ..datacollector import Assigners, DataCollector
+    from .. import datacollector
 
 logger = utils.getLogger(__name__)
 
@@ -190,7 +190,7 @@ class BaseEMCoupling(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def assigners(self) -> Assigners:
+    def assigners(self) -> datacollector.Assigners:
         ...
 
     def save_state(
@@ -227,7 +227,7 @@ class BaseEMCoupling(abc.ABC):
             PCL=PCL,
         )
 
-    def register_datacollector(self, collector: DataCollector) -> None:
+    def register_datacollector(self, collector: datacollector.DataCollector) -> None:
         for group_name, group in self.assigners.functions.items():
             for func_name, func in group.items():
                 collector.register(group=group_name, name=func_name, f=func)
