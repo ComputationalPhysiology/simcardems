@@ -14,6 +14,7 @@ from .. import mechanics_model
 from .. import save_load_functions as io
 from .. import utils
 from ..config import Config
+from ..time_stepper import TimeStepper
 
 if typing.TYPE_CHECKING:
     from ..datacollector import Assigners, DataCollector
@@ -26,12 +27,15 @@ def setup_EM_model(
     cls_CellModel,
     cls_ActiveModel,
     geometry: _geometry.BaseGeometry,
-    config: Config,
+    config: typing.Optional[Config] = None,
     cell_params: typing.Optional[typing.Dict[str, float]] = None,
     cell_inits: typing.Optional[dolfin.Function] = None,
     mech_state_init: typing.Optional[dolfin.Function] = None,
     state_params: typing.Optional[typing.Dict[str, float]] = None,
 ) -> BaseEMCoupling:
+
+    if config is None:
+        config = Config()
 
     if state_params is None:
         state_params = {}
@@ -114,6 +118,21 @@ class BaseEMCoupling(abc.ABC):
     @property
     def state_params(self):
         return {"t": self.t}
+
+    def __eq__(self, __o: object) -> bool:
+        if not isinstance(__o, type(self)):
+            return NotImplemented
+
+        if self.coupling_type != __o.coupling_type:
+            return False
+
+        if self.t != __o.t:
+            return False
+
+        return True
+
+    def register_time_stepper(self, time_stepper: TimeStepper) -> None:
+        self._time_stepper = time_stepper
 
     @property
     @abc.abstractmethod

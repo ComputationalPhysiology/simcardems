@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from functools import partial
 from pathlib import Path
 from typing import Optional
 from typing import Tuple
@@ -8,7 +9,12 @@ from typing import Union
 
 import cbcbeat
 import dolfin
+import numpy as np
 import ufl
+from dolfin import FiniteElement  # noqa: F401
+from dolfin import MixedElement  # noqa: F401
+from dolfin import tetrahedron  # noqa: F401
+from dolfin import VectorElement  # noqa: F401
 
 from .. import em_model
 from ... import geometry as _geometry
@@ -74,6 +80,35 @@ class EMCoupling(em_model.BaseEMCoupling):
             self.lmbda_ep.vector()[:] = lmbda.vector()
             self.lmbda_ep_prev.vector()[:] = lmbda.vector()
 
+    def __eq__(self, __o: object) -> bool:
+        if not super().__eq__(__o):
+            return False
+
+        for attr in [
+            "vs",
+            "mech_state",
+            "lmbda_mech_func",
+            "Zetas_mech",
+            "Zetaw_mech",
+            "lmbda_ep",
+            "lmbda_ep_prev",
+            "dLambda_ep",
+            "Zetas_ep",
+            "Zetaw_ep",
+            "XS_ep",
+            "XW_ep",
+            "XS_mech",
+            "XW_mech",
+        ]:
+            if not np.allclose(
+                getattr(self, attr).vector().get_local(),
+                getattr(__o, attr).vector().get_local(),
+            ):
+                logger.info(f"{attr} differs in equality")
+                return False
+
+        return True
+
     @property
     def coupling_type(self):
         return "explicit_ORdmm_Land"
@@ -91,7 +126,7 @@ class EMCoupling(em_model.BaseEMCoupling):
 
         self.assigners = Assigners(vs=self.vs, mech_state=self.mech_state)
         for name, index in [
-            ("v", 0),
+            ("V", 0),
             ("Ca", 45),
             ("XS", 45),
             ("XW", 45),
@@ -122,12 +157,6 @@ class EMCoupling(em_model.BaseEMCoupling):
                 is_pre=True,
             )
 
-        self.assigners.register_subfunction(
-            name="u",
-            group="mechanics",
-            subspace_index=self._u_subspace_index,
-        )
-
     @property
     def mech_mesh(self):
         return self.geometry.mechanics_mesh
@@ -139,6 +168,10 @@ class EMCoupling(em_model.BaseEMCoupling):
     @property
     def mech_state(self):
         return self.mech_solver.state
+
+    @property
+    def vs(self) -> dolfin.Function:
+        return self.ep_solver.solution_fields()[0]
 
     @property
     def dLambda_ep(self):
@@ -163,15 +196,14 @@ class EMCoupling(em_model.BaseEMCoupling):
     def update_prev_ep(self):
         self.ep_solver.vs_.assign(self.ep_solver.vs)
 
-    def _project_lmbda(self):
-        F = dolfin.grad(self.u_ep) + dolfin.Identity(3)
-        f = F * self.geometry.f0_ep
-        self._projector_V_ep(self.lmbda_ep, dolfin.project(dolfin.sqrt(f**2)))
+    # def _project_lmbda(self):
+    #     F = dolfin.grad(self.u_ep) + dolfin.Identity(3)
+    #     f = F * self.geometry.f0_ep
+    #     self._projector_V_ep(self.lmbda_ep, dolfin.project(dolfin.sqrt(f**2)))
 
     def register_ep_model(self, solver: cbcbeat.SplittingSolver):
         logger.debug("Registering EP model")
         self.ep_solver = solver
-        self.vs = solver.solution_fields()[0]
         self.XS_ep, self.XS_ep_assigner = utils.setup_assigner(self.vs, 40)
         self.XW_ep, self.XW_ep_assigner = utils.setup_assigner(self.vs, 41)
         self.Zetas_ep, self.Zetas_ep_assigner = utils.setup_assigner(self.vs, 46)
@@ -181,7 +213,9 @@ class EMCoupling(em_model.BaseEMCoupling):
         self._Tref = params["Tref"]
         self._rs = params["rs"]
         self._Beta0 = params["Beta0"]
-        if hasattr(self, "u_mech"):
+
+        if hasattr(self, "mech_solver"):
+            self.mechanics_to_coupling()
             self.coupling_to_mechanics()
         logger.debug("Done registering EP model")
 
@@ -198,6 +232,8 @@ class EMCoupling(em_model.BaseEMCoupling):
             self._u_subspace_index,
         )
         self.mechanics_to_coupling()
+        if hasattr(self, "ep_solver"):
+            self.coupling_to_mechanics()
         logger.debug("Done registering EP model")
 
     def register_datacollector(self, collector: "DataCollector") -> None:
@@ -346,8 +382,10 @@ class EMCoupling(em_model.BaseEMCoupling):
             state_names=CellModel.default_initial_conditions().keys(),
         )
 
+        cls_EMCoupling = partial(cls, lmbda=lmbda)
+
         return em_model.setup_EM_model(
-            cls_EMCoupling=cls,
+            cls_EMCoupling=cls_EMCoupling,
             cls_CellModel=CellModel,
             cls_ActiveModel=ActiveModel,
             geometry=geo,

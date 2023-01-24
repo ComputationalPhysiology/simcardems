@@ -137,6 +137,7 @@ def save_state(
     logger.debug("Save using dolfin.HDF5File")
 
     logger.debug("Save using h5py")
+
     dict_to_h5(serialize_dict(config.as_dict()), path, "config")
     if state_params is None:
         state_params = {}

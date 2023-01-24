@@ -8,6 +8,7 @@ import pulse
 import ufl
 
 from ... import utils
+from ...time_stepper import TimeStepper
 from .cell_model import ORdmmLandFull
 from .em_model import EMCoupling
 
@@ -180,24 +181,19 @@ class LandModel(pulse.ActiveModel):
     def Zetaw(self):
         return self._Zetaw
 
+    def register_time_stepper(self, time_stepper: TimeStepper) -> None:
+        self.time_stepper = time_stepper
+        self._t_prev = time_stepper.t
+
     @property
     def dt(self) -> float:
-        from .setup_models import TimeStepper
-
         return TimeStepper.ns2ms(self.t - self._t_prev)
 
     @property
     def t(self) -> float:
-        return self._t
-
-    def start_time(self, t):
-        self._t_prev = t
-        self._t = t
-
-    def update_time(self, t):
-        logger.debug("update time")
-        self._t_prev = self.t
-        self._t = t
+        if not hasattr(self, "time_stepper"):
+            return 0.0
+        return self.time_stepper.t
 
     def update_prev(self):
         logger.debug("update previous")
@@ -205,6 +201,7 @@ class LandModel(pulse.ActiveModel):
         self.Zetaw_prev.vector()[:] = self.Zetaw.vector()
         self.lmbda_prev.vector()[:] = self.lmbda.vector()
         self._projector.project(self.Ta_current, self.Ta)
+        self._t_prev = self.t
 
     @property
     def Ta(self):
