@@ -81,6 +81,9 @@ class EMCoupling(em_model.BaseEMCoupling):
             self.lmbda_ep_prev.vector()[:] = lmbda.vector()
 
     def __eq__(self, __o: object) -> bool:
+        if not isinstance(__o, type(self)):
+            return NotImplemented
+
         if not super().__eq__(__o):
             return False
 

@@ -94,6 +94,10 @@ def setup_EM_model_from_config(
 
     if config.coupling_type == "explicit_ORdmm_Land":
         from .explicit_ORdmm_Land import EMCoupling, CellModel, ActiveModel
+    elif config.coupling_type == "fully_coupled_ORdmm_Land":
+        from .fully_coupled_ORdmm_Land import EMCoupling, CellModel, ActiveModel  # type: ignore
+    elif config.coupling_type == "pure_ep_ORdmm_Land":
+        from .pure_ep_ORdmm_Land import EMCoupling, CellModel, ActiveModel  # type: ignore
     else:
         raise ValueError(f"Invalid coupling type: {config.coupling_type}")
 

@@ -53,6 +53,9 @@ class EMCoupling(BaseEMCoupling):
         return "fully_coupled_ORdmm_Land"
 
     def __eq__(self, __o: object) -> bool:
+        if not isinstance(__o, type(self)):
+            return NotImplemented
+
         if not super().__eq__(__o):
             return False
 

@@ -77,7 +77,7 @@ def ep_solver(request, coupling):
         instance = m.return_value
         instance.solution_fields.return_value = (vs_, vs)
         instance._model.parameters.return_value = modelparams
-        solver = simcardems.setup_models.setup_ep_solver(
+        solver = simcardems.runner.setup_ep_solver(
             dt=0.01,
             coupling=coupling,
             cell_init_file=request.param,

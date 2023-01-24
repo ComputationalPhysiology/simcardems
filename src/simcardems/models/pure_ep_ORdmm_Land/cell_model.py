@@ -25,11 +25,7 @@ def Min(a, b):
 
 
 class ORdmmLandPureEp(CardiacCellModel):
-    def __init__(
-        self,
-        params=None,
-        init_conditions=None,
-    ):
+    def __init__(self, params=None, init_conditions=None, **kwargs):
         """
         Create cardiac cell model
 
