@@ -138,6 +138,11 @@ class BaseEMCoupling(abc.ABC):
 
     def register_time_stepper(self, time_stepper: TimeStepper) -> None:
         self._time_stepper = time_stepper
+        self._t_mechanics_prev = time_stepper.t
+
+    @property
+    def dt_mechanics(self) -> float:
+        return TimeStepper.ns2ms(self._time_stepper.t - self._t_mechanics_prev)
 
     @property
     @abc.abstractmethod
@@ -172,9 +177,8 @@ class BaseEMCoupling(abc.ABC):
     def setup_assigners(self) -> None:
         ...
 
-    @abc.abstractmethod
     def update_prev_mechanics(self) -> None:
-        ...
+        self._t_mechanics_prev = self._time_stepper.t
 
     @abc.abstractmethod
     def update_prev_ep(self) -> None:

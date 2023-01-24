@@ -193,6 +193,7 @@ class EMCoupling(em_model.BaseEMCoupling):
         return self._lmbda_mech_func
 
     def update_prev_mechanics(self):
+        super().update_prev_mechanics()
         # Update previous lmbda
         self.lmbda_ep_prev.vector()[:] = self.lmbda_ep.vector()
 

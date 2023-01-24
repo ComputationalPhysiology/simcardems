@@ -32,6 +32,8 @@ class Config:
     drug_factors_file: utils.PathLike = ""
     popu_factors_file: utils.PathLike = ""
     disease_state: str = "healthy"
+    dt_mech: float = 1.0
+    mechanics_solve_strategy: typing.Literal["fixed", "adaptive"] = "adaptive"
     # mechanics_ode_scheme: land_model.Scheme = land_model.Scheme.analytic
     ep_ode_scheme: str = "GRL1"
     ep_preconditioner: str = "sor"

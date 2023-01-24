@@ -84,6 +84,10 @@ class EMCoupling(BaseEMCoupling):
         self.mech_solver.material.active.register_time_stepper(time_stepper)
 
     @property
+    def dt_mechanics(self) -> float:
+        return self.mech_solver.material.active.dt
+
+    @property
     def mech_mesh(self):
         return self.geometry.mechanics_mesh
 

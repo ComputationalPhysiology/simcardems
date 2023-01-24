@@ -100,9 +100,6 @@ class EMCoupling(BaseEMCoupling):
     def solve_ep(self, interval: Tuple[float, float]) -> None:
         self.ep_solver.step(interval)
 
-    def update_prev_mechanics(self):
-        pass
-
     def print_ep_info(self):
         # Output some degrees of freedom
         total_dofs = self.vs.function_space().dim()

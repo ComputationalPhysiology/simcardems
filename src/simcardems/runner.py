@@ -128,15 +128,12 @@ class Runner:
 
     def _solve_mechanics_now(self) -> bool:
 
-        # Update these states that are needed in the Mechanics solver
-        self.coupling.ep_to_coupling()
-        self._pre_mechanics_solve()
-        norm = self.coupling.assigners.compute_pre_norm()
-        return norm >= 0.05
+        if self._config.mechanics_solve_strategy == "fixed":
+            return self.coupling.dt_mechanics > self._config.dt_mech
 
-    def _pre_mechanics_solve(self) -> None:
         self.coupling.assigners.assign_pre()
-        self.coupling.coupling_to_mechanics()
+        norm = self.coupling.assigners.compute_pre_norm()
+        return norm >= 0.05 or self.coupling.dt_mechanics > self._config.dt_mech
 
     def _post_mechanics_solve(self) -> None:
 
@@ -149,6 +146,7 @@ class Runner:
         # if self._config.mechanics_use_continuation:
         #     self.mech_heart.solve_for_control(self.coupling.XS_ep)
         # else:
+        self.coupling.coupling_to_mechanics()
         self.coupling.solve_mechanics()
         self._post_mechanics_solve()
 
