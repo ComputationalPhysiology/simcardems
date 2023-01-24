@@ -62,7 +62,11 @@ class ReleaseRunner(simcardems.Runner):
                 # Make sure message is only printed once
                 print("Release")
                 self._print_message = False
-            pulse.iterate.iterate(self.mech_heart, self.pre_stretch, -0.02 * self.Lx)
+            pulse.iterate.iterate(
+                self.coupling.mech_solver,
+                self.pre_stretch,
+                -0.02 * self.Lx,
+            )
         return super()._post_mechanics_solve()
 
 
