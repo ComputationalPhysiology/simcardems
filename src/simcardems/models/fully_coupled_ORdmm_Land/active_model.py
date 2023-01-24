@@ -64,8 +64,7 @@ class LandModel(pulse.ActiveModel):
             parameters = ORdmmLandFull.default_parameters()
 
         self._parameters = parameters
-        self._t = 0.0
-        self._t_prev = 0.0
+
         self._scheme = scheme
 
         self._dLambda = dolfin.Function(self.function_space)
@@ -88,6 +87,7 @@ class LandModel(pulse.ActiveModel):
         self.Ta_current = dolfin.Function(self.function_space, name="Ta")
         self._projector = utils.Projector(self.function_space)
         self._dLambda_tol = dLambda_tol
+        self._t_prev = 0.0
 
     @property
     def dLambda(self):
@@ -191,6 +191,7 @@ class LandModel(pulse.ActiveModel):
 
     @property
     def t(self) -> float:
+
         if not hasattr(self, "time_stepper"):
             return 0.0
         return self.time_stepper.t

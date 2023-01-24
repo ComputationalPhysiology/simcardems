@@ -68,8 +68,6 @@ class EMCoupling(BaseEMCoupling):
             "lmbda_ep",
             "Zetas_ep",
             "Zetaw_ep",
-            "XS_ep",
-            "XW_ep",
             "XS_mech",
             "XW_mech",
         ]:
@@ -117,11 +115,11 @@ class EMCoupling(BaseEMCoupling):
         for name, index in [
             ("V", 0),
             ("Ca", 45),
-            ("XS", 45),
-            ("XW", 45),
-            ("CaTrpn", 45),
-            ("TmB", 45),
-            ("Cd", 45),
+            ("CaTrpn", 42),
+            ("TmB", 43),
+            ("Cd", 44),
+            ("XS", 40),
+            ("XW", 41),
         ]:
             self.assigners.register_subfunction(
                 name=name,
@@ -136,8 +134,8 @@ class EMCoupling(BaseEMCoupling):
         )
 
         for name, index in [
-            ("XS", 45),
-            ("XW", 45),
+            ("XS", 40),
+            ("XW", 41),
         ]:
             self.assigners.register_subfunction(
                 name=name,
@@ -146,11 +144,11 @@ class EMCoupling(BaseEMCoupling):
                 is_pre=True,
             )
 
+        self.coupling_to_mechanics()
+
     def register_ep_model(self, solver):
         logger.debug("Registering EP model")
         self.ep_solver = solver
-        self.XS_ep, self.XS_ep_assigner = utils.setup_assigner(self.vs, 40)
-        self.XW_ep, self.XW_ep_assigner = utils.setup_assigner(self.vs, 41)
 
         if hasattr(self, "mech_solver"):
             self.mechanics_to_coupling()
@@ -166,9 +164,9 @@ class EMCoupling(BaseEMCoupling):
         self.lmbda_mech = solver.material.active.lmbda_prev
 
         # Note sure why we need to do this for the LV?
-        self.lmbda_mech.set_allow_extrapolation(True)
-        self.Zetas_mech.set_allow_extrapolation(True)
-        self.Zetaw_mech.set_allow_extrapolation(True)
+        # self.lmbda_mech.set_allow_extrapolation(True)
+        # self.Zetas_mech.set_allow_extrapolation(True)
+        # self.Zetaw_mech.set_allow_extrapolation(True)
 
         self.mechanics_to_coupling()
         if hasattr(self, "ep_solver"):
@@ -183,14 +181,14 @@ class EMCoupling(BaseEMCoupling):
 
     def ep_to_coupling(self):
         logger.debug("Update mechanics")
-        self.XS_ep_assigner.assign(self.XS_ep, utils.sub_function(self.vs, 40))
-        self.XW_ep_assigner.assign(self.XW_ep, utils.sub_function(self.vs, 41))
+        self.assigners.assign_ep()
         logger.debug("Done updating mechanics")
 
     def coupling_to_mechanics(self):
         logger.debug("Interpolate mechanics")
-        self.XS_mech.interpolate(self.XS_ep)
-        self.XW_mech.interpolate(self.XW_ep)
+        if hasattr(self, "_assigners"):
+            self.XS_mech.interpolate(self.assigners.functions["ep"]["XS"])
+            self.XW_mech.interpolate(self.assigners.functions["ep"]["XW"])
         logger.debug("Done interpolating mechanics")
 
     def mechanics_to_coupling(self):
@@ -205,9 +203,11 @@ class EMCoupling(BaseEMCoupling):
         logger.debug("Done updating EP")
 
     def solve_mechanics(self) -> None:
+        logger.debug("Solve mechanics")
         self.mech_solver.solve()
 
     def solve_ep(self, interval: Tuple[float, float]) -> None:
+        logger.debug("Solve EP")
         self.ep_solver.step(interval)
 
     def print_mechanics_info(self):
@@ -227,22 +227,9 @@ class EMCoupling(BaseEMCoupling):
     def register_datacollector(self, collector: "DataCollector") -> None:
         super().register_datacollector(collector=collector)
 
-        self.XS_mech = dolfin.Function(self.V_mech, name="XS_mech")
-        self.XW_mech = dolfin.Function(self.V_mech, name="XW_mech")
-        self.lmbda_mech = dolfin.Function(self.V_mech, name="lambda_mech")
-        self.Zetas_mech = dolfin.Function(self.V_mech, name="Zetas_mech")
-        self.Zetaw_mech = dolfin.Function(self.V_mech, name="Zetaw_mech")
-
-        self.V_ep = dolfin.FunctionSpace(self.ep_mesh, "CG", 1)
-        self.lmbda_ep = dolfin.Function(self.V_ep, name="lambda_ep")
-        self.Zetas_ep = dolfin.Function(self.V_ep, name="Zetas_ep")
-        self.Zetaw_ep = dolfin.Function(self.V_ep, name="Zetaw_ep")
-
         collector.register("ep", "Zetas", self.Zetas_ep)
         collector.register("ep", "Zetaw", self.Zetaw_ep)
         collector.register("ep", "lambda", self.lmbda_ep)
-        collector.register("ep", "XS", self.XS_ep)
-        collector.register("ep", "XW", self.XW_ep)
         collector.register("mechanics", "XS", self.XS_mech)
         collector.register("mechanics", "XW", self.XW_mech)
         collector.register("mechanics", "Zetas", self.Zetas_mech)
@@ -287,7 +274,7 @@ class EMCoupling(BaseEMCoupling):
         drug_factors_file: Union[str, Path] = "",
         popu_factors_file: Union[str, Path] = "",
         disease_state="healthy",
-        PCL: int = 1000,
+        PCL: float = 1000,
     ) -> BaseEMCoupling:
         logger.debug(f"Load state from path {path}")
         path = Path(path)

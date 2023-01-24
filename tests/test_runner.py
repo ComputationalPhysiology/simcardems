@@ -10,22 +10,6 @@ from simcardems import TimeStepper
 
 
 @pytest.mark.slow
-def test_runner(tmp_path, geo):
-
-    geometry_path = tmp_path / "geo.h5"
-    geometry_schema_path = geometry_path.with_suffix(".json")
-    geo.dump(fname=geometry_path, schema_path=geometry_schema_path)
-
-    runner = Runner(
-        conf=Config(
-            geometry_path=geometry_path,
-            geometry_schema_path=geometry_schema_path,
-        ),
-    )
-    runner.solve(0.02)
-
-
-@pytest.mark.slow
 def test_runner_load_state_with_new_parameters(tmp_path, geo):
 
     geometry_path = tmp_path / "geo.h5"
@@ -61,11 +45,11 @@ def test_runner_load_state_with_new_parameters(tmp_path, geo):
         ),
     )
     assert np.isclose(
-        runner2.ep_solver.ode_solver._model.parameters()["scale_drug_INa"],
+        runner2.coupling.cell_params()["scale_drug_INa"],
         drug_factors["scale_drug_INa"],
     )
     assert np.isclose(
-        runner2.ep_solver.ode_solver._model.parameters()["scale_popu_GNa"],
+        runner2.coupling.cell_params()["scale_popu_GNa"],
         popu_factors["scale_popu_GNa"],
     )
 

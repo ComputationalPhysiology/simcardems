@@ -1,8 +1,15 @@
 import dolfin
 import pulse
 
+from . import cell_model
+from . import em_model
 from .cell_model import ORdmmLandExplicit as CellModel
 from .em_model import EMCoupling
+
+loggers = [
+    "simcardems.explicit_ORdmm_Land.cell_model.logger",
+    "simcardems.explicit_ORdmm_Land.em_model.logger",
+]
 
 
 class ActiveModel(pulse.ActiveModel):
@@ -18,4 +25,11 @@ class ActiveModel(pulse.ActiveModel):
         )
 
 
-__all__ = ["EMCoupling", "CellModel", "ActiveModel"]
+__all__ = [
+    "EMCoupling",
+    "CellModel",
+    "ActiveModel",
+    "loggers",
+    "em_model",
+    "cell_model",
+]

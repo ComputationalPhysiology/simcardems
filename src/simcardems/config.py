@@ -44,7 +44,7 @@ class Config:
         "fully_coupled_ORdmm_Land",
         "explicit_ORdmm_Land",
         "pureEP_ORdmm_Land",
-    ] = "explicit_ORdmm_Land"
+    ] = "fully_coupled_ORdmm_Land"
 
     def as_dict(self):
         return {k: v for k, v in self.__dict__.items()}

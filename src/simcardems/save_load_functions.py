@@ -17,7 +17,6 @@ from . import geometry
 from . import mechanics_model
 from . import utils
 from .config import Config
-from .models import em_model
 
 
 logger = utils.getLogger(__name__)
@@ -137,7 +136,6 @@ def save_state(
     logger.debug("Save using dolfin.HDF5File")
 
     logger.debug("Save using h5py")
-
     dict_to_h5(serialize_dict(config.as_dict()), path, "config")
     if state_params is None:
         state_params = {}
@@ -145,31 +143,36 @@ def save_state(
 
 
 def load_state(
-    path,
-    drug_factors_file="",
-    popu_factors_file="",
+    path: Union[str, Path],
+    drug_factors_file: Union[str, Path] = "",
+    popu_factors_file: Union[str, Path] = "",
     disease_state="healthy",
-    PCL=1000,
+    PCL: float = 1000,
 ):
     logger.debug(f"Load state from path {path}")
     path = Path(path)
     if not path.is_file():
         raise FileNotFoundError(f"File {path} does not exist")
-    geo = geometry.load_geometry(path, schema_path=path.with_suffix(".json"))
+
     logger.debug("Open file with h5py")
     with h5pyfile(path) as h5file:
         config = Config(**h5_to_dict(h5file["config"]))
-        state_params = h5_to_dict(h5file["state_params"])
 
-    config.drug_factors_file = drug_factors_file
-    config.popu_factors_file = popu_factors_file
-    config.disease_state = disease_state
-    config.PCL = PCL
+    if config.coupling_type == "explicit_ORdmm_Land":
+        from .models.explicit_ORdmm_Land import EMCoupling
+    elif config.coupling_type == "fully_coupled_ORdmm_Land":
+        from .models.fully_coupled_ORdmm_Land import EMCoupling  # type: ignore
+    elif config.coupling_type == "pureEP_ORdmm_Land":
+        from .models.pureEP_ORdmm_Land import EMCoupling  # type: ignore
+    else:
+        raise ValueError(f"Invalid coupling type: {config.coupling_type}")
 
-    return em_model.setup_EM_model_from_config(
-        config=config,
-        geometry=geo,
-        state_params=state_params,
+    return EMCoupling.from_state(
+        path=path,
+        drug_factors_file=drug_factors_file,
+        popu_factors_file=popu_factors_file,
+        disease_state=disease_state,
+        PCL=PCL,
     )
 
 

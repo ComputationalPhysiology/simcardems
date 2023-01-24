@@ -4,9 +4,10 @@ from pathlib import Path
 
 import click
 
-from . import config
+from . import models
 from . import postprocess as post
 from . import utils
+from .config import Config
 from .runner import Runner
 from .version import __version__
 
@@ -35,54 +36,54 @@ def cli():
 @click.option(
     "-o",
     "--outdir",
-    default=config.Config.outdir,
+    default=Config.outdir,
     type=click.Path(writable=True, resolve_path=True),
     help="Output directory",
 )
-@click.option("--dt", default=config.Config.dt, type=float, help="Time step")
+@click.option("--dt", default=Config.dt, type=float, help="Time step")
 @click.option(
     "-T",
     "--end-time",
     "T",
-    default=config.Config.T,
+    default=Config.T,
     type=float,
     help="End-time of simulation",
 )
 @click.option(
     "-n",
     "--num_refinements",
-    default=config.Config.num_refinements,
+    default=Config.num_refinements,
     type=int,
     help="Number of refinements of for the mesh using in the EP model",
 )
 @click.option(
     "--save_freq",
-    default=config.Config.save_freq,
+    default=Config.save_freq,
     type=int,
     help="Set frequency of saving results to file",
 )
 @click.option(
     "--set_material",
-    default=config.Config.set_material,
+    default=Config.set_material,
     type=str,
     help="Choose material properties for mechanics model (default is HolzapfelOgden, option is Guccione",
 )
 @click.option(
     "--bnd_rigid",
     is_flag=True,
-    default=config.Config.bnd_rigid,
+    default=Config.bnd_rigid,
     help="Flag to set boundary conditions for the mechanics problem to rigid motion condition",
 )
 @click.option(
     "--load_state",
     is_flag=True,
-    default=config.Config.load_state,
+    default=Config.load_state,
     help="If load existing state if exists, otherwise create a new state",
 )
 @click.option(
     "-IC",
     "--cell_init_file",
-    default=config.Config.cell_init_file,
+    default=Config.cell_init_file,
     type=click.Path(),
     help=(
         "Path to file containing initial conditions (json or h5 file). "
@@ -91,74 +92,80 @@ def cli():
 )
 @click.option(
     "--loglevel",
-    default=config.Config.loglevel,
+    default=Config.loglevel,
     type=int,
     help="How much printing. DEBUG: 10, INFO:20 (default), WARNING: 30",
 )
 @click.option(
     "--debug-mode",
-    default=config.Config.debug_mode,
+    default=Config.debug_mode,
     type=bool,
     help="Run in debug mode. Save more output",
 )
 @click.option(
     "--show_progress_bar/--hide_progress_bar",
-    default=config.Config.show_progress_bar,
+    default=Config.show_progress_bar,
     help="Shows or hide the progress bar.",
 )
 @click.option(
     "--drug_factors_file",
-    default=config.Config.drug_factors_file,
+    default=Config.drug_factors_file,
     type=click.Path(),
     help="Path to drugs scaling factors file (json)",
 )
 @click.option(
     "--popu_factors_file",
-    default=config.Config.popu_factors_file,
+    default=Config.popu_factors_file,
     type=click.Path(),
     help="Path to population scaling factors file (json)",
 )
 @click.option(
     "--disease_state",
-    default=config.Config.disease_state,
+    default=Config.disease_state,
     type=str,
     help="Indicate disease state. Default is healthy. ",
 )
 @click.option(
     "--mechanics-use-continuation",
-    default=config.Config.mechanics_use_continuation,
+    default=Config.mechanics_use_continuation,
     type=bool,
     help="Use continuation based mechanics solver",
 )
 @click.option(
     "--mechanics-use-custom-newton-solver",
-    default=config.Config.mechanics_use_custom_newton_solver,
+    default=Config.mechanics_use_custom_newton_solver,
     type=bool,
     help="Use custom newton solver and solve ODEs at each Newton iteration",
 )
 @click.option(
     "--pcl",
-    default=config.Config.PCL,
+    default=Config.PCL,
     type=float,
     help="Pacing cycle length (ms)",
 )
 @click.option(
     "--spring",
-    default=config.Config.spring,
+    default=Config.spring,
     type=float,
     help="Set value of spring for Robin boundary condition",
 )
 @click.option(
     "--traction",
-    default=config.Config.traction,
+    default=Config.traction,
     type=float,
     help="Set value of traction for Neumann boundary condition",
 )
 @click.option(
     "--fix_right_plane",
     is_flag=True,
-    default=config.Config.fix_right_plane,
+    default=Config.fix_right_plane,
     help="Fix right plane in fiber direction (only usable for slab)",
+)
+@click.option(
+    "--coupling-type",
+    default=Config.coupling_type,
+    type=click.Choice(models.list_coupling_types()),
+    help="Type of coupled model",
 )
 def run(
     geometry_path: utils.PathLike,
@@ -178,15 +185,19 @@ def run(
     drug_factors_file: utils.PathLike,
     popu_factors_file: utils.PathLike,
     disease_state: str,
-    # mechanics_ode_scheme: land_model.Scheme,
     mechanics_use_continuation: bool,
     mechanics_use_custom_newton_solver: bool,
     pcl: float,
     spring: float,
     traction: float,
     fix_right_plane: bool,
+    coupling_type: typing.Literal[
+        "fully_coupled_ORdmm_Land",
+        "explicit_ORdmm_Land",
+        "pureEP_ORdmm_Land",
+    ],
 ):
-    conf = config.Config(
+    config = Config(
         geometry_path=geometry_path,
         geometry_schema_path=geometry_schema_path,
         outdir=outdir,
@@ -207,12 +218,12 @@ def run(
         drug_factors_file=drug_factors_file,
         popu_factors_file=popu_factors_file,
         disease_state=disease_state,
-        # mechanics_ode_scheme=mechanics_ode_scheme,
         mechanics_use_continuation=mechanics_use_continuation,
         mechanics_use_custom_newton_solver=mechanics_use_custom_newton_solver,
         PCL=pcl,
+        coupling_type=coupling_type,
     )
-    main(conf=conf)
+    main(config=config)
 
 
 @click.command("run-json")
@@ -221,34 +232,34 @@ def run_json(path):
     with open(path, "r") as json_file:
         data = json.load(json_file)
 
-    main(config.Config(**data))
+    main(Config(**data))
 
 
-def main(conf: typing.Optional[config.Config]):
+def main(config: typing.Optional[Config]):
 
-    if conf is None:
-        conf = config.Config()
+    if config is None:
+        config = Config()
 
-    geometry_path = Path(conf.geometry_path)
+    geometry_path = Path(config.geometry_path)
     if not geometry_path.is_file():
         msg = f"Unable to to find geometry path {geometry_path}"
         raise IOError(msg)
-    if conf.geometry_schema_path is None:
-        conf.geometry_schema_path = geometry_path.with_suffix(".json")
+    if config.geometry_schema_path is None:
+        config.geometry_schema_path = geometry_path.with_suffix(".json")
 
     # Get all arguments and dump them to a json file
-    info_dict = conf.__dict__
-    outdir = Path(conf.outdir)
+    info_dict = config.__dict__
+    outdir = Path(config.outdir)
     outdir.mkdir(exist_ok=True)
     with open(outdir.joinpath("parameters.json"), "w") as f:
         json.dump(info_dict, f, default=post.json_serial)
 
-    runner = Runner(conf=conf)
+    runner = Runner(config=config)
 
     runner.solve(
-        T=conf.T,
-        save_freq=conf.save_freq,
-        show_progress_bar=conf.show_progress_bar,
+        T=config.T,
+        save_freq=config.save_freq,
+        show_progress_bar=config.show_progress_bar,
     )
 
 
@@ -292,7 +303,7 @@ def postprocess(
     if make_xdmf:
         post.make_xdmffiles(folder.joinpath("results.h5"))
     if population:
-        print("Execute postprocess for population")
+        logger.info("Execute postprocess for population")
         post.save_popu_json(folder, num_models)
 
 

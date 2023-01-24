@@ -76,6 +76,7 @@ def setup_EM_model(
     if mech_state_init is not None:
         mech_heart.state.assign(mech_state_init)
     coupling.register_mech_model(mech_heart)
+    coupling.setup_assigners()
 
     return coupling
 
@@ -96,8 +97,8 @@ def setup_EM_model_from_config(
         from .explicit_ORdmm_Land import EMCoupling, CellModel, ActiveModel
     elif config.coupling_type == "fully_coupled_ORdmm_Land":
         from .fully_coupled_ORdmm_Land import EMCoupling, CellModel, ActiveModel  # type: ignore
-    elif config.coupling_type == "pure_ep_ORdmm_Land":
-        from .pure_ep_ORdmm_Land import EMCoupling, CellModel, ActiveModel  # type: ignore
+    elif config.coupling_type == "pureEP_ORdmm_Land":
+        from .pureEP_ORdmm_Land import EMCoupling, CellModel, ActiveModel  # type: ignore
     else:
         raise ValueError(f"Invalid coupling type: {config.coupling_type}")
 
@@ -213,10 +214,10 @@ class BaseEMCoupling(abc.ABC):
     @staticmethod
     def from_state(
         path: typing.Union[str, Path],
-        drug_factors_file="",
-        popu_factors_file="",
+        drug_factors_file: typing.Union[str, Path] = "",
+        popu_factors_file: typing.Union[str, Path] = "",
         disease_state="healthy",
-        PCL=1000,
+        PCL: float = 1000,
     ):
         return io.load_state(
             path=path,

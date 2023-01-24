@@ -15,6 +15,7 @@ from . import datacollector
 from . import ep_model
 from . import geometry
 from . import mechanics_model
+from . import models
 from . import newton_solver
 from . import postprocess
 from . import runner
@@ -48,19 +49,17 @@ def set_log_level(level):
         "simcardems.cli.logger"
         "simcardems.config.logger"
         "simcardems.datacollector.logger"
-        # "simcardems.em_model.logger"
         "simcardems.ep_model.logger"
         "simcardems.geometry.logger"
         "simcardems.gui.logger"
-        # "simcardems.land_model.logger"
         "simcardems.mechanics_model.logger"
         "simcardems.newton_solver.logger"
         "simcardems.postprocess.logger"
         "simcardems.save_load_functions.logger"
-        "simcardems.setup_models.logger"
+        "simcardems.runner.logger"
         "simcardems.utils.logger"
         "simcardems.value_extractor.logger",
-    ]
+    ] + models.loggers
     _pulse.set_log_level(level)
     _daiquiri.setup(level=level)
 

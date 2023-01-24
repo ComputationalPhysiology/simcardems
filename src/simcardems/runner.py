@@ -18,7 +18,6 @@ class Runner:
         self,
         config: typing.Optional[Config] = None,
         empty: bool = False,
-        **kwargs,
     ) -> None:
 
         if config is None:
@@ -34,8 +33,9 @@ class Runner:
         if empty:
             return
 
-        reset = not self._config.load_state
-        if not reset and self.state_path.is_file():
+        self._reset = not self._config.load_state
+
+        if self._config.load_state and self.state_path.is_file():
             # Load state
             logger.info("Load previously saved state")
             self.coupling = io.load_state(
@@ -51,11 +51,8 @@ class Runner:
             self.coupling = em_model.setup_EM_model_from_config(self._config)
 
         self._t0 = self.coupling.t
-        self._reset = reset
-
-        self._setup_assigners()
+        self._time_stepper: typing.Optional[TimeStepper] = None
         self._setup_datacollector()
-
         logger.info(f"Starting at t0={self._t0}")
 
     @property
@@ -110,13 +107,9 @@ class Runner:
         obj.coupling = coupling
         obj._t0 = coupling.t
         obj._reset = reset
-        obj._setup_assigners()
+        obj._time_stepper = None
         obj._setup_datacollector()
         return obj
-
-    def _setup_assigners(self):
-        self._time_stepper = None
-        self.coupling.setup_assigners()
 
     def store(self):
         # Assign u, v and Ca for postprocessing
@@ -153,7 +146,6 @@ class Runner:
         self.coupling.coupling_to_ep()
 
     def _solve_mechanics(self):
-        # self._pre_mechanics_solve()
         # if self._config.mechanics_use_continuation:
         #     self.mech_heart.solve_for_control(self.coupling.XS_ep)
         # else:
@@ -177,6 +169,7 @@ class Runner:
 
         save_it = int(save_freq / self._dt)
         self._setup_time_stepper(T, use_ns=True, st_progress=st_progress)
+
         pbar = create_progressbar(
             time_stepper=self._time_stepper,
             show_progress_bar=show_progress_bar,
@@ -204,9 +197,11 @@ class Runner:
 
 
 def create_progressbar(
-    time_stepper: TimeStepper,
+    time_stepper: typing.Optional[TimeStepper] = None,
     show_progress_bar: bool = Config.show_progress_bar,
 ):
+    if time_stepper is None:
+        raise ValueError("Please provide a time stepper")
     if show_progress_bar:
         # Show progressbar
         pbar = tqdm(time_stepper, total=time_stepper.total_steps)

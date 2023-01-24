@@ -1,5 +1,4 @@
 import logging
-import os
 import typing
 from pathlib import Path
 
@@ -7,7 +6,7 @@ import dolfin
 import numpy as np
 import ufl
 
-PathLike = typing.Union[os.PathLike, str]
+PathLike = typing.Union[Path, str]
 
 
 class MPIFilt(logging.Filter):

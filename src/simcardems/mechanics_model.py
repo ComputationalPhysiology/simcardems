@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import typing
 
@@ -8,10 +10,11 @@ from . import boundary_conditions
 from . import config
 from . import geometry
 from . import utils
-from .models import em_model
 from .newton_solver import MechanicsNewtonSolver
 from .newton_solver import MechanicsNewtonSolver_ODE
 
+if typing.TYPE_CHECKING:
+    from .models import em_model
 
 logger = utils.getLogger(__name__)
 

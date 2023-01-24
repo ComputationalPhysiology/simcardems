@@ -131,11 +131,11 @@ class EMCoupling(em_model.BaseEMCoupling):
         for name, index in [
             ("V", 0),
             ("Ca", 45),
-            ("XS", 45),
-            ("XW", 45),
-            ("CaTrpn", 45),
-            ("TmB", 45),
-            ("Cd", 45),
+            ("XS", 40),
+            ("XW", 41),
+            ("CaTrpn", 42),
+            ("TmB", 43),
+            ("Cd", 44),
         ]:
             self.assigners.register_subfunction(
                 name=name,
@@ -150,8 +150,8 @@ class EMCoupling(em_model.BaseEMCoupling):
         )
 
         for name, index in [
-            ("XS", 45),
-            ("XW", 45),
+            ("XS", 40),
+            ("XW", 41),
         ]:
             self.assigners.register_subfunction(
                 name=name,
@@ -343,7 +343,7 @@ class EMCoupling(em_model.BaseEMCoupling):
         drug_factors_file: Union[str, Path] = "",
         popu_factors_file: Union[str, Path] = "",
         disease_state="healthy",
-        PCL: int = 1000,
+        PCL: float = 1000,
     ) -> em_model.BaseEMCoupling:
         logger.debug(f"Load state from path {path}")
         path = Path(path)

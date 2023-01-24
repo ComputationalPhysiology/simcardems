@@ -62,8 +62,8 @@ def extract_traces(loader: DataLoader, reduction: str = "average"):
             "Cd",
             "Zetas",
             "Zetaw",
-            "lmbda",
-            "dLambda",
+            "lambda",
+            # "dLambda",
         ],
     }
 
@@ -119,12 +119,12 @@ def plot_state_traces(results_file: utils.PathLike, reduction: str = "average"):
     fig, axs = plt.subplots(2, 2, figsize=(10, 8), sharex=True)
 
     for i, (group, key) in enumerate(
-        (("ep", "lmbda"), ("mechanics", "Ta"), ("ep", "V"), ("ep", "Ca")),
+        (("ep", "lambda"), ("mechanics", "Ta"), ("ep", "V"), ("ep", "Ca")),
     ):
         ax = axs.flatten()[i]
         y = values[group][key]
         ax.plot(times, y)
-        if key == "lmbda":
+        if key == "lambda":
             ax.set_title(r"$\lambda$")
             ax.set_ylim(min(0.9, min(y)), max(1.1, max(y)))
         else:
