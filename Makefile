@@ -70,9 +70,7 @@ test: ## run tests quickly with the default Python
 docs: ## generate Sphinx HTML documentation, including API docs
 	cp CONTRIBUTING.md docs/.
 	jupytext demos/release_test.py -o docs/release_test.md
-	jupytext demos/simple_demo_fully_coupled.py -o docs/simple_demo_fully_coupled.md
-	jupytext demos/simple_demo_explicit.py -o docs/simple_demo_explicit.md
-	jupytext demos/simple_demo_pure_ep.py -o docs/simple_demo_pure_ep.md
+	jupytext demos/simple_demo.py -o docs/simple_demo.md
 	jupytext demos/ventricular_geometry.py -o docs/ventricular_geometry.md
 	jupytext demos/initial_conditions_demo.py -o docs/initial_conditions_demo.md
 	jupytext demos/drug_effects_demo.py -o docs/drug_effects_demo.md

@@ -1,4 +1,4 @@
-# ## Custom model (pure EP)
+# # Custom model (pure EP)
 #
 # In the current version of `simcardems` there are only three types of models, a strongly coupled model, an explicitly couple model and a pure EP model. All of these models use the same underlying cell model, and you might want to provide your own model.
 #
@@ -284,3 +284,8 @@ fig.savefig(outdir / "v.png")
 
 # We can also create an `xdmf` file that we can visualize in Paraview
 simcardems.postprocess.make_xdmffiles(outdir / "results.h5")
+
+# <video controls src="./_static/custom_cell_model_pure_ep.mp4"></video>
+#
+# Movie showing $v$ over time
+#

@@ -113,7 +113,7 @@ def plot_state_traces(results_file: utils.PathLike, reduction: str = "average"):
 
     axs[1, 0].set_xlabel("Time [ms]")
     axs[1, 1].set_xlabel("Time [ms]")
-    fig.savefig(outdir.joinpath("state_traces_center.png"), dpi=300)
+    fig.savefig(outdir.joinpath(f"state_traces_{reduction}.png"), dpi=300)
 
     fig2, ax2 = plt.subplots(2, 4, figsize=(10, 8), sharex=True)
     for i, (group, key, linestyle, color) in enumerate(
