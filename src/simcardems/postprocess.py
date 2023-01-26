@@ -42,44 +42,20 @@ def plot_peaks(fname, data, threshold):
 
 def extract_traces(loader: DataLoader, reduction: str = "average"):
 
-    all_names = {
-        "mechanics": [
-            # "lmbda",
-            "Ta",
-            # "Zetas_mech",
-            # "Zetaw_mech",
-            # "XS_mech",
-            # "XW_mech",
-            "u",
-        ],
-        "ep": [
-            "V",
-            "Ca",
-            "XS",
-            "XW",
-            "CaTrpn",
-            "TmB",
-            "Cd",
-            "Zetas",
-            "Zetaw",
-            "lambda",
-            # "dLambda",
-        ],
-    }
-
     values = {
         group: {
             name: np.zeros(len(loader.time_stamps)) for name in names if name != "u"
         }
-        for group, names in all_names.items()
+        for group, names in loader.names.items()
     }
 
-    values["mechanics"]["u"] = np.zeros((len(loader.time_stamps), 3))
+    if "u" in loader.names.get("mechanics", {}):
+        values["mechanics"]["u"] = np.zeros((len(loader.time_stamps), 3))
     values["time"] = np.array(loader.time_stamps, dtype=float)
 
     logger.info("Extract traces...")
 
-    for group, names in all_names.items():
+    for group, names in loader.names.items():
         logger.info(f"Group: {group}")
         # value_point = getattr(bnd[group], utils.enum2str(point, BoundaryNodes))
         datagroup = getattr(DataGroups, utils.enum2str(group, DataGroups))
@@ -122,7 +98,11 @@ def plot_state_traces(results_file: utils.PathLike, reduction: str = "average"):
         (("ep", "lambda"), ("mechanics", "Ta"), ("ep", "V"), ("ep", "Ca")),
     ):
         ax = axs.flatten()[i]
-        y = values[group][key]
+        try:
+            y = values[group][key]
+        except KeyError:
+            # Just skip it
+            continue
         ax.plot(times, y)
         if key == "lambda":
             ax.set_title(r"$\lambda$")
@@ -147,8 +127,13 @@ def plot_state_traces(results_file: utils.PathLike, reduction: str = "average"):
             ("ep", "Cd", "solid", "blue"),
         ),
     ):
+        try:
+            y = values[group][key]
+        except KeyError:
+            # Just skip it
+            continue
         ax = ax2.flatten()[i]
-        ax.plot(times, values[group][key], linestyle=linestyle, color=color)
+        ax.plot(times, y, linestyle=linestyle, color=color)
         ax.set_title(key)
         ax.grid()
 
@@ -245,14 +230,16 @@ def plot_state_traces(results_file: utils.PathLike, reduction: str = "average"):
     fig2.savefig(outdir.joinpath("state_mech_traces_center.png"), dpi=300)
 
 
-def make_xdmffiles(results_file):
+def make_xdmffiles(results_file, names=None):
 
     loader = DataLoader(results_file)
     outdir = Path(results_file).parent
 
-    for group, names in loader.names.items():
+    for group, _names in loader.names.items():
         logger.info(f"Save xdmffile for group {group}")
-        for name in names:
+        for name in _names:
+            if names is not None and name not in names:
+                continue
             xdmf = dolfin.XDMFFile(
                 dolfin.MPI.comm_world,
                 outdir.joinpath(f"{group}_{name}.xdmf").as_posix(),

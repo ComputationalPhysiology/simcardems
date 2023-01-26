@@ -15,13 +15,17 @@ parts:
 
   - caption: Demos
     chapters:
-    - file: "simple_demo"
-    - file: "cli"
-    - file: "docker"
+    - file: "simple_demo_fully_coupled"
+    - file: "simple_demo_explicit"
+    - file: "simple_demo_pure_ep"
+    - file: "simple_demo_pure_ep"
     - file: "initial_conditions_demo"
     - file: "release_test"
     - file: "drug_effects_demo"
     - file: "ventricular_geometry"
+    - file: "custom_cell_model_pure_ep"
+    - file: "cli"
+    - file: "docker"
     - file: "gui"
 
   - caption: Verification

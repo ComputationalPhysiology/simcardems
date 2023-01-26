@@ -60,6 +60,7 @@ class EMCoupling(em_model.BaseEMCoupling):
         self.Zetas_mech = dolfin.Function(self.V_mech, name="Zetas_mech")
         self.Zetaw_mech = dolfin.Function(self.V_mech, name="Zetaw_mech")
         self._lmbda_mech_func = dolfin.Function(self.V_mech, name="Zetaw_mech")
+        self._lmbda_mech_func.set_allow_extrapolation(True)
 
         self.V_ep = dolfin.FunctionSpace(self.ep_mesh, "CG", 1)
         self.XS_ep = dolfin.Function(self.V_ep, name="XS_ep")
@@ -243,8 +244,8 @@ class EMCoupling(em_model.BaseEMCoupling):
     def register_datacollector(self, collector: datacollector.DataCollector) -> None:
         super().register_datacollector(collector=collector)
 
-        collector.register("ep", "lmbda", self.lmbda_ep)
-        collector.register("ep", "dLmbda", self.dLambda_ep)
+        collector.register("ep", "lambda", self.lmbda_ep)
+        collector.register("ep", "dLambda", self.dLambda_ep)
         collector.register("mechanics", "Ta", self.Ta_mech)
         self.mech_solver.solver.register_datacollector(collector)
 

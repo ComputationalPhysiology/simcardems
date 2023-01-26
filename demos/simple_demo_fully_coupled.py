@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-# # Simple demo
+# # Simple demo (fully coupled)
 #
-# In this demo we show the most simple usage of the `simcardems` library using the python API
+# In this demo we show the most simple usage of the `simcardems` library using the python API.
 #
 # Import the necessary libraries
 #
@@ -27,8 +27,7 @@ config = simcardems.Config(
     outdir=outdir,
     geometry_path=geometry_path,
     geometry_schema_path=geometry_schema_path,
-    T=20,
-    load_state=True,
+    T=1000,
 )
 
 

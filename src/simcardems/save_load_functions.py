@@ -117,6 +117,11 @@ def serialize_dict(d):
             continue
         elif isinstance(v, dict):
             new_d[k] = serialize_dict(v)
+        elif isinstance(v, dolfin.Constant):
+            try:
+                new_d[k] = float(v)
+            except Exception:
+                continue
         else:
             new_d[k] = v
     return new_d

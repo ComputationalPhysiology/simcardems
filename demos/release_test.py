@@ -48,7 +48,7 @@ class ReleaseRunner(simcardems.Runner):
         self.pre_stretch = config.pre_stretch
         assert self.pre_stretch is not None
 
-        super().__init__(conf=config)
+        super().__init__(config=config)
         # Make sure we have a SlabGeometry
         assert isinstance(self.coupling.geometry, simcardems.geometry.SlabGeometry)
         self.Lx = self.coupling.geometry.parameters["lx"]

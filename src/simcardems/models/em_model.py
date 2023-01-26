@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import abc
 import typing
 from pathlib import Path
 
@@ -112,7 +111,7 @@ def setup_EM_model_from_config(
     )
 
 
-class BaseEMCoupling(abc.ABC):
+class BaseEMCoupling:
     def __init__(
         self, geometry: _geometry.BaseGeometry, t: float = 0.0, **kwargs
     ) -> None:
@@ -145,57 +144,47 @@ class BaseEMCoupling(abc.ABC):
         return TimeStepper.ns2ms(self._time_stepper.t - self._t_mechanics_prev)
 
     @property
-    @abc.abstractmethod
     def coupling_type(self):
-        ...
+        "CustomType"
 
-    @abc.abstractmethod
     def register_ep_model(self, solver: cbcbeat.SplittingSolver) -> None:
-        ...
+        pass
 
-    @abc.abstractmethod
     def register_mech_model(self, solver: pulse.MechanicsProblem) -> None:
-        ...
+        pass
 
-    @abc.abstractmethod
     def ep_to_coupling(self) -> None:
-        ...
+        pass
 
-    @abc.abstractmethod
     def coupling_to_mechanics(self) -> None:
-        ...
+        pass
 
-    @abc.abstractmethod
     def mechanics_to_coupling(self) -> None:
-        ...
+        pass
 
-    @abc.abstractmethod
     def coupling_to_ep(self) -> None:
-        ...
+        pass
 
-    @abc.abstractmethod
     def setup_assigners(self) -> None:
-        ...
+        from ..datacollector import Assigners
+
+        self._assigners = Assigners()
 
     def update_prev_mechanics(self) -> None:
         self._t_mechanics_prev = self._time_stepper.t
 
-    @abc.abstractmethod
     def update_prev_ep(self) -> None:
-        ...
+        pass
 
-    @abc.abstractmethod
     def solve_mechanics(self) -> None:
-        ...
+        pass
 
-    @abc.abstractmethod
     def solve_ep(self, interval: typing.Tuple[float, float]) -> None:
-        ...
+        pass
 
     @property
-    @abc.abstractmethod
     def assigners(self) -> datacollector.Assigners:
-        ...
+        return self._assigners
 
     def save_state(
         self,

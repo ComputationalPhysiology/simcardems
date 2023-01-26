@@ -41,9 +41,6 @@ class EMCoupling(BaseEMCoupling):
         self.ep_solver = solver
         logger.debug("Done registering EP model")
 
-    def register_mech_model(self, *args, **kwargs):
-        pass
-
     def __eq__(self, __o: object) -> bool:
         if not isinstance(__o, type(self)):
             return NotImplemented
@@ -70,32 +67,17 @@ class EMCoupling(BaseEMCoupling):
         for name, index in [
             ("V", 0),
             ("Ca", 45),
-            ("XS", 45),
-            ("XW", 45),
-            ("CaTrpn", 45),
-            ("TmB", 45),
-            ("Cd", 45),
+            ("XS", 40),
+            ("XW", 41),
+            ("CaTrpn", 42),
+            ("TmB", 43),
+            ("Cd", 44),
         ]:
             self.assigners.register_subfunction(
                 name=name,
                 group="ep",
                 subspace_index=index,
             )
-
-    def ep_to_coupling(self):
-        pass
-
-    def coupling_to_mechanics(self):
-        pass
-
-    def mechanics_to_coupling(self):
-        pass
-
-    def coupling_to_ep(self):
-        pass
-
-    def solve_mechanics(self) -> None:
-        pass
 
     def solve_ep(self, interval: Tuple[float, float]) -> None:
         self.ep_solver.step(interval)
