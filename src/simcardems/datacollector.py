@@ -38,7 +38,6 @@ class DataCollector:
             geo.dump(self.results_file)
 
         else:
-
             try:
                 with h5pyfile(self._results_file, "r") as f:
                     self._times_stamps = set(f["ep"]["V"].keys())
@@ -71,7 +70,6 @@ class DataCollector:
         return {k: list(v.keys()) for k, v in self._functions.items()}
 
     def store(self, t: float) -> None:
-
         t_str = f"{t:.2f}"
         logger.debug(f"Store results at time {t_str}")
         if f"{t_str}" in self._times_stamps:
@@ -98,7 +96,6 @@ class DataCollector:
 
 class DataLoader:
     def __init__(self, h5name) -> None:
-
         self._h5file = None
         self._h5name = Path(h5name)
         if not self._h5name.is_file():
@@ -107,7 +104,6 @@ class DataLoader:
         self.geo = load_geometry(self._h5name)
 
         with h5pyfile(self._h5name) as h5file:
-
             # Find the remaining functions
             self.names = {
                 group: [name for name in h5file.get(group, {}).keys()]

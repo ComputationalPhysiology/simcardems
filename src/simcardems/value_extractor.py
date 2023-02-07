@@ -57,7 +57,6 @@ class ValueExtractor:
         value: str,
         dofs: typing.Optional[np.ndarray] = None,
     ):
-
         if value == "average":
             return self.average(func)
         elif value in self.boundary.nodes():

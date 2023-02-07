@@ -31,7 +31,6 @@ class EMState(NamedTuple):
 
 
 def setup_EM_model(config: config.Config):
-
     geo = geometry.load_geometry(
         mesh_path=config.geometry_path,
         schema_path=config.geometry_schema_path,
@@ -234,7 +233,6 @@ class Runner:
         empty: bool = False,
         **kwargs,
     ) -> None:
-
         if conf is None:
             conf = config.Config()
 
@@ -417,7 +415,6 @@ class Runner:
         return TimeStepper.ns2ms(float(self.t - self.mech_heart.material.active.t))
 
     def _solve_mechanics_now(self) -> bool:
-
         # Update these states that are needed in the Mechanics solver
         self.coupling.ep_to_coupling()
 
@@ -436,7 +433,6 @@ class Runner:
         self.mech_heart.material.active.update_time(self.t)
 
     def _post_mechanics_solve(self) -> None:
-
         # Update previous active tension
         self.mech_heart.material.active.update_prev()
         self.coupling.mechanics_to_coupling()
@@ -485,7 +481,7 @@ class Runner:
         # beat_nr = 0
         self.mech_heart.material.active.start_time(self.t)
 
-        for (i, (t0, t)) in enumerate(pbar):
+        for i, (t0, t) in enumerate(pbar):
             logger.debug(
                 f"Solve EP model at step {i} from {TimeStepper.ns2ms(t0):.2f} ms to {TimeStepper.ns2ms(t):.2f} ms",
             )
@@ -606,7 +602,6 @@ class TimeStepper:
         if self.T is None:
             raise RuntimeError("Please assign an end time to time stepper")
         while self.t < self.T:
-
             prev_t = self.t
             self.t = min(self.t + self.dt, self.T)
             self.step += 1

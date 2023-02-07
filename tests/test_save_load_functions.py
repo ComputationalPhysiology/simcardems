@@ -17,7 +17,6 @@ def dummyfile():
 
 
 def tests_h5pyfile(dummyfile):
-
     h5group = "test"
     data1 = [1, 2, 3, 4]
     data2 = [4, 5, 6]
@@ -50,7 +49,6 @@ def tests_h5pyfile(dummyfile):
     ),
 )
 def test_dict_to_h5(data, dummyfile):
-
     h5group = "testgroup"
     slf.dict_to_h5(data, dummyfile, h5group)
 
@@ -71,7 +69,6 @@ def test_save_and_load_state(
     cell_params,
     capfd,
 ):
-
     solve_mock.return_value = (1, True)  # (niter, nconv)
     coupling.register_ep_model(ep_solver)
 
@@ -148,7 +145,6 @@ def test_load_state_with_new_parameters_uses_new_parameters(
     geo,
     cell_params,
 ):
-
     ep_solver = simcardems.setup_models.setup_ep_solver(
         dt=0.01,
         coupling=coupling,
