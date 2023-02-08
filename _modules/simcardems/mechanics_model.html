@@ -392,7 +392,6 @@ const thebe_selector_output = ".output, .cell_output"
 
 <div class="viewcode-block" id="MechanicsProblem"><a class="viewcode-back" href="../../api.html#simcardems.mechanics_model.MechanicsProblem">[docs]</a><span class="k">class</span> <span class="nc">MechanicsProblem</span><span class="p">(</span><span class="n">ContinuationBasedMechanicsProblem</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">_init_spaces</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-
         <span class="n">mesh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">mesh</span>
 
         <span class="n">P1</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">FiniteElement</span><span class="p">(</span><span class="s2">&quot;Lagrange&quot;</span><span class="p">,</span> <span class="n">mesh</span><span class="o">.</span><span class="n">ufl_cell</span><span class="p">(),</span> <span class="mi">1</span><span class="p">)</span>
@@ -475,7 +474,6 @@ const thebe_selector_output = ".output, .cell_output"
 
 <div class="viewcode-block" id="RigidMotionProblem"><a class="viewcode-back" href="../../api.html#simcardems.mechanics_model.RigidMotionProblem">[docs]</a><span class="k">class</span> <span class="nc">RigidMotionProblem</span><span class="p">(</span><span class="n">MechanicsProblem</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">_init_spaces</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-
         <span class="n">mesh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">mesh</span>
 
         <span class="n">P1</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">FiniteElement</span><span class="p">(</span><span class="s2">&quot;Lagrange&quot;</span><span class="p">,</span> <span class="n">mesh</span><span class="o">.</span><span class="n">ufl_cell</span><span class="p">(),</span> <span class="mi">1</span><span class="p">)</span>

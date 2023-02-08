@@ -343,7 +343,6 @@ const thebe_selector_output = ".output, .cell_output"
 
 <div class="viewcode-block" id="MPIFilt"><a class="viewcode-back" href="../../api.html#simcardems.utils.MPIFilt">[docs]</a><span class="k">class</span> <span class="nc">MPIFilt</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">Filter</span><span class="p">):</span>
 <div class="viewcode-block" id="MPIFilt.filter"><a class="viewcode-back" href="../../api.html#simcardems.utils.MPIFilt.filter">[docs]</a>    <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
-
         <span class="k">if</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">dolfin</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span> <span class="mi">1</span>
         <span class="k">else</span><span class="p">:</span>
@@ -480,7 +479,6 @@ const thebe_selector_output = ".output, .cell_output"
 
 
 <div class="viewcode-block" id="setup_assigner"><a class="viewcode-back" href="../../api.html#simcardems.utils.setup_assigner">[docs]</a><span class="k">def</span> <span class="nf">setup_assigner</span><span class="p">(</span><span class="n">vs</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
-
     <span class="c1"># Set-up separate potential function for post processing</span>
     <span class="n">VS0</span> <span class="o">=</span> <span class="n">vs</span><span class="o">.</span><span class="n">function_space</span><span class="p">()</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
     <span class="n">V</span> <span class="o">=</span> <span class="n">VS0</span><span class="o">.</span><span class="n">collapse</span><span class="p">()</span>
@@ -498,6 +496,7 @@ const thebe_selector_output = ".output, .cell_output"
 <span class="c1"># Optimization level 1 : call copy constructor as done in sub() but without safety checks</span>
 <span class="c1"># def sub_function(vs, index):</span>
 <span class="c1">#     return dolfin.Function(vs, index, name=&#39;%s-%d&#39; % (str(vs), index))</span>
+
 
 <span class="c1"># Optimization level 2 : define the subfunction as done in the copy constructor with</span>
 <span class="c1"># even less safety checks</span>

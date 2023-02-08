@@ -372,7 +372,6 @@ const thebe_selector_output = ".output, .cell_output"
 
 
 <div class="viewcode-block" id="extract_traces"><a class="viewcode-back" href="../../api.html#simcardems.postprocess.extract_traces">[docs]</a><span class="k">def</span> <span class="nf">extract_traces</span><span class="p">(</span><span class="n">loader</span><span class="p">:</span> <span class="n">DataLoader</span><span class="p">,</span> <span class="n">reduction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;average&quot;</span><span class="p">):</span>
-
     <span class="n">all_names</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;mechanics&quot;</span><span class="p">:</span> <span class="p">[</span>
             <span class="s2">&quot;lmbda&quot;</span><span class="p">,</span>
@@ -510,7 +509,6 @@ const thebe_selector_output = ".output, .cell_output"
 
     <span class="c1"># If there is a residual.txt file: load and plot these results</span>
     <span class="k">if</span> <span class="n">loader</span><span class="o">.</span><span class="n">residual</span><span class="p">:</span>
-
         <span class="c1"># Back to initial dt and time points</span>
         <span class="c1"># dt = 0.05  # FIXME: Do we really want to hardcode in this value?</span>
         <span class="c1"># times_dt = np.arange(</span>
@@ -599,7 +597,6 @@ const thebe_selector_output = ".output, .cell_output"
 
 
 <div class="viewcode-block" id="make_xdmffiles"><a class="viewcode-back" href="../../api.html#simcardems.postprocess.make_xdmffiles">[docs]</a><span class="k">def</span> <span class="nf">make_xdmffiles</span><span class="p">(</span><span class="n">results_file</span><span class="p">):</span>
-
     <span class="n">loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">results_file</span><span class="p">)</span>
     <span class="n">outdir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">results_file</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span>
 
@@ -684,7 +681,6 @@ const thebe_selector_output = ".output, .cell_output"
 
 
 <div class="viewcode-block" id="extract_last_beat"><a class="viewcode-back" href="../../api.html#simcardems.postprocess.extract_last_beat">[docs]</a><span class="k">def</span> <span class="nf">extract_last_beat</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">pacing</span><span class="p">,</span> <span class="n">return_interval</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-
     <span class="n">allbeats</span> <span class="o">=</span> <span class="n">apf</span><span class="o">.</span><span class="n">Beats</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="n">time</span><span class="p">,</span> <span class="n">pacing</span><span class="o">=</span><span class="n">pacing</span><span class="p">)</span>
 
     <span class="k">try</span><span class="p">:</span>
@@ -839,7 +835,6 @@ const thebe_selector_output = ".output, .cell_output"
 
 
 <div class="viewcode-block" id="numpyfy"><a class="viewcode-back" href="../../api.html#simcardems.postprocess.numpyfy">[docs]</a><span class="k">def</span> <span class="nf">numpyfy</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
-
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
