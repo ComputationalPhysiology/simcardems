@@ -16,7 +16,7 @@ repos:
         exclude: ^demos/
 
   - repo: https://github.com/psf/black
-    rev: 22.12.0
+    rev: 23.1.0
     hooks:
       - id: black
 
@@ -41,7 +41,7 @@ repos:
       - id: mypy
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v6.19.2
+    rev: v6.22.0
     hooks:
       - id: cspell
         files: src/|docs/source/(.+).md|docs/source/(.+).rst|tests|README.md

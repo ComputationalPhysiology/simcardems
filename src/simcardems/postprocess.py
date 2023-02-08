@@ -41,7 +41,6 @@ def plot_peaks(fname, data, threshold):
 
 
 def extract_traces(loader: DataLoader, reduction: str = "average"):
-
     all_names = {
         "mechanics": [
             "lmbda",
@@ -179,7 +178,6 @@ def plot_state_traces(results_file: utils.PathLike, reduction: str = "average"):
 
     # If there is a residual.txt file: load and plot these results
     if loader.residual:
-
         # Back to initial dt and time points
         # dt = 0.05  # FIXME: Do we really want to hardcode in this value?
         # times_dt = np.arange(
@@ -268,7 +266,6 @@ def plot_state_traces(results_file: utils.PathLike, reduction: str = "average"):
 
 
 def make_xdmffiles(results_file):
-
     loader = DataLoader(results_file)
     outdir = Path(results_file).parent
 
@@ -353,7 +350,6 @@ def stats(y):
 
 
 def extract_last_beat(y, time, pacing, return_interval=False):
-
     allbeats = apf.Beats(y=y, t=time, pacing=pacing)
 
     try:
@@ -508,7 +504,6 @@ def json_serial(obj):
 
 
 def numpyfy(d):
-
     if isinstance(d, (list, tuple)):
         return np.array(d)
     if np.isscalar(d):

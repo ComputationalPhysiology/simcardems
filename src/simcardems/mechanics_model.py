@@ -61,7 +61,6 @@ class ContinuationBasedMechanicsProblem(pulse.MechanicsProblem):
 
 class MechanicsProblem(ContinuationBasedMechanicsProblem):
     def _init_spaces(self):
-
         mesh = self.geometry.mesh
 
         P1 = dolfin.FiniteElement("Lagrange", mesh.ufl_cell(), 1)
@@ -144,7 +143,6 @@ class MechanicsProblem(ContinuationBasedMechanicsProblem):
 
 class RigidMotionProblem(MechanicsProblem):
     def _init_spaces(self):
-
         mesh = self.geometry.mesh
 
         P1 = dolfin.FiniteElement("Lagrange", mesh.ufl_cell(), 1)

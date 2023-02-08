@@ -12,7 +12,6 @@ PathLike = typing.Union[os.PathLike, str]
 
 class MPIFilt(logging.Filter):
     def filter(self, record):
-
         if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
             return 1
         else:
@@ -149,7 +148,6 @@ def remove_file(path):
 
 
 def setup_assigner(vs, index):
-
     # Set-up separate potential function for post processing
     VS0 = vs.function_space().sub(index)
     V = VS0.collapse()
@@ -167,6 +165,7 @@ def setup_assigner(vs, index):
 # Optimization level 1 : call copy constructor as done in sub() but without safety checks
 # def sub_function(vs, index):
 #     return dolfin.Function(vs, index, name='%s-%d' % (str(vs), index))
+
 
 # Optimization level 2 : define the subfunction as done in the copy constructor with
 # even less safety checks

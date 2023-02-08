@@ -29,7 +29,6 @@ def define_conductivity_tensor(
     C_m: float = 0.01,
     microstructure: Optional[pulse.Microstructure] = None,
 ):
-
     if microstructure is None:
         microstructure = default_microstructure()
 
