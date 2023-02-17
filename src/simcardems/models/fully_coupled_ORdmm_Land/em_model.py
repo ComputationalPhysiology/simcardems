@@ -167,9 +167,9 @@ class EMCoupling(BaseEMCoupling):
         self.lmbda_mech = solver.material.active.lmbda_prev
 
         # Note sure why we need to do this for the LV?
-        # self.lmbda_mech.set_allow_extrapolation(True)
-        # self.Zetas_mech.set_allow_extrapolation(True)
-        # self.Zetaw_mech.set_allow_extrapolation(True)
+        self.lmbda_mech.set_allow_extrapolation(True)
+        self.Zetas_mech.set_allow_extrapolation(True)
+        self.Zetaw_mech.set_allow_extrapolation(True)
 
         self.mechanics_to_coupling()
         if hasattr(self, "ep_solver"):
