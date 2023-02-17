@@ -91,6 +91,14 @@ simcardems.utils module
    :undoc-members:
    :show-inheritance:
 
+simcardems.value_extractor module
+---------------------------------
+
+.. automodule:: simcardems.value_extractor
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 simcardems.version module
 -------------------------
 

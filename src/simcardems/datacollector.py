@@ -1,3 +1,4 @@
+import weakref
 from enum import Enum
 from pathlib import Path
 from typing import Dict
@@ -189,11 +190,16 @@ class Assigners:
         subspace_indices[group][name] = subspace_index
 
 
+class InvalidReductionError(RuntimeError):
+    pass
+
+
 class DataCollector:
     def __init__(self, outdir, geo: BaseGeometry, reset_state=True) -> None:
         self.outdir = Path(outdir)
         self._results_file = self.outdir.joinpath("results.h5")
         self.comm = geo.mesh.mpi_comm()  # FIXME: Is this important?
+        self._value_extractor = ValueExtractor(geo)
 
         if reset_state:
             utils.remove_file(self._results_file)
@@ -214,12 +220,26 @@ class DataCollector:
             "ep": {},
             "mechanics": {},
         }
+        self._reductions: Dict[str, Dict[str, str]] = {
+            "ep": {},
+            "mechanics": {},
+        }
+
+    @property
+    def valid_reductions(self) -> List[str]:
+        return ["full", "average"] + list(self._value_extractor.boundary.nodes())
 
     @property
     def results_file(self):
         return self._results_file.as_posix()
 
-    def register(self, group: str, name: str, f: dolfin.Function) -> None:
+    def register(
+        self,
+        group: str,
+        name: str,
+        f: dolfin.Function,
+        reduction: str = "full",
+    ) -> None:
         assert group in [
             "ep",
             "mechanics",
@@ -229,11 +249,25 @@ class DataCollector:
             logger.warning(
                 f"Warning: {name} in group {group} is already registered - overwriting",
             )
+        if reduction not in self.valid_reductions:
+            # Check that we have a valid reduction
+            raise InvalidReductionError(
+                "Invalid reduction {reduction}. Possible options are {}",
+            )
+
         self._functions[group][name] = f
+        self._reductions[group][name] = reduction
 
     @property
     def names(self) -> Dict[str, List[str]]:
         return {k: list(v.keys()) for k, v in self._functions.items()}
+
+    @property
+    def function_names(self) -> Dict[str, List[str]]:
+        return {
+            k: [k1 for k1, v1 in v.items() if v1 is not None]
+            for k, v in self._functions.items()
+        }
 
     def store(self, t: float) -> None:
 
@@ -245,13 +279,37 @@ class DataCollector:
 
         self._times_stamps.add(t_str)
 
+        # First do the full values
         with dolfin.HDF5File(self.comm, self.results_file, "a") as h5file:
             for group, names in self.names.items():
-                logger.debug(f"Save HDF5File {self.results_file} for group {group}")
+                logger.debug(
+                    f"Save full states in HDF5File {self.results_file} for group {group}",
+                )
                 for name in names:
                     logger.debug(f"Save {name}")
+                    if self._reductions[group][name] == "full":
+                        f = self._functions[group][name]
+                        h5file.write(f, f"{group}/{name}/{t_str}")
+
+        # Next do the other reductions
+        with h5pyfile(self.results_file, "a") as h5file:
+            for group, names in self.names.items():
+                logger.debug(
+                    f"Save reduced states in HDF5File {self.results_file} for group {group}",
+                )
+                for name in names:
+                    logger.debug(f"Save {name}")
+                    if self._reductions[group][name] == "full":
+                        continue
+
                     f = self._functions[group][name]
-                    h5file.write(f, f"{group}/{name}/{t_str}")
+                    value = self._value_extractor.eval(
+                        f,
+                        value=self._reductions[group][name],
+                    )
+                    if f"{group}/{name}" not in h5file:
+                        h5file.create_group(f"{group}/{name}")
+                    h5file[f"{group}/{name}"].create_dataset(t_str, data=value)
 
     def save_residual(self, residual, index):
         logger.debug("Save residual")
@@ -261,61 +319,76 @@ class DataCollector:
             h5file["residual"].create_dataset(str(index), data=residual)
 
 
+def close_h5file(h5file):
+
+    if h5file is not None:
+        h5file.close()
+
+
+def close_h5pyfile(h5pyfile):
+    if h5pyfile is not None:
+        h5pyfile.__exit__()
+
+
 class DataLoader:
     def __init__(self, h5name) -> None:
 
         self._h5file = None
+        self._h5pyfile = None
         self._h5name = Path(h5name)
         if not self._h5name.is_file():
             raise FileNotFoundError(f"File {h5name} does not exist")
 
         self.geo = load_geometry(self._h5name)
+        self._h5pyfile = h5pyfile(self._h5name, "r").__enter__()
 
-        with h5pyfile(self._h5name) as h5file:
+        # Find the remaining functions
+        self.names = {
+            group: [name for name in self._h5pyfile.get(group, {}).keys()]
+            for group in ["ep", "mechanics"]
+        }
+        if len(self.names["ep"]) + len(self.names["mechanics"]) == 0:
+            raise ValueError("No functions found in results file")
 
-            # Find the remaining functions
-            self.names = {
-                group: [name for name in h5file.get(group, {}).keys()]
-                for group in ["ep", "mechanics"]
-            }
-            if len(self.names["ep"]) + len(self.names["mechanics"]) == 0:
-                raise ValueError("No functions found in results file")
+        # Get time stamps
+        all_time_stamps = {
+            "{group}:{name}": sorted(
+                list(self._h5pyfile[group][name].keys()),
+                key=lambda x: float(x),
+            )
+            for group, names in self.names.items()
+            for name in names
+        }
 
-            # Get time stamps
-            all_time_stamps = {
-                "{group}:{name}": sorted(
-                    list(h5file[group][name].keys()),
-                    key=lambda x: float(x),
-                )
-                for group, names in self.names.items()
-                for name in names
-            }
+        # An verify that they are all the same
+        self.time_stamps = all_time_stamps[next(iter(all_time_stamps.keys()))]
+        for name in all_time_stamps.keys():
+            assert self.time_stamps == all_time_stamps[name], name
 
-            # An verify that they are all the same
-            self.time_stamps = all_time_stamps[next(iter(all_time_stamps.keys()))]
-            for name in all_time_stamps.keys():
-                assert self.time_stamps == all_time_stamps[name], name
+        if self.time_stamps is None or len(self.time_stamps) == 0:
+            raise ValueError("No time stamps found")
 
-            if self.time_stamps is None or len(self.time_stamps) == 0:
-                raise ValueError("No time stamps found")
+        # Get the signatures - FIXME: Add a check that the signature exist.
+        self._signatures: Dict[str, Dict[str, Optional[str]]] = {}
+        for group, names in self.names.items():
+            self._signatures[group] = {}
+            for name in names:
+                try:
+                    self._signatures[group][name] = (
+                        self._h5pyfile[group][name][self.time_stamps[0]]
+                        .attrs["signature"]
+                        .decode()
+                    )
+                except KeyError:
+                    self._signatures[group][name] = None
 
-            # Get the signatures - FIXME: Add a check that the signature exist.
-            self._signatures = {
-                group: {
-                    name: h5file[group][name][self.time_stamps[0]]
-                    .attrs["signature"]
-                    .decode()
-                    for name in names
-                }
-                for group, names in self.names.items()
-            }
-
-            if "residual" in h5file:
-                self._residual = [
-                    h5file["residual"][k][...] for k in h5file["residual"].keys()
-                ]
-            else:
-                self._residual = []
+        if "residual" in self._h5pyfile:
+            self._residual = [
+                self._h5pyfile["residual"][k][...]
+                for k in self._h5pyfile["residual"].keys()
+            ]
+        else:
+            self._residual = []
 
         self._h5file = dolfin.HDF5File(
             self.ep_mesh.mpi_comm(),
@@ -325,6 +398,29 @@ class DataLoader:
 
         self._create_functions()
         self.value_extractor = ValueExtractor(self.geo)
+        self._finalizer_h5file = weakref.finalize(self, close_h5file, self._h5file)
+        self._finalizer_h5pyfile = weakref.finalize(
+            self,
+            close_h5pyfile,
+            self._h5pyfile,
+        )
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.cleanup()
+
+    def cleanup(self):
+        self._finalizer_h5file()
+        self._finalizer_h5pyfile()
+
+    @property
+    def function_names(self) -> Dict[str, List[str]]:
+        return {
+            k: [k1 for k1, v1 in v.items() if v1 is not None]
+            for k, v in self._functions.items()
+        }
 
     @property
     def residual(self) -> List[np.ndarray]:
@@ -345,10 +441,6 @@ class DataLoader:
     def __repr__(self):
         return f"{self.__class__.__name__}({str(self._h5name)})"
 
-    def __del__(self):
-        if self._h5file is not None:
-            self._h5file.close()
-
     def _create_functions(self):
         self._function_spaces = {}
 
@@ -360,6 +452,7 @@ class DataLoader:
                     group: {
                         signature: dolfin.FunctionSpace(mesh, eval(signature))
                         for signature in set(signature_dict.values())
+                        if signature is not None
                     },
                 },
             )
@@ -370,6 +463,7 @@ class DataLoader:
                     self._function_spaces[group][self._signatures[group][name]],
                 )
                 for name in names
+                if self._signatures[group][name] is not None
             }
             for group, names in self.names.items()
         }
@@ -387,11 +481,13 @@ class DataLoader:
         group: DataGroups,
         name: str,
         t: Union[str, float],
-        reduction: str,
+        reduction: str = "average",
     ):
         func = self.get(group, name, t)
-        dofs = self._dofs[self._group_to_str(group)][name]
-        return self.value_extractor.eval(func, value=reduction, dofs=dofs)
+        if isinstance(func, dolfin.Function):
+            dofs = self._dofs[self._group_to_str(group)][name]
+            return self.value_extractor.eval(func, value=reduction, dofs=dofs)
+        return func
 
     def _group_to_str(self, group):
         group_str = utils.enum2str(group, DataGroups)
@@ -448,6 +544,10 @@ class DataLoader:
         if t not in self.time_stamps:
             raise KeyError(f"Invalid time stamps {t}")
 
-        func = self._functions[group_str][name]
-        self._h5file.read(func, f"{group_str}/{name}/{t}/")
-        return func
+        try:
+            func = self._functions[group_str][name]
+        except KeyError:
+            return self._h5pyfile[group_str][name][t][...].item()  # type: ignore
+        else:
+            self._h5file.read(func, f"{group_str}/{name}/{t}/")
+            return func

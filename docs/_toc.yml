@@ -21,6 +21,8 @@ parts:
     - file: "drug_effects_demo"
     - file: "ventricular_geometry"
     - file: "custom_cell_model_pure_ep"
+    - file: "extract_currents"
+    - file: "tracking_values"
     - file: "cli"
     - file: "docker"
     - file: "gui"

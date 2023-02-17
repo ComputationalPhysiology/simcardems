@@ -235,7 +235,7 @@ def make_xdmffiles(results_file, names=None):
     loader = DataLoader(results_file)
     outdir = Path(results_file).parent
 
-    for group, _names in loader.names.items():
+    for group, _names in loader.function_names.items():
         logger.info(f"Save xdmffile for group {group}")
         for name in _names:
             if names is not None and name not in names:

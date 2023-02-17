@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 
 # Next thing we do is to define the expression for the intermediate that we want to keep track of. In out case we have simple looked at the source code of the cell model and extracted the relevant equations into a function. We have named this function `INaL` since it will give us an expression for the INaL current. This function takes two arguments; the state vector from the EP solver and the parameters for the ODE model.
 
+
 def INaL(vs, parameters):
     (
         v,
@@ -99,6 +100,7 @@ def INaL(vs, parameters):
 
 # Now we need to opt in to the coupling object to make sure that we register`INaL` to the Datacollector. To do so we will use the existing `EMCoupling` class, but override a few mew methods. We must also remember to call on the super class so that the original methods are invoked.
 
+
 class EMCoupling(simcardems.models.fully_coupled_ORdmm_Land.EMCoupling):
     def __init__(
         self,
@@ -119,8 +121,8 @@ class EMCoupling(simcardems.models.fully_coupled_ORdmm_Land.EMCoupling):
                 INaL(
                     self.ep_solver.vs,
                     parameters=self.ep_solver.ode_solver._model.parameters(),
-                )
-            )
+                ),
+            ),
         )
 
 

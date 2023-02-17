@@ -119,6 +119,7 @@ ffun
 figlast
 figsize
 filt
+finalizer
 Finsberg
 fmax
 fmin
