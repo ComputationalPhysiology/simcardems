@@ -56,7 +56,7 @@ const thebe_selector_output = ".output, .cell_output"
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="initial conditions demo" href="initial_conditions_demo.html" />
+    <link rel="next" title="Command line interface" href="cli.html" />
     <link rel="prev" title="Electro-Mechanical coupling" href="electro_mechanical_coupling.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
@@ -167,6 +167,16 @@ const thebe_selector_output = ".output, .cell_output"
   </a>
  </li>
  <li class="toctree-l1">
+  <a class="reference internal" href="cli.html">
+   Command line interface
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="docker.html">
+   Run using Docker
+  </a>
+ </li>
+ <li class="toctree-l1">
   <a class="reference internal" href="initial_conditions_demo.html">
    initial conditions demo
   </a>
@@ -184,31 +194,6 @@ const thebe_selector_output = ".output, .cell_output"
  <li class="toctree-l1">
   <a class="reference internal" href="ventricular_geometry.html">
    Left ventricular geometry
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="custom_cell_model_pure_ep.html">
-   Custom model (pure EP)
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="extract_currents.html">
-   Extracting currents
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="tracking_values.html">
-   Tracking Values
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="cli.html">
-   Command line interface
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="docker.html">
-   Run using Docker
   </a>
  </li>
  <li class="toctree-l1">
@@ -366,53 +351,87 @@ const thebe_selector_output = ".output, .cell_output"
                 
   <div class="tex2jax_ignore mathjax_ignore section" id="simple-demo">
 <h1>Simple demo<a class="headerlink" href="#simple-demo" title="Permalink to this headline">¶</a></h1>
-<p>In this demo we show the most simple usage of the <code class="docutils literal notranslate"><span class="pre">simcardems</span></code> library using the python API.</p>
+<p>In this demo we show the most simple usage of the <code class="docutils literal notranslate"><span class="pre">simcardems</span></code> library using the python API</p>
 <p>Import the necessary libraries</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">import</span> <span class="nn">simcardems</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pprint</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># First we specifcy the path to the output directory where we want to store the results</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">simcardems</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create configurations with custom output directory</span>
 <span class="n">here</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span>
 <span class="n">outdir</span> <span class="o">=</span> <span class="n">here</span> <span class="o">/</span> <span class="s2">&quot;results_simple_demo&quot;</span>
 </pre></div>
 </div>
-<p>Next we specify paths to the geometry that we will use, and we will use the slab geometry that already exist in the demo folder.</p>
+<p>Specify paths to the geometry that we will use</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">geometry_path</span> <span class="o">=</span> <span class="n">here</span> <span class="o">/</span> <span class="s2">&quot;geometries/slab.h5&quot;</span>
 <span class="n">geometry_schema_path</span> <span class="o">=</span> <span class="n">here</span> <span class="o">/</span> <span class="s2">&quot;geometries/slab.json&quot;</span>
-<span class="c1"># The geometry contains a path to the mesh itself (togther with other functions such as meshfunctions and fibers), and a path to a schema which describes what information that can be found in the geometry file. Please see https://computationalphysiology.github.io/cardiac_geometries/ for more info about the geometries</span>
-<span class="c1">#</span>
-<span class="c1"># Next we create the configuration. Here we specify the the output directory, the path to the geometry, how long we want to simulate and the coupling type. We use the `fulle_coupled_ORdmm_Land` coupling type which contains the stronlgy coupled O&#39;Hara-Rudy model coupled to the Land model. The other options here are `explicit_ORdmm_Land` where the coupling is explicit and `pureEP_ORdmm_Land` which will run a pure EP simulation without mechanics.</span>
 </pre></div>
 </div>
+<p>Please see <a class="reference external" href="https://computationalphysiology.github.io/cardiac_geometries/">https://computationalphysiology.github.io/cardiac_geometries/</a> for more info about the geometries</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">Config</span><span class="p">(</span>
     <span class="n">outdir</span><span class="o">=</span><span class="n">outdir</span><span class="p">,</span>
     <span class="n">geometry_path</span><span class="o">=</span><span class="n">geometry_path</span><span class="p">,</span>
     <span class="n">geometry_schema_path</span><span class="o">=</span><span class="n">geometry_schema_path</span><span class="p">,</span>
-    <span class="n">coupling_type</span><span class="o">=</span><span class="s2">&quot;fully_coupled_ORdmm_Land&quot;</span><span class="p">,</span>
     <span class="n">T</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>To see all different configuration options you can visit <a class="reference external" href="https://computationalphysiology.github.io/simcardems/api.html#module-simcardems.config">https://computationalphysiology.github.io/simcardems/api.html#module-simcardems.config</a></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Next we create a runner for running the simulation, and we also specify how often we want to save the results</span>
-<span class="n">runner</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">Runner</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+<p>This will set :</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;PCL&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
+ <span class="s1">&#39;T&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
+ <span class="s1">&#39;bnd_rigid&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+ <span class="s1">&#39;cell_init_file&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;disease_state&#39;</span><span class="p">:</span> <span class="s1">&#39;healthy&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;drug_factors_file&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;dt&#39;</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">,</span>
+ <span class="s1">&#39;ep_ode_scheme&#39;</span><span class="p">:</span> <span class="s1">&#39;GRL1&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;ep_preconditioner&#39;</span><span class="p">:</span> <span class="s1">&#39;sor&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;ep_theta&#39;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+ <span class="s1">&#39;fix_right_plane&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+ <span class="s1">&#39;geometry_path&#39;</span><span class="p">:</span> <span class="s1">&#39;demos/geometries/slab.h5&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;geometry_schema_path&#39;</span><span class="p">:</span> <span class="s1">&#39;demos/geometries/slab.json&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;linear_mechanics_solver&#39;</span><span class="p">:</span> <span class="s1">&#39;mumps&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;load_state&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+ <span class="s1">&#39;loglevel&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
+ <span class="s1">&#39;mechanics_ode_scheme&#39;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">Scheme</span><span class="o">.</span><span class="n">analytic</span><span class="p">:</span> <span class="s1">&#39;analytic&#39;</span><span class="o">&gt;</span><span class="p">,</span>
+ <span class="s1">&#39;mechanics_use_continuation&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+ <span class="s1">&#39;mechanics_use_custom_newton_solver&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+ <span class="s1">&#39;num_refinements&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+ <span class="s1">&#39;outdir&#39;</span><span class="p">:</span> <span class="n">PosixPath</span><span class="p">(</span><span class="s1">&#39;results_simple_demo&#39;</span><span class="p">),</span>
+ <span class="s1">&#39;popu_factors_file&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;pre_stretch&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+ <span class="s1">&#39;save_freq&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+ <span class="s1">&#39;set_material&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;show_progress_bar&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+ <span class="s1">&#39;spring&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+ <span class="s1">&#39;traction&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Print current configuration</span>
+<span class="n">pprint</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">as_dict</span><span class="p">())</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">runner</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">Runner</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
 <span class="n">runner</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">T</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">save_freq</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">save_freq</span><span class="p">,</span> <span class="n">show_progress_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Once the simulation is done the output directory <code class="docutils literal notranslate"><span class="pre">results_simple_demo</span></code> will contain the following files</p>
+<p>This will create the output directory <code class="docutils literal notranslate"><span class="pre">results_simple_demo</span></code> with the following output</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>results_simple_demo
 ├── results.h5
 ├── state.h5
 </pre></div>
 </div>
 <p>The file <code class="docutils literal notranslate"><span class="pre">state.h5</span></code> contains the final state which can be used if you want use the final state as a starting point for the next simulation.
-The file <code class="docutils literal notranslate"><span class="pre">results.h5</span></code> contains output of different state variables for every time point.</p>
-<p>We can now plot the state traces, where we also specify that we want the trace from the center of the slab</p>
+The file <code class="docutils literal notranslate"><span class="pre">results.h5</span></code> contains the Displacement (<span class="math notranslate nohighlight">\(u\)</span>), active tension (<span class="math notranslate nohighlight">\(T_a\)</span>), voltage (<span class="math notranslate nohighlight">\(V\)</span>) and calcium (<span class="math notranslate nohighlight">\(Ca\)</span>) for each time step.
+We can also plot the traces using the postprocess module</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">simcardems</span><span class="o">.</span><span class="n">postprocess</span><span class="o">.</span><span class="n">plot_state_traces</span><span class="p">(</span><span class="n">outdir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;results.h5&quot;</span><span class="p">),</span> <span class="s2">&quot;center&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>This will create a figure in the output directory called <code class="docutils literal notranslate"><span class="pre">state_traces_center.png</span></code> which in this case is shown in <a class="reference internal" href="#simple-demo-state-traces"><span class="std std-numref">Figure 1</span></a> we see the resulting state traces, and can also see the instant drop in the active tension (<span class="math notranslate nohighlight">\(T_a\)</span>) at the time of the triggered release.</p>
+<p>Here we also specify that we want the trace from the center of the slab</p>
+<p>This will create a figure in the output directory called <code class="docutils literal notranslate"><span class="pre">state_traces.png</span></code> which in this case is shown in <a class="reference internal" href="#simple-demo-state-traces"><span class="std std-numref">Figure 1</span></a> we see the resulting state traces, and can also see the instant drop in the active tension (<span class="math notranslate nohighlight">\(T_a\)</span>) at the time of the triggered release.</p>
 <div class="figure align-default" id="simple-demo-state-traces">
 <img alt="_images/simple_demo_state_traces.png" src="_images/simple_demo_state_traces.png" />
 <p class="caption"><span class="caption-number">Fig. 1 </span><span class="caption-text">Traces of the stretch (<span class="math notranslate nohighlight">\(\lambda\)</span>), the active tension (<span class="math notranslate nohighlight">\(T_a\)</span>), the membrane potential (<span class="math notranslate nohighlight">\(V\)</span>) and the intercellular calcium concentration (<span class="math notranslate nohighlight">\(Ca\)</span>) at the center of the geometry.</span><a class="headerlink" href="#simple-demo-state-traces" title="Permalink to this image">¶</a></p>
@@ -460,10 +479,10 @@ The file <code class="docutils literal notranslate"><span class="pre">results.h5
             <p class="prev-next-title">Electro-Mechanical coupling</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="initial_conditions_demo.html" title="next page">
+    <a class='right-next' id="next-link" href="cli.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">initial conditions demo</p>
+        <p class="prev-next-title">Command line interface</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>

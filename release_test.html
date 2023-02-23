@@ -167,6 +167,16 @@ const thebe_selector_output = ".output, .cell_output"
   </a>
  </li>
  <li class="toctree-l1">
+  <a class="reference internal" href="cli.html">
+   Command line interface
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="docker.html">
+   Run using Docker
+  </a>
+ </li>
+ <li class="toctree-l1">
   <a class="reference internal" href="initial_conditions_demo.html">
    initial conditions demo
   </a>
@@ -184,31 +194,6 @@ const thebe_selector_output = ".output, .cell_output"
  <li class="toctree-l1">
   <a class="reference internal" href="ventricular_geometry.html">
    Left ventricular geometry
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="custom_cell_model_pure_ep.html">
-   Custom model (pure EP)
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="extract_currents.html">
-   Extracting currents
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="tracking_values.html">
-   Tracking Values
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="cli.html">
-   Command line interface
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="docker.html">
-   Run using Docker
   </a>
  </li>
  <li class="toctree-l1">
@@ -404,7 +389,7 @@ Also, we can only do this on a slab type geometry so we add an extra test for th
         <span class="bp">self</span><span class="o">.</span><span class="n">pre_stretch</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">pre_stretch</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_stretch</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
 
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">conf</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
         <span class="c1"># Make sure we have a SlabGeometry</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">geometry</span><span class="p">,</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">SlabGeometry</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Lx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;lx&quot;</span><span class="p">]</span>
@@ -413,16 +398,12 @@ Also, we can only do this on a slab type geometry so we add an extra test for th
     <span class="k">def</span> <span class="nf">_post_mechanics_solve</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># Convert internal time for nanoseconds to milliseconds</span>
         <span class="c1"># And apply release when time is greater then T release</span>
-        <span class="k">if</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">TimeStepper</span><span class="o">.</span><span class="n">ns2ms</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_T_release</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_stepper</span><span class="o">.</span><span class="n">ns2ms</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_T_release</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_print_message</span><span class="p">:</span>
                 <span class="c1"># Make sure message is only printed once</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Release&quot;</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_print_message</span> <span class="o">=</span> <span class="kc">False</span>
-            <span class="n">pulse</span><span class="o">.</span><span class="n">iterate</span><span class="o">.</span><span class="n">iterate</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">mech_solver</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">pre_stretch</span><span class="p">,</span>
-                <span class="o">-</span><span class="mf">0.02</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Lx</span><span class="p">,</span>
-            <span class="p">)</span>
+            <span class="n">pulse</span><span class="o">.</span><span class="n">iterate</span><span class="o">.</span><span class="n">iterate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mech_heart</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_stretch</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.02</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Lx</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_post_mechanics_solve</span><span class="p">()</span>
 </pre></div>
 </div>

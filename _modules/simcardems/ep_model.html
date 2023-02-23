@@ -163,6 +163,16 @@ const thebe_selector_output = ".output, .cell_output"
   </a>
  </li>
  <li class="toctree-l1">
+  <a class="reference internal" href="../../cli.html">
+   Command line interface
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../docker.html">
+   Run using Docker
+  </a>
+ </li>
+ <li class="toctree-l1">
   <a class="reference internal" href="../../initial_conditions_demo.html">
    initial conditions demo
   </a>
@@ -180,31 +190,6 @@ const thebe_selector_output = ".output, .cell_output"
  <li class="toctree-l1">
   <a class="reference internal" href="../../ventricular_geometry.html">
    Left ventricular geometry
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../custom_cell_model_pure_ep.html">
-   Custom model (pure EP)
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../extract_currents.html">
-   Extracting currents
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../tracking_values.html">
-   Tracking Values
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../cli.html">
-   Command line interface
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../docker.html">
-   Run using Docker
   </a>
  </li>
  <li class="toctree-l1">
@@ -344,14 +329,10 @@ const thebe_selector_output = ".output, .cell_output"
               <div>
                 
   <h1>Source code for simcardems.ep_model</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
-
-<span class="kn">import</span> <span class="nn">json</span>
+<span></span><span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Type</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
 
 <span class="kn">import</span> <span class="nn">cbcbeat</span>
 <span class="kn">import</span> <span class="nn">dolfin</span>
@@ -359,73 +340,9 @@ const thebe_selector_output = ".output, .cell_output"
 <span class="kn">import</span> <span class="nn">ufl</span>
 
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">utils</span>
-<span class="kn">from</span> <span class="nn">.config</span> <span class="kn">import</span> <span class="n">Config</span>
-
-<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">.models.em_model</span> <span class="kn">import</span> <span class="n">BaseEMCoupling</span>
-
-<span class="c1"># from .ORdmm_Land import ORdmm_Land as CellModel</span>
+<span class="kn">from</span> <span class="nn">.ORdmm_Land</span> <span class="kn">import</span> <span class="n">ORdmm_Land</span> <span class="k">as</span> <span class="n">CellModel</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
-
-
-<div class="viewcode-block" id="setup_cell_model"><a class="viewcode-back" href="../../api.html#simcardems.ep_model.setup_cell_model">[docs]</a><span class="k">def</span> <span class="nf">setup_cell_model</span><span class="p">(</span>
-    <span class="bp">cls</span><span class="p">,</span>
-    <span class="n">coupling</span><span class="p">:</span> <span class="n">BaseEMCoupling</span><span class="p">,</span>
-    <span class="n">cell_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">cell_inits</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">cell_init_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">drug_factors_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">popu_factors_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">disease_state</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">disease_state</span><span class="p">,</span>
-<span class="p">):</span>
-    <span class="n">cell_params</span> <span class="o">=</span> <span class="n">handle_cell_params</span><span class="p">(</span>
-        <span class="n">cell_params</span><span class="o">=</span><span class="n">cell_params</span><span class="p">,</span>
-        <span class="n">disease_state</span><span class="o">=</span><span class="n">disease_state</span><span class="p">,</span>
-        <span class="n">drug_factors_file</span><span class="o">=</span><span class="n">drug_factors_file</span><span class="p">,</span>
-        <span class="n">popu_factors_file</span><span class="o">=</span><span class="n">popu_factors_file</span><span class="p">,</span>
-        <span class="n">CellModel</span><span class="o">=</span><span class="bp">cls</span><span class="p">,</span>
-    <span class="p">)</span>
-
-    <span class="n">cell_inits</span> <span class="o">=</span> <span class="n">handle_cell_inits</span><span class="p">(</span>
-        <span class="n">cell_inits</span><span class="o">=</span><span class="n">cell_inits</span><span class="p">,</span>
-        <span class="n">cell_init_file</span><span class="o">=</span><span class="n">cell_init_file</span><span class="p">,</span>
-        <span class="n">CellModel</span><span class="o">=</span><span class="bp">cls</span><span class="p">,</span>
-    <span class="p">)</span>
-
-    <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
-        <span class="n">init_conditions</span><span class="o">=</span><span class="n">cell_inits</span><span class="p">,</span>
-        <span class="n">params</span><span class="o">=</span><span class="n">cell_params</span><span class="p">,</span>
-        <span class="n">coupling</span><span class="o">=</span><span class="n">coupling</span><span class="p">,</span>
-    <span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="setup_solver"><a class="viewcode-back" href="../../api.html#simcardems.ep_model.setup_solver">[docs]</a><span class="k">def</span> <span class="nf">setup_solver</span><span class="p">(</span>
-    <span class="n">dt</span><span class="p">,</span>
-    <span class="n">cellmodel</span><span class="p">:</span> <span class="n">cbcbeat</span><span class="o">.</span><span class="n">CardiacCellModel</span><span class="p">,</span>
-    <span class="n">coupling</span><span class="p">:</span> <span class="n">BaseEMCoupling</span><span class="p">,</span>
-    <span class="n">scheme</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">ep_ode_scheme</span><span class="p">,</span>
-    <span class="n">theta</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">ep_theta</span><span class="p">,</span>
-    <span class="n">preconditioner</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">ep_preconditioner</span><span class="p">,</span>
-    <span class="n">PCL</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">PCL</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">cbcbeat</span><span class="o">.</span><span class="n">SplittingSolver</span><span class="p">:</span>
-
-    <span class="c1"># Set-up cardiac model</span>
-    <span class="n">ps</span> <span class="o">=</span> <span class="n">setup_splitting_solver_parameters</span><span class="p">(</span>
-        <span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">,</span>
-        <span class="n">preconditioner</span><span class="o">=</span><span class="n">preconditioner</span><span class="p">,</span>
-        <span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span>
-        <span class="n">scheme</span><span class="o">=</span><span class="n">scheme</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="n">ep_heart</span> <span class="o">=</span> <span class="n">setup_model</span><span class="p">(</span><span class="n">cellmodel</span><span class="p">,</span> <span class="n">coupling</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">ep_mesh</span><span class="p">,</span> <span class="n">PCL</span><span class="o">=</span><span class="n">PCL</span><span class="p">)</span>
-    <span class="n">solver</span> <span class="o">=</span> <span class="n">cbcbeat</span><span class="o">.</span><span class="n">SplittingSolver</span><span class="p">(</span><span class="n">ep_heart</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">ps</span><span class="p">)</span>
-    <span class="c1"># Extract the solution fields and set the initial conditions</span>
-    <span class="p">(</span><span class="n">vs_</span><span class="p">,</span> <span class="n">vs</span><span class="p">,</span> <span class="n">vur</span><span class="p">)</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">solution_fields</span><span class="p">()</span>
-    <span class="n">vs_</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">cellmodel</span><span class="o">.</span><span class="n">initial_conditions</span><span class="p">())</span>
-
-    <span class="n">coupling</span><span class="o">.</span><span class="n">register_ep_model</span><span class="p">(</span><span class="n">solver</span><span class="p">)</span>
-    <span class="n">coupling</span><span class="o">.</span><span class="n">print_ep_info</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">solver</span></div>
 
 
 <div class="viewcode-block" id="default_conductivities"><a class="viewcode-back" href="../../api.html#simcardems.ep_model.default_conductivities">[docs]</a><span class="k">def</span> <span class="nf">default_conductivities</span><span class="p">():</span>
@@ -443,7 +360,6 @@ const thebe_selector_output = ".output, .cell_output"
     <span class="n">C_m</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span>
     <span class="n">microstructure</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
-
     <span class="k">if</span> <span class="n">microstructure</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">microstructure</span> <span class="o">=</span> <span class="n">default_microstructure</span><span class="p">()</span>
 
@@ -489,7 +405,7 @@ const thebe_selector_output = ".output, .cell_output"
     <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="setup_model"><a class="viewcode-back" href="../../api.html#simcardems.ep_model.setup_model">[docs]</a><span class="k">def</span> <span class="nf">setup_model</span><span class="p">(</span>
+<div class="viewcode-block" id="setup_ep_model"><a class="viewcode-back" href="../../api.html#simcardems.ep_model.setup_ep_model">[docs]</a><span class="k">def</span> <span class="nf">setup_ep_model</span><span class="p">(</span>
     <span class="n">cellmodel</span><span class="p">,</span>
     <span class="n">mesh</span><span class="p">,</span>
     <span class="n">PCL</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
@@ -608,7 +524,6 @@ const thebe_selector_output = ".output, .cell_output"
 
 
 <div class="viewcode-block" id="handle_cell_params"><a class="viewcode-back" href="../../api.html#simcardems.ep_model.handle_cell_params">[docs]</a><span class="k">def</span> <span class="nf">handle_cell_params</span><span class="p">(</span>
-    <span class="n">CellModel</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">cbcbeat</span><span class="o">.</span><span class="n">CardiacCellModel</span><span class="p">],</span>
     <span class="n">cell_params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">disease_state</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;healthy&quot;</span><span class="p">,</span>
     <span class="n">drug_factors_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
@@ -640,7 +555,6 @@ const thebe_selector_output = ".output, .cell_output"
 
 
 <div class="viewcode-block" id="handle_cell_inits"><a class="viewcode-back" href="../../api.html#simcardems.ep_model.handle_cell_inits">[docs]</a><span class="k">def</span> <span class="nf">handle_cell_inits</span><span class="p">(</span>
-    <span class="n">CellModel</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">cbcbeat</span><span class="o">.</span><span class="n">CardiacCellModel</span><span class="p">],</span>
     <span class="n">cell_inits</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cell_init_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
@@ -652,10 +566,7 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="n">cell_inits_tmp</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">load_json</span><span class="p">(</span><span class="n">cell_init_file</span><span class="p">))</span>
         <span class="kn">from</span> <span class="nn">.save_load_functions</span> <span class="kn">import</span> <span class="n">load_initial_conditions_from_h5</span>
 
-        <span class="n">cell_inits</span> <span class="o">=</span> <span class="n">load_initial_conditions_from_h5</span><span class="p">(</span>
-            <span class="n">cell_init_file</span><span class="p">,</span>
-            <span class="n">CellModel</span><span class="o">=</span><span class="n">CellModel</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="n">cell_inits</span> <span class="o">=</span> <span class="n">load_initial_conditions_from_h5</span><span class="p">(</span><span class="n">cell_init_file</span><span class="p">)</span>
 
     <span class="c1"># FIXME: This is a bit confusing, since it will overwrite the</span>
     <span class="c1"># inputs from the cell_init_file. There should be only one way to</span>

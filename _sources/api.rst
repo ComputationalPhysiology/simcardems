@@ -2,6 +2,14 @@ API documentaion
 ================
 
 
+simcardems.ORdmm\_Land module
+-----------------------------
+
+.. automodule:: simcardems.ORdmm_Land
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 simcardems.cli module
 ---------------------
 
@@ -26,6 +34,14 @@ simcardems.datacollector module
    :undoc-members:
    :show-inheritance:
 
+simcardems.em\_model module
+---------------------------
+
+.. automodule:: simcardems.em_model
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 simcardems.ep\_model module
 ---------------------------
 
@@ -42,6 +58,14 @@ simcardems.geometry module
    :undoc-members:
    :show-inheritance:
 
+
+simcardems.land\_model module
+-----------------------------
+
+.. automodule:: simcardems.land_model
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 simcardems.mechanics\_model module
 ----------------------------------
@@ -75,10 +99,10 @@ simcardems.save\_load\_functions module
    :undoc-members:
    :show-inheritance:
 
-simcardems.runner module
-------------------------
+simcardems.setup\_models module
+-------------------------------
 
-.. automodule:: simcardems.runner
+.. automodule:: simcardems.setup_models
    :members:
    :undoc-members:
    :show-inheritance:
@@ -91,14 +115,6 @@ simcardems.utils module
    :undoc-members:
    :show-inheritance:
 
-simcardems.value_extractor module
----------------------------------
-
-.. automodule:: simcardems.value_extractor
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 simcardems.version module
 -------------------------
 
@@ -106,47 +122,6 @@ simcardems.version module
    :members:
    :undoc-members:
    :show-inheritance:
-
-
-Models
-------
-
-simcardems.models.em\_model module
-----------------------------------
-
-.. automodule:: simcardems.models.em_model
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
-
-simcardems.models.fully\_coupled\_ORdmm\_Land
----------------------------------------------
-
-.. automodule:: simcardems.models.fully_coupled_ORdmm_Land
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-simcardems.models.explicit\_ORdmm\_Land
----------------------------------------
-
-.. automodule:: simcardems.models.explicit_ORdmm_Land
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
-simcardems.models.pureEP\_ORdmm\_Land
--------------------------------------
-
-.. automodule:: simcardems.models.pureEP_ORdmm_Land
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
 
 Module contents
 ---------------

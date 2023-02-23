@@ -163,6 +163,16 @@ const thebe_selector_output = ".output, .cell_output"
   </a>
  </li>
  <li class="toctree-l1">
+  <a class="reference internal" href="../../cli.html">
+   Command line interface
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../docker.html">
+   Run using Docker
+  </a>
+ </li>
+ <li class="toctree-l1">
   <a class="reference internal" href="../../initial_conditions_demo.html">
    initial conditions demo
   </a>
@@ -180,31 +190,6 @@ const thebe_selector_output = ".output, .cell_output"
  <li class="toctree-l1">
   <a class="reference internal" href="../../ventricular_geometry.html">
    Left ventricular geometry
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../custom_cell_model_pure_ep.html">
-   Custom model (pure EP)
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../extract_currents.html">
-   Extracting currents
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../tracking_values.html">
-   Tracking Values
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../cli.html">
-   Command line interface
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../docker.html">
-   Run using Docker
   </a>
  </li>
  <li class="toctree-l1">
@@ -347,31 +332,21 @@ const thebe_selector_output = ".output, .cell_output"
 <span></span><span class="kn">import</span> <span class="nn">contextlib</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Type</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
 
-<span class="kn">import</span> <span class="nn">cbcbeat</span>
 <span class="kn">import</span> <span class="nn">dolfin</span>
 <span class="kn">from</span> <span class="nn">dolfin</span> <span class="kn">import</span> <span class="n">FiniteElement</span>  <span class="c1"># noqa: F401</span>
 <span class="kn">from</span> <span class="nn">dolfin</span> <span class="kn">import</span> <span class="n">MixedElement</span>  <span class="c1"># noqa: F401</span>
 <span class="kn">from</span> <span class="nn">dolfin</span> <span class="kn">import</span> <span class="n">tetrahedron</span>  <span class="c1"># noqa: F401</span>
 <span class="kn">from</span> <span class="nn">dolfin</span> <span class="kn">import</span> <span class="n">VectorElement</span>  <span class="c1"># noqa: F401</span>
 
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">em_model</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">geometry</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">mechanics_model</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">setup_models</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">utils</span>
-<span class="kn">from</span> <span class="nn">.config</span> <span class="kn">import</span> <span class="n">Config</span>
-
+<span class="kn">from</span> <span class="nn">.ORdmm_Land</span> <span class="kn">import</span> <span class="n">vs_functions_to_dict</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
-
-
-<div class="viewcode-block" id="vs_functions_to_dict"><a class="viewcode-back" href="../../api.html#simcardems.save_load_functions.vs_functions_to_dict">[docs]</a><span class="k">def</span> <span class="nf">vs_functions_to_dict</span><span class="p">(</span><span class="n">vs</span><span class="p">,</span> <span class="n">state_names</span><span class="p">):</span>
-    <span class="k">return</span> <span class="p">{</span>
-        <span class="n">name</span><span class="p">:</span> <span class="n">utils</span><span class="o">.</span><span class="n">sub_function</span><span class="p">(</span><span class="n">vs</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span> <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">state_names</span><span class="p">)</span>
-    <span class="p">}</span></div>
 
 
 <div class="viewcode-block" id="h5pyfile"><a class="viewcode-back" href="../../api.html#simcardems.save_load_functions.h5pyfile">[docs]</a><span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
@@ -436,7 +411,6 @@ const thebe_selector_output = ".output, .cell_output"
 
 
 <div class="viewcode-block" id="group_in_file"><a class="viewcode-back" href="../../api.html#simcardems.save_load_functions.group_in_file">[docs]</a><span class="k">def</span> <span class="nf">group_in_file</span><span class="p">(</span><span class="n">h5_filename</span><span class="p">,</span> <span class="n">h5group</span><span class="p">):</span>
-
     <span class="n">check_file_exists</span><span class="p">(</span><span class="n">h5_filename</span><span class="p">)</span>
     <span class="n">exists</span> <span class="o">=</span> <span class="kc">False</span>
 
@@ -453,31 +427,13 @@ const thebe_selector_output = ".output, .cell_output"
     <span class="k">return</span> <span class="s2">&quot;dirichlet&quot;</span></div>
 
 
-<div class="viewcode-block" id="serialize_dict"><a class="viewcode-back" href="../../api.html#simcardems.save_load_functions.serialize_dict">[docs]</a><span class="k">def</span> <span class="nf">serialize_dict</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
-    <span class="n">new_d</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">Path</span><span class="p">):</span>
-            <span class="n">new_d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()</span>
-        <span class="k">elif</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="c1"># Skip it</span>
-            <span class="k">continue</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-            <span class="n">new_d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">serialize_dict</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">):</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">new_d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-                <span class="k">continue</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">new_d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
-    <span class="k">return</span> <span class="n">new_d</span></div>
-
-
 <div class="viewcode-block" id="save_state"><a class="viewcode-back" href="../../api.html#simcardems.save_load_functions.save_state">[docs]</a><span class="k">def</span> <span class="nf">save_state</span><span class="p">(</span>
     <span class="n">path</span><span class="p">,</span>
-    <span class="n">config</span><span class="p">:</span> <span class="n">Config</span><span class="p">,</span>
+    <span class="n">solver</span><span class="p">,</span>
+    <span class="n">mech_heart</span><span class="p">,</span>
     <span class="n">geo</span><span class="p">:</span> <span class="n">geometry</span><span class="o">.</span><span class="n">BaseGeometry</span><span class="p">,</span>
-    <span class="n">state_params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">dt</span><span class="o">=</span><span class="mf">0.02</span><span class="p">,</span>
+    <span class="n">t0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="n">utils</span><span class="o">.</span><span class="n">remove_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
@@ -486,51 +442,106 @@ const thebe_selector_output = ".output, .cell_output"
     <span class="n">geo</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Save using dolfin.HDF5File&quot;</span><span class="p">)</span>
 
+    <span class="k">with</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">HDF5File</span><span class="p">(</span><span class="n">solver</span><span class="o">.</span><span class="n">VS</span><span class="o">.</span><span class="n">mesh</span><span class="p">()</span><span class="o">.</span><span class="n">mpi_comm</span><span class="p">(),</span> <span class="n">path</span><span class="o">.</span><span class="n">as_posix</span><span class="p">(),</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">h5file</span><span class="p">:</span>
+        <span class="n">h5file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">mech_heart</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">active</span><span class="o">.</span><span class="n">lmbda_prev</span><span class="p">,</span> <span class="s2">&quot;/em/lmbda_prev&quot;</span><span class="p">)</span>
+        <span class="n">h5file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">mech_heart</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">active</span><span class="o">.</span><span class="n">Zetas_prev</span><span class="p">,</span> <span class="s2">&quot;/em/Zetas_prev&quot;</span><span class="p">)</span>
+        <span class="n">h5file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">mech_heart</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">active</span><span class="o">.</span><span class="n">Zetaw_prev</span><span class="p">,</span> <span class="s2">&quot;/em/Zetaw_prev&quot;</span><span class="p">)</span>
+
+        <span class="n">h5file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">solver</span><span class="o">.</span><span class="n">vs</span><span class="p">,</span> <span class="s2">&quot;/ep/vs&quot;</span><span class="p">)</span>
+        <span class="n">h5file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">mech_heart</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="s2">&quot;/mechanics/state&quot;</span><span class="p">)</span>
+
+    <span class="n">bnd_cond_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="s2">&quot;dirichlet&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;rigid&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)])</span>
+    <span class="n">bnd_cond</span> <span class="o">=</span> <span class="n">mech_heart_to_bnd_cond</span><span class="p">(</span><span class="n">mech_heart</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Save using h5py&quot;</span><span class="p">)</span>
-    <span class="n">dict_to_h5</span><span class="p">(</span><span class="n">serialize_dict</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">as_dict</span><span class="p">()),</span> <span class="n">path</span><span class="p">,</span> <span class="s2">&quot;config&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">state_params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">state_params</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="n">dict_to_h5</span><span class="p">(</span><span class="n">serialize_dict</span><span class="p">(</span><span class="n">state_params</span><span class="p">),</span> <span class="n">path</span><span class="p">,</span> <span class="s2">&quot;state_params&quot;</span><span class="p">)</span></div>
+    <span class="n">dict_to_h5</span><span class="p">(</span><span class="n">solver</span><span class="o">.</span><span class="n">ode_solver</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">path</span><span class="p">,</span> <span class="s2">&quot;ep/cell_params&quot;</span><span class="p">)</span>
+    <span class="n">dict_to_h5</span><span class="p">(</span>
+        <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span>
+            <span class="n">bnd_cond</span><span class="o">=</span><span class="n">bnd_cond_dict</span><span class="p">[</span><span class="n">bnd_cond</span><span class="p">],</span>
+            <span class="n">t0</span><span class="o">=</span><span class="n">t0</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="n">path</span><span class="p">,</span>
+        <span class="s2">&quot;state_params&quot;</span><span class="p">,</span>
+    <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="load_state"><a class="viewcode-back" href="../../api.html#simcardems.save_load_functions.load_state">[docs]</a><span class="k">def</span> <span class="nf">load_state</span><span class="p">(</span>
-    <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
-    <span class="n">drug_factors_file</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="n">popu_factors_file</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">path</span><span class="p">,</span>
+    <span class="n">drug_factors_file</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">popu_factors_file</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="n">disease_state</span><span class="o">=</span><span class="s2">&quot;healthy&quot;</span><span class="p">,</span>
-    <span class="n">PCL</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+    <span class="n">PCL</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Load state from path </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
         <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;File </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> does not exist&quot;</span><span class="p">)</span>
 
+    <span class="n">geo</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="n">load_geometry</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">schema_path</span><span class="o">=</span><span class="n">path</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">&quot;.json&quot;</span><span class="p">))</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Open file with h5py&quot;</span><span class="p">)</span>
     <span class="k">with</span> <span class="n">h5pyfile</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">as</span> <span class="n">h5file</span><span class="p">:</span>
-        <span class="n">config</span> <span class="o">=</span> <span class="n">Config</span><span class="p">(</span><span class="o">**</span><span class="n">h5_to_dict</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">]))</span>
+        <span class="n">state_params</span> <span class="o">=</span> <span class="n">h5_to_dict</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;state_params&quot;</span><span class="p">])</span>
+        <span class="n">cell_params</span> <span class="o">=</span> <span class="n">h5_to_dict</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;ep&quot;</span><span class="p">][</span><span class="s2">&quot;cell_params&quot;</span><span class="p">])</span>
+        <span class="n">vs_signature</span> <span class="o">=</span> <span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;ep&quot;</span><span class="p">][</span><span class="s2">&quot;vs&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;signature&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+        <span class="n">mech_signature</span> <span class="o">=</span> <span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;mechanics&quot;</span><span class="p">][</span><span class="s2">&quot;state&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;signature&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
 
-    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">coupling_type</span> <span class="o">==</span> <span class="s2">&quot;explicit_ORdmm_Land&quot;</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">.models.explicit_ORdmm_Land</span> <span class="kn">import</span> <span class="n">EMCoupling</span>
-    <span class="k">elif</span> <span class="n">config</span><span class="o">.</span><span class="n">coupling_type</span> <span class="o">==</span> <span class="s2">&quot;fully_coupled_ORdmm_Land&quot;</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">.models.fully_coupled_ORdmm_Land</span> <span class="kn">import</span> <span class="n">EMCoupling</span>  <span class="c1"># type: ignore</span>
-    <span class="k">elif</span> <span class="n">config</span><span class="o">.</span><span class="n">coupling_type</span> <span class="o">==</span> <span class="s2">&quot;pureEP_ORdmm_Land&quot;</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">.models.pureEP_ORdmm_Land</span> <span class="kn">import</span> <span class="n">EMCoupling</span>  <span class="c1"># type: ignore</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid coupling type: </span><span class="si">{</span><span class="n">config</span><span class="o">.</span><span class="n">coupling_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">VS</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">FunctionSpace</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">ep_mesh</span><span class="p">,</span> <span class="nb">eval</span><span class="p">(</span><span class="n">vs_signature</span><span class="p">))</span>
+    <span class="n">vs</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">VS</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">EMCoupling</span><span class="o">.</span><span class="n">from_state</span><span class="p">(</span>
-        <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span>
+    <span class="n">W</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">FunctionSpace</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">mechanics_mesh</span><span class="p">,</span> <span class="nb">eval</span><span class="p">(</span><span class="n">mech_signature</span><span class="p">))</span>
+    <span class="n">mech_state</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">W</span><span class="p">)</span>
+
+    <span class="n">V</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">FunctionSpace</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">mechanics_mesh</span><span class="p">,</span> <span class="s2">&quot;CG&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">lmbda_prev</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;lambda&quot;</span><span class="p">)</span>
+    <span class="n">Zetas_prev</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Zetas&quot;</span><span class="p">)</span>
+    <span class="n">Zetaw_prev</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Zetaw&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Load functions&quot;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">HDF5File</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">ep_mesh</span><span class="o">.</span><span class="n">mpi_comm</span><span class="p">(),</span> <span class="n">path</span><span class="o">.</span><span class="n">as_posix</span><span class="p">(),</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">h5file</span><span class="p">:</span>
+        <span class="n">h5file</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">vs</span><span class="p">,</span> <span class="s2">&quot;/ep/vs&quot;</span><span class="p">)</span>
+        <span class="n">h5file</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">mech_state</span><span class="p">,</span> <span class="s2">&quot;/mechanics/state&quot;</span><span class="p">)</span>
+        <span class="n">h5file</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">lmbda_prev</span><span class="p">,</span> <span class="s2">&quot;/em/lmbda_prev&quot;</span><span class="p">)</span>
+        <span class="n">h5file</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">Zetas_prev</span><span class="p">,</span> <span class="s2">&quot;/em/Zetas_prev&quot;</span><span class="p">)</span>
+        <span class="n">h5file</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">Zetaw_prev</span><span class="p">,</span> <span class="s2">&quot;/em/Zetaw_prev&quot;</span><span class="p">)</span>
+    <span class="n">cell_inits</span> <span class="o">=</span> <span class="n">vs_functions_to_dict</span><span class="p">(</span><span class="n">vs</span><span class="p">)</span>
+
+    <span class="n">coupling</span> <span class="o">=</span> <span class="n">em_model</span><span class="o">.</span><span class="n">EMCoupling</span><span class="p">(</span>
+        <span class="n">geometry</span><span class="o">=</span><span class="n">geo</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">solver</span> <span class="o">=</span> <span class="n">setup_models</span><span class="o">.</span><span class="n">setup_ep_solver</span><span class="p">(</span>
+        <span class="n">state_params</span><span class="p">[</span><span class="s2">&quot;dt&quot;</span><span class="p">],</span>
+        <span class="n">coupling</span><span class="p">,</span>
+        <span class="n">cell_params</span><span class="o">=</span><span class="n">cell_params</span><span class="p">,</span>
+        <span class="n">cell_inits</span><span class="o">=</span><span class="n">cell_inits</span><span class="p">,</span>
         <span class="n">drug_factors_file</span><span class="o">=</span><span class="n">drug_factors_file</span><span class="p">,</span>
         <span class="n">popu_factors_file</span><span class="o">=</span><span class="n">popu_factors_file</span><span class="p">,</span>
         <span class="n">disease_state</span><span class="o">=</span><span class="n">disease_state</span><span class="p">,</span>
         <span class="n">PCL</span><span class="o">=</span><span class="n">PCL</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">coupling</span><span class="o">.</span><span class="n">register_ep_model</span><span class="p">(</span><span class="n">solver</span><span class="p">)</span>
+    <span class="n">bnd_cond_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="kc">True</span><span class="p">)])</span>
+
+    <span class="n">mech_heart</span> <span class="o">=</span> <span class="n">setup_models</span><span class="o">.</span><span class="n">setup_mechanics_solver</span><span class="p">(</span>
+        <span class="n">coupling</span><span class="o">=</span><span class="n">coupling</span><span class="p">,</span>
+        <span class="n">geo</span><span class="o">=</span><span class="n">geo</span><span class="p">,</span>
+        <span class="n">bnd_rigid</span><span class="o">=</span><span class="n">bnd_cond_dict</span><span class="p">[</span><span class="n">state_params</span><span class="p">[</span><span class="s2">&quot;bnd_cond&quot;</span><span class="p">]],</span>
+        <span class="n">cell_params</span><span class="o">=</span><span class="n">solver</span><span class="o">.</span><span class="n">ode_solver</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span>
+        <span class="n">Zetas_prev</span><span class="o">=</span><span class="n">Zetas_prev</span><span class="p">,</span>
+        <span class="n">Zetaw_prev</span><span class="o">=</span><span class="n">Zetaw_prev</span><span class="p">,</span>
+        <span class="n">lmbda_prev</span><span class="o">=</span><span class="n">lmbda_prev</span><span class="p">,</span>
+        <span class="n">state_prev</span><span class="o">=</span><span class="n">mech_state</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">setup_models</span><span class="o">.</span><span class="n">EMState</span><span class="p">(</span>
+        <span class="n">coupling</span><span class="o">=</span><span class="n">coupling</span><span class="p">,</span>
+        <span class="n">solver</span><span class="o">=</span><span class="n">solver</span><span class="p">,</span>
+        <span class="n">mech_heart</span><span class="o">=</span><span class="n">mech_heart</span><span class="p">,</span>
+        <span class="n">geometry</span><span class="o">=</span><span class="n">geo</span><span class="p">,</span>
+        <span class="n">t0</span><span class="o">=</span><span class="n">state_params</span><span class="p">[</span><span class="s2">&quot;t0&quot;</span><span class="p">],</span>
     <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="load_initial_conditions_from_h5"><a class="viewcode-back" href="../../api.html#simcardems.save_load_functions.load_initial_conditions_from_h5">[docs]</a><span class="k">def</span> <span class="nf">load_initial_conditions_from_h5</span><span class="p">(</span>
-    <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
-    <span class="n">CellModel</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">cbcbeat</span><span class="o">.</span><span class="n">CardiacCellModel</span><span class="p">],</span>
-<span class="p">):</span>
+<div class="viewcode-block" id="load_initial_conditions_from_h5"><a class="viewcode-back" href="../../api.html#simcardems.save_load_functions.load_initial_conditions_from_h5">[docs]</a><span class="k">def</span> <span class="nf">load_initial_conditions_from_h5</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
         <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;File </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> does not exist&quot;</span><span class="p">)</span>
@@ -549,10 +560,7 @@ const thebe_selector_output = ".output, .cell_output"
     <span class="k">with</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">HDF5File</span><span class="p">(</span><span class="n">mesh</span><span class="o">.</span><span class="n">mpi_comm</span><span class="p">(),</span> <span class="n">path</span><span class="o">.</span><span class="n">as_posix</span><span class="p">(),</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">h5file</span><span class="p">:</span>
         <span class="n">h5file</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">vs</span><span class="p">,</span> <span class="s2">&quot;/ep/vs&quot;</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">vs_functions_to_dict</span><span class="p">(</span>
-        <span class="n">vs</span><span class="p">,</span>
-        <span class="n">state_names</span><span class="o">=</span><span class="n">CellModel</span><span class="o">.</span><span class="n">default_initial_conditions</span><span class="p">()</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span>
-    <span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">vs_functions_to_dict</span><span class="p">(</span><span class="n">vs</span><span class="p">)</span></div>
 </pre></div>
 
               </div>
