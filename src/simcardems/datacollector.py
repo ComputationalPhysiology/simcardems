@@ -196,9 +196,15 @@ class InvalidReductionError(RuntimeError):
 
 
 class DataCollector:
-    def __init__(self, outdir, geo: BaseGeometry, reset_state=True) -> None:
+    def __init__(
+        self,
+        outdir,
+        geo: BaseGeometry,
+        outfilename: str = "results.h5",
+        reset_state=True,
+    ) -> None:
         self.outdir = Path(outdir)
-        self._results_file = self.outdir.joinpath("results.h5")
+        self._results_file = self.outdir / outfilename
         self.comm = geo.mesh.mpi_comm()  # FIXME: Is this important?
         self._value_extractor = ValueExtractor(geo)
 

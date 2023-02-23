@@ -27,6 +27,7 @@ def main(outdir):
         outdir=outdir,
         T=1000,
         load_state=True,
+        outfilename="benchmark_results.h5",
     )
     t0 = time.perf_counter()
     runner = simcardems.Runner(config)
@@ -47,8 +48,8 @@ def main(outdir):
             Ta=values["mechanics"]["Ta"],
             time=values["time"],
             Ca=values["ep"]["Ca"],
-            lmbda=values["mechanics"]["lmbda"],
-            inv_lmbda=values["mechanics"]["inv_lmbda"],
+            lmbda=values["mechanics"]["lambda"],
+            inv_lmbda=1 - values["mechanics"]["lambda"],
             u=values["mechanics"]["u"],
         ),
     )
