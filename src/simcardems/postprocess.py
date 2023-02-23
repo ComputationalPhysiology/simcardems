@@ -1,5 +1,7 @@
 import json
 from pathlib import Path
+from typing import Dict
+from typing import Union
 
 import ap_features as apf
 import dolfin
@@ -40,17 +42,22 @@ def plot_peaks(fname, data, threshold):
     fig.savefig(fname, dpi=300)
 
 
-def extract_traces(loader: DataLoader, reduction: str = "average"):
+def extract_traces(
+    loader: DataLoader,
+    reduction: str = "average",
+) -> Dict[str, Union[np.ndarray, Dict[str, np.ndarray]]]:
+
+    if loader.time_stamps is None:
+        logger.warning("No data found in loader")
+        return {}
 
     values = {
-        group: {
-            name: np.zeros(len(loader.time_stamps)) for name in names if name != "u"
-        }
+        group: {name: np.zeros(loader.size) for name in names if name != "u"}
         for group, names in loader.names.items()
     }
 
     if "u" in loader.names.get("mechanics", {}):
-        values["mechanics"]["u"] = np.zeros((len(loader.time_stamps), 3))
+        values["mechanics"]["u"] = np.zeros((loader.size, 3))
     values["time"] = np.array(loader.time_stamps, dtype=float)
 
     logger.info("Extract traces...")
