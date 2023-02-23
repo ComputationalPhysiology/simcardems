@@ -606,9 +606,15 @@ title="Open an issue"
 
 
 <div class="viewcode-block" id="DataCollector"><a class="viewcode-back" href="../../api.html#simcardems.datacollector.DataCollector">[docs]</a><span class="k">class</span> <span class="nc">DataCollector</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outdir</span><span class="p">,</span> <span class="n">geo</span><span class="p">:</span> <span class="n">BaseGeometry</span><span class="p">,</span> <span class="n">reset_state</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">outdir</span><span class="p">,</span>
+        <span class="n">geo</span><span class="p">:</span> <span class="n">BaseGeometry</span><span class="p">,</span>
+        <span class="n">outfilename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;results.h5&quot;</span><span class="p">,</span>
+        <span class="n">reset_state</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">outdir</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_results_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;results.h5&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_results_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span> <span class="o">/</span> <span class="n">outfilename</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">comm</span> <span class="o">=</span> <span class="n">geo</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">mpi_comm</span><span class="p">()</span>  <span class="c1"># FIXME: Is this important?</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_value_extractor</span> <span class="o">=</span> <span class="n">ValueExtractor</span><span class="p">(</span><span class="n">geo</span><span class="p">)</span>
 
