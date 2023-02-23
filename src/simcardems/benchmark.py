@@ -27,6 +27,7 @@ def main(outdir):
         outdir=outdir,
         T=1000,
         load_state=True,
+        outfilename="benchmark_results.h5",
     )
     t0 = time.perf_counter()
     runner = simcardems.Runner(config)

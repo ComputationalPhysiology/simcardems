@@ -123,6 +123,7 @@ class Runner:
             outdir=self.outdir,
             geo=self.coupling.geometry,
             reset_state=self._reset,
+            outfilename=self._config.outfilename,
         )
         self.coupling.register_datacollector(self.collector)
 

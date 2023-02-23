@@ -12,6 +12,7 @@ from . import utils
 @dataclass
 class Config:
     outdir: utils.PathLike = "results"
+    outfilename: str = "results.h5"
     geometry_path: utils.PathLike = ""
     geometry_schema_path: typing.Optional[utils.PathLike] = None
     T: float = 1000
