@@ -76,3 +76,9 @@ def test_DataLoader_load_empty_files_raises_ValueError(tmp_path, geo):
     collector = simcardems.DataCollector(tmp_path, geo=geo)
     with pytest.raises(ValueError):
         simcardems.DataLoader(collector.results_file)
+
+
+def test_DataCollector_store_version(tmp_path, geo):
+    collector = simcardems.DataCollector(tmp_path, geo=geo)
+    loader = simcardems.DataLoader(collector.results_file, empty_ok=True)
+    assert loader.version == simcardems.__version__

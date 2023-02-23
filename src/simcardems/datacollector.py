@@ -10,6 +10,7 @@ from typing import Union
 
 import cbcbeat
 import dolfin
+import h5py
 import numpy as np
 import pulse
 from dolfin import FiniteElement  # noqa: F401
@@ -207,6 +208,10 @@ class DataCollector:
         self._times_stamps = set()
         if not self._results_file.is_file():
             geo.dump(self.results_file)
+            from . import __version__
+
+            with h5pyfile(self._results_file, "a") as f:
+                f.create_dataset("version", data=__version__)
 
         else:
 
@@ -330,8 +335,15 @@ def close_h5pyfile(h5pyfile):
         h5pyfile.__exit__()
 
 
+def extract_string_from_h5py(dataset: Optional[h5py.Dataset]) -> Optional[str]:
+    if isinstance(dataset, h5py.Dataset):
+        return dataset[...].item().decode()
+
+    return None
+
+
 class DataLoader:
-    def __init__(self, h5name) -> None:
+    def __init__(self, h5name: utils.PathLike, empty_ok: bool = False) -> None:
 
         self._h5file = None
         self._h5pyfile = None
@@ -341,13 +353,14 @@ class DataLoader:
 
         self.geo = load_geometry(self._h5name)
         self._h5pyfile = h5pyfile(self._h5name, "r").__enter__()
+        self.version = extract_string_from_h5py(self._h5pyfile.get("version"))
 
         # Find the remaining functions
         self.names = {
             group: [name for name in self._h5pyfile.get(group, {}).keys()]
             for group in ["ep", "mechanics"]
         }
-        if len(self.names["ep"]) + len(self.names["mechanics"]) == 0:
+        if not empty_ok and len(self.names["ep"]) + len(self.names["mechanics"]) == 0:
             raise ValueError("No functions found in results file")
 
         # Get time stamps
@@ -361,11 +374,15 @@ class DataLoader:
         }
 
         # An verify that they are all the same
-        self.time_stamps = all_time_stamps[next(iter(all_time_stamps.keys()))]
+        self.time_stamps = (
+            None
+            if not all_time_stamps
+            else all_time_stamps[next(iter(all_time_stamps.keys()))]
+        )
         for name in all_time_stamps.keys():
             assert self.time_stamps == all_time_stamps[name], name
 
-        if self.time_stamps is None or len(self.time_stamps) == 0:
+        if not empty_ok and (self.time_stamps is None or len(self.time_stamps) == 0):
             raise ValueError("No time stamps found")
 
         # Get the signatures - FIXME: Add a check that the signature exist.
@@ -375,7 +392,7 @@ class DataLoader:
             for name in names:
                 try:
                     self._signatures[group][name] = (
-                        self._h5pyfile[group][name][self.time_stamps[0]]
+                        self._h5pyfile[group][name][self.time_stamps[0]]  # type: ignore
                         .attrs["signature"]
                         .decode()
                     )
@@ -436,6 +453,8 @@ class DataLoader:
 
     @property
     def size(self) -> int:
+        if self.time_stamps is None:
+            return 0
         return len(self.time_stamps)
 
     def __repr__(self):
@@ -541,6 +560,9 @@ class DataLoader:
 
         if isinstance(t, (int, float)):
             t = f"{t:.2f}"
+
+        if self.time_stamps is None:
+            raise RuntimeError("No data found in result file")
         if t not in self.time_stamps:
             raise KeyError(f"Invalid time stamps {t}")
 
