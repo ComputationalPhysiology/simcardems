@@ -82,7 +82,7 @@ docs: ## generate Sphinx HTML documentation, including API docs
 	jupyter book build -W docs
 
 run-benchmark:
-	python -m simcardems run-benchmark "benchmarks/$(shell git rev-parse --short HEAD)"
+	python3 -m simcardems run-benchmark "benchmarks/$(shell git rev-parse --short HEAD)"
 
 show-docs:
 	open docs/build/html/index.html
@@ -94,7 +94,7 @@ release-test: dist ## package and upload a release
 	python3 -m twine upload --repository testpypi -u ${TEST_PYPI_USERNAME} -p ${TEST_PYPI_PASSWORD} dist/*
 
 dist: clean ## builds source and wheel package
-	python -m build
+	python3 -m build
 
 install: clean ## install the package to the active Python's site-packages
 	python3 -m pip install --upgrade pip

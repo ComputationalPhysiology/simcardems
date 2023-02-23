@@ -1,7 +1,4 @@
-FROM finsberg/fenics:latest
-
-RUN python3 -m pip install --upgrade pip && \
-    python3 -m pip install h5py --no-binary=h5py
+FROM ghcr.io/scientificcomputing/fenics-gmsh:2023-02-20
 
 COPY . /app
 WORKDIR /app
