@@ -48,8 +48,8 @@ def main(outdir):
             Ta=values["mechanics"]["Ta"],
             time=values["time"],
             Ca=values["ep"]["Ca"],
-            lmbda=values["mechanics"]["lmbda"],
-            inv_lmbda=values["mechanics"]["inv_lmbda"],
+            lmbda=values["mechanics"]["lambda"],
+            inv_lmbda=1 - values["mechanics"]["lambda"],
             u=values["mechanics"]["u"],
         ),
     )
