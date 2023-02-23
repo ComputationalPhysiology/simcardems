@@ -1,0 +1,595 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>simcardems.runner &#8212; simcardems</title>
+    
+  <link href="../../_static/css/theme.css" rel="stylesheet">
+  <link href="../../_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    
+  <link rel="preload" as="script" href="../../_static/js/index.be7d3bbb2ef33a8344ce.js">
+
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../../_static/sphinx-book-theme.d59cb220de22ca1c485ebbdc042f0030.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="../../_static/sphinx-thebe.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="../../index.html">
+      
+        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+        
+      
+      
+      <img src="../../_static/logo.png" class="logo" alt="logo">
+      
+      
+      <h1 class="site-logo" id="site-title">simcardems</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        <ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../index.html">
+   Simula Cardiac Electro-Mechanics Solver
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Installation
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../install.html">
+   Installation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../install_docker.html">
+   Install with Docker
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../install_pip.html">
+   Install with
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     pip
+    </span>
+   </code>
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Mathematical Theory
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../mechanics_model.html">
+   Tissue level mechanics model
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../electrophysiology_model.html">
+   Tissue level electrophysiology model
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../cell_model.html">
+   Cellular model
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../electro_mechanical_coupling.html">
+   Electro-Mechanical coupling
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Demos
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../simple_demo.html">
+   Simple demo
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../initial_conditions_demo.html">
+   initial conditions demo
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../release_test.html">
+   Release test
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../drug_effects_demo.html">
+   Drug effects demo
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../ventricular_geometry.html">
+   Left ventricular geometry
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../custom_cell_model_pure_ep.html">
+   Custom model (pure EP)
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../extract_currents.html">
+   Extracting currents
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../tracking_values.html">
+   Tracking Values
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../cli.html">
+   Command line interface
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../docker.html">
+   Run using Docker
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../gui.html">
+   Graphical user interface
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Verification
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../benchmark.html">
+   Benchmark
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Postprocessing
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../visualization.html">
+   Data visualization
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Community
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../CONTRIBUTING.html">
+   Contributing
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Programmers reference
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../api.html">
+   API documentaion
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav> <!-- To handle the deprecated key -->
+
+<div class="navbar_extra_footer">
+  Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+</div>
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+            <!-- Source interaction buttons -->
+
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
+    <div class="dropdown-buttons sourcebuttons">
+        <a class="repository-button"
+            href="https://github.com/ComputationalPhysiology/simcardems"><button type="button" class="btn btn-secondary topbarbtn"
+                data-toggle="tooltip" data-placement="left" title="Source repository"><i
+                    class="fab fa-github"></i>repository</button></a>
+        <a class="issues-button"
+            href="https://github.com/ComputationalPhysiology/simcardems/issues/new?title=Issue%20on%20page%20%2F_modules/simcardems/runner.html&body=Your%20issue%20content%20here."><button
+                type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
+                title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
+        
+    </div>
+</div>
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+
+<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+        title="Fullscreen mode"><i
+            class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show noprint">
+            
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1></h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                    </div>
+                </div>
+            </div>
+            
+              <div>
+                
+  <h1>Source code for simcardems.runner</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">typing</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">save_load_functions</span> <span class="k">as</span> <span class="n">io</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">utils</span>
+<span class="kn">from</span> <span class="nn">.config</span> <span class="kn">import</span> <span class="n">Config</span>
+<span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="n">em_model</span>
+<span class="kn">from</span> <span class="nn">.time_stepper</span> <span class="kn">import</span> <span class="n">TimeStepper</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Runner"><a class="viewcode-back" href="../../api.html#simcardems.runner.Runner">[docs]</a><span class="k">class</span> <span class="nc">Runner</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">Config</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">empty</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="k">if</span> <span class="n">config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">config</span> <span class="o">=</span> <span class="n">Config</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="n">config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">set_log_level</span>
+
+        <span class="n">set_log_level</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">loglevel</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">empty</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reset</span> <span class="o">=</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">load_state</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">load_state</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+            <span class="c1"># Load state</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Load previously saved state&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">load_state</span><span class="p">(</span>
+                <span class="n">path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">state_path</span><span class="p">,</span>
+                <span class="n">drug_factors_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">drug_factors_file</span><span class="p">,</span>
+                <span class="n">popu_factors_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">popu_factors_file</span><span class="p">,</span>
+                <span class="n">disease_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">disease_state</span><span class="p">,</span>
+                <span class="n">PCL</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">PCL</span><span class="p">,</span>  <span class="c1"># Set bcl from cli</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Create a new state&quot;</span><span class="p">)</span>
+            <span class="c1"># Create a new state</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span> <span class="o">=</span> <span class="n">em_model</span><span class="o">.</span><span class="n">setup_EM_model_from_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_t0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">t</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_time_stepper</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">TimeStepper</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setup_datacollector</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting at t0=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_t0</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_dt</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">dt</span>
+
+    <span class="nd">@_dt</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">_dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">state_path</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span> <span class="o">/</span> <span class="s2">&quot;state.h5&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">outdir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">outdir</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">t</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_stepper</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Please create a time stepper before solving&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_stepper</span><span class="o">.</span><span class="n">t</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">t0</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_t0</span>
+
+    <span class="k">def</span> <span class="nf">_setup_time_stepper</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">T</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">use_ns</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">st_progress</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_time_stepper</span> <span class="o">=</span> <span class="n">TimeStepper</span><span class="p">(</span>
+            <span class="n">t0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_t0</span><span class="p">,</span>
+            <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">,</span>
+            <span class="n">dt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dt</span><span class="p">,</span>
+            <span class="n">use_ns</span><span class="o">=</span><span class="n">use_ns</span><span class="p">,</span>
+            <span class="n">st_progress</span><span class="o">=</span><span class="n">st_progress</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">register_time_stepper</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_time_stepper</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Runner.from_models"><a class="viewcode-back" href="../../api.html#simcardems.runner.Runner.from_models">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_models</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">coupling</span><span class="p">:</span> <span class="n">em_model</span><span class="o">.</span><span class="n">BaseEMCoupling</span><span class="p">,</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">Config</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">reset</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">empty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">coupling</span> <span class="o">=</span> <span class="n">coupling</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">_t0</span> <span class="o">=</span> <span class="n">coupling</span><span class="o">.</span><span class="n">t</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">_reset</span> <span class="o">=</span> <span class="n">reset</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">_time_stepper</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">_setup_datacollector</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">obj</span></div>
+
+<div class="viewcode-block" id="Runner.store"><a class="viewcode-back" href="../../api.html#simcardems.runner.Runner.store">[docs]</a>    <span class="k">def</span> <span class="nf">store</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Assign u, v and Ca for postprocessing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">assigners</span><span class="o">.</span><span class="n">assign</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">collector</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">TimeStepper</span><span class="o">.</span><span class="n">ns2ms</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">))</span></div>
+
+    <span class="k">def</span> <span class="nf">_setup_datacollector</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">.datacollector</span> <span class="kn">import</span> <span class="n">DataCollector</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">collector</span> <span class="o">=</span> <span class="n">DataCollector</span><span class="p">(</span>
+            <span class="n">outdir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">outdir</span><span class="p">,</span>
+            <span class="n">geo</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">geometry</span><span class="p">,</span>
+            <span class="n">reset_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_reset</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">register_datacollector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">collector</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_solve_mechanics_now</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">mechanics_solve_strategy</span> <span class="o">==</span> <span class="s2">&quot;fixed&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">dt_mechanics</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">dt_mech</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">assigners</span><span class="o">.</span><span class="n">assign_pre</span><span class="p">()</span>
+        <span class="n">norm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">assigners</span><span class="o">.</span><span class="n">compute_pre_norm</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">norm</span> <span class="o">&gt;=</span> <span class="mf">0.05</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">dt_mechanics</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">dt_mech</span>
+
+    <span class="k">def</span> <span class="nf">_post_mechanics_solve</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="c1"># Update previous lmbda</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">update_prev_mechanics</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">mechanics_to_coupling</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">coupling_to_ep</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_solve_mechanics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># if self._config.mechanics_use_continuation:</span>
+        <span class="c1">#     self.mech_heart.solve_for_control(self.coupling.XS_ep)</span>
+        <span class="c1"># else:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">coupling_to_mechanics</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">solve_mechanics</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_post_mechanics_solve</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_post_ep</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">update_prev_ep</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">ep_to_coupling</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Runner.save_state"><a class="viewcode-back" href="../../api.html#simcardems.runner.Runner.save_state">[docs]</a>    <span class="k">def</span> <span class="nf">save_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">save_state</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">state_path</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Runner.solve"><a class="viewcode-back" href="../../api.html#simcardems.runner.Runner.solve">[docs]</a>    <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">T</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Config</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
+        <span class="n">save_freq</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Config</span><span class="o">.</span><span class="n">save_freq</span><span class="p">,</span>
+        <span class="n">show_progress_bar</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">Config</span><span class="o">.</span><span class="n">show_progress_bar</span><span class="p">,</span>
+        <span class="n">st_progress</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+
+        <span class="n">save_it</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">save_freq</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dt</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setup_time_stepper</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">use_ns</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">st_progress</span><span class="o">=</span><span class="n">st_progress</span><span class="p">)</span>
+
+        <span class="n">pbar</span> <span class="o">=</span> <span class="n">create_progressbar</span><span class="p">(</span>
+            <span class="n">time_stepper</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_time_stepper</span><span class="p">,</span>
+            <span class="n">show_progress_bar</span><span class="o">=</span><span class="n">show_progress_bar</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">t0</span><span class="p">,</span> <span class="n">t</span><span class="p">))</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pbar</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Solve EP model at step </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> from </span><span class="si">{</span><span class="n">TimeStepper</span><span class="o">.</span><span class="n">ns2ms</span><span class="p">(</span><span class="n">t0</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> ms to </span><span class="si">{</span><span class="n">TimeStepper</span><span class="o">.</span><span class="n">ns2ms</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> ms&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Solve EP model</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="n">TimeStepper</span><span class="o">.</span><span class="n">ns2ms</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">solve_ep</span><span class="p">((</span><span class="n">TimeStepper</span><span class="o">.</span><span class="n">ns2ms</span><span class="p">(</span><span class="n">t0</span><span class="p">),</span> <span class="n">TimeStepper</span><span class="o">.</span><span class="n">ns2ms</span><span class="p">(</span><span class="n">t</span><span class="p">)))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_post_ep</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solve_mechanics_now</span><span class="p">():</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Solve mechanics model at step </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> from &quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_solve_mechanics</span><span class="p">()</span>
+
+            <span class="c1"># Store every &#39;save_freq&#39; ms</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="n">save_it</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_state</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="create_progressbar"><a class="viewcode-back" href="../../api.html#simcardems.runner.create_progressbar">[docs]</a><span class="k">def</span> <span class="nf">create_progressbar</span><span class="p">(</span>
+    <span class="n">time_stepper</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">TimeStepper</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">show_progress_bar</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">Config</span><span class="o">.</span><span class="n">show_progress_bar</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="k">if</span> <span class="n">time_stepper</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Please provide a time stepper&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">show_progress_bar</span><span class="p">:</span>
+        <span class="c1"># Show progressbar</span>
+        <span class="n">pbar</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">time_stepper</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="n">time_stepper</span><span class="o">.</span><span class="n">total_steps</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Hide progressbar</span>
+        <span class="n">pbar</span> <span class="o">=</span> <span class="n">_tqdm</span><span class="p">(</span><span class="n">time_stepper</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="n">time_stepper</span><span class="o">.</span><span class="n">total_steps</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pbar</span></div>
+
+
+<span class="k">class</span> <span class="nc">_tqdm</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iterable</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_iterable</span> <span class="o">=</span> <span class="n">iterable</span>
+
+    <span class="k">def</span> <span class="nf">set_postfix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_iterable</span><span class="p">)</span>
+</pre></div>
+
+              </div>
+              
+            
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            
+        </div>
+    </div>
+    <footer class="footer">
+  <p>
+    
+      By Simula Research Laboratory<br/>
+    
+        &copy; Copyright 2022.<br/>
+  </p>
+</footer>
+</main>
+
+
+      </div>
+    </div>
+  
+  <script src="../../_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+
+  </body>
+</html>

@@ -163,16 +163,6 @@ const thebe_selector_output = ".output, .cell_output"
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../../cli.html">
-   Command line interface
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../docker.html">
-   Run using Docker
-  </a>
- </li>
- <li class="toctree-l1">
   <a class="reference internal" href="../../initial_conditions_demo.html">
    initial conditions demo
   </a>
@@ -190,6 +180,31 @@ const thebe_selector_output = ".output, .cell_output"
  <li class="toctree-l1">
   <a class="reference internal" href="../../ventricular_geometry.html">
    Left ventricular geometry
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../custom_cell_model_pure_ep.html">
+   Custom model (pure EP)
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../extract_currents.html">
+   Extracting currents
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../tracking_values.html">
+   Tracking Values
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../cli.html">
+   Command line interface
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../docker.html">
+   Run using Docker
   </a>
  </li>
  <li class="toctree-l1">
@@ -335,8 +350,9 @@ const thebe_selector_output = ".output, .cell_output"
 
 <span class="kn">import</span> <span class="nn">dolfin</span>
 
-<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">land_model</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">utils</span>
+
+<span class="c1"># from . import land_model</span>
 
 
 <div class="viewcode-block" id="Config"><a class="viewcode-back" href="../../api.html#simcardems.config.Config">[docs]</a><span class="nd">@dataclass</span>
@@ -362,7 +378,9 @@ const thebe_selector_output = ".output, .cell_output"
     <span class="n">drug_factors_file</span><span class="p">:</span> <span class="n">utils</span><span class="o">.</span><span class="n">PathLike</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
     <span class="n">popu_factors_file</span><span class="p">:</span> <span class="n">utils</span><span class="o">.</span><span class="n">PathLike</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
     <span class="n">disease_state</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;healthy&quot;</span>
-    <span class="n">mechanics_ode_scheme</span><span class="p">:</span> <span class="n">land_model</span><span class="o">.</span><span class="n">Scheme</span> <span class="o">=</span> <span class="n">land_model</span><span class="o">.</span><span class="n">Scheme</span><span class="o">.</span><span class="n">analytic</span>
+    <span class="n">dt_mech</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">mechanics_solve_strategy</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;fixed&quot;</span><span class="p">,</span> <span class="s2">&quot;adaptive&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;adaptive&quot;</span>
+    <span class="c1"># mechanics_ode_scheme: land_model.Scheme = land_model.Scheme.analytic</span>
     <span class="n">ep_ode_scheme</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;GRL1&quot;</span>
     <span class="n">ep_preconditioner</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;sor&quot;</span>
     <span class="n">ep_theta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span>
@@ -370,6 +388,11 @@ const thebe_selector_output = ".output, .cell_output"
     <span class="n">mechanics_use_continuation</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">mechanics_use_custom_newton_solver</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">PCL</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1000</span>
+    <span class="n">coupling_type</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Literal</span><span class="p">[</span>
+        <span class="s2">&quot;fully_coupled_ORdmm_Land&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;explicit_ORdmm_Land&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;pureEP_ORdmm_Land&quot;</span><span class="p">,</span>
+    <span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;fully_coupled_ORdmm_Land&quot;</span>
 
 <div class="viewcode-block" id="Config.as_dict"><a class="viewcode-back" href="../../api.html#simcardems.config.Config.as_dict">[docs]</a>    <span class="k">def</span> <span class="nf">as_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span></div></div>

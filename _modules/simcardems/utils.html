@@ -163,16 +163,6 @@ const thebe_selector_output = ".output, .cell_output"
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../../cli.html">
-   Command line interface
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../docker.html">
-   Run using Docker
-  </a>
- </li>
- <li class="toctree-l1">
   <a class="reference internal" href="../../initial_conditions_demo.html">
    initial conditions demo
   </a>
@@ -190,6 +180,31 @@ const thebe_selector_output = ".output, .cell_output"
  <li class="toctree-l1">
   <a class="reference internal" href="../../ventricular_geometry.html">
    Left ventricular geometry
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../custom_cell_model_pure_ep.html">
+   Custom model (pure EP)
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../extract_currents.html">
+   Extracting currents
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../tracking_values.html">
+   Tracking Values
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../cli.html">
+   Command line interface
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../docker.html">
+   Run using Docker
   </a>
  </li>
  <li class="toctree-l1">
@@ -330,7 +345,6 @@ const thebe_selector_output = ".output, .cell_output"
                 
   <h1>Source code for simcardems.utils</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">typing</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 
@@ -338,11 +352,12 @@ const thebe_selector_output = ".output, .cell_output"
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">ufl</span>
 
-<span class="n">PathLike</span> <span class="o">=</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">PathLike</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>
+<span class="n">PathLike</span> <span class="o">=</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="MPIFilt"><a class="viewcode-back" href="../../api.html#simcardems.utils.MPIFilt">[docs]</a><span class="k">class</span> <span class="nc">MPIFilt</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">Filter</span><span class="p">):</span>
 <div class="viewcode-block" id="MPIFilt.filter"><a class="viewcode-back" href="../../api.html#simcardems.utils.MPIFilt.filter">[docs]</a>    <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+
         <span class="k">if</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">dolfin</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span> <span class="mi">1</span>
         <span class="k">else</span><span class="p">:</span>
@@ -405,7 +420,7 @@ const thebe_selector_output = ".output, .cell_output"
             <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">set_operator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_A</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Projector.project"><a class="viewcode-back" href="../../api.html#simcardems.utils.Projector.project">[docs]</a>    <span class="k">def</span> <span class="nf">project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">,</span> <span class="n">f</span><span class="p">:</span> <span class="n">ufl</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">expr</span><span class="o">.</span><span class="n">Expr</span><span class="p">):</span>
+<div class="viewcode-block" id="Projector.project"><a class="viewcode-back" href="../../api.html#simcardems.utils.Projector.project">[docs]</a>    <span class="k">def</span> <span class="nf">project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">,</span> <span class="n">f</span><span class="p">:</span> <span class="n">ufl</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">expr</span><span class="o">.</span><span class="n">Expr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Project `f` into `u`.</span>
 
@@ -414,7 +429,10 @@ const thebe_selector_output = ".output, .cell_output"
 <span class="sd">            f (ufl.core.expr.Expr): The ufl expression to project</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">dolfin</span><span class="o">.</span><span class="n">assemble</span><span class="p">(</span><span class="n">ufl</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_v</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dx</span><span class="p">,</span> <span class="n">tensor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_b</span><span class="o">.</span><span class="n">vector</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">vector</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_b</span><span class="o">.</span><span class="n">vector</span><span class="p">())</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">vector</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_b</span><span class="o">.</span><span class="n">vector</span><span class="p">())</span></div>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">,</span> <span class="n">f</span><span class="p">:</span> <span class="n">ufl</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">expr</span><span class="o">.</span><span class="n">Expr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">u</span><span class="o">=</span><span class="n">u</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="n">f</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="enum2str"><a class="viewcode-back" href="../../api.html#simcardems.utils.enum2str">[docs]</a><span class="k">def</span> <span class="nf">enum2str</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">EnumCls</span><span class="p">):</span>
@@ -479,6 +497,7 @@ const thebe_selector_output = ".output, .cell_output"
 
 
 <div class="viewcode-block" id="setup_assigner"><a class="viewcode-back" href="../../api.html#simcardems.utils.setup_assigner">[docs]</a><span class="k">def</span> <span class="nf">setup_assigner</span><span class="p">(</span><span class="n">vs</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+
     <span class="c1"># Set-up separate potential function for post processing</span>
     <span class="n">VS0</span> <span class="o">=</span> <span class="n">vs</span><span class="o">.</span><span class="n">function_space</span><span class="p">()</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
     <span class="n">V</span> <span class="o">=</span> <span class="n">VS0</span><span class="o">.</span><span class="n">collapse</span><span class="p">()</span>
@@ -496,7 +515,6 @@ const thebe_selector_output = ".output, .cell_output"
 <span class="c1"># Optimization level 1 : call copy constructor as done in sub() but without safety checks</span>
 <span class="c1"># def sub_function(vs, index):</span>
 <span class="c1">#     return dolfin.Function(vs, index, name=&#39;%s-%d&#39; % (str(vs), index))</span>
-
 
 <span class="c1"># Optimization level 2 : define the subfunction as done in the copy constructor with</span>
 <span class="c1"># even less safety checks</span>

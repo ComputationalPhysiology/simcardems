@@ -163,16 +163,6 @@ const thebe_selector_output = ".output, .cell_output"
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../../cli.html">
-   Command line interface
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../docker.html">
-   Run using Docker
-  </a>
- </li>
- <li class="toctree-l1">
   <a class="reference internal" href="../../initial_conditions_demo.html">
    initial conditions demo
   </a>
@@ -190,6 +180,31 @@ const thebe_selector_output = ".output, .cell_output"
  <li class="toctree-l1">
   <a class="reference internal" href="../../ventricular_geometry.html">
    Left ventricular geometry
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../custom_cell_model_pure_ep.html">
+   Custom model (pure EP)
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../extract_currents.html">
+   Extracting currents
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../tracking_values.html">
+   Tracking Values
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../cli.html">
+   Command line interface
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../docker.html">
+   Run using Docker
   </a>
  </li>
  <li class="toctree-l1">
@@ -329,14 +344,20 @@ const thebe_selector_output = ".output, .cell_output"
               <div>
                 
   <h1>Source code for simcardems.datacollector</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span></span><span class="kn">import</span> <span class="nn">weakref</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Literal</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
 
+<span class="kn">import</span> <span class="nn">cbcbeat</span>
 <span class="kn">import</span> <span class="nn">dolfin</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pulse</span>
 <span class="kn">from</span> <span class="nn">dolfin</span> <span class="kn">import</span> <span class="n">FiniteElement</span>  <span class="c1"># noqa: F401</span>
 <span class="kn">from</span> <span class="nn">dolfin</span> <span class="kn">import</span> <span class="n">tetrahedron</span>  <span class="c1"># noqa: F401</span>
 <span class="kn">from</span> <span class="nn">dolfin</span> <span class="kn">import</span> <span class="n">VectorElement</span>  <span class="c1"># noqa: F401</span>
@@ -355,11 +376,176 @@ const thebe_selector_output = ".output, .cell_output"
     <span class="n">mechanics</span> <span class="o">=</span> <span class="s2">&quot;mechanics&quot;</span></div>
 
 
+<div class="viewcode-block" id="assign_item_is_None"><a class="viewcode-back" href="../../api.html#simcardems.datacollector.assign_item_is_None">[docs]</a><span class="k">def</span> <span class="nf">assign_item_is_None</span><span class="p">(</span>
+    <span class="n">f</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">],</span>
+    <span class="n">assigner</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">FunctionAssigner</span><span class="p">],</span>
+    <span class="n">index</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">f</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">if</span> <span class="n">assigner</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="Assigners"><a class="viewcode-back" href="../../api.html#simcardems.datacollector.Assigners">[docs]</a><span class="k">class</span> <span class="nc">Assigners</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Helper class to assign subfunctions from EP and Mechanics state&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">vs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">cbcbeat</span><span class="o">.</span><span class="n">SplittingSolver</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">mech_state</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pulse</span><span class="o">.</span><span class="n">MechanicsProblem</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vs</span> <span class="o">=</span> <span class="n">vs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mech_state</span> <span class="o">=</span> <span class="n">mech_state</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">functions</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;ep&quot;</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s2">&quot;mechanics&quot;</span><span class="p">:</span> <span class="p">{},</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assigners</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">FunctionAssigner</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;ep&quot;</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s2">&quot;mechanics&quot;</span><span class="p">:</span> <span class="p">{},</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subspace_indices</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;ep&quot;</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s2">&quot;mechanics&quot;</span><span class="p">:</span> <span class="p">{},</span>
+        <span class="p">}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pre_functions</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;ep&quot;</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s2">&quot;mechanics&quot;</span><span class="p">:</span> <span class="p">{},</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pre_assigners</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">FunctionAssigner</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;ep&quot;</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s2">&quot;mechanics&quot;</span><span class="p">:</span> <span class="p">{},</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pre_subspace_indices</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;ep&quot;</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s2">&quot;mechanics&quot;</span><span class="p">:</span> <span class="p">{},</span>
+        <span class="p">}</span>
+
+<div class="viewcode-block" id="Assigners.assign"><a class="viewcode-back" href="../../api.html#simcardems.datacollector.Assigners.assign">[docs]</a>    <span class="k">def</span> <span class="nf">assign</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assign_mechanics</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assign_ep</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Assigners.assign_pre"><a class="viewcode-back" href="../../api.html#simcardems.datacollector.Assigners.assign_pre">[docs]</a>    <span class="k">def</span> <span class="nf">assign_pre</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assign_pre_mechanics</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assign_ep</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_get</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">is_pre</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span>
+        <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">]],</span>
+        <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">FunctionAssigner</span><span class="p">]],</span>
+        <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span>
+    <span class="p">]:</span>
+        <span class="k">if</span> <span class="n">is_pre</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pre_functions</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_assigners</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_subspace_indices</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">functions</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">assigners</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">subspace_indices</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_assign_mechanics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">is_pre</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">functions</span><span class="p">,</span> <span class="n">assigners</span><span class="p">,</span> <span class="n">subspace_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="n">is_pre</span><span class="p">)</span>
+
+        <span class="n">keys</span> <span class="o">=</span> <span class="n">assigners</span><span class="p">[</span><span class="s2">&quot;mechanics&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mech_state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;Unable to assign mechanics, no mechanics state registered&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+            <span class="n">assigner</span> <span class="o">=</span> <span class="n">assigners</span><span class="p">[</span><span class="s2">&quot;mechanics&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="n">subspace_indices</span><span class="p">[</span><span class="s2">&quot;mechanics&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">functions</span><span class="p">[</span><span class="s2">&quot;mechanics&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">assign_item_is_None</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">assigner</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># Could ass a typeguard here: https://peps.python.org/pep-0647/</span>
+            <span class="c1"># but this will need python3.10</span>
+            <span class="n">assigner</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">utils</span><span class="o">.</span><span class="n">sub_function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mech_state</span><span class="p">,</span> <span class="n">index</span><span class="p">))</span>  <span class="c1"># type: ignore</span>
+
+<div class="viewcode-block" id="Assigners.assign_pre_mechanics"><a class="viewcode-back" href="../../api.html#simcardems.datacollector.Assigners.assign_pre_mechanics">[docs]</a>    <span class="k">def</span> <span class="nf">assign_pre_mechanics</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_assign_mechanics</span><span class="p">(</span><span class="n">is_pre</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Assigners.assign_mechanics"><a class="viewcode-back" href="../../api.html#simcardems.datacollector.Assigners.assign_mechanics">[docs]</a>    <span class="k">def</span> <span class="nf">assign_mechanics</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_assign_mechanics</span><span class="p">(</span><span class="n">is_pre</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_assign_ep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">is_pre</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="n">functions</span><span class="p">,</span> <span class="n">assigners</span><span class="p">,</span> <span class="n">subspace_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="n">is_pre</span><span class="p">)</span>
+
+        <span class="n">keys</span> <span class="o">=</span> <span class="n">assigners</span><span class="p">[</span><span class="s2">&quot;ep&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">vs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Unable to assign EP, no EP state registered&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+            <span class="n">assigner</span> <span class="o">=</span> <span class="n">assigners</span><span class="p">[</span><span class="s2">&quot;ep&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="n">subspace_indices</span><span class="p">[</span><span class="s2">&quot;ep&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">functions</span><span class="p">[</span><span class="s2">&quot;ep&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">assign_item_is_None</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">assigner</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># Could ass a typeguard here: https://peps.python.org/pep-0647/</span>
+            <span class="c1"># but this will need python3.10</span>
+            <span class="n">assigner</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">utils</span><span class="o">.</span><span class="n">sub_function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vs</span><span class="p">,</span> <span class="n">index</span><span class="p">))</span>  <span class="c1"># type: ignore</span>
+
+<div class="viewcode-block" id="Assigners.assign_pre_ep"><a class="viewcode-back" href="../../api.html#simcardems.datacollector.Assigners.assign_pre_ep">[docs]</a>    <span class="k">def</span> <span class="nf">assign_pre_ep</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_assign_ep</span><span class="p">(</span><span class="n">is_pre</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Assigners.assign_ep"><a class="viewcode-back" href="../../api.html#simcardems.datacollector.Assigners.assign_ep">[docs]</a>    <span class="k">def</span> <span class="nf">assign_ep</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_assign_ep</span><span class="p">(</span><span class="n">is_pre</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Assigners.compute_pre_norm"><a class="viewcode-back" href="../../api.html#simcardems.datacollector.Assigners.compute_pre_norm">[docs]</a>    <span class="k">def</span> <span class="nf">compute_pre_norm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">norm</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">hit</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;ep&quot;</span><span class="p">,</span> <span class="s2">&quot;mechanics&quot;</span><span class="p">]:</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">pre_func</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_functions</span><span class="p">[</span><span class="n">group</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">functions</span><span class="p">[</span><span class="n">group</span><span class="p">]:</span>
+                    <span class="n">hit</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">norm</span> <span class="o">+=</span> <span class="n">utils</span><span class="o">.</span><span class="n">compute_norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">functions</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="n">name</span><span class="p">],</span> <span class="n">pre_func</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">hit</span><span class="p">:</span>
+            <span class="c1"># We never computed any norm so we should not interpret</span>
+            <span class="c1"># the norm as zero, but rather assume that the norm is large</span>
+            <span class="c1"># so that we actually solve in case we rely on this value as</span>
+            <span class="c1"># a threshold</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        <span class="k">return</span> <span class="n">norm</span></div>
+
+<div class="viewcode-block" id="Assigners.register_subfunction"><a class="viewcode-back" href="../../api.html#simcardems.datacollector.Assigners.register_subfunction">[docs]</a>    <span class="k">def</span> <span class="nf">register_subfunction</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">group</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;ep&quot;</span><span class="p">,</span> <span class="s2">&quot;mechanics&quot;</span><span class="p">],</span>
+        <span class="n">subspace_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">is_pre</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vs</span> <span class="k">if</span> <span class="n">group</span> <span class="o">==</span> <span class="s2">&quot;ep&quot;</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">mech_state</span>
+        <span class="n">f</span><span class="p">,</span> <span class="n">assigner</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">setup_assigner</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">subspace_index</span><span class="p">)</span>
+        <span class="n">functions</span><span class="p">,</span> <span class="n">assigners</span><span class="p">,</span> <span class="n">subspace_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="n">is_pre</span><span class="p">)</span>
+        <span class="n">functions</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span>
+        <span class="n">assigners</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">assigner</span>
+        <span class="n">subspace_indices</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">subspace_index</span></div></div>
+
+
+<div class="viewcode-block" id="InvalidReductionError"><a class="viewcode-back" href="../../api.html#simcardems.datacollector.InvalidReductionError">[docs]</a><span class="k">class</span> <span class="nc">InvalidReductionError</span><span class="p">(</span><span class="ne">RuntimeError</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+
 <div class="viewcode-block" id="DataCollector"><a class="viewcode-back" href="../../api.html#simcardems.datacollector.DataCollector">[docs]</a><span class="k">class</span> <span class="nc">DataCollector</span><span class="p">:</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outdir</span><span class="p">,</span> <span class="n">geo</span><span class="p">:</span> <span class="n">BaseGeometry</span><span class="p">,</span> <span class="n">reset_state</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">outdir</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_results_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;results.h5&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">comm</span> <span class="o">=</span> <span class="n">geo</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">mpi_comm</span><span class="p">()</span>  <span class="c1"># FIXME: Is this important?</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_value_extractor</span> <span class="o">=</span> <span class="n">ValueExtractor</span><span class="p">(</span><span class="n">geo</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">reset_state</span><span class="p">:</span>
             <span class="n">utils</span><span class="o">.</span><span class="n">remove_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_results_file</span><span class="p">)</span>
@@ -369,6 +555,7 @@ const thebe_selector_output = ".output, .cell_output"
             <span class="n">geo</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results_file</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
+
             <span class="k">try</span><span class="p">:</span>
                 <span class="k">with</span> <span class="n">h5pyfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_results_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_times_stamps</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s2">&quot;ep&quot;</span><span class="p">][</span><span class="s2">&quot;V&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
@@ -379,12 +566,26 @@ const thebe_selector_output = ".output, .cell_output"
             <span class="s2">&quot;ep&quot;</span><span class="p">:</span> <span class="p">{},</span>
             <span class="s2">&quot;mechanics&quot;</span><span class="p">:</span> <span class="p">{},</span>
         <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reductions</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;ep&quot;</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s2">&quot;mechanics&quot;</span><span class="p">:</span> <span class="p">{},</span>
+        <span class="p">}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">valid_reductions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;full&quot;</span><span class="p">,</span> <span class="s2">&quot;average&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_value_extractor</span><span class="o">.</span><span class="n">boundary</span><span class="o">.</span><span class="n">nodes</span><span class="p">())</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">results_file</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_results_file</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()</span>
 
-<div class="viewcode-block" id="DataCollector.register"><a class="viewcode-back" href="../../api.html#simcardems.datacollector.DataCollector.register">[docs]</a>    <span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">group</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">f</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="DataCollector.register"><a class="viewcode-back" href="../../api.html#simcardems.datacollector.DataCollector.register">[docs]</a>    <span class="k">def</span> <span class="nf">register</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">group</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">f</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">,</span>
+        <span class="n">reduction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;full&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">assert</span> <span class="n">group</span> <span class="ow">in</span> <span class="p">[</span>
             <span class="s2">&quot;ep&quot;</span><span class="p">,</span>
             <span class="s2">&quot;mechanics&quot;</span><span class="p">,</span>
@@ -394,13 +595,28 @@ const thebe_selector_output = ".output, .cell_output"
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Warning: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> in group </span><span class="si">{</span><span class="n">group</span><span class="si">}</span><span class="s2"> is already registered - overwriting&quot;</span><span class="p">,</span>
             <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_functions</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span></div>
+        <span class="k">if</span> <span class="n">reduction</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">valid_reductions</span><span class="p">:</span>
+            <span class="c1"># Check that we have a valid reduction</span>
+            <span class="k">raise</span> <span class="n">InvalidReductionError</span><span class="p">(</span>
+                <span class="s2">&quot;Invalid reduction </span><span class="si">{reduction}</span><span class="s2">. Possible options are </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_functions</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reductions</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">reduction</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
         <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_functions</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
 
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">function_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="n">k</span><span class="p">:</span> <span class="p">[</span><span class="n">k1</span> <span class="k">for</span> <span class="n">k1</span><span class="p">,</span> <span class="n">v1</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_functions</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">}</span>
+
 <div class="viewcode-block" id="DataCollector.store"><a class="viewcode-back" href="../../api.html#simcardems.datacollector.DataCollector.store">[docs]</a>    <span class="k">def</span> <span class="nf">store</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
         <span class="n">t_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">t</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Store results at time </span><span class="si">{</span><span class="n">t_str</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">t_str</span><span class="si">}</span><span class="s2">&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_times_stamps</span><span class="p">:</span>
@@ -409,13 +625,37 @@ const thebe_selector_output = ".output, .cell_output"
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_times_stamps</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">t_str</span><span class="p">)</span>
 
+        <span class="c1"># First do the full values</span>
         <span class="k">with</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">HDF5File</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">results_file</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">h5file</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">group</span><span class="p">,</span> <span class="n">names</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Save HDF5File </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">results_file</span><span class="si">}</span><span class="s2"> for group </span><span class="si">{</span><span class="n">group</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Save full states in HDF5File </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">results_file</span><span class="si">}</span><span class="s2"> for group </span><span class="si">{</span><span class="n">group</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
                 <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
                     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Save </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reductions</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="n">name</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;full&quot;</span><span class="p">:</span>
+                        <span class="n">f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_functions</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="n">name</span><span class="p">]</span>
+                        <span class="n">h5file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">group</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">t_str</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Next do the other reductions</span>
+        <span class="k">with</span> <span class="n">h5pyfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results_file</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">h5file</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">group</span><span class="p">,</span> <span class="n">names</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Save reduced states in HDF5File </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">results_file</span><span class="si">}</span><span class="s2"> for group </span><span class="si">{</span><span class="n">group</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Save </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reductions</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="n">name</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;full&quot;</span><span class="p">:</span>
+                        <span class="k">continue</span>
+
                     <span class="n">f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_functions</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="n">name</span><span class="p">]</span>
-                    <span class="n">h5file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">group</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">t_str</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+                    <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_value_extractor</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span>
+                        <span class="n">f</span><span class="p">,</span>
+                        <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_reductions</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="n">name</span><span class="p">],</span>
+                    <span class="p">)</span>
+                    <span class="k">if</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">group</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">h5file</span><span class="p">:</span>
+                        <span class="n">h5file</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">group</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">h5file</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">group</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">t_str</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">value</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DataCollector.save_residual"><a class="viewcode-back" href="../../api.html#simcardems.datacollector.DataCollector.save_residual">[docs]</a>    <span class="k">def</span> <span class="nf">save_residual</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">residual</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Save residual&quot;</span><span class="p">)</span>
@@ -425,59 +665,76 @@ const thebe_selector_output = ".output, .cell_output"
             <span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;residual&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="p">),</span> <span class="n">data</span><span class="o">=</span><span class="n">residual</span><span class="p">)</span></div></div>
 
 
+<div class="viewcode-block" id="close_h5file"><a class="viewcode-back" href="../../api.html#simcardems.datacollector.close_h5file">[docs]</a><span class="k">def</span> <span class="nf">close_h5file</span><span class="p">(</span><span class="n">h5file</span><span class="p">):</span>
+
+    <span class="k">if</span> <span class="n">h5file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">h5file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="close_h5pyfile"><a class="viewcode-back" href="../../api.html#simcardems.datacollector.close_h5pyfile">[docs]</a><span class="k">def</span> <span class="nf">close_h5pyfile</span><span class="p">(</span><span class="n">h5pyfile</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">h5pyfile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">h5pyfile</span><span class="o">.</span><span class="fm">__exit__</span><span class="p">()</span></div>
+
+
 <div class="viewcode-block" id="DataLoader"><a class="viewcode-back" href="../../api.html#simcardems.datacollector.DataLoader">[docs]</a><span class="k">class</span> <span class="nc">DataLoader</span><span class="p">:</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h5name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">_h5file</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_h5pyfile</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_h5name</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">h5name</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5name</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;File </span><span class="si">{</span><span class="n">h5name</span><span class="si">}</span><span class="s2"> does not exist&quot;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">geo</span> <span class="o">=</span> <span class="n">load_geometry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_h5name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_h5pyfile</span> <span class="o">=</span> <span class="n">h5pyfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_h5name</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span><span class="o">.</span><span class="fm">__enter__</span><span class="p">()</span>
 
-        <span class="k">with</span> <span class="n">h5pyfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_h5name</span><span class="p">)</span> <span class="k">as</span> <span class="n">h5file</span><span class="p">:</span>
-            <span class="c1"># Find the remaining functions</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">names</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="n">group</span><span class="p">:</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">h5file</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
-                <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;ep&quot;</span><span class="p">,</span> <span class="s2">&quot;mechanics&quot;</span><span class="p">]</span>
-            <span class="p">}</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="s2">&quot;ep&quot;</span><span class="p">])</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="s2">&quot;mechanics&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No functions found in results file&quot;</span><span class="p">)</span>
+        <span class="c1"># Find the remaining functions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">names</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">group</span><span class="p">:</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5pyfile</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
+            <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;ep&quot;</span><span class="p">,</span> <span class="s2">&quot;mechanics&quot;</span><span class="p">]</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="s2">&quot;ep&quot;</span><span class="p">])</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="s2">&quot;mechanics&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No functions found in results file&quot;</span><span class="p">)</span>
 
-            <span class="c1"># Get time stamps</span>
-            <span class="n">all_time_stamps</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s2">&quot;</span><span class="si">{group}</span><span class="s2">:</span><span class="si">{name}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="nb">sorted</span><span class="p">(</span>
-                    <span class="nb">list</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
-                    <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">),</span>
-                <span class="p">)</span>
-                <span class="k">for</span> <span class="n">group</span><span class="p">,</span> <span class="n">names</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-                <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span>
-            <span class="p">}</span>
+        <span class="c1"># Get time stamps</span>
+        <span class="n">all_time_stamps</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;</span><span class="si">{group}</span><span class="s2">:</span><span class="si">{name}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="nb">sorted</span><span class="p">(</span>
+                <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_h5pyfile</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
+                <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">group</span><span class="p">,</span> <span class="n">names</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span>
+        <span class="p">}</span>
 
-            <span class="c1"># An verify that they are all the same</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">time_stamps</span> <span class="o">=</span> <span class="n">all_time_stamps</span><span class="p">[</span><span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">all_time_stamps</span><span class="o">.</span><span class="n">keys</span><span class="p">()))]</span>
-            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">all_time_stamps</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-                <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_stamps</span> <span class="o">==</span> <span class="n">all_time_stamps</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">name</span>
+        <span class="c1"># An verify that they are all the same</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_stamps</span> <span class="o">=</span> <span class="n">all_time_stamps</span><span class="p">[</span><span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">all_time_stamps</span><span class="o">.</span><span class="n">keys</span><span class="p">()))]</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">all_time_stamps</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_stamps</span> <span class="o">==</span> <span class="n">all_time_stamps</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">name</span>
 
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_stamps</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No time stamps found&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_stamps</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No time stamps found&quot;</span><span class="p">)</span>
 
-            <span class="c1"># Get the signatures - FIXME: Add a check that the signature exist.</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_signatures</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="n">group</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="n">name</span><span class="p">:</span> <span class="n">h5file</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="n">name</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
-                    <span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;signature&quot;</span><span class="p">]</span>
-                    <span class="o">.</span><span class="n">decode</span><span class="p">()</span>
-                    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span>
-                <span class="p">}</span>
-                <span class="k">for</span> <span class="n">group</span><span class="p">,</span> <span class="n">names</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-            <span class="p">}</span>
+        <span class="c1"># Get the signatures - FIXME: Add a check that the signature exist.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_signatures</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">group</span><span class="p">,</span> <span class="n">names</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_signatures</span><span class="p">[</span><span class="n">group</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_signatures</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_h5pyfile</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="n">name</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+                        <span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;signature&quot;</span><span class="p">]</span>
+                        <span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+                    <span class="p">)</span>
+                <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_signatures</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
-            <span class="k">if</span> <span class="s2">&quot;residual&quot;</span> <span class="ow">in</span> <span class="n">h5file</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_residual</span> <span class="o">=</span> <span class="p">[</span>
-                    <span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;residual&quot;</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="o">...</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;residual&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
-                <span class="p">]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_residual</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="s2">&quot;residual&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5pyfile</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_residual</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_h5pyfile</span><span class="p">[</span><span class="s2">&quot;residual&quot;</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="o">...</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5pyfile</span><span class="p">[</span><span class="s2">&quot;residual&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+            <span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_residual</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_h5file</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">HDF5File</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ep_mesh</span><span class="o">.</span><span class="n">mpi_comm</span><span class="p">(),</span>
@@ -487,6 +744,29 @@ const thebe_selector_output = ".output, .cell_output"
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_create_functions</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">value_extractor</span> <span class="o">=</span> <span class="n">ValueExtractor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">geo</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_finalizer_h5file</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">close_h5file</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5file</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_finalizer_h5pyfile</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">finalize</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">close_h5pyfile</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_h5pyfile</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cleanup</span><span class="p">()</span>
+
+<div class="viewcode-block" id="DataLoader.cleanup"><a class="viewcode-back" href="../../api.html#simcardems.datacollector.DataLoader.cleanup">[docs]</a>    <span class="k">def</span> <span class="nf">cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_finalizer_h5file</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_finalizer_h5pyfile</span><span class="p">()</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">function_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="n">k</span><span class="p">:</span> <span class="p">[</span><span class="n">k1</span> <span class="k">for</span> <span class="n">k1</span><span class="p">,</span> <span class="n">v1</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_functions</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">}</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">residual</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
@@ -507,10 +787,6 @@ const thebe_selector_output = ".output, .cell_output"
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_h5name</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_h5file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-
     <span class="k">def</span> <span class="nf">_create_functions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_function_spaces</span> <span class="o">=</span> <span class="p">{}</span>
 
@@ -522,6 +798,7 @@ const thebe_selector_output = ".output, .cell_output"
                     <span class="n">group</span><span class="p">:</span> <span class="p">{</span>
                         <span class="n">signature</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">FunctionSpace</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="nb">eval</span><span class="p">(</span><span class="n">signature</span><span class="p">))</span>
                         <span class="k">for</span> <span class="n">signature</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">signature_dict</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+                        <span class="k">if</span> <span class="n">signature</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
                     <span class="p">},</span>
                 <span class="p">},</span>
             <span class="p">)</span>
@@ -532,6 +809,7 @@ const thebe_selector_output = ".output, .cell_output"
                     <span class="bp">self</span><span class="o">.</span><span class="n">_function_spaces</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">_signatures</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="n">name</span><span class="p">]],</span>
                 <span class="p">)</span>
                 <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signatures</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="n">name</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
             <span class="p">}</span>
             <span class="k">for</span> <span class="n">group</span><span class="p">,</span> <span class="n">names</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
         <span class="p">}</span>
@@ -549,11 +827,13 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="n">group</span><span class="p">:</span> <span class="n">DataGroups</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">t</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
-        <span class="n">reduction</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">reduction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;average&quot;</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
-        <span class="n">dofs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dofs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_group_to_str</span><span class="p">(</span><span class="n">group</span><span class="p">)][</span><span class="n">name</span><span class="p">]</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value_extractor</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">reduction</span><span class="p">,</span> <span class="n">dofs</span><span class="o">=</span><span class="n">dofs</span><span class="p">)</span></div>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
+            <span class="n">dofs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dofs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_group_to_str</span><span class="p">(</span><span class="n">group</span><span class="p">)][</span><span class="n">name</span><span class="p">]</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value_extractor</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">reduction</span><span class="p">,</span> <span class="n">dofs</span><span class="o">=</span><span class="n">dofs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">func</span></div>
 
     <span class="k">def</span> <span class="nf">_group_to_str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">group</span><span class="p">):</span>
         <span class="n">group_str</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">enum2str</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">DataGroups</span><span class="p">)</span>
@@ -610,9 +890,13 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="k">if</span> <span class="n">t</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid time stamps </span><span class="si">{</span><span class="n">t</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-        <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_functions</span><span class="p">[</span><span class="n">group_str</span><span class="p">][</span><span class="n">name</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_h5file</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">group_str</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">t</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">func</span></div></div>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_functions</span><span class="p">[</span><span class="n">group_str</span><span class="p">][</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5pyfile</span><span class="p">[</span><span class="n">group_str</span><span class="p">][</span><span class="n">name</span><span class="p">][</span><span class="n">t</span><span class="p">][</span><span class="o">...</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_h5file</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">group_str</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">t</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">func</span></div></div>
 </pre></div>
 
               </div>

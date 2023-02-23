@@ -163,16 +163,6 @@ const thebe_selector_output = ".output, .cell_output"
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../../cli.html">
-   Command line interface
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../docker.html">
-   Run using Docker
-  </a>
- </li>
- <li class="toctree-l1">
   <a class="reference internal" href="../../initial_conditions_demo.html">
    initial conditions demo
   </a>
@@ -190,6 +180,31 @@ const thebe_selector_output = ".output, .cell_output"
  <li class="toctree-l1">
   <a class="reference internal" href="../../ventricular_geometry.html">
    Left ventricular geometry
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../custom_cell_model_pure_ep.html">
+   Custom model (pure EP)
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../extract_currents.html">
+   Extracting currents
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../tracking_values.html">
+   Tracking Values
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../cli.html">
+   Command line interface
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../docker.html">
+   Run using Docker
   </a>
  </li>
  <li class="toctree-l1">
@@ -329,7 +344,9 @@ const thebe_selector_output = ".output, .cell_output"
               <div>
                 
   <h1>Source code for simcardems.mechanics_model</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">typing</span>
 
 <span class="kn">import</span> <span class="nn">dolfin</span>
@@ -342,8 +359,83 @@ const thebe_selector_output = ".output, .cell_output"
 <span class="kn">from</span> <span class="nn">.newton_solver</span> <span class="kn">import</span> <span class="n">MechanicsNewtonSolver</span>
 <span class="kn">from</span> <span class="nn">.newton_solver</span> <span class="kn">import</span> <span class="n">MechanicsNewtonSolver_ODE</span>
 
+<span class="k">if</span> <span class="n">typing</span><span class="o">.</span><span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="n">em_model</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="setup_solver"><a class="viewcode-back" href="../../api.html#simcardems.mechanics_model.setup_solver">[docs]</a><span class="k">def</span> <span class="nf">setup_solver</span><span class="p">(</span>
+    <span class="n">coupling</span><span class="p">:</span> <span class="n">em_model</span><span class="o">.</span><span class="n">BaseEMCoupling</span><span class="p">,</span>
+    <span class="n">ActiveModel</span><span class="p">,</span>
+    <span class="n">bnd_rigid</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">bnd_rigid</span><span class="p">,</span>
+    <span class="n">pre_stretch</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">traction</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">spring</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">fix_right_plane</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">fix_right_plane</span><span class="p">,</span>
+    <span class="n">debug_mode</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">debug_mode</span><span class="p">,</span>
+    <span class="n">set_material</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">linear_solver</span><span class="o">=</span><span class="s2">&quot;mumps&quot;</span><span class="p">,</span>
+    <span class="n">use_custom_newton_solver</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">mechanics_use_custom_newton_solver</span><span class="p">,</span>
+    <span class="n">state_prev</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Setup mechanics model with dirichlet boundary conditions or rigid motion.&quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">ActiveModel</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Set up mechanics model&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Use parameters from Biaxial test in Holzapfel 2019 (Table 1).</span>
+    <span class="n">material_parameters</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="n">a</span><span class="o">=</span><span class="mf">2.28</span><span class="p">,</span>
+        <span class="n">a_f</span><span class="o">=</span><span class="mf">1.686</span><span class="p">,</span>
+        <span class="n">b</span><span class="o">=</span><span class="mf">9.726</span><span class="p">,</span>
+        <span class="n">b_f</span><span class="o">=</span><span class="mf">15.779</span><span class="p">,</span>
+        <span class="n">a_s</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">b_s</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">a_fs</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">b_fs</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">active_model</span> <span class="o">=</span> <span class="n">ActiveModel</span><span class="p">(</span><span class="n">coupling</span><span class="o">=</span><span class="n">coupling</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="n">coupling</span><span class="o">.</span><span class="n">cell_params</span><span class="p">())</span>
+    <span class="n">material</span> <span class="o">=</span> <span class="n">pulse</span><span class="o">.</span><span class="n">HolzapfelOgden</span><span class="p">(</span>
+        <span class="n">active_model</span><span class="o">=</span><span class="n">active_model</span><span class="p">,</span>
+        <span class="n">parameters</span><span class="o">=</span><span class="n">material_parameters</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">set_material</span> <span class="o">==</span> <span class="s2">&quot;Guccione&quot;</span><span class="p">:</span>
+        <span class="n">material_parameters</span> <span class="o">=</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Guccione</span><span class="o">.</span><span class="n">default_parameters</span><span class="p">()</span>
+        <span class="n">material_parameters</span><span class="p">[</span><span class="s2">&quot;CC&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">2.0</span>
+        <span class="n">material_parameters</span><span class="p">[</span><span class="s2">&quot;bf&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">8.0</span>
+        <span class="n">material_parameters</span><span class="p">[</span><span class="s2">&quot;bfs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">4.0</span>
+        <span class="n">material_parameters</span><span class="p">[</span><span class="s2">&quot;bt&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">2.0</span>
+
+        <span class="n">material</span> <span class="o">=</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Guccione</span><span class="p">(</span>
+            <span class="n">active_model</span><span class="o">=</span><span class="n">active_model</span><span class="p">,</span>
+            <span class="n">parameters</span><span class="o">=</span><span class="n">material_parameters</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="n">problem</span> <span class="o">=</span> <span class="n">create_problem</span><span class="p">(</span>
+        <span class="n">material</span><span class="o">=</span><span class="n">material</span><span class="p">,</span>
+        <span class="n">geo</span><span class="o">=</span><span class="n">coupling</span><span class="o">.</span><span class="n">geometry</span><span class="p">,</span>
+        <span class="n">bnd_rigid</span><span class="o">=</span><span class="n">bnd_rigid</span><span class="p">,</span>
+        <span class="n">pre_stretch</span><span class="o">=</span><span class="n">pre_stretch</span><span class="p">,</span>
+        <span class="n">traction</span><span class="o">=</span><span class="n">traction</span><span class="p">,</span>
+        <span class="n">spring</span><span class="o">=</span><span class="n">spring</span><span class="p">,</span>
+        <span class="n">fix_right_plane</span><span class="o">=</span><span class="n">fix_right_plane</span><span class="p">,</span>
+        <span class="n">linear_solver</span><span class="o">=</span><span class="n">linear_solver</span><span class="p">,</span>
+        <span class="n">use_custom_newton_solver</span><span class="o">=</span><span class="n">use_custom_newton_solver</span><span class="p">,</span>
+        <span class="n">debug_mode</span><span class="o">=</span><span class="n">debug_mode</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">state_prev</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">problem</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">state_prev</span><span class="p">)</span>
+
+    <span class="n">problem</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+    <span class="n">coupling</span><span class="o">.</span><span class="n">register_mech_model</span><span class="p">(</span><span class="n">problem</span><span class="p">)</span>
+    <span class="n">coupling</span><span class="o">.</span><span class="n">print_mechanics_info</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">problem</span></div>
 
 
 <div class="viewcode-block" id="ContinuationBasedMechanicsProblem"><a class="viewcode-back" href="../../api.html#simcardems.mechanics_model.ContinuationBasedMechanicsProblem">[docs]</a><span class="k">class</span> <span class="nc">ContinuationBasedMechanicsProblem</span><span class="p">(</span><span class="n">pulse</span><span class="o">.</span><span class="n">MechanicsProblem</span><span class="p">):</span>
@@ -392,6 +484,7 @@ const thebe_selector_output = ".output, .cell_output"
 
 <div class="viewcode-block" id="MechanicsProblem"><a class="viewcode-back" href="../../api.html#simcardems.mechanics_model.MechanicsProblem">[docs]</a><span class="k">class</span> <span class="nc">MechanicsProblem</span><span class="p">(</span><span class="n">ContinuationBasedMechanicsProblem</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">_init_spaces</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
         <span class="n">mesh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">mesh</span>
 
         <span class="n">P1</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">FiniteElement</span><span class="p">(</span><span class="s2">&quot;Lagrange&quot;</span><span class="p">,</span> <span class="n">mesh</span><span class="o">.</span><span class="n">ufl_cell</span><span class="p">(),</span> <span class="mi">1</span><span class="p">)</span>
@@ -458,7 +551,7 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="bp">self</span><span class="o">.</span><span class="n">solver</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span>
             <span class="n">problem</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_problem</span><span class="p">,</span>
             <span class="n">state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span>
-            <span class="n">update_cb</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">active</span><span class="o">.</span><span class="n">update_prev</span><span class="p">,</span>
+            <span class="c1"># update_cb=self.material.active.update_prev,</span>
             <span class="n">parameters</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">solver_parameters</span><span class="p">,</span>
         <span class="p">)</span>
 
@@ -466,14 +559,12 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="bp">self</span><span class="o">.</span><span class="n">_init_forms</span><span class="p">(</span><span class="n">init_solver</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">newton_iteration</span><span class="p">,</span> <span class="n">newton_converged</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
         <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="p">,</span> <span class="s2">&quot;check_overloads_called&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">newton_iteration</span><span class="p">,</span> <span class="n">newton_converged</span></div>
-
-<div class="viewcode-block" id="MechanicsProblem.update_lmbda_prev"><a class="viewcode-back" href="../../api.html#simcardems.mechanics_model.MechanicsProblem.update_lmbda_prev">[docs]</a>    <span class="k">def</span> <span class="nf">update_lmbda_prev</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">lmbda_prev</span><span class="o">.</span><span class="n">vector</span><span class="p">()[:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lmbda</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span></div></div>
+        <span class="k">return</span> <span class="n">newton_iteration</span><span class="p">,</span> <span class="n">newton_converged</span></div></div>
 
 
 <div class="viewcode-block" id="RigidMotionProblem"><a class="viewcode-back" href="../../api.html#simcardems.mechanics_model.RigidMotionProblem">[docs]</a><span class="k">class</span> <span class="nc">RigidMotionProblem</span><span class="p">(</span><span class="n">MechanicsProblem</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">_init_spaces</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
         <span class="n">mesh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">mesh</span>
 
         <span class="n">P1</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">FiniteElement</span><span class="p">(</span><span class="s2">&quot;Lagrange&quot;</span><span class="p">,</span> <span class="n">mesh</span><span class="o">.</span><span class="n">ufl_cell</span><span class="p">(),</span> <span class="mi">1</span><span class="p">)</span>

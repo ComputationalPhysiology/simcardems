@@ -56,7 +56,7 @@ const thebe_selector_output = ".output, .cell_output"
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Graphical user interface" href="gui.html" />
+    <link rel="next" title="Custom model (pure EP)" href="custom_cell_model_pure_ep.html" />
     <link rel="prev" title="Drug effects demo" href="drug_effects_demo.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
@@ -167,16 +167,6 @@ const thebe_selector_output = ".output, .cell_output"
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="cli.html">
-   Command line interface
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="docker.html">
-   Run using Docker
-  </a>
- </li>
- <li class="toctree-l1">
   <a class="reference internal" href="initial_conditions_demo.html">
    initial conditions demo
   </a>
@@ -194,6 +184,31 @@ const thebe_selector_output = ".output, .cell_output"
  <li class="toctree-l1 current active">
   <a class="current reference internal" href="#">
    Left ventricular geometry
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="custom_cell_model_pure_ep.html">
+   Custom model (pure EP)
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="extract_currents.html">
+   Extracting currents
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="tracking_values.html">
+   Tracking Values
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="cli.html">
+   Command line interface
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="docker.html">
+   Run using Docker
   </a>
  </li>
  <li class="toctree-l1">
@@ -377,38 +392,10 @@ more complicated boundary conditions in the future.</p>
     <span class="n">geometry_path</span><span class="o">=</span><span class="n">geometry_path</span><span class="p">,</span>
     <span class="n">geometry_schema_path</span><span class="o">=</span><span class="n">geometry_schema_path</span><span class="p">,</span>
     <span class="n">T</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+    <span class="n">coupling_type</span><span class="o">=</span><span class="s2">&quot;explicit_ORdmm_Land&quot;</span><span class="p">,</span>
+    <span class="n">mechanics_solve_strategy</span><span class="o">=</span><span class="s2">&quot;fixed&quot;</span><span class="p">,</span>
+    <span class="n">spring</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
 <span class="p">)</span>
-</pre></div>
-</div>
-<p>This will set :</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;PCL&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
- <span class="s1">&#39;T&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
- <span class="s1">&#39;bnd_rigid&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
- <span class="s1">&#39;cell_init_file&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
- <span class="s1">&#39;disease_state&#39;</span><span class="p">:</span> <span class="s1">&#39;healthy&#39;</span><span class="p">,</span>
- <span class="s1">&#39;drug_factors_file&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
- <span class="s1">&#39;dt&#39;</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">,</span>
- <span class="s1">&#39;ep_ode_scheme&#39;</span><span class="p">:</span> <span class="s1">&#39;GRL1&#39;</span><span class="p">,</span>
- <span class="s1">&#39;ep_preconditioner&#39;</span><span class="p">:</span> <span class="s1">&#39;sor&#39;</span><span class="p">,</span>
- <span class="s1">&#39;ep_theta&#39;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
- <span class="s1">&#39;fix_right_plane&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
- <span class="s1">&#39;geometry_path&#39;</span><span class="p">:</span> <span class="s1">&#39;demos/geometries/slab.h5&#39;</span><span class="p">,</span>
- <span class="s1">&#39;geometry_schema_path&#39;</span><span class="p">:</span> <span class="s1">&#39;demos/geometries/slab.json&#39;</span><span class="p">,</span>
- <span class="s1">&#39;linear_mechanics_solver&#39;</span><span class="p">:</span> <span class="s1">&#39;mumps&#39;</span><span class="p">,</span>
- <span class="s1">&#39;load_state&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
- <span class="s1">&#39;loglevel&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
- <span class="s1">&#39;mechanics_ode_scheme&#39;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">Scheme</span><span class="o">.</span><span class="n">analytic</span><span class="p">:</span> <span class="s1">&#39;analytic&#39;</span><span class="o">&gt;</span><span class="p">,</span>
- <span class="s1">&#39;mechanics_use_continuation&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
- <span class="s1">&#39;mechanics_use_custom_newton_solver&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
- <span class="s1">&#39;num_refinements&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
- <span class="s1">&#39;outdir&#39;</span><span class="p">:</span> <span class="n">PosixPath</span><span class="p">(</span><span class="s1">&#39;results_simple_demo&#39;</span><span class="p">),</span>
- <span class="s1">&#39;popu_factors_file&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
- <span class="s1">&#39;pre_stretch&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
- <span class="s1">&#39;save_freq&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
- <span class="s1">&#39;set_material&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
- <span class="s1">&#39;show_progress_bar&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
- <span class="s1">&#39;spring&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
- <span class="s1">&#39;traction&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
 </pre></div>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Print current configuration</span>
@@ -441,13 +428,13 @@ We can also plot the traces using the postprocess module.</p>
 <p class="caption"><span class="caption-number">Fig. 6 </span><span class="caption-text">Traces of the stretch (<span class="math notranslate nohighlight">\(\lambda\)</span>), the active tension (<span class="math notranslate nohighlight">\(T_a\)</span>), the membrane potential (<span class="math notranslate nohighlight">\(V\)</span>) and the intercellular calcium concentration (<span class="math notranslate nohighlight">\(Ca\)</span>) at the center of the geometry.</span><a class="headerlink" href="#lv-demo-state-traces" title="Permalink to this image">¶</a></p>
 </div>
 <p>We can also save the output to xdmf-files that can be viewed in Paraview</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">simcardems</span><span class="o">.</span><span class="n">postprocess</span><span class="o">.</span><span class="n">make_xdmffiles</span><span class="p">(</span><span class="n">outdir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;results.h5&quot;</span><span class="p">))</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">simcardems</span><span class="o">.</span><span class="n">postprocess</span><span class="o">.</span><span class="n">make_xdmffiles</span><span class="p">(</span><span class="n">outdir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;results.h5&quot;</span><span class="p">),</span> <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;u&quot;</span><span class="p">])</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">xdmf</span></code> files are can be opened in <a class="reference external" href="https://www.paraview.org/download/">Paraview</a> to visualize the different variables such as in <a class="reference internal" href="#lv-paraview"><span class="std std-numref">Figure 7</span></a>.</p>
-<div class="figure align-default" id="lv-paraview">
-<img alt="_images/lv.png" src="_images/lv.png" />
-<p class="caption"><span class="caption-number">Fig. 7 </span><span class="caption-text">Displacement (<span class="math notranslate nohighlight">\(u\)</span>), active tension (<span class="math notranslate nohighlight">\(T_a\)</span>), voltage (<span class="math notranslate nohighlight">\(V\)</span>) and calcium (<span class="math notranslate nohighlight">\(Ca\)</span>) visualized for a specific time point in Paraview.</span><a class="headerlink" href="#lv-paraview" title="Permalink to this image">¶</a></p>
+<p><video controls src="./_static/lv_ellipsoid.mp4"></video></p>
+<p>Displacement (<span class="math notranslate nohighlight">\(u\)</span>), active tension (<span class="math notranslate nohighlight">\(T_a\)</span>), voltage (<span class="math notranslate nohighlight">\(V\)</span>) and calcium (<span class="math notranslate nohighlight">\(Ca\)</span>) visualized using Paraview.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
 </div>
 </div>
 
@@ -483,10 +470,10 @@ We can also plot the traces using the postprocess module.</p>
             <p class="prev-next-title">Drug effects demo</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="gui.html" title="next page">
+    <a class='right-next' id="next-link" href="custom_cell_model_pure_ep.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Graphical user interface</p>
+        <p class="prev-next-title">Custom model (pure EP)</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>

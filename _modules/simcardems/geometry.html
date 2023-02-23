@@ -163,16 +163,6 @@ const thebe_selector_output = ".output, .cell_output"
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../../cli.html">
-   Command line interface
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../docker.html">
-   Run using Docker
-  </a>
- </li>
- <li class="toctree-l1">
   <a class="reference internal" href="../../initial_conditions_demo.html">
    initial conditions demo
   </a>
@@ -190,6 +180,31 @@ const thebe_selector_output = ".output, .cell_output"
  <li class="toctree-l1">
   <a class="reference internal" href="../../ventricular_geometry.html">
    Left ventricular geometry
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../custom_cell_model_pure_ep.html">
+   Custom model (pure EP)
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../extract_currents.html">
+   Extracting currents
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../tracking_values.html">
+   Tracking Values
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../cli.html">
+   Command line interface
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../docker.html">
+   Run using Docker
   </a>
  </li>
  <li class="toctree-l1">
@@ -343,6 +358,7 @@ const thebe_selector_output = ".output, .cell_output"
 <span class="kn">from</span> <span class="nn">cardiac_geometries.geometry</span> <span class="kn">import</span> <span class="n">Geometry</span>
 <span class="kn">from</span> <span class="nn">cardiac_geometries.geometry</span> <span class="kn">import</span> <span class="n">H5Path</span>
 <span class="kn">from</span> <span class="nn">cardiac_geometries.geometry</span> <span class="kn">import</span> <span class="n">MeshTypes</span>
+<span class="kn">from</span> <span class="nn">mpi4py</span> <span class="kn">import</span> <span class="n">MPI</span>
 
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">utils</span>
 
@@ -353,6 +369,7 @@ const thebe_selector_output = ".output, .cell_output"
     <span class="n">mesh_path</span><span class="p">:</span> <span class="n">utils</span><span class="o">.</span><span class="n">PathLike</span><span class="p">,</span>
     <span class="n">schema_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">utils</span><span class="o">.</span><span class="n">PathLike</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;BaseGeometry&quot;</span><span class="p">:</span>
+
     <span class="k">if</span> <span class="n">mesh_path</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
         <span class="c1"># Use default slab geometry</span>
         <span class="k">return</span> <span class="n">SlabGeometry</span><span class="p">()</span>
@@ -387,6 +404,7 @@ const thebe_selector_output = ".output, .cell_output"
     <span class="n">num_refinements</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">redistribute</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">:</span>
+
     <span class="n">dolfin</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;refinement_algorithm&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;plaza_with_parent_facets&quot;</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_refinements</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Performing refinement </span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -431,6 +449,7 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="n">markers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">outdir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">utils</span><span class="o">.</span><span class="n">PathLike</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">markers</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">default_markers</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">markers</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">markers</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">markers</span><span class="p">)</span>
@@ -453,6 +472,9 @@ const thebe_selector_output = ".output, .cell_output"
             <span class="k">return</span> <span class="bp">NotImplemented</span>
         <span class="c1"># TODO: We might add more checks here</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">==</span> <span class="n">__o</span><span class="o">.</span><span class="n">parameters</span>
+
+<div class="viewcode-block" id="BaseGeometry.comm"><a class="viewcode-back" href="../../api.html#simcardems.geometry.BaseGeometry.comm">[docs]</a>    <span class="k">def</span> <span class="nf">comm</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MPI</span><span class="o">.</span><span class="n">Comm</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">mpi_comm</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="BaseGeometry.validate"><a class="viewcode-back" href="../../api.html#simcardems.geometry.BaseGeometry.validate">[docs]</a>    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">pass</span></div>
@@ -552,6 +574,7 @@ const thebe_selector_output = ".output, .cell_output"
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">mesh</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">:</span>
+        <span class="c1"># FIXME: This should be optional</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mechanics_mesh</span>
 
     <span class="nd">@property</span>
@@ -755,6 +778,7 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="n">microstructure_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">utils</span><span class="o">.</span><span class="n">PathLike</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
+
         <span class="n">markers</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">default_markers</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">marker_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">markers</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">marker_path</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">()))</span>
@@ -951,6 +975,7 @@ const thebe_selector_output = ".output, .cell_output"
 
 
 <div class="viewcode-block" id="create_slab_microstructure"><a class="viewcode-back" href="../../api.html#simcardems.geometry.create_slab_microstructure">[docs]</a><span class="k">def</span> <span class="nf">create_slab_microstructure</span><span class="p">(</span><span class="n">fiber_space</span><span class="p">,</span> <span class="n">mesh</span><span class="p">):</span>
+
     <span class="n">family</span><span class="p">,</span> <span class="n">degree</span> <span class="o">=</span> <span class="n">fiber_space</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Set up microstructure&quot;</span><span class="p">)</span>
     <span class="n">V_f</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">VectorFunctionSpace</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">family</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">degree</span><span class="p">))</span>
