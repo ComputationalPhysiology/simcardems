@@ -38,7 +38,7 @@ def main(outdir):
         runner.solve(T=config.T, save_freq=config.save_freq, show_progress_bar=False)
     data["solve_time"] = time.perf_counter() - t0
 
-    loader = simcardems.DataLoader(Path(outdir) / "results.h5")
+    loader = simcardems.DataLoader(Path(outdir) / "benchmark_results.h5")
 
     values = extract_traces(loader=loader)
     data.update(
