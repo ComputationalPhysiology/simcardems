@@ -17,7 +17,7 @@ jobs:
   run-and-push-report:
     runs-on: ubuntu-latest
     container:
-      image: finsberg/fenics-extra
+      image: ghcr.io/scientificcomputing/fenics-gmsh:2023-02-20
 
     steps:
       - name: Checkout repository
