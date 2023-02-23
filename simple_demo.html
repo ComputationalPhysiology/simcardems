@@ -4,11 +4,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Simple demo &#8212; simcardems</title>
     
-  <link href="_static/css/theme.css" rel="stylesheet">
-  <link href="_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
 
     
   <link rel="stylesheet"
@@ -18,20 +20,16 @@
   <link rel="preload" as="font" type="font/woff2" crossorigin
     href="_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
 
-    
-      
-
-    
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" />
+    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=5115cc725059bd94278eecd172e13a965bf8f5a9" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="_static/mystnb.css" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
-    <link rel="stylesheet" type="text/css" href="_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    <link rel="stylesheet" type="text/css" href="_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
     
-  <link rel="preload" as="script" href="_static/js/index.be7d3bbb2ef33a8344ce.js">
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
 
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
@@ -39,12 +37,14 @@
     <script src="_static/doctools.js"></script>
     <script src="_static/clipboard.min.js"></script>
     <script src="_static/copybutton.js"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
     <script src="_static/togglebutton.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
-    <script src="_static/sphinx-book-theme.d59cb220de22ca1c485ebbdc042f0030.js"></script>
+    <script src="_static/design-tabs.js"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
 const thebe_selector = ".thebe,.cell"
 const thebe_selector_input = "pre"
@@ -53,10 +53,9 @@ const thebe_selector_output = ".output, .cell_output"
     <script async="async" src="_static/sphinx-thebe.js"></script>
     <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Command line interface" href="cli.html" />
+    <link rel="next" title="initial conditions demo" href="initial_conditions_demo.html" />
     <link rel="prev" title="Electro-Mechanical coupling" href="electro_mechanical_coupling.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
@@ -65,7 +64,21 @@ const thebe_selector_output = ".output, .cell_output"
     <!-- Google Analytics -->
     
   </head>
-  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
+<!-- Checkboxes to toggle the left sidebar -->
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle navigation sidebar">
+<label class="overlay overlay-navbar" for="__navigation">
+    <div class="visually-hidden">Toggle navigation sidebar</div>
+</label>
+<!-- Checkboxes to toggle the in-page toc -->
+<input type="checkbox" class="sidebar-toggle" name="__page-toc" id="__page-toc" aria-label="Toggle in-page Table of Contents">
+<label class="overlay overlay-pagetoc" for="__page-toc">
+    <div class="visually-hidden">Toggle in-page Table of Contents</div>
+</label>
+<!-- Headers at the top -->
+<div class="announcement header-item noprint"></div>
+<div class="header header-item noprint"></div>
+
     
     <div class="container-fluid" id="banner"></div>
 
@@ -74,9 +87,10 @@ const thebe_selector_output = ".output, .cell_output"
     <div class="container-xl">
       <div class="row">
           
-<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
-    
-        <div class="navbar-brand-box">
+<!-- Sidebar -->
+<div class="bd-sidebar noprint" id="site-navigation">
+    <div class="bd-sidebar__content">
+        <div class="bd-sidebar__top"><div class="navbar-brand-box">
     <a class="navbar-brand text-wrap" href="index.html">
       
         <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
@@ -94,14 +108,15 @@ const thebe_selector_output = ".output, .cell_output"
   <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
 </form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item active">
-        <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="index.html">
-   Simula Cardiac Electro-Mechanics Solver
-  </a>
- </li>
-</ul>
-<p aria-level="2" class="caption" role="heading">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="index.html">
+                    Simula Cardiac Electro-Mechanics Solver
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
   Installation
  </span>
@@ -167,16 +182,6 @@ const thebe_selector_output = ".output, .cell_output"
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="cli.html">
-   Command line interface
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="docker.html">
-   Run using Docker
-  </a>
- </li>
- <li class="toctree-l1">
   <a class="reference internal" href="initial_conditions_demo.html">
    initial conditions demo
   </a>
@@ -194,6 +199,31 @@ const thebe_selector_output = ".output, .cell_output"
  <li class="toctree-l1">
   <a class="reference internal" href="ventricular_geometry.html">
    Left ventricular geometry
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="custom_cell_model_pure_ep.html">
+   Custom model (pure EP)
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="extract_currents.html">
+   Extracting currents
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="tracking_values.html">
+   Tracking Values
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="cli.html">
+   Command line interface
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="docker.html">
+   Run using Docker
   </a>
  </li>
  <li class="toctree-l1">
@@ -252,12 +282,17 @@ const thebe_selector_output = ".output, .cell_output"
 </ul>
 
     </div>
-</nav> <!-- To handle the deprecated key -->
-
-<div class="navbar_extra_footer">
-  Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
-</div>
-
+</nav></div>
+        <div class="bd-sidebar__bottom">
+             <!-- To handle the deprecated key -->
+            
+            <div class="navbar_extra_footer">
+            Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+            </div>
+            
+        </div>
+    </div>
+    <div id="rtd-footer-container"></div>
 </div>
 
 
@@ -265,77 +300,150 @@ const thebe_selector_output = ".output, .cell_output"
 
 
           
-<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+<!-- A tiny helper pixel to detect if we've scrolled -->
+<div class="sbt-scroll-pixel-helper"></div>
+<!-- Main content -->
+<div class="col py-0 content-container">
     
-    <div class="topbar container-xl fixed-top">
-    <div class="topbar-contents row">
-        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
-        <div class="col pl-md-4 topbar-main">
-            
-            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
-                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
-                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
-                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
-                <i class="fas fa-bars"></i>
-                <i class="fas fa-arrow-left"></i>
-                <i class="fas fa-arrow-up"></i>
-            </button>
-            
-            
-<div class="dropdown-buttons-trigger">
-    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
-            class="fas fa-download"></i></button>
-
-    <div class="dropdown-buttons">
-        <!-- ipynb file if we had a myst markdown file -->
+    <div class="header-article row sticky-top noprint">
         
-        <!-- Download raw file -->
-        <a class="dropdown-buttons" href="_sources/simple_demo.md"><button type="button"
-                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
-                data-placement="left">.md</button></a>
-        <!-- Download PDF via print -->
-        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
-                onclick="printPdf(this)" data-toggle="tooltip" data-placement="left">.pdf</button>
-    </div>
-</div>
 
-            <!-- Source interaction buttons -->
 
-<div class="dropdown-buttons-trigger">
-    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
-        aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
-    <div class="dropdown-buttons sourcebuttons">
-        <a class="repository-button"
-            href="https://github.com/ComputationalPhysiology/simcardems"><button type="button" class="btn btn-secondary topbarbtn"
-                data-toggle="tooltip" data-placement="left" title="Source repository"><i
-                    class="fab fa-github"></i>repository</button></a>
-        <a class="issues-button"
-            href="https://github.com/ComputationalPhysiology/simcardems/issues/new?title=Issue%20on%20page%20%2Fsimple_demo.html&body=Your%20issue%20content%20here."><button
-                type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
-                title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
+
+<div class="col py-1 d-flex header-article-main">
+    <div class="header-article__left">
+        
+        <label for="__navigation"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="right"
+title="Toggle navigation"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-bars"></i>
+  </span>
+
+</label>
+
         
     </div>
+    <div class="header-article__right">
+<button onclick="toggleFullScreen()"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="bottom"
+title="Fullscreen mode"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+<div class="menu-dropdown menu-dropdown-repository-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Source repositories">
+      <i class="fab fa-github"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="https://github.com/ComputationalPhysiology/simcardems"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Source repository"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="headerbtn__text-container">repository</span>
+</a>
+
+      </li>
+      
+      <li>
+        <a href="https://github.com/ComputationalPhysiology/simcardems/issues/new?title=Issue%20on%20page%20%2Fsimple_demo.html&body=Your%20issue%20content%20here."
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Open an issue"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="headerbtn__text-container">open issue</span>
+</a>
+
+      </li>
+      
+    </ul>
+  </div>
 </div>
 
-            <!-- Full screen (wrap in <a> to have style consistency -->
+<div class="menu-dropdown menu-dropdown-download-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Download this page">
+      <i class="fas fa-download"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="_sources/simple_demo.md"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Download source file"
+>
+  
 
-<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
-        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
-        title="Fullscreen mode"><i
-            class="fas fa-expand"></i></button></a>
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="headerbtn__text-container">.md</span>
+</a>
 
-            <!-- Launch buttons -->
+      </li>
+      
+      <li>
+        
+<button onclick="printPdf(this)"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="left"
+title="Print to PDF"
+>
+  
 
-        </div>
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="headerbtn__text-container">.pdf</span>
+</button>
 
-        <!-- Table of contents -->
-        <div class="d-none d-md-block col-md-2 bd-toc show noprint">
-            
-        </div>
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
     </div>
 </div>
-    <div id="main-content" class="row">
-        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+
+<!-- Table of contents -->
+<div class="col-md-3 bd-toc show noprint">
+</div>
+    </div>
+    <div class="article row">
+        <div class="col pl-md-3 pl-lg-5 content-container">
             <!-- Table of contents that is only displayed when printing the page -->
             <div id="jb-print-docs-body" class="onlyprint">
                 <h1>Simple demo</h1>
@@ -346,106 +454,77 @@ const thebe_selector_output = ".output, .cell_output"
                     </div>
                 </div>
             </div>
-            
+            <main id="main-content" role="main">
+                
               <div>
                 
-  <div class="tex2jax_ignore mathjax_ignore section" id="simple-demo">
-<h1>Simple demo<a class="headerlink" href="#simple-demo" title="Permalink to this headline">¶</a></h1>
-<p>In this demo we show the most simple usage of the <code class="docutils literal notranslate"><span class="pre">simcardems</span></code> library using the python API</p>
+  <section class="tex2jax_ignore mathjax_ignore" id="simple-demo">
+<h1>Simple demo<a class="headerlink" href="#simple-demo" title="Permalink to this headline">#</a></h1>
+<p>In this demo we show the most simple usage of the <code class="docutils literal notranslate"><span class="pre">simcardems</span></code> library using the python API.</p>
 <p>Import the necessary libraries</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pprint</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">simcardems</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">simcardems</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create configurations with custom output directory</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># First we specifcy the path to the output directory where we want to store the results</span>
 <span class="n">here</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span>
 <span class="n">outdir</span> <span class="o">=</span> <span class="n">here</span> <span class="o">/</span> <span class="s2">&quot;results_simple_demo&quot;</span>
 </pre></div>
 </div>
-<p>Specify paths to the geometry that we will use</p>
+<p>Next we specify paths to the geometry that we will use, and we will use the slab geometry that already exist in the demo folder.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">geometry_path</span> <span class="o">=</span> <span class="n">here</span> <span class="o">/</span> <span class="s2">&quot;geometries/slab.h5&quot;</span>
 <span class="n">geometry_schema_path</span> <span class="o">=</span> <span class="n">here</span> <span class="o">/</span> <span class="s2">&quot;geometries/slab.json&quot;</span>
+<span class="c1"># The geometry contains a path to the mesh itself (togther with other functions such as meshfunctions and fibers), and a path to a schema which describes what information that can be found in the geometry file. Please see https://computationalphysiology.github.io/cardiac_geometries/ for more info about the geometries</span>
+<span class="c1">#</span>
+<span class="c1"># Next we create the configuration. Here we specify the the output directory, the path to the geometry, how long we want to simulate and the coupling type. We use the `fulle_coupled_ORdmm_Land` coupling type which contains the stronlgy coupled O&#39;Hara-Rudy model coupled to the Land model. The other options here are `explicit_ORdmm_Land` where the coupling is explicit and `pureEP_ORdmm_Land` which will run a pure EP simulation without mechanics.</span>
 </pre></div>
 </div>
-<p>Please see <a class="reference external" href="https://computationalphysiology.github.io/cardiac_geometries/">https://computationalphysiology.github.io/cardiac_geometries/</a> for more info about the geometries</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">Config</span><span class="p">(</span>
     <span class="n">outdir</span><span class="o">=</span><span class="n">outdir</span><span class="p">,</span>
     <span class="n">geometry_path</span><span class="o">=</span><span class="n">geometry_path</span><span class="p">,</span>
     <span class="n">geometry_schema_path</span><span class="o">=</span><span class="n">geometry_schema_path</span><span class="p">,</span>
+    <span class="n">coupling_type</span><span class="o">=</span><span class="s2">&quot;fully_coupled_ORdmm_Land&quot;</span><span class="p">,</span>
     <span class="n">T</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>This will set :</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;PCL&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
- <span class="s1">&#39;T&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
- <span class="s1">&#39;bnd_rigid&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
- <span class="s1">&#39;cell_init_file&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
- <span class="s1">&#39;disease_state&#39;</span><span class="p">:</span> <span class="s1">&#39;healthy&#39;</span><span class="p">,</span>
- <span class="s1">&#39;drug_factors_file&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
- <span class="s1">&#39;dt&#39;</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">,</span>
- <span class="s1">&#39;ep_ode_scheme&#39;</span><span class="p">:</span> <span class="s1">&#39;GRL1&#39;</span><span class="p">,</span>
- <span class="s1">&#39;ep_preconditioner&#39;</span><span class="p">:</span> <span class="s1">&#39;sor&#39;</span><span class="p">,</span>
- <span class="s1">&#39;ep_theta&#39;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
- <span class="s1">&#39;fix_right_plane&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
- <span class="s1">&#39;geometry_path&#39;</span><span class="p">:</span> <span class="s1">&#39;demos/geometries/slab.h5&#39;</span><span class="p">,</span>
- <span class="s1">&#39;geometry_schema_path&#39;</span><span class="p">:</span> <span class="s1">&#39;demos/geometries/slab.json&#39;</span><span class="p">,</span>
- <span class="s1">&#39;linear_mechanics_solver&#39;</span><span class="p">:</span> <span class="s1">&#39;mumps&#39;</span><span class="p">,</span>
- <span class="s1">&#39;load_state&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
- <span class="s1">&#39;loglevel&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
- <span class="s1">&#39;mechanics_ode_scheme&#39;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">Scheme</span><span class="o">.</span><span class="n">analytic</span><span class="p">:</span> <span class="s1">&#39;analytic&#39;</span><span class="o">&gt;</span><span class="p">,</span>
- <span class="s1">&#39;mechanics_use_continuation&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
- <span class="s1">&#39;mechanics_use_custom_newton_solver&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
- <span class="s1">&#39;num_refinements&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
- <span class="s1">&#39;outdir&#39;</span><span class="p">:</span> <span class="n">PosixPath</span><span class="p">(</span><span class="s1">&#39;results_simple_demo&#39;</span><span class="p">),</span>
- <span class="s1">&#39;popu_factors_file&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
- <span class="s1">&#39;pre_stretch&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
- <span class="s1">&#39;save_freq&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
- <span class="s1">&#39;set_material&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
- <span class="s1">&#39;show_progress_bar&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
- <span class="s1">&#39;spring&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
- <span class="s1">&#39;traction&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Print current configuration</span>
-<span class="n">pprint</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">as_dict</span><span class="p">())</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">runner</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">Runner</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+<p>To see all different configuration options you can visit <a class="reference external" href="https://computationalphysiology.github.io/simcardems/api.html#module-simcardems.config">https://computationalphysiology.github.io/simcardems/api.html#module-simcardems.config</a></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Next we create a runner for running the simulation, and we also specify how often we want to save the results</span>
+<span class="n">runner</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">Runner</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
 <span class="n">runner</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">T</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">save_freq</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">save_freq</span><span class="p">,</span> <span class="n">show_progress_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>This will create the output directory <code class="docutils literal notranslate"><span class="pre">results_simple_demo</span></code> with the following output</p>
+<p>Once the simulation is done the output directory <code class="docutils literal notranslate"><span class="pre">results_simple_demo</span></code> will contain the following files</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>results_simple_demo
 ├── results.h5
 ├── state.h5
 </pre></div>
 </div>
 <p>The file <code class="docutils literal notranslate"><span class="pre">state.h5</span></code> contains the final state which can be used if you want use the final state as a starting point for the next simulation.
-The file <code class="docutils literal notranslate"><span class="pre">results.h5</span></code> contains the Displacement (<span class="math notranslate nohighlight">\(u\)</span>), active tension (<span class="math notranslate nohighlight">\(T_a\)</span>), voltage (<span class="math notranslate nohighlight">\(V\)</span>) and calcium (<span class="math notranslate nohighlight">\(Ca\)</span>) for each time step.
-We can also plot the traces using the postprocess module</p>
+The file <code class="docutils literal notranslate"><span class="pre">results.h5</span></code> contains output of different state variables for every time point.</p>
+<p>We can now plot the state traces, where we also specify that we want the trace from the center of the slab</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">simcardems</span><span class="o">.</span><span class="n">postprocess</span><span class="o">.</span><span class="n">plot_state_traces</span><span class="p">(</span><span class="n">outdir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;results.h5&quot;</span><span class="p">),</span> <span class="s2">&quot;center&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Here we also specify that we want the trace from the center of the slab</p>
-<p>This will create a figure in the output directory called <code class="docutils literal notranslate"><span class="pre">state_traces.png</span></code> which in this case is shown in <a class="reference internal" href="#simple-demo-state-traces"><span class="std std-numref">Figure 1</span></a> we see the resulting state traces, and can also see the instant drop in the active tension (<span class="math notranslate nohighlight">\(T_a\)</span>) at the time of the triggered release.</p>
-<div class="figure align-default" id="simple-demo-state-traces">
+<p>This will create a figure in the output directory called <code class="docutils literal notranslate"><span class="pre">state_traces_center.png</span></code> which in this case is shown in <a class="reference internal" href="#simple-demo-state-traces"><span class="std std-numref">Figure 1</span></a> we see the resulting state traces, and can also see the instant drop in the active tension (<span class="math notranslate nohighlight">\(T_a\)</span>) at the time of the triggered release.</p>
+<figure class="align-default" id="simple-demo-state-traces">
 <img alt="_images/simple_demo_state_traces.png" src="_images/simple_demo_state_traces.png" />
-<p class="caption"><span class="caption-number">Fig. 1 </span><span class="caption-text">Traces of the stretch (<span class="math notranslate nohighlight">\(\lambda\)</span>), the active tension (<span class="math notranslate nohighlight">\(T_a\)</span>), the membrane potential (<span class="math notranslate nohighlight">\(V\)</span>) and the intercellular calcium concentration (<span class="math notranslate nohighlight">\(Ca\)</span>) at the center of the geometry.</span><a class="headerlink" href="#simple-demo-state-traces" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-number">Fig. 1 </span><span class="caption-text">Traces of the stretch (<span class="math notranslate nohighlight">\(\lambda\)</span>), the active tension (<span class="math notranslate nohighlight">\(T_a\)</span>), the membrane potential (<span class="math notranslate nohighlight">\(V\)</span>) and the intercellular calcium concentration (<span class="math notranslate nohighlight">\(Ca\)</span>) at the center of the geometry.</span><a class="headerlink" href="#simple-demo-state-traces" title="Permalink to this image">#</a></p>
+</figcaption>
+</figure>
 <p>We can also save the output to xdmf-files that can be viewed in Paraview</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">simcardems</span><span class="o">.</span><span class="n">postprocess</span><span class="o">.</span><span class="n">make_xdmffiles</span><span class="p">(</span><span class="n">outdir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;results.h5&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">xdmf</span></code> files are can be opened in <a class="reference external" href="https://www.paraview.org/download/">Paraview</a> to visualize the different variables such as in <a class="reference internal" href="#simple-demo-paraview"><span class="std std-numref">Figure 2</span></a>.</p>
-<div class="figure align-default" id="simple-demo-paraview">
+<figure class="align-default" id="simple-demo-paraview">
 <img alt="_images/simple_demo.png" src="_images/simple_demo.png" />
-<p class="caption"><span class="caption-number">Fig. 2 </span><span class="caption-text">Displacement (<span class="math notranslate nohighlight">\(u\)</span>), active tension (<span class="math notranslate nohighlight">\(T_a\)</span>), voltage (<span class="math notranslate nohighlight">\(V\)</span>) and calcium (<span class="math notranslate nohighlight">\(Ca\)</span>) visualized for a specific time point in Paraview.</span><a class="headerlink" href="#simple-demo-paraview" title="Permalink to this image">¶</a></p>
-</div>
-</div>
+<figcaption>
+<p><span class="caption-number">Fig. 2 </span><span class="caption-text">Displacement (<span class="math notranslate nohighlight">\(u\)</span>), active tension (<span class="math notranslate nohighlight">\(T_a\)</span>), voltage (<span class="math notranslate nohighlight">\(V\)</span>) and calcium (<span class="math notranslate nohighlight">\(Ca\)</span>) visualized for a specific time point in Paraview.</span><a class="headerlink" href="#simple-demo-paraview" title="Permalink to this image">#</a></p>
+</figcaption>
+</figure>
+</section>
 
     <script type="text/x-thebe-config">
     {
@@ -459,7 +538,7 @@ We can also plot the traces using the postprocess module</p>
             mode: "python"
         },
         kernelOptions: {
-            kernelName: "python3",
+            name: "python3",
             path: "./."
         },
         predefinedOutput: true
@@ -469,9 +548,11 @@ We can also plot the traces using the postprocess module</p>
 
               </div>
               
-            
-                <!-- Previous / next buttons -->
-<div class='prev-next-area'> 
+            </main>
+            <footer class="footer-article noprint">
+                
+    <!-- Previous / next buttons -->
+<div class='prev-next-area'>
     <a class='left-prev' id="prev-link" href="electro_mechanical_coupling.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
@@ -479,32 +560,36 @@ We can also plot the traces using the postprocess module</p>
             <p class="prev-next-title">Electro-Mechanical coupling</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="cli.html" title="next page">
+    <a class='right-next' id="next-link" href="initial_conditions_demo.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Command line interface</p>
+        <p class="prev-next-title">initial conditions demo</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>
 </div>
-            
+            </footer>
         </div>
     </div>
-    <footer class="footer">
-  <p>
+    <div class="footer-content row">
+        <footer class="col footer"><p>
+  
+    By Simula Research Laboratory<br/>
+  
+      &copy; Copyright 2022.<br/>
+</p>
+        </footer>
+    </div>
     
-      By Simula Research Laboratory<br/>
-    
-        &copy; Copyright 2022.<br/>
-  </p>
-</footer>
-</main>
+</div>
 
 
       </div>
     </div>
   
-  <script src="_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+
 
   </body>
 </html>

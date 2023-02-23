@@ -1,0 +1,867 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Custom model (pure EP) &#8212; simcardems</title>
+    
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=5115cc725059bd94278eecd172e13a965bf8f5a9" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
+    
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="_static/sphinx-thebe.js"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Extracting currents" href="extract_currents.html" />
+    <link rel="prev" title="Left ventricular geometry" href="ventricular_geometry.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
+<!-- Checkboxes to toggle the left sidebar -->
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle navigation sidebar">
+<label class="overlay overlay-navbar" for="__navigation">
+    <div class="visually-hidden">Toggle navigation sidebar</div>
+</label>
+<!-- Checkboxes to toggle the in-page toc -->
+<input type="checkbox" class="sidebar-toggle" name="__page-toc" id="__page-toc" aria-label="Toggle in-page Table of Contents">
+<label class="overlay overlay-pagetoc" for="__page-toc">
+    <div class="visually-hidden">Toggle in-page Table of Contents</div>
+</label>
+<!-- Headers at the top -->
+<div class="announcement header-item noprint"></div>
+<div class="header header-item noprint"></div>
+
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<!-- Sidebar -->
+<div class="bd-sidebar noprint" id="site-navigation">
+    <div class="bd-sidebar__content">
+        <div class="bd-sidebar__top"><div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="index.html">
+      
+        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+        
+      
+      
+      <img src="_static/logo.png" class="logo" alt="logo">
+      
+      
+      <h1 class="site-logo" id="site-title">simcardems</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="index.html">
+                    Simula Cardiac Electro-Mechanics Solver
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Installation
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="install.html">
+   Installation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="install_docker.html">
+   Install with Docker
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="install_pip.html">
+   Install with
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     pip
+    </span>
+   </code>
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Mathematical Theory
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="mechanics_model.html">
+   Tissue level mechanics model
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="electrophysiology_model.html">
+   Tissue level electrophysiology model
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="cell_model.html">
+   Cellular model
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="electro_mechanical_coupling.html">
+   Electro-Mechanical coupling
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Demos
+ </span>
+</p>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="simple_demo.html">
+   Simple demo
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="initial_conditions_demo.html">
+   initial conditions demo
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="release_test.html">
+   Release test
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="drug_effects_demo.html">
+   Drug effects demo
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="ventricular_geometry.html">
+   Left ventricular geometry
+  </a>
+ </li>
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   Custom model (pure EP)
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="extract_currents.html">
+   Extracting currents
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="tracking_values.html">
+   Tracking Values
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="cli.html">
+   Command line interface
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="docker.html">
+   Run using Docker
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="gui.html">
+   Graphical user interface
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Verification
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="benchmark.html">
+   Benchmark
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Postprocessing
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="visualization.html">
+   Data visualization
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Community
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="CONTRIBUTING.html">
+   Contributing
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Programmers reference
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="api.html">
+   API documentaion
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav></div>
+        <div class="bd-sidebar__bottom">
+             <!-- To handle the deprecated key -->
+            
+            <div class="navbar_extra_footer">
+            Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+            </div>
+            
+        </div>
+    </div>
+    <div id="rtd-footer-container"></div>
+</div>
+
+
+          
+
+
+          
+<!-- A tiny helper pixel to detect if we've scrolled -->
+<div class="sbt-scroll-pixel-helper"></div>
+<!-- Main content -->
+<div class="col py-0 content-container">
+    
+    <div class="header-article row sticky-top noprint">
+        
+
+
+
+<div class="col py-1 d-flex header-article-main">
+    <div class="header-article__left">
+        
+        <label for="__navigation"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="right"
+title="Toggle navigation"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-bars"></i>
+  </span>
+
+</label>
+
+        
+    </div>
+    <div class="header-article__right">
+<button onclick="toggleFullScreen()"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="bottom"
+title="Fullscreen mode"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+<div class="menu-dropdown menu-dropdown-repository-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Source repositories">
+      <i class="fab fa-github"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="https://github.com/ComputationalPhysiology/simcardems"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Source repository"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="headerbtn__text-container">repository</span>
+</a>
+
+      </li>
+      
+      <li>
+        <a href="https://github.com/ComputationalPhysiology/simcardems/issues/new?title=Issue%20on%20page%20%2Fcustom_cell_model_pure_ep.html&body=Your%20issue%20content%20here."
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Open an issue"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="headerbtn__text-container">open issue</span>
+</a>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+<div class="menu-dropdown menu-dropdown-download-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Download this page">
+      <i class="fas fa-download"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="_sources/custom_cell_model_pure_ep.md"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Download source file"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="headerbtn__text-container">.md</span>
+</a>
+
+      </li>
+      
+      <li>
+        
+<button onclick="printPdf(this)"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="left"
+title="Print to PDF"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="headerbtn__text-container">.pdf</span>
+</button>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+<label for="__page-toc"
+  class="headerbtn headerbtn-page-toc"
+  
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-list"></i>
+  </span>
+
+</label>
+
+    </div>
+</div>
+
+<!-- Table of contents -->
+<div class="col-md-3 bd-toc show noprint">
+    <div class="tocsection onthispage pt-5 pb-3">
+        <i class="fas fa-list"></i> Contents
+    </div>
+    <nav id="bd-toc-nav" aria-label="Page">
+        <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#the-model-structure">
+   The model structure
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#implementing-the-em-coupling">
+   Implementing the EM coupling
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#implementing-the-cell-model">
+   Implementing the Cell model
+  </a>
+ </li>
+</ul>
+
+    </nav>
+</div>
+    </div>
+    <div class="article row">
+        <div class="col pl-md-3 pl-lg-5 content-container">
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1>Custom model (pure EP)</h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                        <div>
+                            <h2> Contents </h2>
+                        </div>
+                        <nav aria-label="Page">
+                            <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#the-model-structure">
+   The model structure
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#implementing-the-em-coupling">
+   Implementing the EM coupling
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#implementing-the-cell-model">
+   Implementing the Cell model
+  </a>
+ </li>
+</ul>
+
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            <main id="main-content" role="main">
+                
+              <div>
+                
+  <section class="tex2jax_ignore mathjax_ignore" id="custom-model-pure-ep">
+<h1>Custom model (pure EP)<a class="headerlink" href="#custom-model-pure-ep" title="Permalink to this headline">#</a></h1>
+<p>In the current version of <code class="docutils literal notranslate"><span class="pre">simcardems</span></code> there are only three types of models, a strongly coupled model, an explicitly couple model and a pure EP model. All of these models use the same underlying cell model, and you might want to provide your own model.</p>
+<p>In this demo we show you how to implement your own set of model. To make things a bit simpler we will implement a pure EP solver based on the Fitzhugh Nagumo model.
+For this demo we will copy the <a class="reference external" href="https://github.com/ComputationalPhysiology/cbcbeat/blob/master/cbcbeat/cellmodels/fitzhughnagumo.py">model from the <code class="docutils literal notranslate"><span class="pre">cbcbeat</span></code> library</a>.</p>
+<p>Note that if you want to only run pure EP simulations, then you could just use <code class="docutils literal notranslate"><span class="pre">cbcbeat</span></code> directly.</p>
+<section id="the-model-structure">
+<h2>The model structure<a class="headerlink" href="#the-model-structure" title="Permalink to this headline">#</a></h2>
+<p>Each model in the model in the <a class="reference external" href="https://github.com/ComputationalPhysiology/simcardems/tree/main/src/simcardems/models">models directory</a> contains three different models; a cell model, an active model and a model for the EM coupling. When implementing a new model, you need to provide an implementation for all of these.</p>
+</section>
+<section id="implementing-the-em-coupling">
+<h2>Implementing the EM coupling<a class="headerlink" href="#implementing-the-em-coupling" title="Permalink to this headline">#</a></h2>
+<p>We will start by implement the model for the EM coupling. First we will make the necessary imports.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">typing</span>
+<span class="kn">import</span> <span class="nn">simcardems</span>
+<span class="kn">import</span> <span class="nn">simcardems.save_load_functions</span> <span class="k">as</span> <span class="nn">io</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">import</span> <span class="nn">ufl</span>
+<span class="kn">import</span> <span class="nn">dolfin</span>
+<span class="kn">import</span> <span class="nn">cbcbeat</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">simcardems</span></code> provide an interface for this class which can be found in the <a class="reference external" href="https://github.com/ComputationalPhysiology/simcardems/blob/main/src/simcardems/models/em_model.py"><code class="docutils literal notranslate"><span class="pre">em_model</span></code> module</a>. This class comes with some methods already implemented, but it is also possible to provide custom implementations of these methods. Note that all of the methods provided in this base class are used in some way when running a simulation</p>
+<p>The full implementation of the class is shown below, where we have provided an implementation of the following methods</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">register_ep_model</span></code> - this is a method that takes in a <code class="docutils literal notranslate"><span class="pre">cbcbeat.SplittingSolver</span></code> and just sets this as an attribute on the instance.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">setup_assigners</span></code> - this is a class for setting up which variables that you want to keep track of from the state. The state variable in the EP solver is a vector function containing all state variables (we will see that the Fitzhugh Nagumo model has two states; <code class="docutils literal notranslate"><span class="pre">v</span></code> and <code class="docutils literal notranslate"><span class="pre">s</span></code>). When running a simulation, you might want to store keep track of a subset of these state variables. In our case we want to keep track of the state variable at index 0 which we will name <code class="docutils literal notranslate"><span class="pre">v</span></code>. We also indicate that this belong to the <code class="docutils literal notranslate"><span class="pre">ep</span></code> group since we could also have state variables for the mechanics.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">solve_ep</span></code> - this is the method that is called when you want to solve the EP. This takes in a tuple of two flows that indicate the time interval that you want to solve for.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">print_ep_info</span></code> - this is a method that is called during that setup of the model and you can put any info here that you want to display about the EP model.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cell_params</span></code> - this should return a dictionary with the cell parameters from the cell model.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ep_mesh</span></code> - this is just a helper function for getting the mesh for the EP</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">update_prev_ep</span></code> - this is a method that is called after solving the EP model and will update the previous state solution.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">save_state</span></code> - this is the method that is called when the simulation is done and the state is saved. In our case we would like to save the state from</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">load_state</span></code> - this method goes together with the <code class="docutils literal notranslate"><span class="pre">save_state</span></code> method and is used when you want to load an existing state from a file.</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">EMCoupling</span><span class="p">(</span><span class="n">simcardems</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">em_model</span><span class="o">.</span><span class="n">BaseEMCoupling</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">register_ep_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">solver</span><span class="p">:</span> <span class="n">cbcbeat</span><span class="o">.</span><span class="n">SplittingSolver</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ep_solver</span> <span class="o">=</span> <span class="n">solver</span>
+
+    <span class="k">def</span> <span class="nf">setup_assigners</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">simcardems.datacollector</span> <span class="kn">import</span> <span class="n">Assigners</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_assigners</span> <span class="o">=</span> <span class="n">Assigners</span><span class="p">(</span><span class="n">vs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ep_solver</span><span class="o">.</span><span class="n">vs</span><span class="p">,</span> <span class="n">mech_state</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assigners</span><span class="o">.</span><span class="n">register_subfunction</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;v&quot;</span><span class="p">,</span>
+            <span class="n">group</span><span class="o">=</span><span class="s2">&quot;ep&quot;</span><span class="p">,</span>
+            <span class="n">subspace_index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">solve_ep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interval</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ep_solver</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">interval</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">print_ep_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Output some degrees of freedom</span>
+        <span class="n">total_dofs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ep_solver</span><span class="o">.</span><span class="n">vs</span><span class="o">.</span><span class="n">function_space</span><span class="p">()</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span>
+        <span class="n">simcardems</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">print_mesh_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ep_mesh</span><span class="p">,</span> <span class="n">total_dofs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">cell_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ep_solver</span><span class="o">.</span><span class="n">ode_solver</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">parameters</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ep_mesh</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">ep_mesh</span>
+
+    <span class="k">def</span> <span class="nf">update_prev_ep</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ep_solver</span><span class="o">.</span><span class="n">vs_</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ep_solver</span><span class="o">.</span><span class="n">vs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">save_state</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">simcardems</span><span class="o">.</span><span class="n">Config</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">save_state</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">HDF5File</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">comm</span><span class="p">(),</span>
+            <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">as_posix</span><span class="p">(),</span>
+            <span class="s2">&quot;a&quot;</span><span class="p">,</span>
+        <span class="p">)</span> <span class="k">as</span> <span class="n">h5file</span><span class="p">:</span>
+            <span class="n">h5file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ep_solver</span><span class="o">.</span><span class="n">vs</span><span class="p">,</span> <span class="s2">&quot;/ep/vs&quot;</span><span class="p">)</span>
+
+        <span class="n">io</span><span class="o">.</span><span class="n">dict_to_h5</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cell_params</span><span class="p">(),</span>
+            <span class="n">path</span><span class="p">,</span>
+            <span class="s2">&quot;ep/cell_params&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_state</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">em_model</span><span class="o">.</span><span class="n">BaseEMCoupling</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Load state from path </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;File </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> does not exist&quot;</span><span class="p">)</span>
+
+        <span class="n">geo</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">load_geometry</span><span class="p">(</span>
+            <span class="n">path</span><span class="p">,</span>
+            <span class="n">schema_path</span><span class="o">=</span><span class="n">path</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">&quot;.json&quot;</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Open file with h5py&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">h5pyfile</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">as</span> <span class="n">h5file</span><span class="p">:</span>
+            <span class="n">config</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">Config</span><span class="p">(</span><span class="o">**</span><span class="n">io</span><span class="o">.</span><span class="n">h5_to_dict</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">]))</span>
+            <span class="n">state_params</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">h5_to_dict</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;state_params&quot;</span><span class="p">])</span>
+            <span class="n">cell_params</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">h5_to_dict</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;ep&quot;</span><span class="p">][</span><span class="s2">&quot;cell_params&quot;</span><span class="p">])</span>
+            <span class="n">vs_signature</span> <span class="o">=</span> <span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;ep&quot;</span><span class="p">][</span><span class="s2">&quot;vs&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;signature&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+
+        <span class="n">VS</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">FunctionSpace</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">ep_mesh</span><span class="p">,</span> <span class="nb">eval</span><span class="p">(</span><span class="n">vs_signature</span><span class="p">))</span>
+        <span class="n">vs</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">VS</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Load functions&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">HDF5File</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">ep_mesh</span><span class="o">.</span><span class="n">mpi_comm</span><span class="p">(),</span> <span class="n">path</span><span class="o">.</span><span class="n">as_posix</span><span class="p">(),</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">h5file</span><span class="p">:</span>
+            <span class="n">h5file</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">vs</span><span class="p">,</span> <span class="s2">&quot;/ep/vs&quot;</span><span class="p">)</span>
+
+        <span class="n">cell_inits</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">vs_functions_to_dict</span><span class="p">(</span>
+            <span class="n">vs</span><span class="p">,</span>
+            <span class="n">state_names</span><span class="o">=</span><span class="n">Fitzhughnagumo</span><span class="o">.</span><span class="n">default_initial_conditions</span><span class="p">()</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">em_model</span><span class="o">.</span><span class="n">setup_EM_model</span><span class="p">(</span>
+            <span class="n">cls_EMCoupling</span><span class="o">=</span><span class="bp">cls</span><span class="p">,</span>
+            <span class="n">cls_CellModel</span><span class="o">=</span><span class="n">Fitzhughnagumo</span><span class="p">,</span>
+            <span class="n">cls_ActiveModel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">geometry</span><span class="o">=</span><span class="n">geo</span><span class="p">,</span>
+            <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
+            <span class="n">cell_inits</span><span class="o">=</span><span class="n">cell_inits</span><span class="p">,</span>
+            <span class="n">cell_params</span><span class="o">=</span><span class="n">cell_params</span><span class="p">,</span>
+            <span class="n">state_params</span><span class="o">=</span><span class="n">state_params</span><span class="p">,</span>
+        <span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="implementing-the-cell-model">
+<h2>Implementing the Cell model<a class="headerlink" href="#implementing-the-cell-model" title="Permalink to this headline">#</a></h2>
+<p>The cell model used in this demo is the Fitzhugh Nagumo model and the code is more or less copied from the <a class="reference external" href="https://github.com/ComputationalPhysiology/cbcbeat/blob/master/cbcbeat/cellmodels/fitzhughnagumo.py"><code class="docutils literal notranslate"><span class="pre">cbcbeat</span></code> library</a>. The only major adjustment is that the cell model need to take in an additional argument <code class="docutils literal notranslate"><span class="pre">coupling</span></code> which is an instance of the <code class="docutils literal notranslate"><span class="pre">EMCoupling</span></code> class that we implemented above. In this case we are using this argument for anything, but in other cases you might want to pass additional function to the cell model, and you can do this using an instance of this <code class="docutils literal notranslate"><span class="pre">EMCoupling</span></code> class. You can check out the <a class="reference external" href="https://github.com/ComputationalPhysiology/simcardems/tree/main/src/simcardems/models">other models</a> in the repository for examples of this.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Fitzhughnagumo</span><span class="p">(</span><span class="n">cbcbeat</span><span class="o">.</span><span class="n">cellmodels</span><span class="o">.</span><span class="n">CardiacCellModel</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">coupling</span><span class="p">:</span> <span class="n">EMCoupling</span><span class="p">,</span>
+        <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">init_conditions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create cardiac cell model</span>
+
+<span class="sd">        *Arguments*</span>
+<span class="sd">         params (dict, :py:class:`dolfin.Mesh`, optional)</span>
+<span class="sd">           optional model parameters</span>
+<span class="sd">         init_conditions (dict, :py:class:`dolfin.Mesh`, optional)</span>
+<span class="sd">           optional initial conditions</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Initialize Cell Model&quot;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">init_conditions</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">default_parameters</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="s2">&quot;Set-up and return default parameters.&quot;</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="mf">0.13</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="mf">0.013</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;c_1&quot;</span><span class="p">,</span> <span class="mf">0.26</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;c_2&quot;</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;c_3&quot;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;stim_amplitude&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;stim_duration&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;stim_period&quot;</span><span class="p">,</span> <span class="mi">1000</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;stim_start&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;v_peak&quot;</span><span class="p">,</span> <span class="mf">40.0</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;v_rest&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mf">85.0</span><span class="p">),</span>
+            <span class="p">],</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">params</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">default_initial_conditions</span><span class="p">():</span>
+        <span class="s2">&quot;Set-up and return default initial conditions.&quot;</span>
+        <span class="n">ic</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">([(</span><span class="s2">&quot;v&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mf">85.0</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;s&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)])</span>
+        <span class="k">return</span> <span class="n">ic</span>
+
+    <span class="k">def</span> <span class="nf">I</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Transmembrane current</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Imports</span>
+        <span class="c1"># No imports for now</span>
+
+        <span class="n">time</span> <span class="o">=</span> <span class="n">time</span> <span class="k">if</span> <span class="n">time</span> <span class="k">else</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+
+        <span class="c1"># Assign parameters</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">]</span>
+        <span class="n">stim_start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;stim_start&quot;</span><span class="p">]</span>
+        <span class="n">stim_amplitude</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;stim_amplitude&quot;</span><span class="p">]</span>
+        <span class="n">c_1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;c_1&quot;</span><span class="p">]</span>
+        <span class="n">c_2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;c_2&quot;</span><span class="p">]</span>
+        <span class="n">v_rest</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;v_rest&quot;</span><span class="p">]</span>
+        <span class="n">stim_duration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;stim_duration&quot;</span><span class="p">]</span>
+        <span class="n">v_peak</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;v_peak&quot;</span><span class="p">]</span>
+
+        <span class="n">current</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="o">-</span><span class="p">(</span><span class="n">v</span> <span class="o">-</span> <span class="n">v_rest</span><span class="p">)</span>
+            <span class="o">*</span> <span class="p">(</span><span class="n">v_peak</span> <span class="o">-</span> <span class="n">v</span><span class="p">)</span>
+            <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">v_peak</span> <span class="o">-</span> <span class="n">v_rest</span><span class="p">)</span> <span class="o">*</span> <span class="n">a</span> <span class="o">+</span> <span class="n">v</span> <span class="o">-</span> <span class="n">v_rest</span><span class="p">)</span>
+            <span class="o">*</span> <span class="n">c_1</span>
+            <span class="o">/</span> <span class="p">((</span><span class="n">v_peak</span> <span class="o">-</span> <span class="n">v_rest</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">v_peak</span> <span class="o">-</span> <span class="n">v_rest</span><span class="p">))</span>
+            <span class="o">+</span> <span class="p">(</span><span class="n">v</span> <span class="o">-</span> <span class="n">v_rest</span><span class="p">)</span> <span class="o">*</span> <span class="n">c_2</span> <span class="o">*</span> <span class="n">s</span> <span class="o">/</span> <span class="p">(</span><span class="n">v_peak</span> <span class="o">-</span> <span class="n">v_rest</span><span class="p">)</span>
+            <span class="o">-</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">ufl</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">5.0</span> <span class="o">*</span> <span class="n">stim_start</span> <span class="o">+</span> <span class="mf">5.0</span> <span class="o">*</span> <span class="n">time</span><span class="p">)))</span>
+            <span class="o">*</span> <span class="n">stim_amplitude</span>
+            <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">ufl</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">5.0</span> <span class="o">*</span> <span class="n">stim_start</span> <span class="o">+</span> <span class="mf">5.0</span> <span class="o">*</span> <span class="n">time</span> <span class="o">-</span> <span class="mf">5.0</span> <span class="o">*</span> <span class="n">stim_duration</span><span class="p">))</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">current</span>
+
+    <span class="k">def</span> <span class="nf">F</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Right hand side for ODE system</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">time</span> <span class="o">=</span> <span class="n">time</span> <span class="k">if</span> <span class="n">time</span> <span class="k">else</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+
+        <span class="c1"># Assign parameters</span>
+        <span class="n">c_3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;c_3&quot;</span><span class="p">]</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">]</span>
+        <span class="n">v_rest</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;v_rest&quot;</span><span class="p">]</span>
+
+        <span class="n">F_expressions</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="c1"># Derivative for state s</span>
+            <span class="p">(</span><span class="o">-</span><span class="n">c_3</span> <span class="o">*</span> <span class="n">s</span> <span class="o">+</span> <span class="n">v</span> <span class="o">-</span> <span class="n">v_rest</span><span class="p">)</span>
+            <span class="o">*</span> <span class="n">b</span><span class="p">,</span>
+        <span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">F_expressions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">num_states</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>We are now ready to use the this new custom model. First, we need to load some geometry, and we will use the pre-made left ventricular geometry</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">geo</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">load_geometry</span><span class="p">(</span><span class="n">mesh_path</span><span class="o">=</span><span class="s2">&quot;geometries/lv_ellipsoid.h5&quot;</span><span class="p">)</span>
+<span class="c1"># Next we create an instance of the `EMCoupling`. This is done by passing in the class for the `EMCoupling`, the `CellModel` and finally the `ActiveModel`. In our case, we don&#39;t want to include any mechanics, and therefore we set the `ActiveModel` to `None.</span>
+<span class="n">coupling</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">em_model</span><span class="o">.</span><span class="n">setup_EM_model</span><span class="p">(</span>
+    <span class="n">cls_EMCoupling</span><span class="o">=</span><span class="n">EMCoupling</span><span class="p">,</span>
+    <span class="n">cls_CellModel</span><span class="o">=</span><span class="n">Fitzhughnagumo</span><span class="p">,</span>
+    <span class="n">cls_ActiveModel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">geometry</span><span class="o">=</span><span class="n">geo</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="c1"># We also need to create the configuration, and we pass in the output directory and the `coupling_type`.</span>
+<span class="n">outdir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;result_custom_cell_model_pure_ep&quot;</span><span class="p">)</span>
+<span class="n">config</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">Config</span><span class="p">(</span>
+    <span class="n">outdir</span><span class="o">=</span><span class="n">outdir</span><span class="p">,</span>
+    <span class="n">coupling_type</span><span class="o">=</span><span class="n">coupling</span><span class="o">.</span><span class="n">coupling_type</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="c1"># Now we create a runner for running the simulation</span>
+<span class="n">runner</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">Runner</span><span class="o">.</span><span class="n">from_models</span><span class="p">(</span><span class="n">coupling</span><span class="o">=</span><span class="n">coupling</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+<span class="c1"># And then we run a simulation for 500 milliseconds</span>
+<span class="n">runner</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="mi">500</span><span class="p">)</span>
+<span class="c1"># When the simulation is done we can load the results from the output directory using `simcardems.DataLoader`</span>
+<span class="n">loader</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">outdir</span> <span class="o">/</span> <span class="s2">&quot;results.h5&quot;</span><span class="p">)</span>
+<span class="c1"># We can extract the traces from the loader, and specify that the traces we want to extract should be the average over the mesh</span>
+<span class="n">values</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">postprocess</span><span class="o">.</span><span class="n">extract_traces</span><span class="p">(</span><span class="n">loader</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s2">&quot;average&quot;</span><span class="p">)</span>
+<span class="c1"># Now we can plt the state variable as a function of time</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">],</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;ep&quot;</span><span class="p">][</span><span class="s2">&quot;v&quot;</span><span class="p">])</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">outdir</span> <span class="o">/</span> <span class="s2">&quot;v.png&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-default" id="custom-cell-model-pure-ep-v">
+<img alt="_images/custom_cell_model_pure_ep_v.png" src="_images/custom_cell_model_pure_ep_v.png" />
+<figcaption>
+<p><span class="caption-number">Fig. 7 </span><span class="caption-text">Average value of the state variable <span class="math notranslate nohighlight">\(v\)</span></span><a class="headerlink" href="#custom-cell-model-pure-ep-v" title="Permalink to this image">#</a></p>
+</figcaption>
+</figure>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># We can also create an `xdmf` file that we can visualize in Paraview</span>
+<span class="n">simcardems</span><span class="o">.</span><span class="n">postprocess</span><span class="o">.</span><span class="n">make_xdmffiles</span><span class="p">(</span><span class="n">outdir</span> <span class="o">/</span> <span class="s2">&quot;results.h5&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><video controls src="./_static/custom_cell_model_pure_ep.mp4"></video></p>
+<p>Movie showing <span class="math notranslate nohighlight">\(v\)</span> over time</p>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+              </div>
+              
+            </main>
+            <footer class="footer-article noprint">
+                
+    <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+    <a class='left-prev' id="prev-link" href="ventricular_geometry.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">Left ventricular geometry</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="extract_currents.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Extracting currents</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+            </footer>
+        </div>
+    </div>
+    <div class="footer-content row">
+        <footer class="col footer"><p>
+  
+    By Simula Research Laboratory<br/>
+  
+      &copy; Copyright 2022.<br/>
+</p>
+        </footer>
+    </div>
+    
+</div>
+
+
+      </div>
+    </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+
+
+  </body>
+</html>
