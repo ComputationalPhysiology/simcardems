@@ -9,7 +9,7 @@
 #
 # ## The model structure
 #
-# Each model in the model in the [models directory](https://github.com/ComputationalPhysiology/simcardems/tree/master/src/simcardems/models) contains three different models; a cell model, an active model and a model for the EM coupling. When implementing a new model, you need to provide an implementation for all of these.
+# Each model in the model in the [models directory](https://github.com/ComputationalPhysiology/simcardems/tree/main/src/simcardems/models) contains three different models; a cell model, an active model and a model for the EM coupling. When implementing a new model, you need to provide an implementation for all of these.
 #
 # ## Implementing the EM coupling
 #
@@ -26,7 +26,7 @@ import cbcbeat
 import matplotlib.pyplot as plt
 
 
-# `simcardems` provide an interface for this class which can be found in the [`em_model` module](https://github.com/ComputationalPhysiology/simcardems/blob/master/src/simcardems/models/em_model.py). This class comes with some methods already implemented, but it is also possible to provide custom implementations of these methods. Note that all of the methods provided in this base class are used in some way when running a simulation
+# `simcardems` provide an interface for this class which can be found in the [`em_model` module](https://github.com/ComputationalPhysiology/simcardems/blob/main/src/simcardems/models/em_model.py). This class comes with some methods already implemented, but it is also possible to provide custom implementations of these methods. Note that all of the methods provided in this base class are used in some way when running a simulation
 #
 # The full implementation of the class is shown below, where we have provided an implementation of the following methods
 #
@@ -139,7 +139,7 @@ class EMCoupling(simcardems.models.em_model.BaseEMCoupling):
 
 # ## Implementing the Cell model
 #
-# The cell model used in this demo is the Fitzhugh Nagumo model and the code is more or less copied from the [`cbcbeat` library](https://github.com/ComputationalPhysiology/cbcbeat/blob/master/cbcbeat/cellmodels/fitzhughnagumo.py). The only major adjustment is that the cell model need to take in an additional argument `coupling` which is an instance of the `EMCoupling` class that we implemented above. In this case we are using this argument for anything, but in other cases you might want to pass additional function to the cell model, and you can do this using an instance of this `EMCoupling` class. You can check out the [other models](https://github.com/ComputationalPhysiology/simcardems/tree/master/src/simcardems/models) in the repository for examples of this.
+# The cell model used in this demo is the Fitzhugh Nagumo model and the code is more or less copied from the [`cbcbeat` library](https://github.com/ComputationalPhysiology/cbcbeat/blob/master/cbcbeat/cellmodels/fitzhughnagumo.py). The only major adjustment is that the cell model need to take in an additional argument `coupling` which is an instance of the `EMCoupling` class that we implemented above. In this case we are using this argument for anything, but in other cases you might want to pass additional function to the cell model, and you can do this using an instance of this `EMCoupling` class. You can check out the [other models](https://github.com/ComputationalPhysiology/simcardems/tree/main/src/simcardems/models) in the repository for examples of this.
 
 
 class Fitzhughnagumo(cbcbeat.cellmodels.CardiacCellModel):

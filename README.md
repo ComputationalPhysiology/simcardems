@@ -1,8 +1,8 @@
 [![CI](https://github.com/ComputationalPhysiology/simcardems/actions/workflows/main.yml/badge.svg)](https://github.com/ComputationalPhysiology/simcardems/actions/workflows/main.yml)
 [![PyPI version](https://badge.fury.io/py/simcardems.svg)](https://badge.fury.io/py/simcardems)
-[![codecov](https://codecov.io/gh/ComputationalPhysiology/simcardems/branch/master/graph/badge.svg?token=V5DOQ1PUVF)](https://codecov.io/gh/ComputationalPhysiology/simcardems)
+[![codecov](https://codecov.io/gh/ComputationalPhysiology/simcardems/branch/main/graph/badge.svg?token=V5DOQ1PUVF)](https://codecov.io/gh/ComputationalPhysiology/simcardems)
 [![github pages](https://github.com/ComputationalPhysiology/simcardems/actions/workflows/github-pages.yml/badge.svg)](https://github.com/ComputationalPhysiology/simcardems/actions/workflows/github-pages.yml)
-[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/ComputationalPhysiology/simcardems/master.svg)](https://results.pre-commit.ci/latest/github/ComputationalPhysiology/simcardems/master)
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/ComputationalPhysiology/simcardems/main.svg)](https://results.pre-commit.ci/latest/github/ComputationalPhysiology/simcardems/main)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL_v2.1-blue.svg)](https://www.gnu.org/licenses/lgpl-2.1)
 [![DOI](https://zenodo.org/badge/409220068.svg)](https://zenodo.org/badge/latestdoi/409220068)
@@ -27,7 +27,7 @@ Documentation is hosted at http://computationalphysiology.github.io/simcardems.
 
 ## Automated test
 
-Tests are provided in the folder [tests](https://github.com/ComputationalPhysiology/simcardems/tree/master/tests). You can run the tests with pytest
+Tests are provided in the folder [tests](https://github.com/ComputationalPhysiology/simcardems/tree/main/tests). You can run the tests with pytest
 
 ```
 python3 -m pytest tests -vv

@@ -8,7 +8,7 @@ name: Run benchmark
 on:
   push:
     branches:
-      - master
+      - main
 env:
   CI_COMMIT_MESSAGE: Run benchmark and upload report
   CI_COMMIT_AUTHOR: Continuous Integration
