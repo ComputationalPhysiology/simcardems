@@ -2,9 +2,12 @@ import abc
 import json
 from pathlib import Path
 from typing import Any
+from typing import Callable
 from typing import Dict
+from typing import NamedTuple
 from typing import Optional
 from typing import Tuple
+from typing import Union
 
 import dolfin
 import pulse
@@ -16,6 +19,11 @@ from mpi4py import MPI
 from . import utils
 
 logger = utils.getLogger(__name__)
+
+
+class StimulusDomain(NamedTuple):
+    domain: dolfin.MeshFunction
+    marker: int
 
 
 def load_geometry(
@@ -74,6 +82,9 @@ class BaseGeometry(abc.ABC):
     def __init__(
         self,
         parameters: Optional[Dict[str, Any]] = None,
+        stimulus_domain: Optional[
+            Union[StimulusDomain, Callable[[dolfin.Mesh], StimulusDomain]]
+        ] = None,
         mechanics_mesh: Optional[dolfin.Mesh] = None,
         ep_mesh: Optional[dolfin.Mesh] = None,
         microstructure: Optional[pulse.Microstructure] = None,
@@ -96,6 +107,8 @@ class BaseGeometry(abc.ABC):
         self.mechanics_mesh = mechanics_mesh
         self.ffun = ffun
         self.ep_mesh = ep_mesh
+        self.stimulus_domain = self._handle_stimulus_domain(stimulus_domain)
+
         self.ffun_ep = ffun_ep
         self.microstructure = microstructure
         self.microstructure_ep = microstructure_ep
@@ -106,6 +119,21 @@ class BaseGeometry(abc.ABC):
             return NotImplemented
         # TODO: We might add more checks here
         return self.parameters == __o.parameters
+
+    def _handle_stimulus_domain(
+        self,
+        stimulus_domain: Optional[
+            Union[StimulusDomain, Callable[[dolfin.Mesh], StimulusDomain]]
+        ],
+    ) -> StimulusDomain:
+        if stimulus_domain is None:
+            return type(self).default_stimulus_domain(self.ep_mesh)
+
+        if isinstance(stimulus_domain, StimulusDomain):
+            return stimulus_domain
+
+        assert callable(stimulus_domain)
+        return stimulus_domain(self.ep_mesh)
 
     def comm(self) -> MPI.Comm:
         return self.mesh.mpi_comm()
@@ -122,6 +150,14 @@ class BaseGeometry(abc.ABC):
     @abc.abstractmethod
     def default_parameters() -> Dict[str, Any]:
         ...
+
+    @staticmethod
+    def default_stimulus_domain(mesh: dolfin.Mesh) -> StimulusDomain:
+        # Default is to stimulate the entire tissue
+        marker = 1
+        domain = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim())
+        domain.set_all(marker)
+        return StimulusDomain(domain=domain, marker=marker)
 
     @staticmethod
     def default_schema() -> Dict[str, H5Path]:

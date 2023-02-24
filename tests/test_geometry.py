@@ -42,6 +42,7 @@ def test_load_geometry():
     assert geo.mesh.num_cells() == 202
     assert geo.ep_mesh.num_cells() == 1616
     assert isinstance(geo, slabgeometry.SlabGeometry)
+    assert geo.stimulus_domain.marker == 1
 
 
 def test_dump_geometry(tmp_path):
@@ -57,3 +58,23 @@ def test_dump_geometry(tmp_path):
         schema_path=outpath.with_suffix(".json"),
     )
     assert dumped_geo == geo
+
+
+def test_geometry_with_custom_stimulus_domain():
+    parameters = {"lx": 1, "ly": 1, "lz": 1, "dx": 0.5, "num_refinements": 1}
+    mesh = dolfin.UnitCubeMesh(2, 2, 2)
+
+    def stimulus_domain(mesh):
+        marker = 42
+        subdomain = dolfin.CompiledSubDomain("x[0] < 0.6")
+        domain = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim())
+        domain.set_all(0)
+        subdomain.mark(domain, marker)
+        return geometry.StimulusDomain(domain=domain, marker=marker)
+
+    geo = slabgeometry.SlabGeometry(
+        parameters=parameters,
+        mechanics_mesh=mesh,
+        stimulus_domain=stimulus_domain,
+    )
+    assert geo.stimulus_domain.marker == 42

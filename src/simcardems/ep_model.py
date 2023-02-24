@@ -71,7 +71,12 @@ def setup_solver(
         dt=dt,
         scheme=scheme,
     )
-    ep_heart = setup_model(cellmodel, coupling.geometry.ep_mesh, PCL=PCL)
+    ep_heart = setup_model(
+        cellmodel,
+        coupling.geometry.ep_mesh,
+        PCL=PCL,
+        microstructure=coupling.geometry.microstructure_ep,
+    )
     solver = cbcbeat.SplittingSolver(ep_heart, params=ps)
     # Extract the solution fields and set the initial conditions
     (vs_, vs, vur) = solver.solution_fields()
@@ -93,13 +98,10 @@ def default_conductivities():
 
 
 def define_conductivity_tensor(
+    microstructure: pulse.Microstructure,
     chi: float = 140.0,
     C_m: float = 0.01,
-    microstructure: Optional[pulse.Microstructure] = None,
 ):
-
-    if microstructure is None:
-        microstructure = default_microstructure()
 
     fiber = microstructure.f0
     sheet = microstructure.s0
@@ -135,24 +137,13 @@ def define_conductivity_tensor(
     return M
 
 
-def default_microstructure():
-    return pulse.Microstructure(
-        f0=dolfin.as_vector([1.0, 0.0, 0.0]),
-        s0=dolfin.as_vector([0.0, 1.0, 0.0]),
-        n0=dolfin.as_vector([0.0, 0.0, 1.0]),
-    )
-
-
 def setup_model(
-    cellmodel,
-    mesh,
-    PCL=1000,
-    microstructure: Optional[pulse.Microstructure] = None,
+    cellmodel: cbcbeat.CardiacCellModel,
+    mesh: dolfin.Mesh,
+    microstructure: pulse.Microstructure,
+    PCL: int = 1000,
 ):
     """Set-up cardiac model based on benchmark parameters."""
-
-    if microstructure is None:
-        microstructure = default_microstructure()
 
     # Define time
     time = dolfin.Constant(0.0)
@@ -163,7 +154,7 @@ def setup_model(
     C_m = 0.01  # mu F / mm^2
 
     # Define conductivity tensor
-    M = define_conductivity_tensor(chi, C_m, microstructure=microstructure)
+    M = define_conductivity_tensor(chi=chi, C_m=C_m, microstructure=microstructure)
 
     # Mark stimulation region defined as [0, L]^3
     S1_marker = 1
