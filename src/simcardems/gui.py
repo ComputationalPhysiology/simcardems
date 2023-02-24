@@ -145,7 +145,7 @@ class Simulation:
     def handle_mesh():
         st.header("Mesh")
         cols_l_xyz = st.columns(3)
-        params = simcardems.geometry.SlabGeometry.default_parameters()
+        params = simcardems.slabgeometry.SlabGeometry.default_parameters()
         with cols_l_xyz[0]:
             lx = st.number_input("lx", value=params["lx"])
         with cols_l_xyz[1]:
@@ -256,7 +256,7 @@ class Simulation:
     def load_model(geometry_args, ep_solver_args, mechanics_args):
 
         st.info("Create geometry")
-        geometry = simcardems.geometry.SlabGeometry(parameters=geometry_args)
+        geometry = simcardems.slabgeometry.SlabGeometry(parameters=geometry_args)
         st.info("Create EM coupling")
         coupling = simcardems.EMCoupling(geometry)
         st.info("Create EP model")

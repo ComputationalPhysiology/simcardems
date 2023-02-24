@@ -22,7 +22,7 @@ def pytest_collection_modifyitems(items):
 
 @pytest.fixture(scope="session")
 def geo():
-    return simcardems.geometry.SlabGeometry(
+    return simcardems.slabgeometry.SlabGeometry(
         parameters=dict(
             lx=1,
             ly=1,

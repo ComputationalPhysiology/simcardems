@@ -2,13 +2,14 @@ from pathlib import Path
 
 import dolfin
 from simcardems import geometry
+from simcardems import slabgeometry
 
 here = Path(__file__).absolute().parent
 
 
 def test_create_slab_geometry_normal():
     parameters = {"lx": 1, "ly": 1, "lz": 1, "dx": 1, "num_refinements": 1}
-    geo = geometry.SlabGeometry(parameters=parameters)
+    geo = slabgeometry.SlabGeometry(parameters=parameters)
 
     assert geo.mechanics_mesh.num_cells() == 6
     assert geo.ep_mesh.num_cells() == 48
@@ -21,7 +22,7 @@ def test_create_slab_geometry_with_mechanics_mesh():
 
     parameters = {"lx": 1, "ly": 1, "lz": 1, "dx": 1, "num_refinements": 1}
     mesh = dolfin.UnitCubeMesh(1, 1, 1)
-    geo = geometry.SlabGeometry(
+    geo = slabgeometry.SlabGeometry(
         parameters=parameters,
         mechanics_mesh=mesh,
     )
@@ -40,7 +41,7 @@ def test_load_geometry():
     geo = geometry.load_geometry(mesh_path=mesh_path, schema_path=schema_path)
     assert geo.mesh.num_cells() == 202
     assert geo.ep_mesh.num_cells() == 1616
-    assert isinstance(geo, geometry.SlabGeometry)
+    assert isinstance(geo, slabgeometry.SlabGeometry)
 
 
 def test_dump_geometry(tmp_path):

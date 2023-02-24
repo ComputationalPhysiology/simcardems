@@ -4,7 +4,8 @@ import dolfin
 import pulse
 
 from . import config
-from . import geometry
+from . import lvgeometry
+from . import slabgeometry
 from . import utils
 
 
@@ -12,7 +13,7 @@ logger = utils.getLogger(__name__)
 
 
 def create_slab_boundary_conditions(
-    geo: geometry.SlabGeometry,
+    geo: slabgeometry.SlabGeometry,
     pre_stretch: typing.Optional[typing.Union[dolfin.Constant, float]] = None,
     traction: typing.Union[dolfin.Constant, float] = None,
     spring: typing.Union[dolfin.Constant, float] = None,
@@ -130,7 +131,7 @@ def create_slab_boundary_conditions(
 
 
 def create_lv_boundary_conditions(
-    geo: geometry.LeftVentricularGeometry,
+    geo: lvgeometry.LeftVentricularGeometry,
     traction: typing.Union[dolfin.Constant, float] = None,
     spring: typing.Union[dolfin.Constant, float] = None,
 ):

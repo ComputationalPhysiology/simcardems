@@ -50,7 +50,7 @@ class ReleaseRunner(simcardems.Runner):
 
         super().__init__(config=config)
         # Make sure we have a SlabGeometry
-        assert isinstance(self.coupling.geometry, simcardems.geometry.SlabGeometry)
+        assert isinstance(self.coupling.geometry, simcardems.slabgeometry.SlabGeometry)
         self.Lx = self.coupling.geometry.parameters["lx"]
         self._print_message = True
 
