@@ -34,41 +34,10 @@ config = simcardems.Config(
     geometry_path=geometry_path,
     geometry_schema_path=geometry_schema_path,
     T=1000,
+    coupling_type="explicit_ORdmm_Land",
+    mechanics_solve_strategy="fixed",
+    spring=0.01,
 )
-```
-
-
-This will set :
-
-```
-{'PCL': 1000,
- 'T': 1000,
- 'bnd_rigid': False,
- 'cell_init_file': '',
- 'disease_state': 'healthy',
- 'drug_factors_file': '',
- 'dt': 0.05,
- 'ep_ode_scheme': 'GRL1',
- 'ep_preconditioner': 'sor',
- 'ep_theta': 0.5,
- 'fix_right_plane': False,
- 'geometry_path': 'demos/geometries/slab.h5',
- 'geometry_schema_path': 'demos/geometries/slab.json',
- 'linear_mechanics_solver': 'mumps',
- 'load_state': False,
- 'loglevel': 20,
- 'mechanics_ode_scheme': <Scheme.analytic: 'analytic'>,
- 'mechanics_use_continuation': False,
- 'mechanics_use_custom_newton_solver': False,
- 'num_refinements': 1,
- 'outdir': PosixPath('results_simple_demo'),
- 'popu_factors_file': '',
- 'pre_stretch': None,
- 'save_freq': 1,
- 'set_material': '',
- 'show_progress_bar': True,
- 'spring': None,
- 'traction': None}
 ```
 
 
@@ -124,16 +93,10 @@ We can also save the output to xdmf-files that can be viewed in Paraview
 
 
 ```python
-simcardems.postprocess.make_xdmffiles(outdir.joinpath("results.h5"))
+simcardems.postprocess.make_xdmffiles(outdir.joinpath("results.h5"), names=["u"])
 ```
 
+<video controls src="./_static/lv_ellipsoid.mp4"></video>
 
-The `xdmf` files are can be opened in [Paraview](https://www.paraview.org/download/) to visualize the different variables such as in {numref}`Figure {number} <lv-paraview>`.
-
-```{figure} figures/lv.png
----
-name: lv-paraview
----
-
-Displacement ($u$), active tension ($T_a$), voltage ($V$) and calcium ($Ca$) visualized for a specific time point in Paraview.
+Displacement ($u$), active tension ($T_a$), voltage ($V$) and calcium ($Ca$) visualized using Paraview.
 ```
