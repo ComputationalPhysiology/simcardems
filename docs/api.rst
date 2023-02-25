@@ -42,6 +42,16 @@ simcardems.geometry module
    :undoc-members:
    :show-inheritance:
 
+.. automodule:: simcardems.slabgeometry
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: simcardems.lvgeometry
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 
 simcardems.mechanics\_model module
 ----------------------------------
