@@ -22,7 +22,7 @@ def run_benchmark():
 
     M = simcardems.ep_model.define_conductivity_tensor(chi, C_m)
 
-    geometry = simcardems.geometry.SlabGeometry()
+    geometry = simcardems.slabgeometry.SlabGeometry()
 
     coupling = simcardems.em_model.EMCoupling(geometry)
 

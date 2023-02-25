@@ -7,8 +7,8 @@ import numpy as np
 
 from . import utils
 from .geometry import BaseGeometry
-from .geometry import LeftVentricularGeometry
-from .geometry import SlabGeometry
+from .lvgeometry import LeftVentricularGeometry
+from .slabgeometry import SlabGeometry
 
 
 logger = utils.getLogger(__name__)

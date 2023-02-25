@@ -12,6 +12,7 @@ import dolfin
 import pulse
 import ufl
 
+from . import geometry
 from . import utils
 from .config import Config
 
@@ -71,7 +72,13 @@ def setup_solver(
         dt=dt,
         scheme=scheme,
     )
-    ep_heart = setup_model(cellmodel, coupling.geometry.ep_mesh, PCL=PCL)
+    ep_heart = setup_model(
+        cellmodel,
+        coupling.geometry.ep_mesh,
+        PCL=PCL,
+        microstructure=coupling.geometry.microstructure_ep,
+        stimulus_domain=coupling.geometry.stimulus_domain,
+    )
     solver = cbcbeat.SplittingSolver(ep_heart, params=ps)
     # Extract the solution fields and set the initial conditions
     (vs_, vs, vur) = solver.solution_fields()
@@ -93,13 +100,10 @@ def default_conductivities():
 
 
 def define_conductivity_tensor(
+    microstructure: pulse.Microstructure,
     chi: float = 140.0,
     C_m: float = 0.01,
-    microstructure: Optional[pulse.Microstructure] = None,
 ):
-
-    if microstructure is None:
-        microstructure = default_microstructure()
 
     fiber = microstructure.f0
     sheet = microstructure.s0
@@ -135,45 +139,52 @@ def define_conductivity_tensor(
     return M
 
 
-def default_microstructure():
-    return pulse.Microstructure(
-        f0=dolfin.as_vector([1.0, 0.0, 0.0]),
-        s0=dolfin.as_vector([0.0, 1.0, 0.0]),
-        n0=dolfin.as_vector([0.0, 0.0, 1.0]),
-    )
-
-
 def setup_model(
-    cellmodel,
-    mesh,
-    PCL=1000,
-    microstructure: Optional[pulse.Microstructure] = None,
-):
-    """Set-up cardiac model based on benchmark parameters."""
+    cellmodel: cbcbeat.CardiacCellModel,
+    mesh: dolfin.Mesh,
+    microstructure: pulse.Microstructure,
+    stimulus_domain: geometry.StimulusDomain,
+    PCL: int = 1000,
+    chi: float = 140.0,
+    C_m: float = 0.01,
+    duration: float = 2.0,
+    A: float = 50_000.0,
+) -> cbcbeat.CardiacModel:
+    """Set-up cardiac model based on benchmark parameters
 
-    if microstructure is None:
-        microstructure = default_microstructure()
 
+    Parameters
+    ----------
+    cellmodel : cbcbeat.CardiacCellModel
+        _description_
+    mesh : dolfin.Mesh
+        _description_
+    microstructure : pulse.Microstructure
+        _description_
+    PCL : int, optional
+        _description_, by default 1000
+    chi : float, optional
+        Surface to volume ratio in mm^{-1}, by default 140.0
+    C_m : float, optional
+        Membrane capacitance in  mu F / mm^2, by default 0.01
+    duration: float, optional
+        Stimulation duration in milliseconds, by default 2.0
+    A: float, optional
+        FIXME: Some value in mu A/cm^3, by default 50_000.0
+
+    Returns
+    -------
+    cbcbeat.CardiacModel
+        The EP model
+    """
     # Define time
     time = dolfin.Constant(0.0)
 
-    # Surface to volume ratio
-    chi = 140.0  # mm^{-1}
-    # Membrane capacitance
-    C_m = 0.01  # mu F / mm^2
-
     # Define conductivity tensor
-    M = define_conductivity_tensor(chi, C_m, microstructure=microstructure)
-
-    # Mark stimulation region defined as [0, L]^3
-    S1_marker = 1
-    S1_markers = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim())
-    S1_markers.set_all(S1_marker)  # Mark the whole mesh
+    M = define_conductivity_tensor(chi=chi, C_m=C_m, microstructure=microstructure)
 
     # Define stimulation (NB: region of interest carried by the mesh
     # and assumptions in cbcbeat)
-    duration = 2.0  # ms
-    A = 50000.0  # mu A/cm^3
     cm2mm = 10.0
     factor = 1.0 / (chi * C_m)  # NB: cbcbeat convention
     amplitude = factor * A * (1.0 / cm2mm) ** 3  # mV/ms
@@ -190,7 +201,11 @@ def setup_model(
         degree=0,
     )
     # Store input parameters in cardiac model
-    stimulus = cbcbeat.Markerwise((I_s,), (S1_marker,), S1_markers)
+    stimulus = cbcbeat.Markerwise(
+        (I_s,),
+        (stimulus_domain.marker,),
+        stimulus_domain.domain,
+    )
 
     petsc_options = [
         ["ksp_type", "cg"],

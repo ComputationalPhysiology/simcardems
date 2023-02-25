@@ -9,6 +9,8 @@ import pulse
 from . import boundary_conditions
 from . import config
 from . import geometry
+from . import lvgeometry
+from . import slabgeometry
 from . import utils
 from .newton_solver import MechanicsNewtonSolver
 from .newton_solver import MechanicsNewtonSolver_ODE
@@ -303,7 +305,7 @@ def resolve_boundary_conditions(
     spring: typing.Union[dolfin.Constant, float] = None,
     fix_right_plane: bool = config.Config.fix_right_plane,
 ) -> pulse.BoundaryConditions:
-    if isinstance(geo, geometry.SlabGeometry):
+    if isinstance(geo, slabgeometry.SlabGeometry):
         return boundary_conditions.create_slab_boundary_conditions(
             geo=geo,
             pre_stretch=pre_stretch,
@@ -311,7 +313,7 @@ def resolve_boundary_conditions(
             spring=spring,
             fix_right_plane=fix_right_plane,
         )
-    elif isinstance(geo, geometry.LeftVentricularGeometry):
+    elif isinstance(geo, lvgeometry.LeftVentricularGeometry):
         return boundary_conditions.create_lv_boundary_conditions(
             geo=geo,
             traction=traction,
@@ -336,7 +338,7 @@ def create_problem(
 ) -> MechanicsProblem:
     Problem = MechanicsProblem
     if bnd_rigid:
-        if not isinstance(geo, geometry.SlabGeometry):
+        if not isinstance(geo, slabgeometry.SlabGeometry):
             raise RuntimeError(
                 "Can only use Rigid boundary conditions with SlabGeometry",
             )

@@ -250,6 +250,7 @@ lmbda
 loadtxt
 loglevel
 Lssp
+lvgeometry
 m
 Markerwise
 Martyn
@@ -391,6 +392,7 @@ simcardems
 Simcardio
 Simula
 simvascular
+slabgeometry
 splittingsolver
 streamlit
 subk

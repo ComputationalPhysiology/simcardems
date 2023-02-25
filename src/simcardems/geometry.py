@@ -2,12 +2,14 @@ import abc
 import json
 from pathlib import Path
 from typing import Any
+from typing import Callable
 from typing import Dict
+from typing import NamedTuple
 from typing import Optional
 from typing import Tuple
+from typing import Union
 
 import dolfin
-import numpy as np
 import pulse
 from cardiac_geometries.geometry import Geometry
 from cardiac_geometries.geometry import H5Path
@@ -19,10 +21,20 @@ from . import utils
 logger = utils.getLogger(__name__)
 
 
+class StimulusDomain(NamedTuple):
+    domain: dolfin.MeshFunction
+    marker: int
+
+
 def load_geometry(
     mesh_path: utils.PathLike,
     schema_path: Optional[utils.PathLike] = None,
+    stimulus_domain: Optional[
+        Union[StimulusDomain, Callable[[dolfin.Mesh], StimulusDomain]]
+    ] = None,
 ) -> "BaseGeometry":
+    from .slabgeometry import SlabGeometry
+    from .lvgeometry import LeftVentricularGeometry
 
     if mesh_path == "":
         # Use default slab geometry
@@ -46,9 +58,12 @@ def load_geometry(
         raise RuntimeError("Unable to get mesh type from info")
 
     if mesh_type == MeshTypes.slab.value:
-        return SlabGeometry.from_geometry(geo)
+        return SlabGeometry.from_geometry(geo, stimulus_domain=stimulus_domain)
     elif mesh_type == MeshTypes.lv_ellipsoid.value:
-        return LeftVentricularGeometry.from_geometry(geo)
+        return LeftVentricularGeometry.from_geometry(
+            geo,
+            stimulus_domain=stimulus_domain,
+        )
 
     raise RuntimeError(f"Unknown mesh type {mesh_type!r}")
 
@@ -67,33 +82,15 @@ def refine_mesh(
     return mesh
 
 
-def create_boxmesh(lx, ly, lz, dx=0.5, refinements=0):
-    # Create computational domain [0, lx] x [0, ly] x [0, lz]
-    # with resolution prescribed by benchmark or more refinements
-
-    N = lambda v: int(np.rint(v))
-    mesh = dolfin.BoxMesh(
-        dolfin.MPI.comm_world,
-        dolfin.Point(0.0, 0.0, 0.0),
-        dolfin.Point(lx, ly, lz),
-        N(lx / dx),
-        N(ly / dx),
-        N(lz / dx),
-    )
-
-    for i in range(refinements):
-        logger.info(f"Performing refinement {i + 1}")
-        mesh = dolfin.refine(mesh, redistribute=False)
-
-    return mesh
-
-
 class BaseGeometry(abc.ABC):
     """Abstract geometry base class"""
 
     def __init__(
         self,
         parameters: Optional[Dict[str, Any]] = None,
+        stimulus_domain: Optional[
+            Union[StimulusDomain, Callable[[dolfin.Mesh], StimulusDomain]]
+        ] = None,
         mechanics_mesh: Optional[dolfin.Mesh] = None,
         ep_mesh: Optional[dolfin.Mesh] = None,
         microstructure: Optional[pulse.Microstructure] = None,
@@ -116,6 +113,8 @@ class BaseGeometry(abc.ABC):
         self.mechanics_mesh = mechanics_mesh
         self.ffun = ffun
         self.ep_mesh = ep_mesh
+        self.stimulus_domain = self._handle_stimulus_domain(stimulus_domain)
+
         self.ffun_ep = ffun_ep
         self.microstructure = microstructure
         self.microstructure_ep = microstructure_ep
@@ -126,6 +125,21 @@ class BaseGeometry(abc.ABC):
             return NotImplemented
         # TODO: We might add more checks here
         return self.parameters == __o.parameters
+
+    def _handle_stimulus_domain(
+        self,
+        stimulus_domain: Optional[
+            Union[StimulusDomain, Callable[[dolfin.Mesh], StimulusDomain]]
+        ],
+    ) -> StimulusDomain:
+        if stimulus_domain is None:
+            return type(self).default_stimulus_domain(self.ep_mesh)
+
+        if isinstance(stimulus_domain, StimulusDomain):
+            return stimulus_domain
+
+        assert callable(stimulus_domain)
+        return stimulus_domain(self.ep_mesh)
 
     def comm(self) -> MPI.Comm:
         return self.mesh.mpi_comm()
@@ -142,6 +156,14 @@ class BaseGeometry(abc.ABC):
     @abc.abstractmethod
     def default_parameters() -> Dict[str, Any]:
         ...
+
+    @staticmethod
+    def default_stimulus_domain(mesh: dolfin.Mesh) -> StimulusDomain:
+        # Default is to stimulate the entire tissue
+        marker = 1
+        domain = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim())
+        domain.set_all(marker)
+        return StimulusDomain(domain=domain, marker=marker)
 
     @staticmethod
     def default_schema() -> Dict[str, H5Path]:
@@ -450,13 +472,7 @@ class BaseGeometry(abc.ABC):
             with dolfin.XDMFFile(Path(ffun_path).as_posix()) as f:
                 f.read(ffun)
         else:
-            ffun = create_slab_facet_function(
-                mesh,
-                lx=parameters["lx"],
-                ly=parameters["ly"],
-                lz=parameters["lz"],
-                markers=markers,
-            )
+            ffun = None
 
         fiber_space = parameters.get("fiber_space")
         if fiber_space is not None and microstructure_path is not None:
@@ -490,8 +506,7 @@ class BaseGeometry(abc.ABC):
         )
 
     @classmethod
-    def from_geometry(cls, geo: Geometry):
-        kwargs = {}
+    def from_geometry(cls, geo: Geometry, **kwargs):
         for attr_geo, attr_simcardems in [
             ("info", "parameters"),
             ("mesh", "mechanics_mesh"),
@@ -521,190 +536,3 @@ class BaseGeometry(abc.ABC):
             kwargs["microstructure_ep"] = pulse.Microstructure(**micro_ep_kwargs)
 
         return cls(**kwargs)
-
-
-class SlabGeometry(BaseGeometry):
-    @staticmethod
-    def default_markers() -> Dict[str, Tuple[int, int]]:
-        return {
-            "X0": (2, 1),
-            "X1": (2, 2),
-            "Y0": (2, 3),
-            "Y1": (2, 4),
-            "Z0": (2, 5),
-            "Z1": (2, 6),
-        }
-
-    def _default_microstructure(
-        self,
-        mesh: dolfin.Mesh,
-        ffun: dolfin.MeshFunction,
-    ) -> pulse.Microstructure:
-        from cardiac_geometries import slab_fibers
-
-        return slab_fibers.create_microstructure(
-            function_space=self.parameters["fiber_space"],
-            mesh=mesh,
-            ffun=ffun,
-            markers=self.markers,
-            alpha_endo=self.parameters["fibers_angle_endo"],
-            alpha_epi=self.parameters["fibers_angle_epi"],
-        )
-
-    def _default_ffun(self, mesh: dolfin.Mesh) -> dolfin.MeshFunction:
-        return create_slab_facet_function(
-            mesh=mesh,
-            lx=self.parameters["lx"],
-            ly=self.parameters["ly"],
-            lz=self.parameters["lz"],
-            markers=self.markers,
-        )
-
-    def _default_mesh(self) -> dolfin.Mesh:
-        return create_boxmesh(
-            **{
-                k: v
-                for k, v in self.parameters.items()
-                if k in ["lx", "ly", "lz", "dx"]
-            },
-        )
-
-    @staticmethod
-    def default_parameters():
-        return dict(
-            lx=2.0,
-            ly=0.7,
-            lz=0.3,
-            dx=0.2,
-            fibers_angle_endo=0,
-            fibers_angle_epi=0,
-            fiber_space="Quadrature_3",
-            num_refinements=1,
-            mesh_type=MeshTypes.slab.value,
-        )
-
-    def validate(self):
-        pass
-
-    def __repr__(self) -> str:
-        return (
-            f"{self.__class__.__name__}("
-            f"lx={self.parameters['lx']}, "
-            f"ly={self.parameters['ly']}, "
-            f"lz={self.parameters['lz']}, "
-            f"dx={self.parameters['dx']}, "
-            f"num_refinements={self.parameters['num_refinements']})"
-        )
-
-
-def create_slab_facet_function(
-    mesh: dolfin.Mesh,
-    lx: float,
-    ly: float,
-    lz: float,
-    markers: Optional[Dict[str, Tuple[int, int]]] = None,
-) -> dolfin.MeshFunction:
-    if markers is None:
-        markers = SlabGeometry.default_markers()
-    # Define domain to apply dirichlet boundary conditions
-    x0 = dolfin.CompiledSubDomain("near(x[0], 0) && on_boundary")
-    x1 = dolfin.CompiledSubDomain("near(x[0], lx) && on_boundary", lx=lx)
-    y0 = dolfin.CompiledSubDomain("near(x[1], 0) && on_boundary")
-    y1 = dolfin.CompiledSubDomain("near(x[1], ly) && on_boundary", ly=ly)
-    z0 = dolfin.CompiledSubDomain("near(x[2], 0) && on_boundary")
-    z1 = dolfin.CompiledSubDomain("near(x[2], lz) && on_boundary", lz=lz)
-
-    ffun = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim() - 1)
-    ffun.set_all(0)
-
-    x0.mark(ffun, markers["X0"][1])
-    x1.mark(ffun, markers["X1"][1])
-
-    y0.mark(ffun, markers["Y0"][1])
-    y1.mark(ffun, markers["Y1"][1])
-
-    z0.mark(ffun, markers["Z0"][1])
-    z1.mark(ffun, markers["Z1"][1])
-    return ffun
-
-
-def create_slab_microstructure(fiber_space, mesh):
-
-    family, degree = fiber_space.split("_")
-    logger.debug("Set up microstructure")
-    V_f = dolfin.VectorFunctionSpace(mesh, family, int(degree))
-    f0 = dolfin.interpolate(
-        dolfin.Constant((1, 0, 0)),
-        V_f,
-    )
-    s0 = dolfin.interpolate(
-        dolfin.Constant((0, 1, 0)),
-        V_f,
-    )
-    n0 = dolfin.interpolate(
-        dolfin.Constant((0, 0, 1)),
-        V_f,
-    )
-    # Collect the microstructure
-    return pulse.Microstructure(f0=f0, s0=s0, n0=n0)
-
-
-class LeftVentricularGeometry(BaseGeometry):
-    @staticmethod
-    def default_markers() -> Dict[str, Tuple[int, int]]:
-        return {
-            "BASE": (5, 2),
-            "ENDO": (6, 2),
-            "EPI": (7, 2),
-        }
-
-    def _default_microstructure(
-        self,
-        mesh: dolfin.Mesh,
-        ffun: dolfin.MeshFunction,
-    ) -> pulse.Microstructure:
-        from cardiac_geometries import lv_ellipsoid_fibers
-
-        return lv_ellipsoid_fibers.create_microstructure(
-            function_space=self.parameters["fiber_space"],
-            mesh=mesh,
-            ffun=ffun,
-            markers=self.markers,
-            r_short_endo=self.parameters["r_short_endo"],
-            r_short_epi=self.parameters["r_short_epi"],
-            r_long_endo=self.parameters["r_long_endo"],
-            r_long_epi=self.parameters["r_long_epi"],
-            alpha_endo=self.parameters["fibers_angle_endo"],
-            alpha_epi=self.parameters["fibers_angle_epi"],
-        )
-
-    def _default_ffun(self, mesh: dolfin.Mesh) -> dolfin.MeshFunction:
-        raise NotImplementedError
-
-    def _default_mesh(self) -> dolfin.Mesh:
-        raise NotImplementedError
-
-    @staticmethod
-    def default_parameters():
-        return {
-            "num_refinements": 1,
-            "fiber_space": "Quadrature_3",
-            "fibers_angle_endo": -60.0,
-            "fibers_angle_epi": 60.0,
-            "mesh_type": MeshTypes.lv_ellipsoid.value,
-            "mu_apex_endo": -3.141592653589793,
-            "mu_apex_epi": -3.141592653589793,
-            "mu_base_endo": -1.2722641256100204,
-            "mu_base_epi": -1.318116071652818,
-            "psize_ref": 3.0,
-            "r_long_endo": 17.0,
-            "r_long_epi": 20.0,
-            "r_short_endo": 7.0,
-            "r_short_epi": 10.0,
-        }
-
-    def validate(self):
-        pass
-
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(parameters={self.parameters})"

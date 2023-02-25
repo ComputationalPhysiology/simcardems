@@ -14,12 +14,14 @@ from . import config
 from . import datacollector
 from . import ep_model
 from . import geometry
+from . import lvgeometry
 from . import mechanics_model
 from . import models
 from . import newton_solver
 from . import postprocess
 from . import runner
 from . import save_load_functions
+from . import slabgeometry
 from . import utils
 from .config import Config
 from .config import default_parameters
@@ -32,12 +34,6 @@ from .newton_solver import MechanicsNewtonSolver_ODE
 from .runner import Runner
 from .runner import TimeStepper
 from .version import __version__
-
-# from . import em_model
-# from . import land_model
-# from . import ORdmm_Land
-# from .em_model import EMCoupling
-# from .land_model import LandModel
 
 
 def set_log_level(level):
@@ -59,6 +55,7 @@ def set_log_level(level):
         "simcardems.runner.logger"
         "simcardems.utils.logger"
         "simcardems.value_extractor.logger",
+        "simcardems.slabgeometry.logger",
     ] + models.loggers
     _pulse.set_log_level(level)
     _daiquiri.setup(level=level)
@@ -96,15 +93,14 @@ _warnings.simplefilter("once", _QuadratureRepresentationDeprecationWarning)
 __all__ = [
     "datacollector",
     "boundary_conditions",
-    # "em_model",
     "ep_model",
     "mechanics_model",
-    # "ORdmm_Land",
     "postprocess",
     "geometry",
     "save_load_functions",
     "utils",
     "cli",
+    "slabgeometry",
     "LandModel",
     "MechanicsProblem",
     "RigidMotionProblem",
@@ -116,7 +112,7 @@ __all__ = [
     "default_parameters",
     "__version__",
     "TimeStepper",
-    # "land_model",
+    "lvgeometry",
     "newton_solver",
     "MechanicsNewtonSolver_ODE",
     "MechanicsNewtonSolver",
