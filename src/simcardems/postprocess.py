@@ -1,6 +1,9 @@
 import json
 from pathlib import Path
 from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Tuple
 from typing import Union
 
 import ap_features as apf
@@ -45,6 +48,7 @@ def plot_peaks(fname, data, threshold):
 def extract_traces(
     loader: DataLoader,
     reduction: str = "average",
+    names: Optional[List[Tuple[str, str]]] = None,
 ) -> Dict[str, Union[np.ndarray, Dict[str, np.ndarray]]]:
 
     if loader.time_stamps is None:
@@ -62,11 +66,14 @@ def extract_traces(
 
     logger.info("Extract traces...")
 
-    for group, names in loader.names.items():
+    for group, names_ in loader.names.items():
         logger.info(f"Group: {group}")
         # value_point = getattr(bnd[group], utils.enum2str(point, BoundaryNodes))
         datagroup = getattr(DataGroups, utils.enum2str(group, DataGroups))
-        for name in names:
+        for name in names_:
+            if names is not None and (group, name) not in names:
+                continue
+
             logger.info(f"Name: {name}")
             for i, t in enumerate(loader.time_stamps):
                 values[group][name][i] = loader.extract_value(

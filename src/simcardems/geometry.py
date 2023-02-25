@@ -29,6 +29,9 @@ class StimulusDomain(NamedTuple):
 def load_geometry(
     mesh_path: utils.PathLike,
     schema_path: Optional[utils.PathLike] = None,
+    stimulus_domain: Optional[
+        Union[StimulusDomain, Callable[[dolfin.Mesh], StimulusDomain]]
+    ] = None,
 ) -> "BaseGeometry":
     from .slabgeometry import SlabGeometry
     from .lvgeometry import LeftVentricularGeometry
@@ -55,9 +58,12 @@ def load_geometry(
         raise RuntimeError("Unable to get mesh type from info")
 
     if mesh_type == MeshTypes.slab.value:
-        return SlabGeometry.from_geometry(geo)
+        return SlabGeometry.from_geometry(geo, stimulus_domain=stimulus_domain)
     elif mesh_type == MeshTypes.lv_ellipsoid.value:
-        return LeftVentricularGeometry.from_geometry(geo)
+        return LeftVentricularGeometry.from_geometry(
+            geo,
+            stimulus_domain=stimulus_domain,
+        )
 
     raise RuntimeError(f"Unknown mesh type {mesh_type!r}")
 
@@ -500,8 +506,7 @@ class BaseGeometry(abc.ABC):
         )
 
     @classmethod
-    def from_geometry(cls, geo: Geometry):
-        kwargs = {}
+    def from_geometry(cls, geo: Geometry, **kwargs):
         for attr_geo, attr_simcardems in [
             ("info", "parameters"),
             ("mesh", "mechanics_mesh"),

@@ -23,6 +23,7 @@ parts:
     - file: "custom_cell_model_pure_ep"
     - file: "extract_currents"
     - file: "tracking_values"
+    - file: "custom_stimulus_domain"
     - file: "cli"
     - file: "docker"
     - file: "gui"
