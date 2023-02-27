@@ -55,25 +55,21 @@ class ReleaseRunner(simcardems.Runner):
         self.pre_stretch = config.pre_stretch
         assert self.pre_stretch is not None
 
-        super().__init__(config=config)
+        super().__init__(conf=config)
         # Make sure we have a SlabGeometry
-        assert isinstance(self.coupling.geometry, simcardems.slabgeometry.SlabGeometry)
+        assert isinstance(self.coupling.geometry, simcardems.geometry.SlabGeometry)
         self.Lx = self.coupling.geometry.parameters["lx"]
         self._print_message = True
 
     def _post_mechanics_solve(self) -> None:
         # Convert internal time for nanoseconds to milliseconds
         # And apply release when time is greater then T release
-        if simcardems.TimeStepper.ns2ms(self.t) >= self._T_release:
+        if self._time_stepper.ns2ms(self.t) >= self._T_release:
             if self._print_message:
                 # Make sure message is only printed once
                 print("Release")
                 self._print_message = False
-            pulse.iterate.iterate(
-                self.coupling.mech_solver,
-                self.pre_stretch,
-                -0.02 * self.Lx,
-            )
+            pulse.iterate.iterate(self.mech_heart, self.pre_stretch, -0.02 * self.Lx)
         return super()._post_mechanics_solve()
 ```
 
