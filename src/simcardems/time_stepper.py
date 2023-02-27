@@ -75,7 +75,6 @@ class TimeStepper:
         if self.T is None:
             raise RuntimeError("Please assign an end time to time stepper")
         while self.t < self.T:
-
             prev_t = self.t
             self.t = min(self.t + self.dt, self.T)
             self.step += 1

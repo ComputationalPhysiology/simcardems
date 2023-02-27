@@ -13,7 +13,6 @@ def dummyfile():
 
 
 def tests_h5pyfile(dummyfile):
-
     h5group = "test"
     data1 = [1, 2, 3, 4]
     data2 = [4, 5, 6]
@@ -46,7 +45,6 @@ def tests_h5pyfile(dummyfile):
     ),
 )
 def test_dict_to_h5(data, dummyfile):
-
     h5group = "testgroup"
     slf.dict_to_h5(data, dummyfile, h5group)
 

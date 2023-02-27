@@ -250,7 +250,6 @@ class EMCoupling(BaseEMCoupling):
         path: Union[str, Path],
         config: Optional[Config] = None,
     ) -> None:
-
         super().save_state(path=path, config=config)
 
         with dolfin.HDF5File(

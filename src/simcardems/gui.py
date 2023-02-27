@@ -29,7 +29,6 @@ def return_none(*args, **kwargs):
 
 
 def about():
-
     st.title("About")
 
     for i in range(8):
@@ -55,7 +54,6 @@ def about():
 class Postprocess:
     @staticmethod
     def load_data(outdir, reduction="center"):
-
         loader = simcardems.DataLoader(outdir.joinpath("results.h5"))
         return simcardems.postprocess.extract_traces(loader=loader, reduction=reduction)
 
@@ -254,7 +252,6 @@ class Simulation:
         hash_funcs={mpi4py.MPI.Op: return_none},
     )
     def load_model(geometry_args, ep_solver_args, mechanics_args):
-
         st.info("Create geometry")
         geometry = simcardems.slabgeometry.SlabGeometry(parameters=geometry_args)
         st.info("Create EM coupling")

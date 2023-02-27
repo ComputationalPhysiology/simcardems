@@ -236,7 +236,6 @@ def run_json(path):
 
 
 def main(config: typing.Optional[Config]):
-
     if config is None:
         config = Config()
 

@@ -78,7 +78,6 @@ class EMCoupling(simcardems.models.em_model.BaseEMCoupling):
         path: typing.Union[str, Path],
         config: typing.Optional[simcardems.Config] = None,
     ) -> None:
-
         super().save_state(path=path, config=config)
 
         with dolfin.HDF5File(

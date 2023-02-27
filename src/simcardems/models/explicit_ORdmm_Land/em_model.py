@@ -32,7 +32,6 @@ logger = utils.getLogger(__name__)
 
 
 def Ta(XS, XW, Zetas, Zetaw, lmbda, Tref, rs, Beta0):
-
     _min = ufl.min_value
     _max = ufl.max_value
     if isinstance(lmbda, (int, float)):
@@ -320,7 +319,6 @@ class EMCoupling(em_model.BaseEMCoupling):
         path: Union[str, Path],
         config: Optional[Config] = None,
     ) -> None:
-
         super().save_state(path=path, config=config)
 
         with dolfin.HDF5File(

@@ -12,7 +12,6 @@ Lz = 3.0
 
 
 def run_benchmark():
-
     # Define time
     time = dolfin.Constant(0.0)
     # Surface to volume ratio

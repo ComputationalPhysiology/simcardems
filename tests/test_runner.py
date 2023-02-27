@@ -11,7 +11,6 @@ from simcardems import TimeStepper
 
 @pytest.mark.slow
 def test_runner_load_state_with_new_parameters(tmp_path, geo):
-
     geometry_path = tmp_path / "geo.h5"
     geometry_schema_path = geometry_path.with_suffix(".json")
     geo.dump(fname=geometry_path, schema_path=geometry_schema_path)
