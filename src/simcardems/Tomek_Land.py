@@ -76,6 +76,8 @@ class Tomek_Land(CardiacCellModel):
         """
         params = OrderedDict(
             [
+                ("ICaL_fractionSS", 0.80),
+                ("INaCa_fractionSS", 0.35),
                 ("scale_ICaL", 1.018),
                 ("scale_IK1", 1.414),
                 ("scale_IKr", 1.119),
@@ -273,10 +275,9 @@ class Tomek_Land(CardiacCellModel):
                 ("v", -87),
                 ("CaMKt", 0),
                 ("m", 0),
-                ("hf", 1),
-                ("hs", 1),
+                ("h", 1),
                 ("j", 1),
-                ("hsp", 1),
+                ("hp", 1),
                 ("jp", 1),
                 ("mL", 0),
                 ("hL", 1),
@@ -296,11 +297,14 @@ class Tomek_Land(CardiacCellModel):
                 ("ffp", 1),
                 ("fcafp", 1),
                 ("nca", 0),
-                ("xrf", 0),
-                ("xrs", 0),
+                ("nca_i", 0),
+                ("c0", 1),
+                ("c1", 0),
+                ("c2", 0),
+                ("o", 0),
+                ("i", 0),
                 ("xs1", 0),
                 ("xs2", 0),
-                ("xk1", 1),
                 ("Jrelnp", 0),
                 ("Jrelp", 0),
                 ("nai", 7),
@@ -327,14 +331,13 @@ class Tomek_Land(CardiacCellModel):
         time = time if time else Constant(0.0)
         logger.debug("Evaluate transmembrane current")
         # Assign states
-        assert len(s) == 45
+        assert len(s) == 47
         (
             CaMKt,
             m,
-            hf,
-            hs,
+            h,
             j,
-            hsp,
+            hp,
             jp,
             mL,
             hL,
@@ -354,11 +357,14 @@ class Tomek_Land(CardiacCellModel):
             ffp,
             fcafp,
             nca,
-            xrf,
-            xrs,
+            nca_i,
+            c0,
+            c1,
+            c2,
+            o,
+            i,
             xs1,
             xs2,
-            xk1,
             Jrelnp,
             Jrelp,
             nai,
@@ -377,6 +383,8 @@ class Tomek_Land(CardiacCellModel):
         ) = s
 
         # Assign parameters
+        ICaL_fractionSS = self._parameters["ICaL_fractionSS"]
+        INaCa_fractionSS = self._parameters["INaCa_fractionSS"]
         scale_ICaL = self._parameters["scale_ICaL"]
         scale_IK1 = self._parameters["scale_IK1"]
         scale_IKr = self._parameters["scale_IKr"]
@@ -392,7 +400,6 @@ class Tomek_Land(CardiacCellModel):
         KmCaM = self._parameters["KmCaM"]
         KmCaMK = self._parameters["KmCaMK"]
         PKNa = self._parameters["PKNa"]
-        Ahf = self._parameters["Ahf"]
         GNa = self._parameters["GNa"]
         Gto = self._parameters["Gto"]
         Aff = self._parameters["Aff"]
@@ -451,9 +458,6 @@ class Tomek_Land(CardiacCellModel):
         scale_drug_IpCa = self._parameters["scale_drug_IpCa"]
         scale_drug_Isacns = self._parameters["scale_drug_Isacns"]
         scale_drug_Isack = self._parameters["scale_drug_Isack"]
-        scale_drug_kws = self._parameters["scale_drug_kws"]
-        scale_drug_kuw = self._parameters["scale_drug_kuw"]
-        scale_drug_kwu = self._parameters["scale_drug_kwu"]
         # Population factors
         scale_popu_GNa = self._parameters["scale_popu_GNa"]
         scale_popu_GCaL = self._parameters["scale_popu_GCaL"]
@@ -491,9 +495,6 @@ class Tomek_Land(CardiacCellModel):
         vfrt = F * v / (R * T)
 
         # Expressions for the I_Na component
-        Ahs = 1.0 - Ahf
-        h = Ahf * hf + Ahs * hs
-        hp = Ahf * hf + Ahs * hsp
         fINap = 1.0 / (1.0 + KmCaMK / CaMKa)
         INa = (
             GNa
@@ -532,22 +533,67 @@ class Tomek_Land(CardiacCellModel):
         fca = Afcaf * fcaf + Afcas * fcas
         fp = Aff * ffp + Afs * fs
         fcap = Afcaf * fcafp + Afcas * fcas
-        PhiCaL = (
+
+        clo = 150
+        cli = 24
+        Io = 0.5 * (nao + ko + clo + 4.0 * cao) / 1000.0
+        Ii = 0.5 * (nass + kss + cli + 4.0 * cass) / 1000.0
+        dielConstant = 74
+        constA = 1.82 * 1000000.0 * ufl.elem_pow(dielConstant * T, -1.5)
+
+        gamma_cai = ufl.exp(
+            -constA * 4.0 * (ufl.sqrt(Ii) / (1.0 + ufl.sqrt(Ii)) - 0.3 * Ii),
+        )
+        gamma_cao = ufl.exp(
+            -constA * 4.0 * (ufl.sqrt(Io) / (1.0 + ufl.sqrt(Io)) - 0.3 * Io),
+        )
+        gamma_nai = ufl.exp(
+            -constA * 1.0 * (ufl.sqrt(Ii) / (1.0 + ufl.sqrt(Ii)) - 0.3 * Ii),
+        )
+        gamma_nao = ufl.exp(
+            -constA * 1.0 * (ufl.sqrt(Io) / (1.0 + ufl.sqrt(Io)) - 0.3 * Io),
+        )
+        gamma_ki = ufl.exp(
+            -constA * 1.0 * (ufl.sqrt(Ii) / (1.0 + ufl.sqrt(Ii)) - 0.3 * Ii),
+        )
+        gamma_kao = ufl.exp(
+            -constA * 1.0 * (ufl.sqrt(Io) / (1.0 + ufl.sqrt(Io)) - 0.3 * Io),
+        )
+
+        PhiCaL_ss = (
             4.0
-            * (-0.341 * cao + cass * ufl.exp(2.0 * vfrt))
             * vffrt
+            * (gamma_cai * cass * ufl.exp(2.0 * vfrt) - gamma_cao * cao)
             / (-1.0 + ufl.exp(2.0 * vfrt))
         )
-        PhiCaNa = (
+        PhiCaNa_ss = (
             1.0
-            * (-0.75 * nao + 0.75 * ufl.exp(1.0 * vfrt) * nass)
             * vffrt
+            * (gamma_nai * nass * ufl.exp(1.0 * vfrt) - gamma_nao * nao)
             / (-1.0 + ufl.exp(1.0 * vfrt))
         )
-        PhiCaK = (
+        PhiCaK_ss = (
             1.0
-            * (-0.75 * ko + 0.75 * ufl.exp(1.0 * vfrt) * kss)
             * vffrt
+            * (gamma_ki * kss * ufl.exp(1.0 * vfrt) - gamma_kao * ko)
+            / (-1.0 + ufl.exp(1.0 * vfrt))
+        )
+        PhiCaL_i = (
+            4.0
+            * vffrt
+            * (gamma_cai * cai * ufl.exp(2.0 * vfrt) - gamma_cao * cao)
+            / (-1.0 + ufl.exp(2.0 * vfrt))
+        )
+        PhiCaNa_i = (
+            1.0
+            * vffrt
+            * (gamma_nai * nai * ufl.exp(1.0 * vfrt) - gamma_nao * nao)
+            / (-1.0 + ufl.exp(1.0 * vfrt))
+        )
+        PhiCaK_i = (
+            1.0
+            * vffrt
+            * (gamma_ki * ki * ufl.exp(1.0 * vfrt) - gamma_kao * ko)
             / (-1.0 + ufl.exp(1.0 * vfrt))
         )
         PCa = 0.0001 * scale_ICaL * scale_drug_ICaL * scale_popu_GCaL
@@ -557,44 +603,68 @@ class Tomek_Land(CardiacCellModel):
         PCaNap = 0.00125 * PCap
         PCaKp = 0.0003574 * PCap
         fICaLp = 1.0 / (1.0 + KmCaMK / CaMKa)
-        ICaL = (1.0 - fICaLp) * (
+
+        ICaL_tot_ss = (1.0 - fICaLp) * (
             (1.0 - nca) * f + fca * jca * nca
-        ) * PCa * PhiCaL * d + (
+        ) * PCa * PhiCaL_ss * d + (
             (1.0 - nca) * fp + fcap * jca * nca
-        ) * PCap * PhiCaL * d * fICaLp
-        ICaNa = (1.0 - fICaLp) * (
+        ) * PCap * PhiCaL_ss * d * fICaLp
+        ICaNa_tot_ss = (1.0 - fICaLp) * (
             (1.0 - nca) * f + fca * jca * nca
-        ) * PCaNa * PhiCaNa * d + (
+        ) * PCaNa * PhiCaNa_ss * d + (
             (1.0 - nca) * fp + fcap * jca * nca
-        ) * PCaNap * PhiCaNa * d * fICaLp
-        ICaK = (1.0 - fICaLp) * (
+        ) * PCaNap * PhiCaNa_ss * d * fICaLp
+        ICaK_tot_ss = (1.0 - fICaLp) * (
             (1.0 - nca) * f + fca * jca * nca
-        ) * PCaK * PhiCaK * d + (
+        ) * PCaK * PhiCaK_ss * d + (
             (1.0 - nca) * fp + fcap * jca * nca
-        ) * PCaKp * PhiCaK * d * fICaLp
+        ) * PCaKp * PhiCaK_ss * d * fICaLp
+
+        ICaL_tot_i = (1.0 - fICaLp) * (
+            (1.0 - nca) * f + fca * jca * nca
+        ) * PCa * PhiCaL_i * d + (
+            (1.0 - nca) * fp + fcap * jca * nca
+        ) * PCap * PhiCaL_i * d * fICaLp
+        ICaNa_tot_i = (1.0 - fICaLp) * (
+            (1.0 - nca) * f + fca * jca * nca
+        ) * PCaNa * PhiCaNa_i * d + (
+            (1.0 - nca) * fp + fcap * jca * nca
+        ) * PCaNap * PhiCaNa_i * d * fICaLp
+        ICaK_tot_i = (1.0 - fICaLp) * (
+            (1.0 - nca) * f + fca * jca * nca
+        ) * PCaK * PhiCaK_i * d + (
+            (1.0 - nca) * fp + fcap * jca * nca
+        ) * PCaKp * PhiCaK_i * d * fICaLp
+
+        ICaL_ss = ICaL_tot_ss * ICaL_fractionSS
+        ICaNa_ss = ICaNa_tot_ss * ICaL_fractionSS
+        ICaK_ss = ICaK_tot_ss * ICaL_fractionSS
+        ICaL_i = ICaL_tot_i * (1.0 - ICaL_fractionSS)
+        ICaNa_i = ICaNa_tot_i * (1.0 - ICaL_fractionSS)
+        ICaK_i = ICaK_tot_i * (1.0 - ICaL_fractionSS)
+
+        ICaL = ICaL_ss + ICaL_i
+        ICaNa = ICaNa_ss + ICaNa_i
+        ICaK = ICaK_ss + ICaK_i
 
         # Expressions for the IKr component
-        Axrf = 1.0 / (1.0 + 4.197299094734718 * ufl.exp(0.02617115938236064 * v))
-        Axrs = 1.0 - Axrf
-        xr = Axrf * xrf + Axrs * xrs
-        rkr = 1.0 / (
-            (1.0 + 2.0820090840784555 * ufl.exp(0.013333333333333334 * v))
-            * (1.0 + 0.7165313105737893 * ufl.exp(0.03333333333333333 * v))
-        )
-        GKr = 0.046 * scale_IKr * scale_drug_IKr * scale_popu_GKr
-        IKr = 0.4303314829119352 * ufl.sqrt(ko) * (-EK + v) * GKr * rkr * xr
+        GKr = 0.0321 * scale_IKr * scale_drug_IKr * scale_popu_GKr
+        IKr = GKr * ufl.sqrt(ko / 5.0) * o * (-EK + v)
 
         # Expressions for the IKs component
         KsCa = 1.0 + 0.6 / (1.0 + 6.481821026062645e-07 * ufl.elem_pow(1.0 / cai, 1.4))
-        GKs = 0.0034 * scale_IKs * scale_drug_IKs * scale_popu_GKs
+        GKs = 0.0011 * scale_IKs * scale_drug_IKs * scale_popu_GKs
         IKs = (-EKs + v) * GKs * KsCa * xs1 * xs2
-        rk1 = 1.0 / (
-            1.0
-            + 69220.6322106767
-            * ufl.exp(0.10534077741493732 * v - 0.27388602127883704 * ko)
-        )
-        GK1 = 0.1908 * scale_IK1 * scale_drug_IK1 * scale_popu_GK1 * HF_scaling_GK1
-        IK1 = ufl.sqrt(ko) * (-EK + v) * GK1 * rk1 * xk1
+
+        # Expressions for the IK1 components
+        aK1 = 4.094 / (1.0 + ufl.exp(0.1217 * (v - EK - 49.934)))
+        bK1 = (
+            15.72 * ufl.exp(0.0674 * (v - EK - 3.257))
+            + ufl.exp(0.0618 * (v - EK - 594.31))
+        ) / (1.0 + ufl.exp(-0.1629 * (v - EK + 14.207)))
+        K1ss = aK1 / (aK1 + bK1)
+        GK1 = 0.6992 * scale_IK1 * scale_drug_IK1 * scale_popu_GK1 * HF_scaling_GK1
+        IK1 = ufl.sqrt(ko) * (-EK + v) * GK1 * GK1 * K1ss
 
         # Expressions for the INaCa_i component
         hca = ufl.exp(F * qca * v / (R * T))
@@ -636,8 +706,8 @@ class Tomek_Land(CardiacCellModel):
         JncxNa_i = E3_i * k4pp_i - E2_i * k3pp_i + 3.0 * E4_i * k7_i - 3.0 * E1_i * k8_i
         JncxCa_i = E2_i * k2_i - E1_i * k1_i
         INaCa_i = (
-            0.8
-            * Gncx
+            Gncx
+            * (1.0 - INaCa_fractionSS)
             * scale_popu_KNCX
             * HF_scaling_Gncx
             * (zca * JncxCa_i + zna * JncxNa_i)
@@ -681,8 +751,8 @@ class Tomek_Land(CardiacCellModel):
         JncxNa_ss = E3_ss * k4pp - E2_ss * k3pp + 3.0 * E4_ss * k7 - 3.0 * E1_ss * k8
         JncxCa_ss = E2_ss * k2 - E1_ss * k1
         INaCa_ss = (
-            0.2
-            * Gncx
+            Gncx
+            * INaCa_fractionSS
             * scale_popu_KNCX
             * HF_scaling_Gncx
             * (zca * JncxCa_ss + zna * JncxNa_ss)
@@ -760,15 +830,33 @@ class Tomek_Land(CardiacCellModel):
         )
 
         # Expressions for the ICab component
+        gammaCaoMyo = gamma_cao
+        gammaCaiMyo = gamma_cai
+
         ICab = (
             4.0
             * PCab
             * scale_drug_ICab
             * scale_popu_GbCa
-            * (-0.341 * cao + cai * ufl.exp(2.0 * vfrt))
+            * (cai * gammaCaiMyo * ufl.exp(2.0 * vfrt) - cao * gammaCaoMyo)
             * vffrt
             / (-1.0 + ufl.exp(2.0 * vfrt))
         )
+
+        # Expressions for the ICaCl component (calcium activated chloride current)
+        ecl = R * T * ufl.ln(cli / clo) / F
+        Fjunc = 1.0
+        Fsl = 1.0 - Fjunc
+        GClCa = 0.2843
+        KdClCa = 0.1
+
+        I_ClCa_junc = Fjunc * GClCa / (1.0 + KdClCa / cass) * (v - ecl)
+        I_ClCa_sl = Fsl * GClCa / (1.0 + KdClCa / cai) * (v - ecl)
+        I_ClCa = I_ClCa_junc + I_ClCa_sl
+
+        # Expressions for the IClb component
+        GClB = 0.00198
+        I_Clbk = GClB * (v - ecl)
 
         # Expressions for the IpCa component
         IpCa = GpCa * scale_drug_IpCa * scale_popu_KpCa * cai / (0.0005 + cai)
@@ -816,6 +904,8 @@ class Tomek_Land(CardiacCellModel):
             - IpCa
             - Istim
             - Ito
+            - I_ClCa
+            - I_Clbk
         )
 
         # Return results
@@ -1363,8 +1453,8 @@ class Tomek_Land(CardiacCellModel):
         ICaK_i = ICaK_tot_i * (1.0 - ICaL_fractionSS)
 
         ICaL = ICaL_ss + ICaL_i
-        ICaNa = ICaNa_ss + ICaNa_i
-        ICaK = ICaK_ss + ICaK_i
+        # ICaNa = ICaNa_ss + ICaNa_i
+        # ICaK = ICaK_ss + ICaK_i
 
         # Expressions for the IKr component
         # _c0: from c0 to c1; _c1: from c1 to c2; _c2o: from c2 to o;
@@ -1630,19 +1720,19 @@ class Tomek_Land(CardiacCellModel):
         )
 
         # Expressions for the ICaCl component (calcium activated chloride current)
-        ecl = R * T * ufl.ln(cli / clo) / F
-        Fjunc = 1.0
-        Fsl = 1.0 - Fjunc
-        GClCa = 0.2843
-        KdClCa = 0.1
+        # ecl = R * T * ufl.ln(cli / clo) / F
+        # Fjunc = 1.0
+        # Fsl = 1.0 - Fjunc
+        # GClCa = 0.2843
+        # KdClCa = 0.1
 
-        I_ClCa_junc = Fjunc * GClCa / (1.0 + KdClCa / cass) * (v - ecl)
-        I_ClCa_sl = Fsl * GClCa / (1.0 + KdClCa / cai) * (v - ecl)
-        I_ClCa = I_ClCa_junc + I_ClCa_sl
+        # I_ClCa_junc = Fjunc * GClCa / (1.0 + KdClCa / cass) * (v - ecl)
+        # I_ClCa_sl = Fsl * GClCa / (1.0 + KdClCa / cai) * (v - ecl)
+        # I_ClCa = I_ClCa_junc + I_ClCa_sl
 
         # Expressions for the IClb component
-        GClB = 0.00198
-        I_Clbk = GClB * (v - ecl)
+        # GClB = 0.00198
+        # I_Clbk = GClB * (v - ecl)
 
         # Expressions for the IpCa component
         IpCa = GpCa * scale_drug_IpCa * scale_popu_KpCa * cai / (0.0005 + cai)
