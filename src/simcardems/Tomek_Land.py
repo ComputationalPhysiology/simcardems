@@ -27,7 +27,7 @@ def Min(a, b):
 
 
 def vs_functions_to_dict(vs):
-    state_names = ORdmm_Land.default_initial_conditions().keys()
+    state_names = Tomek_Land.default_initial_conditions().keys()
     return {
         name: utils.sub_function(vs, index) for index, name in enumerate(state_names)
     }
@@ -840,6 +840,7 @@ class Tomek_Land(CardiacCellModel):
         # Assign states
         assert len(s) == 47
         (
+            CaMKt,
             m,
             h,
             j,
@@ -889,6 +890,8 @@ class Tomek_Land(CardiacCellModel):
         ) = s
 
         # Assign parameters
+        ICaL_fractionSS = self._parameters["ICaL_fractionSS"]
+        INaCa_fractionSS = self._parameters["INaCa_fractionSS"]
         scale_ICaL = self._parameters["scale_ICaL"]
         scale_IK1 = self._parameters["scale_IK1"]
         scale_IKr = self._parameters["scale_IKr"]
@@ -908,7 +911,7 @@ class Tomek_Land(CardiacCellModel):
         aCaMK = self._parameters["aCaMK"]
         bCaMK = self._parameters["bCaMK"]
         PKNa = self._parameters["PKNa"]
-        Ahf = self._parameters["Ahf"]
+        # Ahf = self._parameters["Ahf"]
         GNa = self._parameters["GNa"]
         thL = self._parameters["thL"]
         Gto = self._parameters["Gto"]
@@ -1075,7 +1078,7 @@ class Tomek_Land(CardiacCellModel):
         # Expressions for the I_Na component
         mss = 1.0 / (ufl.elem_pow(1.0 + ufl.exp(-((v + 56.86) / 9.03)), 2.0))
         tm = 0.1292 * ufl.exp(
-            -1.0 * efl.elem_pow((v + 45.79) / 15.54),
+            -1.0 * ufl.elem_pow((v + 45.79) / 15.54),
             2.0,
         ) + 0.06487 * ufl.exp(-1.0 * ufl.elem_pow((v - 4.823) / 51.12), 2.0)
         F_expressions[1] = (mss - m) / tm
@@ -1114,7 +1117,7 @@ class Tomek_Land(CardiacCellModel):
                 (-25428 * ufl.exp(0.2444 * v) - 6.948 * 0.00001 * ufl.exp(-0.04391 * v))
                 * (v + 37.78)
             )
-            / (1.0 + exp(0.311 * (v + 79.23))),
+            / (1.0 + ufl.exp(0.311 * (v + 79.23))),
             0.0,
         )
         bj = ufl.conditional(
@@ -1358,6 +1361,10 @@ class Tomek_Land(CardiacCellModel):
         ICaL_i = ICaL_tot_i * (1.0 - ICaL_fractionSS)
         ICaNa_i = ICaNa_tot_i * (1.0 - ICaL_fractionSS)
         ICaK_i = ICaK_tot_i * (1.0 - ICaL_fractionSS)
+
+        ICaL = ICaL_ss + ICaL_i
+        ICaNa = ICaNa_ss + ICaNa_i
+        ICaK = ICaK_ss + ICaK_i
 
         # Expressions for the IKr component
         # _c0: from c0 to c1; _c1: from c1 to c2; _c2o: from c2 to o;
