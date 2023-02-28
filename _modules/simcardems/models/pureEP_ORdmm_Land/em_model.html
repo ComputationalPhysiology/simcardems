@@ -1,0 +1,621 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>simcardems.models.pureEP_ORdmm_Land.em_model &#8212; simcardems</title>
+    
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="../../../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../../../_static/styles/sphinx-book-theme.css?digest=5115cc725059bd94278eecd172e13a965bf8f5a9" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
+    
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+
+    <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../_static/copybutton.js"></script>
+    <script src="../../../../_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../../../_static/togglebutton.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../../../../_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="../../../../_static/sphinx-thebe.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
+<!-- Checkboxes to toggle the left sidebar -->
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle navigation sidebar">
+<label class="overlay overlay-navbar" for="__navigation">
+    <div class="visually-hidden">Toggle navigation sidebar</div>
+</label>
+<!-- Checkboxes to toggle the in-page toc -->
+<input type="checkbox" class="sidebar-toggle" name="__page-toc" id="__page-toc" aria-label="Toggle in-page Table of Contents">
+<label class="overlay overlay-pagetoc" for="__page-toc">
+    <div class="visually-hidden">Toggle in-page Table of Contents</div>
+</label>
+<!-- Headers at the top -->
+<div class="announcement header-item noprint"></div>
+<div class="header header-item noprint"></div>
+
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<!-- Sidebar -->
+<div class="bd-sidebar noprint" id="site-navigation">
+    <div class="bd-sidebar__content">
+        <div class="bd-sidebar__top"><div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="../../../../index.html">
+      
+        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+        
+      
+      
+      <img src="../../../../_static/logo.png" class="logo" alt="logo">
+      
+      
+      <h1 class="site-logo" id="site-title">simcardems</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="../../../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../../../index.html">
+                    Simula Cardiac Electro-Mechanics Solver
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Installation
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../install.html">
+   Installation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../install_docker.html">
+   Install with Docker
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../install_pip.html">
+   Install with
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     pip
+    </span>
+   </code>
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Mathematical Theory
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../mechanics_model.html">
+   Tissue level mechanics model
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../electrophysiology_model.html">
+   Tissue level electrophysiology model
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../cell_model.html">
+   Cellular model
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../electro_mechanical_coupling.html">
+   Electro-Mechanical coupling
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Demos
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../simple_demo.html">
+   Simple demo
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../initial_conditions_demo.html">
+   initial conditions demo
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../release_test.html">
+   Release test
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../drug_effects_demo.html">
+   Drug effects demo
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../ventricular_geometry.html">
+   Left ventricular geometry
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../custom_cell_model_pure_ep.html">
+   Custom model (pure EP)
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../extract_currents.html">
+   Extracting currents
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../tracking_values.html">
+   Tracking Values
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../custom_stimulus_domain.html">
+   Custom stimulus domain
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../cli.html">
+   Command line interface
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../docker.html">
+   Run using Docker
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../gui.html">
+   Graphical user interface
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Verification
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../benchmark.html">
+   Benchmark
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Postprocessing
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../visualization.html">
+   Data visualization
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Community
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../CONTRIBUTING.html">
+   Contributing
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Programmers reference
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../api.html">
+   API documentaion
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav></div>
+        <div class="bd-sidebar__bottom">
+             <!-- To handle the deprecated key -->
+            
+            <div class="navbar_extra_footer">
+            Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+            </div>
+            
+        </div>
+    </div>
+    <div id="rtd-footer-container"></div>
+</div>
+
+
+          
+
+
+          
+<!-- A tiny helper pixel to detect if we've scrolled -->
+<div class="sbt-scroll-pixel-helper"></div>
+<!-- Main content -->
+<div class="col py-0 content-container">
+    
+    <div class="header-article row sticky-top noprint">
+        
+
+
+
+<div class="col py-1 d-flex header-article-main">
+    <div class="header-article__left">
+        
+        <label for="__navigation"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="right"
+title="Toggle navigation"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-bars"></i>
+  </span>
+
+</label>
+
+        
+    </div>
+    <div class="header-article__right">
+<button onclick="toggleFullScreen()"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="bottom"
+title="Fullscreen mode"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+<div class="menu-dropdown menu-dropdown-repository-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Source repositories">
+      <i class="fab fa-github"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="https://github.com/ComputationalPhysiology/simcardems"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Source repository"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="headerbtn__text-container">repository</span>
+</a>
+
+      </li>
+      
+      <li>
+        <a href="https://github.com/ComputationalPhysiology/simcardems/issues/new?title=Issue%20on%20page%20%2F_modules/simcardems/models/pureEP_ORdmm_Land/em_model.html&body=Your%20issue%20content%20here."
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Open an issue"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="headerbtn__text-container">open issue</span>
+</a>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+    </div>
+</div>
+
+<!-- Table of contents -->
+<div class="col-md-3 bd-toc show noprint">
+</div>
+    </div>
+    <div class="article row">
+        <div class="col pl-md-3 pl-lg-5 content-container">
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1></h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                    </div>
+                </div>
+            </div>
+            <main id="main-content" role="main">
+                
+              <div>
+                
+  <h1>Source code for simcardems.models.pureEP_ORdmm_Land.em_model</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">cbcbeat</span>
+<span class="kn">import</span> <span class="nn">dolfin</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">dolfin</span> <span class="kn">import</span> <span class="n">FiniteElement</span>  <span class="c1"># noqa: F401</span>
+<span class="kn">from</span> <span class="nn">dolfin</span> <span class="kn">import</span> <span class="n">MixedElement</span>  <span class="c1"># noqa: F401</span>
+<span class="kn">from</span> <span class="nn">dolfin</span> <span class="kn">import</span> <span class="n">tetrahedron</span>  <span class="c1"># noqa: F401</span>
+<span class="kn">from</span> <span class="nn">dolfin</span> <span class="kn">import</span> <span class="n">VectorElement</span>  <span class="c1"># noqa: F401</span>
+
+<span class="kn">from</span> <span class="nn">...</span> <span class="kn">import</span> <span class="n">save_load_functions</span> <span class="k">as</span> <span class="n">io</span>
+<span class="kn">from</span> <span class="nn">...</span> <span class="kn">import</span> <span class="n">utils</span>
+<span class="kn">from</span> <span class="nn">...config</span> <span class="kn">import</span> <span class="n">Config</span>
+<span class="kn">from</span> <span class="nn">...geometry</span> <span class="kn">import</span> <span class="n">load_geometry</span>
+<span class="kn">from</span> <span class="nn">..em_model</span> <span class="kn">import</span> <span class="n">BaseEMCoupling</span>
+<span class="kn">from</span> <span class="nn">..em_model</span> <span class="kn">import</span> <span class="n">setup_EM_model</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">...datacollector</span> <span class="kn">import</span> <span class="n">Assigners</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="EMCoupling"><a class="viewcode-back" href="../../../../api.html#simcardems.models.pureEP_ORdmm_Land.EMCoupling">[docs]</a><span class="k">class</span> <span class="nc">EMCoupling</span><span class="p">(</span><span class="n">BaseEMCoupling</span><span class="p">):</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">coupling_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;pureEP_ORdmm_Land&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">vs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ep_solver</span><span class="o">.</span><span class="n">solution_fields</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+
+<div class="viewcode-block" id="EMCoupling.register_ep_model"><a class="viewcode-back" href="../../../../api.html#simcardems.models.pureEP_ORdmm_Land.EMCoupling.register_ep_model">[docs]</a>    <span class="k">def</span> <span class="nf">register_ep_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">solver</span><span class="p">:</span> <span class="n">cbcbeat</span><span class="o">.</span><span class="n">SplittingSolver</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Registering EP model&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ep_solver</span> <span class="o">=</span> <span class="n">solver</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Done registering EP model&quot;</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">__o</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">__o</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="bp">NotImplemented</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__eq__</span><span class="p">(</span><span class="n">__o</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vs</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">get_local</span><span class="p">(),</span> <span class="n">__o</span><span class="o">.</span><span class="n">vs</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">get_local</span><span class="p">()):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">assigners</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Assigners</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_assigners</span>
+
+    <span class="nd">@assigners</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">assigners</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">assigners</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_assigners</span> <span class="o">=</span> <span class="n">assigners</span>
+
+<div class="viewcode-block" id="EMCoupling.setup_assigners"><a class="viewcode-back" href="../../../../api.html#simcardems.models.pureEP_ORdmm_Land.EMCoupling.setup_assigners">[docs]</a>    <span class="k">def</span> <span class="nf">setup_assigners</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">...datacollector</span> <span class="kn">import</span> <span class="n">Assigners</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assigners</span> <span class="o">=</span> <span class="n">Assigners</span><span class="p">(</span><span class="n">vs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">vs</span><span class="p">,</span> <span class="n">mech_state</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">index</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s2">&quot;V&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;Ca&quot;</span><span class="p">,</span> <span class="mi">45</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;XS&quot;</span><span class="p">,</span> <span class="mi">40</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;XW&quot;</span><span class="p">,</span> <span class="mi">41</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;CaTrpn&quot;</span><span class="p">,</span> <span class="mi">42</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;TmB&quot;</span><span class="p">,</span> <span class="mi">43</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;Cd&quot;</span><span class="p">,</span> <span class="mi">44</span><span class="p">),</span>
+        <span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assigners</span><span class="o">.</span><span class="n">register_subfunction</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">group</span><span class="o">=</span><span class="s2">&quot;ep&quot;</span><span class="p">,</span>
+                <span class="n">subspace_index</span><span class="o">=</span><span class="n">index</span><span class="p">,</span>
+            <span class="p">)</span></div>
+
+<div class="viewcode-block" id="EMCoupling.solve_ep"><a class="viewcode-back" href="../../../../api.html#simcardems.models.pureEP_ORdmm_Land.EMCoupling.solve_ep">[docs]</a>    <span class="k">def</span> <span class="nf">solve_ep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interval</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ep_solver</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">interval</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="EMCoupling.print_ep_info"><a class="viewcode-back" href="../../../../api.html#simcardems.models.pureEP_ORdmm_Land.EMCoupling.print_ep_info">[docs]</a>    <span class="k">def</span> <span class="nf">print_ep_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Output some degrees of freedom</span>
+        <span class="n">total_dofs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vs</span><span class="o">.</span><span class="n">function_space</span><span class="p">()</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;EP model&quot;</span><span class="p">)</span>
+        <span class="n">utils</span><span class="o">.</span><span class="n">print_mesh_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ep_mesh</span><span class="p">,</span> <span class="n">total_dofs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="EMCoupling.cell_params"><a class="viewcode-back" href="../../../../api.html#simcardems.models.pureEP_ORdmm_Land.EMCoupling.cell_params">[docs]</a>    <span class="k">def</span> <span class="nf">cell_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ep_solver</span><span class="o">.</span><span class="n">ode_solver</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">parameters</span><span class="p">()</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ep_mesh</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">ep_mesh</span>
+
+<div class="viewcode-block" id="EMCoupling.update_prev_ep"><a class="viewcode-back" href="../../../../api.html#simcardems.models.pureEP_ORdmm_Land.EMCoupling.update_prev_ep">[docs]</a>    <span class="k">def</span> <span class="nf">update_prev_ep</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ep_solver</span><span class="o">.</span><span class="n">vs_</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ep_solver</span><span class="o">.</span><span class="n">vs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="EMCoupling.save_state"><a class="viewcode-back" href="../../../../api.html#simcardems.models.pureEP_ORdmm_Land.EMCoupling.save_state">[docs]</a>    <span class="k">def</span> <span class="nf">save_state</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Config</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">save_state</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">HDF5File</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">comm</span><span class="p">(),</span>
+            <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">as_posix</span><span class="p">(),</span>
+            <span class="s2">&quot;a&quot;</span><span class="p">,</span>
+        <span class="p">)</span> <span class="k">as</span> <span class="n">h5file</span><span class="p">:</span>
+            <span class="n">h5file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ep_solver</span><span class="o">.</span><span class="n">vs</span><span class="p">,</span> <span class="s2">&quot;/ep/vs&quot;</span><span class="p">)</span>
+
+        <span class="n">io</span><span class="o">.</span><span class="n">dict_to_h5</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cell_params</span><span class="p">(),</span>
+            <span class="n">path</span><span class="p">,</span>
+            <span class="s2">&quot;ep/cell_params&quot;</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="EMCoupling.from_state"><a class="viewcode-back" href="../../../../api.html#simcardems.models.pureEP_ORdmm_Land.EMCoupling.from_state">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_state</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+        <span class="n">drug_factors_file</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">popu_factors_file</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">disease_state</span><span class="o">=</span><span class="s2">&quot;healthy&quot;</span><span class="p">,</span>
+        <span class="n">PCL</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseEMCoupling</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Load state from path </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;File </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> does not exist&quot;</span><span class="p">)</span>
+
+        <span class="n">geo</span> <span class="o">=</span> <span class="n">load_geometry</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">schema_path</span><span class="o">=</span><span class="n">path</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">&quot;.json&quot;</span><span class="p">))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Open file with h5py&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">h5pyfile</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">as</span> <span class="n">h5file</span><span class="p">:</span>
+            <span class="n">config</span> <span class="o">=</span> <span class="n">Config</span><span class="p">(</span><span class="o">**</span><span class="n">io</span><span class="o">.</span><span class="n">h5_to_dict</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">]))</span>
+            <span class="n">state_params</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">h5_to_dict</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;state_params&quot;</span><span class="p">])</span>
+            <span class="n">cell_params</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">h5_to_dict</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;ep&quot;</span><span class="p">][</span><span class="s2">&quot;cell_params&quot;</span><span class="p">])</span>
+            <span class="n">vs_signature</span> <span class="o">=</span> <span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;ep&quot;</span><span class="p">][</span><span class="s2">&quot;vs&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;signature&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+
+        <span class="n">config</span><span class="o">.</span><span class="n">drug_factors_file</span> <span class="o">=</span> <span class="n">drug_factors_file</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">popu_factors_file</span> <span class="o">=</span> <span class="n">popu_factors_file</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">disease_state</span> <span class="o">=</span> <span class="n">disease_state</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">PCL</span> <span class="o">=</span> <span class="n">PCL</span>
+
+        <span class="n">VS</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">FunctionSpace</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">ep_mesh</span><span class="p">,</span> <span class="nb">eval</span><span class="p">(</span><span class="n">vs_signature</span><span class="p">))</span>
+        <span class="n">vs</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">VS</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Load functions&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">HDF5File</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">ep_mesh</span><span class="o">.</span><span class="n">mpi_comm</span><span class="p">(),</span> <span class="n">path</span><span class="o">.</span><span class="n">as_posix</span><span class="p">(),</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">h5file</span><span class="p">:</span>
+            <span class="n">h5file</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">vs</span><span class="p">,</span> <span class="s2">&quot;/ep/vs&quot;</span><span class="p">)</span>
+
+        <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">CellModel</span><span class="p">,</span> <span class="n">ActiveModel</span>
+
+        <span class="n">cell_inits</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">vs_functions_to_dict</span><span class="p">(</span>
+            <span class="n">vs</span><span class="p">,</span>
+            <span class="n">state_names</span><span class="o">=</span><span class="n">CellModel</span><span class="o">.</span><span class="n">default_initial_conditions</span><span class="p">()</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">setup_EM_model</span><span class="p">(</span>
+            <span class="n">cls_EMCoupling</span><span class="o">=</span><span class="bp">cls</span><span class="p">,</span>
+            <span class="n">cls_CellModel</span><span class="o">=</span><span class="n">CellModel</span><span class="p">,</span>
+            <span class="n">cls_ActiveModel</span><span class="o">=</span><span class="n">ActiveModel</span><span class="p">,</span>
+            <span class="n">geometry</span><span class="o">=</span><span class="n">geo</span><span class="p">,</span>
+            <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
+            <span class="n">cell_inits</span><span class="o">=</span><span class="n">cell_inits</span><span class="p">,</span>
+            <span class="n">cell_params</span><span class="o">=</span><span class="n">cell_params</span><span class="p">,</span>
+            <span class="n">state_params</span><span class="o">=</span><span class="n">state_params</span><span class="p">,</span>
+        <span class="p">)</span></div></div>
+</pre></div>
+
+              </div>
+              
+            </main>
+            <footer class="footer-article noprint">
+                
+    <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+        </div>
+    </div>
+    <div class="footer-content row">
+        <footer class="col footer"><p>
+  
+    By Simula Research Laboratory<br/>
+  
+      &copy; Copyright 2022.<br/>
+</p>
+        </footer>
+    </div>
+    
+</div>
+
+
+      </div>
+    </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+
+
+  </body>
+</html>

@@ -1,0 +1,610 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>simcardems.slabgeometry &#8212; simcardems</title>
+    
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=5115cc725059bd94278eecd172e13a965bf8f5a9" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
+    
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../../_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="../../_static/sphinx-thebe.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
+<!-- Checkboxes to toggle the left sidebar -->
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle navigation sidebar">
+<label class="overlay overlay-navbar" for="__navigation">
+    <div class="visually-hidden">Toggle navigation sidebar</div>
+</label>
+<!-- Checkboxes to toggle the in-page toc -->
+<input type="checkbox" class="sidebar-toggle" name="__page-toc" id="__page-toc" aria-label="Toggle in-page Table of Contents">
+<label class="overlay overlay-pagetoc" for="__page-toc">
+    <div class="visually-hidden">Toggle in-page Table of Contents</div>
+</label>
+<!-- Headers at the top -->
+<div class="announcement header-item noprint"></div>
+<div class="header header-item noprint"></div>
+
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<!-- Sidebar -->
+<div class="bd-sidebar noprint" id="site-navigation">
+    <div class="bd-sidebar__content">
+        <div class="bd-sidebar__top"><div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="../../index.html">
+      
+        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+        
+      
+      
+      <img src="../../_static/logo.png" class="logo" alt="logo">
+      
+      
+      <h1 class="site-logo" id="site-title">simcardems</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../index.html">
+                    Simula Cardiac Electro-Mechanics Solver
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Installation
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../install.html">
+   Installation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../install_docker.html">
+   Install with Docker
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../install_pip.html">
+   Install with
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     pip
+    </span>
+   </code>
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Mathematical Theory
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../mechanics_model.html">
+   Tissue level mechanics model
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../electrophysiology_model.html">
+   Tissue level electrophysiology model
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../cell_model.html">
+   Cellular model
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../electro_mechanical_coupling.html">
+   Electro-Mechanical coupling
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Demos
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../simple_demo.html">
+   Simple demo
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../initial_conditions_demo.html">
+   initial conditions demo
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../release_test.html">
+   Release test
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../drug_effects_demo.html">
+   Drug effects demo
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../ventricular_geometry.html">
+   Left ventricular geometry
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../custom_cell_model_pure_ep.html">
+   Custom model (pure EP)
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../extract_currents.html">
+   Extracting currents
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../tracking_values.html">
+   Tracking Values
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../custom_stimulus_domain.html">
+   Custom stimulus domain
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../cli.html">
+   Command line interface
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../docker.html">
+   Run using Docker
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../gui.html">
+   Graphical user interface
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Verification
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../benchmark.html">
+   Benchmark
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Postprocessing
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../visualization.html">
+   Data visualization
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Community
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../CONTRIBUTING.html">
+   Contributing
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Programmers reference
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../api.html">
+   API documentaion
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav></div>
+        <div class="bd-sidebar__bottom">
+             <!-- To handle the deprecated key -->
+            
+            <div class="navbar_extra_footer">
+            Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+            </div>
+            
+        </div>
+    </div>
+    <div id="rtd-footer-container"></div>
+</div>
+
+
+          
+
+
+          
+<!-- A tiny helper pixel to detect if we've scrolled -->
+<div class="sbt-scroll-pixel-helper"></div>
+<!-- Main content -->
+<div class="col py-0 content-container">
+    
+    <div class="header-article row sticky-top noprint">
+        
+
+
+
+<div class="col py-1 d-flex header-article-main">
+    <div class="header-article__left">
+        
+        <label for="__navigation"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="right"
+title="Toggle navigation"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-bars"></i>
+  </span>
+
+</label>
+
+        
+    </div>
+    <div class="header-article__right">
+<button onclick="toggleFullScreen()"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="bottom"
+title="Fullscreen mode"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+<div class="menu-dropdown menu-dropdown-repository-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Source repositories">
+      <i class="fab fa-github"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="https://github.com/ComputationalPhysiology/simcardems"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Source repository"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="headerbtn__text-container">repository</span>
+</a>
+
+      </li>
+      
+      <li>
+        <a href="https://github.com/ComputationalPhysiology/simcardems/issues/new?title=Issue%20on%20page%20%2F_modules/simcardems/slabgeometry.html&body=Your%20issue%20content%20here."
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Open an issue"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="headerbtn__text-container">open issue</span>
+</a>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+    </div>
+</div>
+
+<!-- Table of contents -->
+<div class="col-md-3 bd-toc show noprint">
+</div>
+    </div>
+    <div class="article row">
+        <div class="col pl-md-3 pl-lg-5 content-container">
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1></h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                    </div>
+                </div>
+            </div>
+            <main id="main-content" role="main">
+                
+              <div>
+                
+  <h1>Source code for simcardems.slabgeometry</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span> <span class="nn">dolfin</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pulse</span>
+<span class="kn">from</span> <span class="nn">cardiac_geometries.geometry</span> <span class="kn">import</span> <span class="n">MeshTypes</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">utils</span>
+<span class="kn">from</span> <span class="nn">.geometry</span> <span class="kn">import</span> <span class="n">BaseGeometry</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="create_boxmesh"><a class="viewcode-back" href="../../api.html#simcardems.slabgeometry.create_boxmesh">[docs]</a><span class="k">def</span> <span class="nf">create_boxmesh</span><span class="p">(</span><span class="n">lx</span><span class="p">,</span> <span class="n">ly</span><span class="p">,</span> <span class="n">lz</span><span class="p">,</span> <span class="n">dx</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">refinements</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="c1"># Create computational domain [0, lx] x [0, ly] x [0, lz]</span>
+    <span class="c1"># with resolution prescribed by benchmark or more refinements</span>
+
+    <span class="n">N</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rint</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+    <span class="n">mesh</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">BoxMesh</span><span class="p">(</span>
+        <span class="n">dolfin</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">,</span>
+        <span class="n">dolfin</span><span class="o">.</span><span class="n">Point</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+        <span class="n">dolfin</span><span class="o">.</span><span class="n">Point</span><span class="p">(</span><span class="n">lx</span><span class="p">,</span> <span class="n">ly</span><span class="p">,</span> <span class="n">lz</span><span class="p">),</span>
+        <span class="n">N</span><span class="p">(</span><span class="n">lx</span> <span class="o">/</span> <span class="n">dx</span><span class="p">),</span>
+        <span class="n">N</span><span class="p">(</span><span class="n">ly</span> <span class="o">/</span> <span class="n">dx</span><span class="p">),</span>
+        <span class="n">N</span><span class="p">(</span><span class="n">lz</span> <span class="o">/</span> <span class="n">dx</span><span class="p">),</span>
+    <span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">refinements</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Performing refinement </span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">mesh</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">refine</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">redistribute</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">mesh</span></div>
+
+
+<div class="viewcode-block" id="SlabGeometry"><a class="viewcode-back" href="../../api.html#simcardems.slabgeometry.SlabGeometry">[docs]</a><span class="k">class</span> <span class="nc">SlabGeometry</span><span class="p">(</span><span class="n">BaseGeometry</span><span class="p">):</span>
+<div class="viewcode-block" id="SlabGeometry.default_markers"><a class="viewcode-back" href="../../api.html#simcardems.slabgeometry.SlabGeometry.default_markers">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">default_markers</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;X0&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="s2">&quot;X1&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+            <span class="s2">&quot;Y0&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+            <span class="s2">&quot;Y1&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+            <span class="s2">&quot;Z0&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
+            <span class="s2">&quot;Z1&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span>
+        <span class="p">}</span></div>
+
+    <span class="k">def</span> <span class="nf">_default_microstructure</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">mesh</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">,</span>
+        <span class="n">ffun</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">cardiac_geometries</span> <span class="kn">import</span> <span class="n">slab_fibers</span>
+
+        <span class="k">return</span> <span class="n">slab_fibers</span><span class="o">.</span><span class="n">create_microstructure</span><span class="p">(</span>
+            <span class="n">function_space</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;fiber_space&quot;</span><span class="p">],</span>
+            <span class="n">mesh</span><span class="o">=</span><span class="n">mesh</span><span class="p">,</span>
+            <span class="n">ffun</span><span class="o">=</span><span class="n">ffun</span><span class="p">,</span>
+            <span class="n">markers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">markers</span><span class="p">,</span>
+            <span class="n">alpha_endo</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;fibers_angle_endo&quot;</span><span class="p">],</span>
+            <span class="n">alpha_epi</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;fibers_angle_epi&quot;</span><span class="p">],</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_default_ffun</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mesh</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">create_slab_facet_function</span><span class="p">(</span>
+            <span class="n">mesh</span><span class="o">=</span><span class="n">mesh</span><span class="p">,</span>
+            <span class="n">lx</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;lx&quot;</span><span class="p">],</span>
+            <span class="n">ly</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;ly&quot;</span><span class="p">],</span>
+            <span class="n">lz</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;lz&quot;</span><span class="p">],</span>
+            <span class="n">markers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">markers</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_default_mesh</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">create_boxmesh</span><span class="p">(</span>
+            <span class="o">**</span><span class="p">{</span>
+                <span class="n">k</span><span class="p">:</span> <span class="n">v</span>
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;lx&quot;</span><span class="p">,</span> <span class="s2">&quot;ly&quot;</span><span class="p">,</span> <span class="s2">&quot;lz&quot;</span><span class="p">,</span> <span class="s2">&quot;dx&quot;</span><span class="p">]</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="SlabGeometry.default_parameters"><a class="viewcode-back" href="../../api.html#simcardems.slabgeometry.SlabGeometry.default_parameters">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">default_parameters</span><span class="p">():</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">lx</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>
+            <span class="n">ly</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
+            <span class="n">lz</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>
+            <span class="n">dx</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+            <span class="n">fibers_angle_endo</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">fibers_angle_epi</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">fiber_space</span><span class="o">=</span><span class="s2">&quot;Quadrature_3&quot;</span><span class="p">,</span>
+            <span class="n">num_refinements</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">mesh_type</span><span class="o">=</span><span class="n">MeshTypes</span><span class="o">.</span><span class="n">slab</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="SlabGeometry.validate"><a class="viewcode-back" href="../../api.html#simcardems.slabgeometry.SlabGeometry.validate">[docs]</a>    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;lx=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;lx&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;ly=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;ly&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;lz=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;lz&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;dx=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;dx&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;num_refinements=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;num_refinements&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="create_slab_facet_function"><a class="viewcode-back" href="../../api.html#simcardems.slabgeometry.create_slab_facet_function">[docs]</a><span class="k">def</span> <span class="nf">create_slab_facet_function</span><span class="p">(</span>
+    <span class="n">mesh</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">,</span>
+    <span class="n">lx</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">ly</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">lz</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">markers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">markers</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">markers</span> <span class="o">=</span> <span class="n">SlabGeometry</span><span class="o">.</span><span class="n">default_markers</span><span class="p">()</span>
+    <span class="c1"># Define domain to apply dirichlet boundary conditions</span>
+    <span class="n">x0</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">CompiledSubDomain</span><span class="p">(</span><span class="s2">&quot;near(x[0], 0) &amp;&amp; on_boundary&quot;</span><span class="p">)</span>
+    <span class="n">x1</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">CompiledSubDomain</span><span class="p">(</span><span class="s2">&quot;near(x[0], lx) &amp;&amp; on_boundary&quot;</span><span class="p">,</span> <span class="n">lx</span><span class="o">=</span><span class="n">lx</span><span class="p">)</span>
+    <span class="n">y0</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">CompiledSubDomain</span><span class="p">(</span><span class="s2">&quot;near(x[1], 0) &amp;&amp; on_boundary&quot;</span><span class="p">)</span>
+    <span class="n">y1</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">CompiledSubDomain</span><span class="p">(</span><span class="s2">&quot;near(x[1], ly) &amp;&amp; on_boundary&quot;</span><span class="p">,</span> <span class="n">ly</span><span class="o">=</span><span class="n">ly</span><span class="p">)</span>
+    <span class="n">z0</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">CompiledSubDomain</span><span class="p">(</span><span class="s2">&quot;near(x[2], 0) &amp;&amp; on_boundary&quot;</span><span class="p">)</span>
+    <span class="n">z1</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">CompiledSubDomain</span><span class="p">(</span><span class="s2">&quot;near(x[2], lz) &amp;&amp; on_boundary&quot;</span><span class="p">,</span> <span class="n">lz</span><span class="o">=</span><span class="n">lz</span><span class="p">)</span>
+
+    <span class="n">ffun</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">(</span><span class="s2">&quot;size_t&quot;</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">mesh</span><span class="o">.</span><span class="n">topology</span><span class="p">()</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">ffun</span><span class="o">.</span><span class="n">set_all</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">x0</span><span class="o">.</span><span class="n">mark</span><span class="p">(</span><span class="n">ffun</span><span class="p">,</span> <span class="n">markers</span><span class="p">[</span><span class="s2">&quot;X0&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">x1</span><span class="o">.</span><span class="n">mark</span><span class="p">(</span><span class="n">ffun</span><span class="p">,</span> <span class="n">markers</span><span class="p">[</span><span class="s2">&quot;X1&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">y0</span><span class="o">.</span><span class="n">mark</span><span class="p">(</span><span class="n">ffun</span><span class="p">,</span> <span class="n">markers</span><span class="p">[</span><span class="s2">&quot;Y0&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">y1</span><span class="o">.</span><span class="n">mark</span><span class="p">(</span><span class="n">ffun</span><span class="p">,</span> <span class="n">markers</span><span class="p">[</span><span class="s2">&quot;Y1&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">z0</span><span class="o">.</span><span class="n">mark</span><span class="p">(</span><span class="n">ffun</span><span class="p">,</span> <span class="n">markers</span><span class="p">[</span><span class="s2">&quot;Z0&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">z1</span><span class="o">.</span><span class="n">mark</span><span class="p">(</span><span class="n">ffun</span><span class="p">,</span> <span class="n">markers</span><span class="p">[</span><span class="s2">&quot;Z1&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">ffun</span></div>
+
+
+<div class="viewcode-block" id="create_slab_microstructure"><a class="viewcode-back" href="../../api.html#simcardems.slabgeometry.create_slab_microstructure">[docs]</a><span class="k">def</span> <span class="nf">create_slab_microstructure</span><span class="p">(</span><span class="n">fiber_space</span><span class="p">,</span> <span class="n">mesh</span><span class="p">):</span>
+
+    <span class="n">family</span><span class="p">,</span> <span class="n">degree</span> <span class="o">=</span> <span class="n">fiber_space</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Set up microstructure&quot;</span><span class="p">)</span>
+    <span class="n">V_f</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">VectorFunctionSpace</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">family</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">degree</span><span class="p">))</span>
+    <span class="n">f0</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span>
+        <span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span>
+        <span class="n">V_f</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">s0</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span>
+        <span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span>
+        <span class="n">V_f</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">n0</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span>
+        <span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span>
+        <span class="n">V_f</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="c1"># Collect the microstructure</span>
+    <span class="k">return</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">(</span><span class="n">f0</span><span class="o">=</span><span class="n">f0</span><span class="p">,</span> <span class="n">s0</span><span class="o">=</span><span class="n">s0</span><span class="p">,</span> <span class="n">n0</span><span class="o">=</span><span class="n">n0</span><span class="p">)</span></div>
+</pre></div>
+
+              </div>
+              
+            </main>
+            <footer class="footer-article noprint">
+                
+    <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+        </div>
+    </div>
+    <div class="footer-content row">
+        <footer class="col footer"><p>
+  
+    By Simula Research Laboratory<br/>
+  
+      &copy; Copyright 2022.<br/>
+</p>
+        </footer>
+    </div>
+    
+</div>
+
+
+      </div>
+    </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+
+
+  </body>
+</html>
