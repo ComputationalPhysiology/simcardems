@@ -51,7 +51,7 @@ class Tomek_Land(CardiacCellModel):
          init_conditions (dict, :py:class:`dolfin.Mesh`, optional)
            optional initial conditions
         """
-        logger.debug("Initialize ORdmm Land model")
+        logger.debug("Initialize Tomek Land model")
 
         super().__init__(params, init_conditions)
         self.lmbda = lmbda
@@ -307,8 +307,6 @@ class Tomek_Land(CardiacCellModel):
                 ("xs2", 0),
                 ("Jrelnp", 0),
                 ("Jrelp", 0),
-                ("nai", 7),
-                ("nass", 7),
                 ("ki", 145),
                 ("kss", 145),
                 ("cass", 0.0001),
@@ -320,6 +318,8 @@ class Tomek_Land(CardiacCellModel):
                 ("TmB", 1),
                 ("Cd", 0),
                 ("cai", 0.0001),
+                ("nai", 7),
+                ("nass", 7),
             ],
         )
         return ic
@@ -367,8 +367,6 @@ class Tomek_Land(CardiacCellModel):
             xs2,
             Jrelnp,
             Jrelp,
-            nai,
-            nass,
             ki,
             kss,
             cass,
@@ -380,6 +378,8 @@ class Tomek_Land(CardiacCellModel):
             TmB,
             Cd,
             cai,
+            nai,
+            nass,
         ) = s
 
         # Assign parameters
@@ -964,8 +964,6 @@ class Tomek_Land(CardiacCellModel):
             xs2,
             Jrelnp,
             Jrelp,
-            nai,
-            nass,
             ki,
             kss,
             cass,
@@ -977,6 +975,8 @@ class Tomek_Land(CardiacCellModel):
             TmB,
             Cd,
             cai,
+            nai,
+            nass,
         ) = s
 
         # Assign parameters
@@ -1168,9 +1168,8 @@ class Tomek_Land(CardiacCellModel):
         # Expressions for the I_Na component
         mss = 1.0 / (ufl.elem_pow(1.0 + ufl.exp(-((v + 56.86) / 9.03)), 2.0))
         tm = 0.1292 * ufl.exp(
-            -1.0 * ufl.elem_pow((v + 45.79) / 15.54),
-            2.0,
-        ) + 0.06487 * ufl.exp(-1.0 * ufl.elem_pow((v - 4.823) / 51.12), 2.0)
+            -1.0 * ufl.elem_pow((v + 45.79) / 15.54, 2.0),
+        ) + 0.06487 * ufl.exp(-1.0 * ufl.elem_pow((v - 4.823) / 51.12, 2.0))
         F_expressions[1] = (mss - m) / tm
 
         ah = ufl.conditional(
@@ -1801,11 +1800,11 @@ class Tomek_Land(CardiacCellModel):
         Jtr = (cansr - cajsr) / 60.0
 
         # Expressions for the intracellular concentrations component
-        F_expressions[34] = JdiffNa * vss / vmyo + (
+        F_expressions[45] = JdiffNa * vss / vmyo + (
             -INa - INaL - INab - ICaNa_i - Isac_P_ns / 3.0 - 3.0 * INaCa_i - 3.0 * INaK
         ) * Acap / (F * vmyo)
-        F_expressions[35] = -JdiffNa + (-ICaNa_ss - 3.0 * INaCa_ss) * Acap / (F * vss)
-        F_expressions[36] = JdiffK * vss / vmyo + (
+        F_expressions[46] = -JdiffNa + (-ICaNa_ss - 3.0 * INaCa_ss) * Acap / (F * vss)
+        F_expressions[34] = JdiffK * vss / vmyo + (
             -ICaK_i
             - Isac_P_k
             - IK1
@@ -1817,20 +1816,20 @@ class Tomek_Land(CardiacCellModel):
             - Isac_P_ns / 3.0
             + 2.0 * INaK
         ) * Acap / (F * vmyo)
-        F_expressions[37] = -JdiffK - Acap * ICaK_ss / (F * vss)
+        F_expressions[35] = -JdiffK - Acap * ICaK_ss / (F * vss)
         Bcass = 1.0 / (
             1.0
             + BSLmax * KmBSL * ufl.elem_pow(KmBSL + cass, -2.0)
             + BSRmax * KmBSR * ufl.elem_pow(KmBSR + cass, -2.0)
         )
-        F_expressions[38] = (
+        F_expressions[36] = (
             -Jdiff
             + Jrel * vjsr / vss
             + 0.5 * (-ICaL + 2.0 * INaCa_ss) * Acap / (F * vss)
         ) * Bcass
-        F_expressions[39] = -Jtr * vjsr / vnsr + Jup
+        F_expressions[37] = -Jtr * vjsr / vnsr + Jup
         Bcajsr = 1.0 / (1.0 + csqnmax * kmcsqn * ufl.elem_pow(kmcsqn + cajsr, -2.0))
-        F_expressions[40] = (-Jrel + Jtr) * Bcajsr
+        F_expressions[38] = (-Jrel + Jtr) * Bcajsr
 
         # Expressions for the mechanics component
         kwu = -kws * scale_popu_kws + (kuw * scale_popu_kuw) * (
@@ -1861,10 +1860,10 @@ class Tomek_Land(CardiacCellModel):
         )
         gammasu = gammas * Max(zetas1, zetas2)
 
-        F_expressions[41] = (
+        F_expressions[39] = (
             kws * scale_drug_kws * scale_popu_kws * XW - XS * gammasu - XS * ksu
         )
-        F_expressions[42] = (
+        F_expressions[40] = (
             kuw * scale_drug_kuw * scale_popu_kuw * XU
             - kws * scale_drug_kws * scale_popu_kws * XW
             - XW * gammawu
@@ -1874,7 +1873,7 @@ class Tomek_Land(CardiacCellModel):
             cat50_ref * scale_popu_CaT50ref + Beta1 * (-1.0 + lambda_min12)
         ) * HF_scaling_cat50_ref
         CaTrpn = ufl.conditional(ufl.lt(CaTrpn, 0.0), 0.0, CaTrpn)
-        F_expressions[43] = (
+        F_expressions[41] = (
             ktrpn
             * scale_popu_kTRPN
             * (
@@ -1894,7 +1893,7 @@ class Tomek_Land(CardiacCellModel):
             )
         )
 
-        F_expressions[44] = (
+        F_expressions[42] = (
             ufl.conditional(
                 ufl.lt(ufl.elem_pow(CaTrpn, -(ntm * scale_popu_nTm) / 2.0), 100.0),
                 ufl.elem_pow(CaTrpn, -(ntm * scale_popu_nTm) / 2.0),
@@ -1911,10 +1910,10 @@ class Tomek_Land(CardiacCellModel):
         C = -1.0 + lambda_min12
         dCd = -Cd + C
         eta = ufl.conditional(ufl.lt(dCd, 0.0), etas, etal)
-        F_expressions[45] = p_k * (-Cd + C) / eta
+        F_expressions[43] = p_k * (-Cd + C) / eta
         Bcai = 1.0 / (1.0 + cmdnmax * kmcmdn * ufl.elem_pow(kmcmdn + cai, -2.0))
         J_TRPN = trpnmax * F_expressions[41]
-        F_expressions[46] = (
+        F_expressions[44] = (
             -J_TRPN
             + Jdiff * vss / vmyo
             - Jup * vnsr / vmyo
@@ -1928,4 +1927,4 @@ class Tomek_Land(CardiacCellModel):
         return 47
 
     def __str__(self):
-        return "ORdmm_Land_em_coupling cardiac cell model"
+        return "Tomek_Land_em_coupling cardiac cell model"
