@@ -9,7 +9,7 @@ import pulse
 import ufl
 
 from . import utils
-from .ORdmm_Land import ORdmm_Land as CellModel
+from .Tomek_Land import Tomek_Land as CellModel
 
 logger = utils.getLogger(__name__)
 
@@ -103,8 +103,8 @@ def setup_ep_model(
 
     # Define stimulation (NB: region of interest carried by the mesh
     # and assumptions in cbcbeat)
-    duration = 2.0  # ms
-    A = 50000.0  # mu A/cm^3
+    duration = 1.0  # ms
+    A = 53000.0  # mu A/cm^3
     cm2mm = 10.0
     factor = 1.0 / (chi * C_m)  # NB: cbcbeat convention
     amplitude = factor * A * (1.0 / cm2mm) ** 3  # mV/ms

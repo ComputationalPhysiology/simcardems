@@ -17,7 +17,7 @@ from . import mechanics_model
 from . import save_load_functions as io
 from . import utils
 from .em_model import EMCoupling
-from .ORdmm_Land import ORdmm_Land as CellModel
+from .Tomek_Land import Tomek_Land as CellModel
 
 logger = utils.getLogger(__name__)
 

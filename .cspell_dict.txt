@@ -468,3 +468,4 @@ Zetaw
 zk
 zmax
 zmin
+Tomek
