@@ -1,9 +1,9 @@
 import json
 import typing
-import typing_extensions
 from pathlib import Path
 
 import click
+import typing_extensions
 
 from . import models
 from . import postprocess as post

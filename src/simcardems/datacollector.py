@@ -3,7 +3,6 @@ from enum import Enum
 from pathlib import Path
 from typing import Dict
 from typing import List
-from typing_extensions import Literal
 from typing import Optional
 from typing import Tuple
 from typing import Union
@@ -16,6 +15,7 @@ import pulse
 from dolfin import FiniteElement  # noqa: F401
 from dolfin import tetrahedron  # noqa: F401
 from dolfin import VectorElement  # noqa: F401
+from typing_extensions import Literal
 
 from . import utils
 from .geometry import BaseGeometry
