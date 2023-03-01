@@ -85,7 +85,7 @@ class Tomek_Land(CardiacCellModel):
                 ("scale_INaL", 2.274),
                 ("celltype", 0),
                 ("cao", 1.8),
-                ("ko", 5.4),
+                ("ko", 5.0),
                 ("nao", 140.0),
                 ("F", 96485.0),
                 ("R", 8314.0),
@@ -93,13 +93,13 @@ class Tomek_Land(CardiacCellModel):
                 ("L", 0.01),
                 ("rad", 0.0011),
                 ("Ahf", 0.99),
-                ("GNa", 31),
+                ("GNa", 11.7802),
                 ("thL", 200.0),
-                ("Gto", 0.02),
+                ("Gto", 0.16),
                 ("delta_epi", 1.0),
                 ("Aff", 0.6),
                 ("Kmn", 0.002),
-                ("k2n", 1000.0),
+                ("k2n", 500.0),
                 ("tjca", 75.0),
                 ("zca", 2.0),
                 ("bt", 4.75),
@@ -135,7 +135,7 @@ class Tomek_Land(CardiacCellModel):
                 ("aCaMK", 0.05),
                 ("bCaMK", 0.00068),
                 ("PKNa", 0.01833),
-                ("Gncx", 0.0008),
+                ("Gncx", 0.0034),
                 ("KmCaAct", 0.00015),
                 ("kasymm", 12.5),
                 ("kcaoff", 5000.0),
@@ -159,7 +159,7 @@ class Tomek_Land(CardiacCellModel):
                 ("Kxkur", 292.0),
                 ("MgADP", 0.05),
                 ("MgATP", 9.8),
-                ("Pnak", 30.0),
+                ("Pnak", 15.4509),
                 ("delta", -0.155),
                 ("eP", 4.2),
                 ("k1m", 182.4),
@@ -171,9 +171,9 @@ class Tomek_Land(CardiacCellModel):
                 ("k4m", 40.0),
                 ("k4p", 639.0),
                 ("zk", 1.0),
-                ("GKb", 0.003),
-                ("PNab", 3.75e-10),
-                ("PCab", 2.5e-08),
+                ("GKb", 0.0189),
+                ("PNab", 1.9239e-09),
+                ("PCab", 5.9194e-8),
                 ("GpCa", 0.0005),
                 ("Esac_ns", -10.0),
                 ("Gsac_k", 1.097904761904762),
@@ -298,7 +298,7 @@ class Tomek_Land(CardiacCellModel):
                 ("fcafp", 1),
                 ("nca", 0),
                 ("nca_i", 0),
-                ("c0", 1),
+                ("c0", 1.0),
                 ("c1", 0),
                 ("c2", 0),
                 ("o", 0),
@@ -1166,21 +1166,21 @@ class Tomek_Land(CardiacCellModel):
         vfrt = F * v / (R * T)
 
         # Expressions for the I_Na component
-        mss = 1.0 / (ufl.elem_pow(1.0 + ufl.exp(-((v + 56.86) / 9.03)), 2.0))
-        tm = 0.1292 * ufl.exp(
+        mss = 1.0 / (ufl.elem_pow(1.0 + ufl.exp(-1.0 * ((v + 56.86) / 9.03)), 2.0))
+        taum = 0.1292 * ufl.exp(
             -1.0 * ufl.elem_pow((v + 45.79) / 15.54, 2.0),
         ) + 0.06487 * ufl.exp(-1.0 * ufl.elem_pow((v - 4.823) / 51.12, 2.0))
-        F_expressions[1] = (mss - m) / tm
+        F_expressions[1] = (mss - m) / taum
 
         ah = ufl.conditional(
             ufl.lt(v, -40.0),
-            0.057 * ufl.exp(-((v + 80.0) / 6.8)),
+            0.057 * ufl.exp(-1.0 * ((v + 80.0) / 6.8)),
             0.0,
         )
         bh = ufl.conditional(
             ufl.lt(v, -40.0),
-            2.7 * ufl.exp(0.079 * v) + 310000 * ufl.exp(0.3485 * v),
-            0.13 * (1.0 + ufl.exp(-((v + 10.66) / 11.1))),
+            2.7 * ufl.exp(0.079 * v) + 3.1e5 * ufl.exp(0.3485 * v),
+            0.77 / (0.13 * (1.0 + ufl.exp(-1.0 * ((v + 10.66) / 11.1)))),
         )
         tauh = 1.0 / (ah + bh)
         hss = 1.0 / (ufl.elem_pow(1.0 + ufl.exp((v + 71.55) / 7.43), 2.0))
@@ -1203,7 +1203,7 @@ class Tomek_Land(CardiacCellModel):
         aj = ufl.conditional(
             ufl.lt(v, -40.0),
             (
-                (-25428 * ufl.exp(0.2444 * v) - 6.948 * 0.00001 * ufl.exp(-0.04391 * v))
+                (-25428 * ufl.exp(0.2444 * v) - 6.948e-6 * ufl.exp(-0.04391 * v))
                 * (v + 37.78)
             )
             / (1.0 + ufl.exp(0.311 * (v + 79.23))),
@@ -1211,18 +1211,18 @@ class Tomek_Land(CardiacCellModel):
         )
         bj = ufl.conditional(
             ufl.lt(v, -40.0),
-            (0.02424 * ufl.exp(-0.01052 * v)) / (1.0 + ufl.exp(-0.1 * (v + 32.0))),
+            (0.02424 * ufl.exp(-0.01052 * v)) / (1.0 + ufl.exp(-0.1378 * (v + 40.14))),
             (0.6 * ufl.exp(0.057 * v)) / (1.0 + ufl.exp(-0.1 * (v + 32.0))),
         )
-        tj = 1.0 / (aj + bj)
-        F_expressions[3] = (jss - j) / tj
+        tauj = 1.0 / (aj + bj)
+        F_expressions[3] = (jss - j) / tauj
 
         hssp = 1.0 / ufl.elem_pow(1.0 + ufl.exp((v + 71.55 + 6.0) / 7.43), 2.0)
         # thsp = 3.0 * ths
         F_expressions[4] = (hssp - hp) / tauh
         # hp = Ahf * hf + Ahs * hsp
-        tjp = 1.46 * tj
-        F_expressions[5] = (jss - jp) / tjp
+        taujp = 1.46 * tauj
+        F_expressions[5] = (jss - jp) / taujp
         fINap = 1.0 / (1.0 + KmCaMK / CaMKa)
         INa = (
             GNa
@@ -1234,8 +1234,10 @@ class Tomek_Land(CardiacCellModel):
         )
 
         # Expressions for the INaL component
-        mLss = 1.0 / (1.0 + 0.000291579585635531 * ufl.exp(-0.18996960486322187 * v))
-        tmL = tm
+        mLss = 1.0 / (1.0 + ufl.exp((-1.0 * (v + 42.85)) / 5.264))
+        tmL = 0.1292 * ufl.exp(
+            -1.0 * ufl.elem_pow((v + 45.79) / 15.54, 2.0),
+        ) + 0.06487 * ufl.exp(-1.0 * ufl.elem_pow((v - 4.823) / 51.12, 2.0))
         F_expressions[6] = (-mL + mLss) / tmL
         hLss = 1.0 / (1.0 + 120578.15595522427 * ufl.exp(0.13354700854700854 * v))
         F_expressions[7] = (-hL + hLss) / (thL * HF_scaling_thL)
@@ -1463,10 +1465,10 @@ class Tomek_Land(CardiacCellModel):
         alpha_c1 = 1.25 * 0.1235
         beta_c1 = 0.1911
         alpha_c2o = 0.0578 * ufl.exp(0.9710 * vfrt)
-        beta_c2o = 0.000349 * ufl.exp(-1.062 * vfrt)
+        beta_c2o = 0.349e-3 * ufl.exp(-1.062 * vfrt)
         alpha_oi = 0.2533 * ufl.exp(0.5953 * vfrt)
         beta_oi = 1.25 * 0.0522 * ufl.exp(-0.8209 * vfrt)
-        alpha_c2i = 0.000052 * ufl.exp(1.525 * vfrt)
+        alpha_c2i = 0.52e-4 * ufl.exp(1.525 * vfrt)
         beta_c2i = (beta_c2o * beta_oi * alpha_c2i) / (alpha_c2o * alpha_oi)
 
         F_expressions[25] = c1 * beta_c0 - c0 * alpha_c0
@@ -1825,7 +1827,7 @@ class Tomek_Land(CardiacCellModel):
         F_expressions[36] = (
             -Jdiff
             + Jrel * vjsr / vss
-            + 0.5 * (-ICaL + 2.0 * INaCa_ss) * Acap / (F * vss)
+            + 0.5 * (-ICaL_ss + 2.0 * INaCa_ss) * Acap / (F * vss)
         ) * Bcass
         F_expressions[37] = -Jtr * vjsr / vnsr + Jup
         Bcajsr = 1.0 / (1.0 + csqnmax * kmcsqn * ufl.elem_pow(kmcsqn + cajsr, -2.0))
