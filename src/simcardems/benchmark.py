@@ -16,7 +16,6 @@ import_time = time.perf_counter() - t0
 @click.command()
 @click.argument("outdir", required=True, type=click.Path())
 def main(outdir):
-
     data = {}
 
     data["import_time"] = import_time

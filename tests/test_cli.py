@@ -14,7 +14,6 @@ mesh_args = ["-lx", 1, "-ly", 1, "-lz", 1, "-dx", 1, "--num_refinements", 1]
 @pytest.mark.slow
 @pytest.mark.parametrize("coupling_type", simcardems.models.list_coupling_types())
 def test_run(coupling_type, tmp_path, geo):
-
     geometry_path = tmp_path / "geo.h5"
     geometry_schema_path = geometry_path.with_suffix(".json")
     geo.dump(fname=geometry_path, schema_path=geometry_schema_path)
@@ -73,7 +72,6 @@ def test_run(coupling_type, tmp_path, geo):
 
 @pytest.mark.slow
 def test_run_json(tmp_path, geo):
-
     geometry_path = tmp_path / "geo.h5"
     geometry_schema_path = geometry_path.with_suffix(".json")
     geo.dump(fname=geometry_path, schema_path=geometry_schema_path)

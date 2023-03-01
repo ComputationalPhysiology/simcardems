@@ -19,7 +19,6 @@ def test_create_slab_geometry_normal():
 
 
 def test_create_slab_geometry_with_mechanics_mesh():
-
     parameters = {"lx": 1, "ly": 1, "lz": 1, "dx": 1, "num_refinements": 1}
     mesh = dolfin.UnitCubeMesh(1, 1, 1)
     geo = slabgeometry.SlabGeometry(

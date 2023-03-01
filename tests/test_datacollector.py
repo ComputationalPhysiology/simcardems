@@ -8,7 +8,6 @@ import simcardems
 
 
 def test_DataCollector_reset_state_when_file_exists(tmp_path, geo):
-
     simcardems.DataCollector(tmp_path, geo=geo)
 
     with mock.patch("simcardems.utils.remove_file") as remove_file_mock:
@@ -18,7 +17,6 @@ def test_DataCollector_reset_state_when_file_exists(tmp_path, geo):
 
 
 def test_DataCollector_not_reset_state_when_file_exists(tmp_path, geo):
-
     simcardems.DataCollector(tmp_path, geo=geo)
 
     with mock.patch("simcardems.utils.remove_file") as remove_file_mock:
@@ -28,7 +26,6 @@ def test_DataCollector_not_reset_state_when_file_exists(tmp_path, geo):
 
 
 def test_DataCollector_create_file_with_geo(tmp_path, geo):
-
     collector = simcardems.DataCollector(tmp_path, geo=geo)
     assert Path(collector.results_file).is_file()
     with h5py.File(collector.results_file, "r") as h5file:
@@ -72,7 +69,6 @@ def test_DataCollector_store(group, geo, tmp_path):
 
 
 def test_DataLoader_load_empty_files_raises_ValueError(tmp_path, geo):
-
     collector = simcardems.DataCollector(tmp_path, geo=geo)
     with pytest.raises(ValueError):
         simcardems.DataLoader(collector.results_file)

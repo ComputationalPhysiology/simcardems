@@ -133,7 +133,6 @@ class Assigners:
         self._assign_mechanics(is_pre=False)
 
     def _assign_ep(self, is_pre: bool) -> None:
-
         functions, assigners, subspace_indices = self._get(is_pre)
 
         keys = assigners["ep"].keys()
@@ -220,7 +219,6 @@ class DataCollector:
                 f.create_dataset("version", data=__version__)
 
         else:
-
             try:
                 with h5pyfile(self._results_file, "r") as f:
                     self._times_stamps = set(f["ep"]["V"].keys())
@@ -281,7 +279,6 @@ class DataCollector:
         }
 
     def store(self, t: float) -> None:
-
         t_str = f"{t:.2f}"
         logger.debug(f"Store results at time {t_str}")
         if f"{t_str}" in self._times_stamps:
@@ -331,7 +328,6 @@ class DataCollector:
 
 
 def close_h5file(h5file):
-
     if h5file is not None:
         h5file.close()
 
@@ -350,7 +346,6 @@ def extract_string_from_h5py(dataset: Optional[h5py.Dataset]) -> Optional[str]:
 
 class DataLoader:
     def __init__(self, h5name: utils.PathLike, empty_ok: bool = False) -> None:
-
         self._h5file = None
         self._h5pyfile = None
         self._h5name = Path(h5name)

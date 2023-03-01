@@ -32,7 +32,6 @@ def setup_EM_model(
     mech_state_init: typing.Optional[dolfin.Function] = None,
     state_params: typing.Optional[typing.Dict[str, float]] = None,
 ) -> BaseEMCoupling:
-
     if config is None:
         config = Config()
 
@@ -85,7 +84,6 @@ def setup_EM_model_from_config(
     geometry: typing.Optional[_geometry.BaseGeometry] = None,
     state_params: typing.Optional[typing.Dict[str, float]] = None,
 ) -> BaseEMCoupling:
-
     if geometry is None:
         geometry = _geometry.load_geometry(
             mesh_path=config.geometry_path,

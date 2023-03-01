@@ -73,7 +73,6 @@ def refine_mesh(
     num_refinements: int,
     redistribute: bool = False,
 ) -> dolfin.Mesh:
-
     dolfin.parameters["refinement_algorithm"] = "plaza_with_parent_facets"
     for i in range(num_refinements):
         logger.info(f"Performing refinement {i+1}")
@@ -100,7 +99,6 @@ class BaseGeometry(abc.ABC):
         markers: Optional[Dict[str, Tuple[int, int]]] = None,
         outdir: Optional[utils.PathLike] = None,
     ) -> None:
-
         self.markers = type(self).default_markers()
         if markers is not None:
             self.markers.update(markers)
@@ -454,7 +452,6 @@ class BaseGeometry(abc.ABC):
         microstructure_path: Optional[utils.PathLike] = None,
         **kwargs,
     ):
-
         markers = cls.default_markers()
         if marker_path is not None:
             markers.update(json.loads(Path(marker_path).read_text()))

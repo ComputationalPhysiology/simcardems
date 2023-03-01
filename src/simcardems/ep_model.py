@@ -64,7 +64,6 @@ def setup_solver(
     preconditioner=Config.ep_preconditioner,
     PCL=Config.PCL,
 ) -> cbcbeat.SplittingSolver:
-
     # Set-up cardiac model
     ps = setup_splitting_solver_parameters(
         theta=theta,
@@ -104,7 +103,6 @@ def define_conductivity_tensor(
     chi: float = 140.0,
     C_m: float = 0.01,
 ):
-
     fiber = microstructure.f0
     sheet = microstructure.s0
     cross_sheet = microstructure.n0

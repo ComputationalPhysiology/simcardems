@@ -140,7 +140,6 @@ def create_slab_facet_function(
 
 
 def create_slab_microstructure(fiber_space, mesh):
-
     family, degree = fiber_space.split("_")
     logger.debug("Set up microstructure")
     V_f = dolfin.VectorFunctionSpace(mesh, family, int(degree))

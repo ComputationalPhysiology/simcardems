@@ -19,7 +19,6 @@ class Runner:
         config: typing.Optional[Config] = None,
         empty: bool = False,
     ) -> None:
-
         if config is None:
             config = Config()
 
@@ -128,7 +127,6 @@ class Runner:
         self.coupling.register_datacollector(self.collector)
 
     def _solve_mechanics_now(self) -> bool:
-
         if self._config.mechanics_solve_strategy == "fixed":
             return self.coupling.dt_mechanics > self._config.dt_mech
 
@@ -137,7 +135,6 @@ class Runner:
         return norm >= 0.05 or self.coupling.dt_mechanics > self._config.dt_mech
 
     def _post_mechanics_solve(self) -> None:
-
         # Update previous lmbda
         self.coupling.update_prev_mechanics()
         self.coupling.mechanics_to_coupling()
@@ -165,7 +162,6 @@ class Runner:
         show_progress_bar: bool = Config.show_progress_bar,
         st_progress: typing.Any = None,
     ):
-
         save_it = int(save_freq / self._dt)
         self._setup_time_stepper(T, use_ns=True, st_progress=st_progress)
 
@@ -174,7 +170,7 @@ class Runner:
             show_progress_bar=show_progress_bar,
         )
 
-        for (i, (t0, t)) in enumerate(pbar):
+        for i, (t0, t) in enumerate(pbar):
             logger.debug(
                 f"Solve EP model at step {i} from {TimeStepper.ns2ms(t0):.2f} ms to {TimeStepper.ns2ms(t):.2f} ms",
             )

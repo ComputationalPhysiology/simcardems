@@ -90,7 +90,6 @@ def check_file_exists(h5_filename, raise_on_false=True):
 
 
 def group_in_file(h5_filename, h5group):
-
     check_file_exists(h5_filename)
     exists = False
 
