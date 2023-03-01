@@ -1,3 +1,4 @@
+import json
 import typing
 from pathlib import Path
 
@@ -25,6 +26,8 @@ class Runner:
 
         self._config = config
         self.outdir.mkdir(exist_ok=True)
+        # Save config to outdir
+        (self.outdir / "config.json").write_text(json.dumps(self._config.as_dict()))
 
         from . import set_log_level
 
