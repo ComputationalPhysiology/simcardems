@@ -1,5 +1,6 @@
 import json
 import typing
+import typing_extensions
 from pathlib import Path
 
 import click
@@ -191,7 +192,7 @@ def run(
     spring: float,
     traction: float,
     fix_right_plane: bool,
-    coupling_type: typing.Literal[
+    coupling_type: typing_extensions.Literal[
         "fully_coupled_ORdmm_Land",
         "explicit_ORdmm_Land",
         "pureEP_ORdmm_Land",

@@ -3,7 +3,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Dict
 from typing import List
-from typing import Literal
+from typing_extensions import Literal
 from typing import Optional
 from typing import Tuple
 from typing import Union

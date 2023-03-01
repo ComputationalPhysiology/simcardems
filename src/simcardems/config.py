@@ -1,5 +1,6 @@
 import logging
 import typing
+import typing_extensions
 from dataclasses import dataclass
 
 import dolfin
@@ -34,7 +35,7 @@ class Config:
     popu_factors_file: utils.PathLike = ""
     disease_state: str = "healthy"
     dt_mech: float = 1.0
-    mechanics_solve_strategy: typing.Literal["fixed", "adaptive"] = "adaptive"
+    mechanics_solve_strategy: typing_extensions.Literal["fixed", "adaptive"] = "adaptive"
     # mechanics_ode_scheme: land_model.Scheme = land_model.Scheme.analytic
     ep_ode_scheme: str = "GRL1"
     ep_preconditioner: str = "sor"
@@ -43,7 +44,7 @@ class Config:
     mechanics_use_continuation: bool = False
     mechanics_use_custom_newton_solver: bool = False
     PCL: float = 1000
-    coupling_type: typing.Literal[
+    coupling_type: typing_extensions.Literal[
         "fully_coupled_ORdmm_Land",
         "explicit_ORdmm_Land",
         "pureEP_ORdmm_Land",
