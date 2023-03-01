@@ -298,11 +298,11 @@ class Tomek_Land(CardiacCellModel):
                 ("fcafp", 1),
                 ("nca", 0),
                 ("nca_i", 0),
-                ("c0", 1.0),
-                ("c1", 0),
-                ("c2", 0),
-                ("o", 0),
-                ("i", 0),
+                ("kr_c0", 1.0),
+                ("kr_c1", 0),
+                ("kr_c2", 0),
+                ("kr_o", 0),
+                ("kr_i", 0),
                 ("xs1", 0),
                 ("xs2", 0),
                 ("Jrelnp", 0),
@@ -358,11 +358,11 @@ class Tomek_Land(CardiacCellModel):
             fcafp,
             nca,
             nca_i,
-            c0,
-            c1,
-            c2,
-            o,
-            i,
+            kr_c0,
+            kr_c1,
+            kr_c2,
+            kr_o,
+            kr_i,
             xs1,
             xs2,
             Jrelnp,
@@ -649,7 +649,7 @@ class Tomek_Land(CardiacCellModel):
 
         # Expressions for the IKr component
         GKr = 0.0321 * scale_IKr * scale_drug_IKr * scale_popu_GKr
-        IKr = GKr * ufl.sqrt(ko / 5.0) * o * (-EK + v)
+        IKr = GKr * ufl.sqrt(ko / 5.0) * kr_o * (-EK + v)
 
         # Expressions for the IKs component
         KsCa = 1.0 + 0.6 / (1.0 + 6.481821026062645e-07 * ufl.elem_pow(1.0 / cai, 1.4))
@@ -955,11 +955,11 @@ class Tomek_Land(CardiacCellModel):
             fcafp,
             nca,
             nca_i,
-            c0,
-            c1,
-            c2,
-            o,
-            i,
+            kr_c0,
+            kr_c1,
+            kr_c2,
+            kr_o,
+            kr_i,
             xs1,
             xs2,
             Jrelnp,
@@ -1471,16 +1471,22 @@ class Tomek_Land(CardiacCellModel):
         alpha_c2i = 0.52e-4 * ufl.exp(1.525 * vfrt)
         beta_c2i = (beta_c2o * beta_oi * alpha_c2i) / (alpha_c2o * alpha_oi)
 
-        F_expressions[25] = c1 * beta_c0 - c0 * alpha_c0
-        F_expressions[26] = c0 * alpha_c0 + c2 * beta_c1 - c1 * (beta_c0 + alpha_c1)
-        F_expressions[27] = (
-            c1 * alpha_c1
-            + o * beta_c2o
-            + i * beta_c2i
-            - c2 * (beta_c1 + alpha_c2o + alpha_c2i)
+        F_expressions[25] = kr_c1 * beta_c0 - kr_c0 * alpha_c0
+        F_expressions[26] = (
+            kr_c0 * alpha_c0 + kr_c2 * beta_c1 - kr_c1 * (beta_c0 + alpha_c1)
         )
-        F_expressions[28] = c2 * alpha_c2o + i * beta_oi - o * (beta_c2o + alpha_oi)
-        F_expressions[29] = c2 * alpha_c2i + o * alpha_oi - i * (beta_c2i + beta_oi)
+        F_expressions[27] = (
+            kr_c1 * alpha_c1
+            + kr_o * beta_c2o
+            + kr_i * beta_c2i
+            - kr_c2 * (beta_c1 + alpha_c2o + alpha_c2i)
+        )
+        F_expressions[28] = (
+            kr_c2 * alpha_c2o + kr_i * beta_oi - kr_o * (beta_c2o + alpha_oi)
+        )
+        F_expressions[29] = (
+            kr_c2 * alpha_c2i + kr_o * alpha_oi - kr_i * (beta_c2i + beta_oi)
+        )
 
         # xrss = 1.0 / (1.0 + 0.29287308872377504 * ufl.exp(-0.14729709824716453 * v))
         # txrf = 12.98 + 1.0 / (
@@ -1502,7 +1508,7 @@ class Tomek_Land(CardiacCellModel):
         # )
 
         GKr = 0.0321 * scale_IKr * scale_drug_IKr * scale_popu_GKr
-        IKr = GKr * ufl.sqrt(ko / 5.0) * o * (-EK + v)
+        IKr = GKr * ufl.sqrt(ko / 5.0) * kr_o * (-EK + v)
 
         # Expressions for the IKs component
         xs1ss = 1.0 / (1.0 + 0.27288596035656526 * ufl.exp(-0.11195700850873264 * v))
