@@ -418,6 +418,7 @@ title="Open an issue"
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 
 <span class="kn">import</span> <span class="nn">click</span>
+<span class="kn">import</span> <span class="nn">typing_extensions</span>
 
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">models</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">postprocess</span> <span class="k">as</span> <span class="n">post</span>
@@ -606,7 +607,7 @@ title="Open an issue"
     <span class="n">spring</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">traction</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">fix_right_plane</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
-    <span class="n">coupling_type</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Literal</span><span class="p">[</span>
+    <span class="n">coupling_type</span><span class="p">:</span> <span class="n">typing_extensions</span><span class="o">.</span><span class="n">Literal</span><span class="p">[</span>
         <span class="s2">&quot;fully_coupled_ORdmm_Land&quot;</span><span class="p">,</span>
         <span class="s2">&quot;explicit_ORdmm_Land&quot;</span><span class="p">,</span>
         <span class="s2">&quot;pureEP_ORdmm_Land&quot;</span><span class="p">,</span>
@@ -651,7 +652,6 @@ title="Open an issue"
 
 
 <div class="viewcode-block" id="main"><a class="viewcode-back" href="../../api.html#simcardems.cli.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">Config</span><span class="p">]):</span>
-
     <span class="k">if</span> <span class="n">config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">config</span> <span class="o">=</span> <span class="n">Config</span><span class="p">()</span>
 

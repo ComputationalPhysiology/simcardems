@@ -418,7 +418,6 @@ title="Open an issue"
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Literal</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
@@ -431,6 +430,7 @@ title="Open an issue"
 <span class="kn">from</span> <span class="nn">dolfin</span> <span class="kn">import</span> <span class="n">FiniteElement</span>  <span class="c1"># noqa: F401</span>
 <span class="kn">from</span> <span class="nn">dolfin</span> <span class="kn">import</span> <span class="n">tetrahedron</span>  <span class="c1"># noqa: F401</span>
 <span class="kn">from</span> <span class="nn">dolfin</span> <span class="kn">import</span> <span class="n">VectorElement</span>  <span class="c1"># noqa: F401</span>
+<span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Literal</span>
 
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">utils</span>
 <span class="kn">from</span> <span class="nn">.geometry</span> <span class="kn">import</span> <span class="n">BaseGeometry</span>
@@ -548,7 +548,6 @@ title="Open an issue"
         <span class="bp">self</span><span class="o">.</span><span class="n">_assign_mechanics</span><span class="p">(</span><span class="n">is_pre</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_assign_ep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">is_pre</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-
         <span class="n">functions</span><span class="p">,</span> <span class="n">assigners</span><span class="p">,</span> <span class="n">subspace_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="n">is_pre</span><span class="p">)</span>
 
         <span class="n">keys</span> <span class="o">=</span> <span class="n">assigners</span><span class="p">[</span><span class="s2">&quot;ep&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
@@ -635,7 +634,6 @@ title="Open an issue"
                 <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;version&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">__version__</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
-
             <span class="k">try</span><span class="p">:</span>
                 <span class="k">with</span> <span class="n">h5pyfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_results_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_times_stamps</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s2">&quot;ep&quot;</span><span class="p">][</span><span class="s2">&quot;V&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
@@ -696,7 +694,6 @@ title="Open an issue"
         <span class="p">}</span>
 
 <div class="viewcode-block" id="DataCollector.store"><a class="viewcode-back" href="../../api.html#simcardems.datacollector.DataCollector.store">[docs]</a>    <span class="k">def</span> <span class="nf">store</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-
         <span class="n">t_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">t</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Store results at time </span><span class="si">{</span><span class="n">t_str</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">t_str</span><span class="si">}</span><span class="s2">&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_times_stamps</span><span class="p">:</span>
@@ -746,7 +743,6 @@ title="Open an issue"
 
 
 <div class="viewcode-block" id="close_h5file"><a class="viewcode-back" href="../../api.html#simcardems.datacollector.close_h5file">[docs]</a><span class="k">def</span> <span class="nf">close_h5file</span><span class="p">(</span><span class="n">h5file</span><span class="p">):</span>
-
     <span class="k">if</span> <span class="n">h5file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">h5file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
@@ -765,7 +761,6 @@ title="Open an issue"
 
 <div class="viewcode-block" id="DataLoader"><a class="viewcode-back" href="../../api.html#simcardems.datacollector.DataLoader">[docs]</a><span class="k">class</span> <span class="nc">DataLoader</span><span class="p">:</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h5name</span><span class="p">:</span> <span class="n">utils</span><span class="o">.</span><span class="n">PathLike</span><span class="p">,</span> <span class="n">empty_ok</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">_h5file</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_h5pyfile</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_h5name</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">h5name</span><span class="p">)</span>

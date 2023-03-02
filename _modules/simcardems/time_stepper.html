@@ -490,7 +490,6 @@ title="Open an issue"
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Please assign an end time to time stepper&quot;</span><span class="p">)</span>
         <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">:</span>
-
             <span class="n">prev_t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">step</span> <span class="o">+=</span> <span class="mi">1</span>

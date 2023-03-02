@@ -472,7 +472,6 @@ title="Open an issue"
         <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">dofs</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-
         <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="s2">&quot;average&quot;</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">boundary</span><span class="o">.</span><span class="n">nodes</span><span class="p">():</span>

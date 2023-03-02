@@ -447,7 +447,6 @@ title="Open an issue"
     <span class="n">mech_state_init</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">state_params</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseEMCoupling</span><span class="p">:</span>
-
     <span class="k">if</span> <span class="n">config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">config</span> <span class="o">=</span> <span class="n">Config</span><span class="p">()</span>
 
@@ -500,7 +499,6 @@ title="Open an issue"
     <span class="n">geometry</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">_geometry</span><span class="o">.</span><span class="n">BaseGeometry</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">state_params</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseEMCoupling</span><span class="p">:</span>
-
     <span class="k">if</span> <span class="n">geometry</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">geometry</span> <span class="o">=</span> <span class="n">_geometry</span><span class="o">.</span><span class="n">load_geometry</span><span class="p">(</span>
             <span class="n">mesh_path</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">geometry_path</span><span class="p">,</span>

@@ -413,7 +413,8 @@ title="Open an issue"
               <div>
                 
   <h1>Source code for simcardems.runner</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">typing</span>
+<span></span><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">typing</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 
 <span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
@@ -434,12 +435,21 @@ title="Open an issue"
         <span class="n">config</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">Config</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">empty</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-
         <span class="k">if</span> <span class="n">config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">config</span> <span class="o">=</span> <span class="n">Config</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="n">config</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># Save config to outdir</span>
+
+        <span class="k">def</span> <span class="nf">serialize</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">Path</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">x</span>
+
+        <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outdir</span> <span class="o">/</span> <span class="s2">&quot;config.json&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">as_dict</span><span class="p">(),</span> <span class="n">default</span><span class="o">=</span><span class="n">serialize</span><span class="p">),</span>
+        <span class="p">)</span>
 
         <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">set_log_level</span>
 
@@ -543,7 +553,6 @@ title="Open an issue"
         <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">register_datacollector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">collector</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_solve_mechanics_now</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">mechanics_solve_strategy</span> <span class="o">==</span> <span class="s2">&quot;fixed&quot;</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">dt_mechanics</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">dt_mech</span>
 
@@ -552,7 +561,6 @@ title="Open an issue"
         <span class="k">return</span> <span class="n">norm</span> <span class="o">&gt;=</span> <span class="mf">0.05</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">dt_mechanics</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">dt_mech</span>
 
     <span class="k">def</span> <span class="nf">_post_mechanics_solve</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-
         <span class="c1"># Update previous lmbda</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">update_prev_mechanics</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">mechanics_to_coupling</span><span class="p">()</span>
@@ -580,7 +588,6 @@ title="Open an issue"
         <span class="n">show_progress_bar</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">Config</span><span class="o">.</span><span class="n">show_progress_bar</span><span class="p">,</span>
         <span class="n">st_progress</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-
         <span class="n">save_it</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">save_freq</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dt</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_setup_time_stepper</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">use_ns</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">st_progress</span><span class="o">=</span><span class="n">st_progress</span><span class="p">)</span>
 
@@ -589,7 +596,7 @@ title="Open an issue"
             <span class="n">show_progress_bar</span><span class="o">=</span><span class="n">show_progress_bar</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">t0</span><span class="p">,</span> <span class="n">t</span><span class="p">))</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pbar</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">t0</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pbar</span><span class="p">):</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Solve EP model at step </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> from </span><span class="si">{</span><span class="n">TimeStepper</span><span class="o">.</span><span class="n">ns2ms</span><span class="p">(</span><span class="n">t0</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> ms to </span><span class="si">{</span><span class="n">TimeStepper</span><span class="o">.</span><span class="n">ns2ms</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> ms&quot;</span><span class="p">,</span>
             <span class="p">)</span>

@@ -24,7 +24,6 @@ Different geometries might implement different types of reductions. For the the 
 ```python
 class EMCoupling(simcardems.models.fully_coupled_ORdmm_Land.EMCoupling):
     def register_datacollector(self, collector) -> None:
-
         for group_name, group in self.assigners.functions.items():
             for func_name, func in group.items():
                 reduction = "full" if func_name in ["V", "u"] else "center"

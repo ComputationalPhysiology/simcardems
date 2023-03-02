@@ -465,7 +465,6 @@ title="Open an issue"
     <span class="n">reduction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;average&quot;</span><span class="p">,</span>
     <span class="n">names</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]:</span>
-
     <span class="k">if</span> <span class="n">loader</span><span class="o">.</span><span class="n">time_stamps</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No data found in loader&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">{}</span>
@@ -503,7 +502,6 @@ title="Open an issue"
 
 
 <div class="viewcode-block" id="plot_state_traces"><a class="viewcode-back" href="../../api.html#simcardems.postprocess.plot_state_traces">[docs]</a><span class="k">def</span> <span class="nf">plot_state_traces</span><span class="p">(</span><span class="n">results_file</span><span class="p">:</span> <span class="n">utils</span><span class="o">.</span><span class="n">PathLike</span><span class="p">,</span> <span class="n">reduction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;average&quot;</span><span class="p">):</span>
-
     <span class="n">results_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">results_file</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">results_file</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
         <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;File </span><span class="si">{</span><span class="n">results_file</span><span class="si">}</span><span class="s2"> does not exist&quot;</span><span class="p">)</span>
@@ -571,7 +569,6 @@ title="Open an issue"
 
     <span class="c1"># If there is a residual.txt file: load and plot these results</span>
     <span class="k">if</span> <span class="n">loader</span><span class="o">.</span><span class="n">residual</span><span class="p">:</span>
-
         <span class="c1"># Back to initial dt and time points</span>
         <span class="c1"># dt = 0.05  # FIXME: Do we really want to hardcode in this value?</span>
         <span class="c1"># times_dt = np.arange(</span>
@@ -660,7 +657,6 @@ title="Open an issue"
 
 
 <div class="viewcode-block" id="make_xdmffiles"><a class="viewcode-back" href="../../api.html#simcardems.postprocess.make_xdmffiles">[docs]</a><span class="k">def</span> <span class="nf">make_xdmffiles</span><span class="p">(</span><span class="n">results_file</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-
     <span class="n">loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">results_file</span><span class="p">)</span>
     <span class="n">outdir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">results_file</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span>
 
@@ -747,7 +743,6 @@ title="Open an issue"
 
 
 <div class="viewcode-block" id="extract_last_beat"><a class="viewcode-back" href="../../api.html#simcardems.postprocess.extract_last_beat">[docs]</a><span class="k">def</span> <span class="nf">extract_last_beat</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">pacing</span><span class="p">,</span> <span class="n">return_interval</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-
     <span class="n">allbeats</span> <span class="o">=</span> <span class="n">apf</span><span class="o">.</span><span class="n">Beats</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="n">time</span><span class="p">,</span> <span class="n">pacing</span><span class="o">=</span><span class="n">pacing</span><span class="p">)</span>
 
     <span class="k">try</span><span class="p">:</span>
@@ -902,7 +897,6 @@ title="Open an issue"
 
 
 <div class="viewcode-block" id="numpyfy"><a class="viewcode-back" href="../../api.html#simcardems.postprocess.numpyfy">[docs]</a><span class="k">def</span> <span class="nf">numpyfy</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
-
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>

@@ -418,6 +418,7 @@ title="Open an issue"
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
 
 <span class="kn">import</span> <span class="nn">dolfin</span>
+<span class="kn">import</span> <span class="nn">typing_extensions</span>
 
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">utils</span>
 
@@ -449,7 +450,10 @@ title="Open an issue"
     <span class="n">popu_factors_file</span><span class="p">:</span> <span class="n">utils</span><span class="o">.</span><span class="n">PathLike</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
     <span class="n">disease_state</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;healthy&quot;</span>
     <span class="n">dt_mech</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span>
-    <span class="n">mechanics_solve_strategy</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;fixed&quot;</span><span class="p">,</span> <span class="s2">&quot;adaptive&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;adaptive&quot;</span>
+    <span class="n">mechanics_solve_strategy</span><span class="p">:</span> <span class="n">typing_extensions</span><span class="o">.</span><span class="n">Literal</span><span class="p">[</span>
+        <span class="s2">&quot;fixed&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;adaptive&quot;</span><span class="p">,</span>
+    <span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;adaptive&quot;</span>
     <span class="c1"># mechanics_ode_scheme: land_model.Scheme = land_model.Scheme.analytic</span>
     <span class="n">ep_ode_scheme</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;GRL1&quot;</span>
     <span class="n">ep_preconditioner</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;sor&quot;</span>
@@ -458,7 +462,7 @@ title="Open an issue"
     <span class="n">mechanics_use_continuation</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">mechanics_use_custom_newton_solver</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">PCL</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1000</span>
-    <span class="n">coupling_type</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Literal</span><span class="p">[</span>
+    <span class="n">coupling_type</span><span class="p">:</span> <span class="n">typing_extensions</span><span class="o">.</span><span class="n">Literal</span><span class="p">[</span>
         <span class="s2">&quot;fully_coupled_ORdmm_Land&quot;</span><span class="p">,</span>
         <span class="s2">&quot;explicit_ORdmm_Land&quot;</span><span class="p">,</span>
         <span class="s2">&quot;pureEP_ORdmm_Land&quot;</span><span class="p">,</span>
