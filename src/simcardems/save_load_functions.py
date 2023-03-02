@@ -168,6 +168,8 @@ def load_state(
         from .models.fully_coupled_ORdmm_Land import EMCoupling  # type: ignore
     elif config.coupling_type == "pureEP_ORdmm_Land":
         from .models.pureEP_ORdmm_Land import EMCoupling  # type: ignore
+    elif config.coupling_type == "fully_coupled_Tor_Land":
+        from .models.fully_coupled_Tor_Land import EMCoupling  # type: ignore
     else:
         raise ValueError(f"Invalid coupling type: {config.coupling_type}")
 
