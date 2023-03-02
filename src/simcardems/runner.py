@@ -26,7 +26,15 @@ class Runner:
         self._config = config
         self.outdir.mkdir(exist_ok=True)
         # Save config to outdir
-        (self.outdir / "config.json").write_text(json.dumps(self._config.as_dict()))
+
+        def serialize(x):
+            if isinstance(x, Path):
+                return x.as_posix()
+            return x
+
+        (self.outdir / "config.json").write_text(
+            json.dumps(self._config.as_dict(), default=serialize),
+        )
 
         from . import set_log_level
 

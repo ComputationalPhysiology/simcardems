@@ -36,7 +36,8 @@ class Config:
     disease_state: str = "healthy"
     dt_mech: float = 1.0
     mechanics_solve_strategy: typing_extensions.Literal[
-        "fixed", "adaptive",
+        "fixed",
+        "adaptive",
     ] = "adaptive"
     # mechanics_ode_scheme: land_model.Scheme = land_model.Scheme.analytic
     ep_ode_scheme: str = "GRL1"
