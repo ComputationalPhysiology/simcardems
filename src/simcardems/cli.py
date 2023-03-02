@@ -3,6 +3,7 @@ import typing
 from pathlib import Path
 
 import click
+import typing_extensions
 
 from . import models
 from . import postprocess as post
@@ -191,7 +192,7 @@ def run(
     spring: float,
     traction: float,
     fix_right_plane: bool,
-    coupling_type: typing.Literal[
+    coupling_type: typing_extensions.Literal[
         "fully_coupled_ORdmm_Land",
         "explicit_ORdmm_Land",
         "pureEP_ORdmm_Land",

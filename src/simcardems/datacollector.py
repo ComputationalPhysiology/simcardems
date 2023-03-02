@@ -3,7 +3,6 @@ from enum import Enum
 from pathlib import Path
 from typing import Dict
 from typing import List
-from typing import Literal
 from typing import Optional
 from typing import Tuple
 from typing import Union
@@ -16,6 +15,7 @@ import pulse
 from dolfin import FiniteElement  # noqa: F401
 from dolfin import tetrahedron  # noqa: F401
 from dolfin import VectorElement  # noqa: F401
+from typing_extensions import Literal
 
 from . import utils
 from .geometry import BaseGeometry
@@ -214,9 +214,14 @@ class DataCollector:
         if not self._results_file.is_file():
             geo.dump(self.results_file)
             from . import __version__
+            from packaging.version import parse
+
+            version = parse(__version__)
 
             with h5pyfile(self._results_file, "a") as f:
-                f.create_dataset("version", data=__version__)
+                f.create_dataset("version_major", data=version.major)
+                f.create_dataset("version_minor", data=version.minor)
+                f.create_dataset("version_micro", data=version.micro)
 
         else:
             try:
@@ -337,9 +342,9 @@ def close_h5pyfile(h5pyfile):
         h5pyfile.__exit__()
 
 
-def extract_string_from_h5py(dataset: Optional[h5py.Dataset]) -> Optional[str]:
+def extract_number_from_h5py(dataset: Optional[h5py.Dataset]) -> Optional[int]:
     if isinstance(dataset, h5py.Dataset):
-        return dataset[...].item().decode()
+        return dataset[...].item()
 
     return None
 
@@ -354,7 +359,16 @@ class DataLoader:
 
         self.geo = load_geometry(self._h5name)
         self._h5pyfile = h5pyfile(self._h5name, "r").__enter__()
-        self.version = extract_string_from_h5py(self._h5pyfile.get("version"))
+
+        self.version_major = extract_number_from_h5py(
+            self._h5pyfile.get("version_major"),
+        )
+        self.version_minor = extract_number_from_h5py(
+            self._h5pyfile.get("version_minor"),
+        )
+        self.version_micro = extract_number_from_h5py(
+            self._h5pyfile.get("version_micro"),
+        )
 
         # Find the remaining functions
         self.names = {
