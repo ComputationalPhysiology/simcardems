@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 from typing import Dict
+from typing import Iterable
 from typing import List
 from typing import Optional
 from typing import Tuple
@@ -527,3 +528,24 @@ def save_popu_json(population_folder, num_models):
 
     print("Start analysis of single node results")
     get_biomarkers(results, population_folder, num_models)
+
+
+def activation_map(
+    voltage: Iterable[dolfin.Function],
+    time_stamps: Iterable[float],
+    V: dolfin.FunctionSpace,
+    threshold: float = 0.0,
+    t0: float = 0.0,
+) -> dolfin.Function:
+    activation_map = dolfin.Function(V)
+    activation_map.vector()[:] = t0 - 1
+
+    for t, v in zip(time_stamps, voltage):
+        dofs = np.logical_and(
+            v.vector()[:] >= threshold,
+            activation_map.vector()[:] < t0,
+        )
+
+        activation_map.vector()[np.where(dofs)[0]] = float(t)
+
+    return activation_map
