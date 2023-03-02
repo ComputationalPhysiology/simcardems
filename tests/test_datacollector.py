@@ -77,4 +77,9 @@ def test_DataLoader_load_empty_files_raises_ValueError(tmp_path, geo):
 def test_DataCollector_store_version(tmp_path, geo):
     collector = simcardems.DataCollector(tmp_path, geo=geo)
     loader = simcardems.DataLoader(collector.results_file, empty_ok=True)
-    assert loader.version == simcardems.__version__
+    from packaging.version import parse
+
+    v = parse(simcardems.__version__)
+    assert loader.version_major == v.major
+    assert loader.version_minor == v.minor
+    assert loader.version_micro == v.micro
