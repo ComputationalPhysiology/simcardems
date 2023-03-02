@@ -2,6 +2,7 @@
 
 If you want to use docker please make sure to follow the installations step for how to install with {ref}`section:docker-install`.
 
+(creating-the-container)=
 ## Creating the container
 Once you have the `simcardems` docker image you can create the container as follows
 
@@ -11,6 +12,7 @@ docker run --name simcardems -v "$(pwd)":/app -p 8501:8501 -dit ghcr.io/computat
 This will create a a new container (aka a virtual machine) that you can use to execute the scripts.
 Note that after executing the `docker run` command, the container will be created and it will run in the background (daemon-mode).
 
+(execute-command-line-scripts)=
 ## Execute command line scripts
 
 You can now execute the command line script using the command
@@ -39,7 +41,7 @@ To start the container again you can execute the command
 ```
 docker start simcardems
 ```
-You can now do ahead the [execute the command line scripts](#execute-command-line-scripts) again.
+You can now do ahead the [execute the command line scripts](execute-command-line-scripts) again.
 
 ## Deleting the container
 
@@ -47,4 +49,4 @@ If you don't want to use the container anymore, of your need to rebuild the imag
 ```
 docker rm simcardems
 ```
-Note that in order to use the container again, you need to first [create the container](#creating-the-container).
+Note that in order to use the container again, you need to first [create the container](creating-the-container).
