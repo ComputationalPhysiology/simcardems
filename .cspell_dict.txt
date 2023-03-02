@@ -472,3 +472,12 @@ Zetaw
 zk
 zmax
 zmin
+Tomek
+diel
+Fjunc
+junc
+Clbk
+taum
+tauh
+tauj
+taujp
