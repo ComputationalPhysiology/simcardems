@@ -518,12 +518,12 @@ title="Print to PDF"
 <span class="n">runner</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">T</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">save_freq</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">save_freq</span><span class="p">,</span> <span class="n">show_progress_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Now let us only extract the results of the membrane potential, and compare the values in different points in the mesh. For the slab geometry we can for example evaluate the functions a the minimum and maximum $x$ values and at the center. To do this, we need to first load the results</span>
-<span class="n">loader</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">outdir</span> <span class="o">/</span> <span class="s2">&quot;results.h5&quot;</span><span class="p">)</span>
+<p>Now let us only extract the results of the membrane potential, and compare the values in different points in the mesh. For the slab geometry we can for example evaluate the functions a the minimum and maximum <span class="math notranslate nohighlight">\(x\)</span> values and at the center. To do this, we need to first load the results</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">loader</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">outdir</span> <span class="o">/</span> <span class="s2">&quot;results.h5&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># And then extract the relevant traces. Here we also provide a list of names, that contains a tuple of the group and name that we want to extract, e.g the name `&quot;V&quot;` from the group `&quot;ep&quot;`.</span>
-<span class="n">xmin_values</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">postprocess</span><span class="o">.</span><span class="n">extract_traces</span><span class="p">(</span>
+<p>And then extract the relevant traces. Here we also provide a list of names, that contains a tuple of the group and name that we want to extract, e.g the name <code class="docutils literal notranslate"><span class="pre">&quot;V&quot;</span></code> from the group <code class="docutils literal notranslate"><span class="pre">&quot;ep&quot;</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">xmin_values</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">postprocess</span><span class="o">.</span><span class="n">extract_traces</span><span class="p">(</span>
     <span class="n">loader</span><span class="p">,</span>
     <span class="n">reduction</span><span class="o">=</span><span class="s2">&quot;xmin&quot;</span><span class="p">,</span>
     <span class="n">names</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;ep&quot;</span><span class="p">,</span> <span class="s2">&quot;V&quot;</span><span class="p">)],</span>
@@ -550,23 +550,68 @@ title="Print to PDF"
 <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Time [ms]&quot;</span><span class="p">)</span>
 <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
 <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">20</span><span class="p">))</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">loader</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">,</span> <span class="n">xmin_values</span><span class="p">[</span><span class="s2">&quot;ep&quot;</span><span class="p">][</span><span class="s2">&quot;V&quot;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;xmin&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">loader</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">,</span> <span class="n">xmin_values</span><span class="p">[</span><span class="s2">&quot;ep&quot;</span><span class="p">][</span><span class="s2">&quot;V&quot;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;xmin&quot;</span><span class="p">)</span>
 <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">loader</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">,</span> <span class="n">xmax_values</span><span class="p">[</span><span class="s2">&quot;ep&quot;</span><span class="p">][</span><span class="s2">&quot;V&quot;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;xmax&quot;</span><span class="p">)</span>
 <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">loader</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">,</span> <span class="n">center_values</span><span class="p">[</span><span class="s2">&quot;ep&quot;</span><span class="p">][</span><span class="s2">&quot;V&quot;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">)</span>
 <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
 <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Time [ms]&quot;</span><span class="p">)</span>
 <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1100</span><span class="p">,</span> <span class="mi">200</span><span class="p">))</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">outdir</span> <span class="o">/</span> <span class="s2">&quot;voltage.png&quot;</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">outdir</span> <span class="o">/</span> <span class="s2">&quot;voltage.png&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <figure class="align-default" id="voltage-custom-stimulus-domain">
 <img alt="_images/voltage_custom_stimulus_domain.png" src="_images/voltage_custom_stimulus_domain.png" />
 <figcaption>
 <p><span class="caption-number">Fig. 10 </span><span class="caption-text">The membrane potential evaluated at three different points, with a stimulus domain at <span class="math notranslate nohighlight">\(x &lt; 1\)</span>. Left subplot shows a zoom in at the upstroke.</span><a class="headerlink" href="#voltage-custom-stimulus-domain" title="Permalink to this image">#</a></p>
+</figcaption>
+</figure>
+<p>It might also be interesting to look at the activation map and display the time it takes for the voltage to reach some threshold value.</p>
+<p>To do this we will first create an iterator the we can loop through and give us the next voltage function from the results</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">time_stamps</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">time_stamps</span> <span class="ow">or</span> <span class="p">[]</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">voltage_traces</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">time_stamps</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">loader</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ep&quot;</span><span class="p">,</span> <span class="s2">&quot;V&quot;</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Next we use a function for computing the activation map, and indicate that the threshold value should be 0.0. The activation map, will then be a function over the mesh where the value at a given point will be the time it takes for the voltage to first reach 0.0 mV.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">activation_map</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">postprocess</span><span class="o">.</span><span class="n">activation_map</span><span class="p">(</span>
+    <span class="n">voltage_traces</span><span class="p">(),</span>
+    <span class="n">time_stamps</span><span class="o">=</span><span class="n">time_stamps</span><span class="p">,</span>
+    <span class="n">V</span><span class="o">=</span><span class="n">loader</span><span class="o">.</span><span class="n">_functions</span><span class="p">[</span><span class="s2">&quot;ep&quot;</span><span class="p">][</span><span class="s2">&quot;V&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">function_space</span><span class="p">(),</span>
+    <span class="n">threshold</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>We can visualize this function in paraview</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">XDMFFile</span><span class="p">((</span><span class="n">outdir</span> <span class="o">/</span> <span class="s2">&quot;activation_map.xdmf&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">as_posix</span><span class="p">())</span> <span class="k">as</span> <span class="n">xdmf</span><span class="p">:</span>
+    <span class="n">xdmf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">activation_map</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-default" id="activation-map">
+<img alt="_images/activation_map.png" src="_images/activation_map.png" />
+<figcaption>
+<p><span class="caption-number">Fig. 11 </span><span class="caption-text">Activation map of all nodes in the mesh</span><a class="headerlink" href="#activation-map" title="Permalink to this image">#</a></p>
+</figcaption>
+</figure>
+<p>We can also compute the activation times for all points through the center of the mesh, from <span class="math notranslate nohighlight">\(x=0\)</span> to <span class="math notranslate nohighlight">\(x=L_x\)</span>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;lx&quot;</span><span class="p">],</span> <span class="mi">50</span><span class="p">)</span>
+<span class="n">act</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">activation_map</span><span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;ly&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;lz&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">xi</span> <span class="ow">in</span> <span class="n">x</span>
+<span class="p">]</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">act</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;$x$ coordinate&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Activation time [ms]&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">outdir</span> <span class="o">/</span> <span class="s2">&quot;activation_times.png&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-default" id="activation-times">
+<img alt="_images/activation_times.png" src="_images/activation_times.png" />
+<figcaption>
+<p><span class="caption-number">Fig. 12 </span><span class="caption-text">Activation times through the center of the mesh.</span><a class="headerlink" href="#activation-times" title="Permalink to this image">#</a></p>
 </figcaption>
 </figure>
 </section>
@@ -622,6 +667,7 @@ title="Print to PDF"
     By Simula Research Laboratory<br/>
   
       &copy; Copyright 2022.<br/>
+    Last updated on Mar 02, 2023.<br/>
 </p>
         </footer>
     </div>

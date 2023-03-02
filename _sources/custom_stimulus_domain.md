@@ -26,6 +26,7 @@ There are two way to specify the stimulus domain. One way is to define function 
 In this case, we are using a slab geometry of dimensions $[0, 5] \times [0, 2] \times [0, 1] \subset \mathbb{R}^3$, and we will mark the regions were $x < 1.0$ as the stimulus domain
 
 
+
 ```python
 def stimulus_domain(mesh):
     marker = 1
@@ -73,13 +74,16 @@ runner = simcardems.Runner.from_models(config=config, coupling=coupling)
 runner.solve(T=config.T, save_freq=config.save_freq, show_progress_bar=True)
 ```
 
+Now let us only extract the results of the membrane potential, and compare the values in different points in the mesh. For the slab geometry we can for example evaluate the functions a the minimum and maximum $x$ values and at the center. To do this, we need to first load the results
+
 ```python
-# Now let us only extract the results of the membrane potential, and compare the values in different points in the mesh. For the slab geometry we can for example evaluate the functions a the minimum and maximum $x$ values and at the center. To do this, we need to first load the results
 loader = simcardems.DataLoader(outdir / "results.h5")
 ```
 
+And then extract the relevant traces. Here we also provide a list of names, that contains a tuple of the group and name that we want to extract, e.g the name `"V"` from the group `"ep"`.
+
+
 ```python
-# And then extract the relevant traces. Here we also provide a list of names, that contains a tuple of the group and name that we want to extract, e.g the name `"V"` from the group `"ep"`.
 xmin_values = simcardems.postprocess.extract_traces(
     loader,
     reduction="xmin",
@@ -109,18 +113,12 @@ ax[0].set_ylabel("Voltage [mV]")
 ax[0].set_xlabel("Time [ms]")
 ax[0].set_xlim(0, 100)
 ax[0].set_xticks(np.arange(0, 100, 20))
-```
-
-```python
 ax[1].plot(loader.time_stamps, xmin_values["ep"]["V"], label="xmin")
 ax[1].plot(loader.time_stamps, xmax_values["ep"]["V"], label="xmax")
 ax[1].plot(loader.time_stamps, center_values["ep"]["V"], label="center")
 ax[1].legend()
 ax[1].set_xlabel("Time [ms]")
 ax[1].set_xticks(np.arange(0, 1100, 200))
-```
-
-```python
 fig.savefig(outdir / "voltage.png")
 ```
 
@@ -130,4 +128,68 @@ fig.savefig(outdir / "voltage.png")
 name: voltage_custom_stimulus_domain
 ---
 The membrane potential evaluated at three different points, with a stimulus domain at $x < 1$. Left subplot shows a zoom in at the upstroke.
+```
+
+It might also be interesting to look at the activation map and display the time it takes for the voltage to reach some threshold value.
+
+To do this we will first create an iterator the we can loop through and give us the next voltage function from the results
+
+
+
+```python
+time_stamps = loader.time_stamps or []
+```
+
+```python
+def voltage_traces():
+    for t in time_stamps:
+        yield loader.get("ep", "V", t)
+```
+
+Next we use a function for computing the activation map, and indicate that the threshold value should be 0.0. The activation map, will then be a function over the mesh where the value at a given point will be the time it takes for the voltage to first reach 0.0 mV.
+
+```python
+activation_map = simcardems.postprocess.activation_map(
+    voltage_traces(),
+    time_stamps=time_stamps,
+    V=loader._functions["ep"]["V"].function_space(),
+    threshold=0.0,
+)
+```
+
+We can visualize this function in paraview
+
+```python
+with dolfin.XDMFFile((outdir / "activation_map.xdmf").as_posix()) as xdmf:
+    xdmf.write(activation_map)
+```
+
+```{figure} figures/activation_map.png
+---
+name: activation_map
+---
+Activation map of all nodes in the mesh
+```
+
+We can also compute the activation times for all points through the center of the mesh, from $x=0$ to $x=L_x$.
+
+
+```python
+x = np.linspace(0, geo.parameters["lx"], 50)
+act = [
+    activation_map(xi, geo.parameters["ly"] / 2, geo.parameters["lz"] / 2) for xi in x
+]
+fig, ax = plt.subplots()
+ax.plot(x, act)
+ax.set_xlabel("$x$ coordinate")
+ax.set_ylabel("Activation time [ms]")
+ax.grid()
+fig.savefig(outdir / "activation_times.png")
+```
+
+```{figure} figures/activation_times.png
+---
+name: activation_times
+---
+Activation times through the center of the mesh.
 ```

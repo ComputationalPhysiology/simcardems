@@ -416,6 +416,7 @@ title="Open an issue"
 <span></span><span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterable</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
@@ -942,6 +943,27 @@ title="Open an issue"
 
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Start analysis of single node results&quot;</span><span class="p">)</span>
     <span class="n">get_biomarkers</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">population_folder</span><span class="p">,</span> <span class="n">num_models</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="activation_map"><a class="viewcode-back" href="../../api.html#simcardems.postprocess.activation_map">[docs]</a><span class="k">def</span> <span class="nf">activation_map</span><span class="p">(</span>
+    <span class="n">voltage</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">],</span>
+    <span class="n">time_stamps</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="n">V</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">FunctionSpace</span><span class="p">,</span>
+    <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">t0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">:</span>
+    <span class="n">activation_map</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+    <span class="n">activation_map</span><span class="o">.</span><span class="n">vector</span><span class="p">()[:]</span> <span class="o">=</span> <span class="n">t0</span> <span class="o">-</span> <span class="mi">1</span>
+
+    <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">time_stamps</span><span class="p">,</span> <span class="n">voltage</span><span class="p">):</span>
+        <span class="n">dofs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span>
+            <span class="n">v</span><span class="o">.</span><span class="n">vector</span><span class="p">()[:]</span> <span class="o">&gt;=</span> <span class="n">threshold</span><span class="p">,</span>
+            <span class="n">activation_map</span><span class="o">.</span><span class="n">vector</span><span class="p">()[:]</span> <span class="o">&lt;</span> <span class="n">t0</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">activation_map</span><span class="o">.</span><span class="n">vector</span><span class="p">()[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">dofs</span><span class="p">)[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">activation_map</span></div>
 </pre></div>
 
               </div>
@@ -961,6 +983,7 @@ title="Open an issue"
     By Simula Research Laboratory<br/>
   
       &copy; Copyright 2022.<br/>
+    Last updated on Mar 02, 2023.<br/>
 </p>
         </footer>
     </div>
