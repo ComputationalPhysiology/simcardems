@@ -51,7 +51,12 @@ def dict_to_h5(data, h5name, h5group):
         else:
             group = h5file.create_group(h5group)
         for k, v in data.items():
-            group.create_dataset(k, data=v)
+            try:
+                group.create_dataset(k, data=v)
+            except OSError:
+                logger.warning(
+                    f"Unable to save key {k} with data {v} in {h5name}/{h5group}",
+                )
 
 
 def decode(x):
