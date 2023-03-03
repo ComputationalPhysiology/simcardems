@@ -19,8 +19,6 @@ from .config import Config
 if TYPE_CHECKING:
     from .models.em_model import BaseEMCoupling
 
-# from .ORdmm_Land import ORdmm_Land as CellModel
-
 logger = utils.getLogger(__name__)
 
 

@@ -194,6 +194,7 @@ def run(
     fix_right_plane: bool,
     coupling_type: typing_extensions.Literal[
         "fully_coupled_ORdmm_Land",
+        "fully_coupled_Tor_Land",
         "explicit_ORdmm_Land",
         "pureEP_ORdmm_Land",
     ],
