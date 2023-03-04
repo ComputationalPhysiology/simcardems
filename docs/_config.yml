@@ -32,6 +32,7 @@ parse:
 
 sphinx:
   config:
+    suppress_warnings: ["mystnb.unknown_mime_type"]
     html_last_updated_fmt: "%b %d, %Y"
     bibtex_bibfiles: ["refs.bib"]
     html_js_files:
