@@ -16,6 +16,7 @@ Andr
 ap
 apidoc
 arange
+Arevalo
 argmin
 assp
 atol
@@ -55,6 +56,7 @@ Cécile
 cellmodel
 cellmodels
 celltype
+Clbk
 cmdnmax
 CMISS
 codecov
@@ -78,6 +80,7 @@ dfcafp
 dfcas
 dffp
 dhsp
+diel
 diriclet
 discretization
 discretized
@@ -121,6 +124,7 @@ figsize
 filt
 finalizer
 Finsberg
+Fjunc
 fmax
 fmin
 fonttype
@@ -131,6 +135,7 @@ gammas
 gammasu
 gammaw
 gammawu
+Gerarda
 GKb
 gmres
 GNa
@@ -145,6 +150,7 @@ Guccione
 H
 h5pyfile
 Herck
+Hermenegild
 hf
 HF_scaling_CaMKa
 HF_scaling_cat50_ref
@@ -190,6 +196,7 @@ Jrel
 Jrelnp
 Jrelp
 jsonfile
+junc
 Jupnp
 Jupp
 k1m
@@ -283,6 +290,7 @@ ndarray
 nestedkey
 neumann
 Neumann
+Nicolay
 Niederer
 nonconvergence
 ntm
@@ -400,6 +408,10 @@ subv
 sundnes
 superlu
 T
+tauh
+tauj
+taujp
+taum
 testgroup
 tfcaf
 tfcafp
@@ -412,6 +424,8 @@ timestep
 tjca
 TmB
 tolist
+Tomek
+Topnes
 Tot_A
 tqdm
 transmembrane
@@ -472,12 +486,3 @@ Zetaw
 zk
 zmax
 zmin
-Tomek
-diel
-Fjunc
-junc
-Clbk
-taum
-tauh
-tauj
-taujp

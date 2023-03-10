@@ -37,18 +37,18 @@ python3 -m pytest tests -vv
 See [the contributing section](https://computationalphysiology.github.io/simcardems/CONTRIBUTING.html)
 
 ## Citing
-If you use `simcardems` in your reseach, please cite it as follows
+If you use `simcardems` in your research, please cite it as follows
 ```
-@article{Finsberg2023, 
-  doi = {10.21105/joss.04753}, 
-  url = {https://doi.org/10.21105/joss.04753}, 
-  year = {2023}, 
-  publisher = {The Open Journal}, 
-  volume = {8}, 
-  number = {81}, 
-  pages = {4753}, 
-  author = {Henrik Nicolay Topnes Finsberg and Ilsbeth Gerarda Maria van Herck and Cécile Daversin-Catty and Hermenegild Arevalo and Samuel Wall}, 
-  title = {simcardems: A FEniCS-based cardiac electro-mechanics solver}, 
+@article{Finsberg2023,
+  doi = {10.21105/joss.04753},
+  url = {https://doi.org/10.21105/joss.04753},
+  year = {2023},
+  publisher = {The Open Journal},
+  volume = {8},
+  number = {81},
+  pages = {4753},
+  author = {Henrik Nicolay Topnes Finsberg and Ilsbeth Gerarda Maria van Herck and Cécile Daversin-Catty and Hermenegild Arevalo and Samuel Wall},
+  title = {simcardems: A FEniCS-based cardiac electro-mechanics solver},
   journal = {Journal of Open Source Software}
  }
 ```
