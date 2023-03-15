@@ -144,8 +144,8 @@ def create_lv_boundary_conditions(
         # Completely fix the base
         return [
             dolfin.DirichletBC(
-                W.sub(0).sub(0),
-                dolfin.Constant(0.0),
+                W.sub(0),
+                dolfin.Constant((0.0, 0.0, 0.0)),
                 geo.ffun,
                 geo.markers["BASE"][0],
             ),
