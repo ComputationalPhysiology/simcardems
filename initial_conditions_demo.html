@@ -419,7 +419,9 @@ document.write(`
 </div>
 <p>Please see <a class="reference external" href="https://computationalphysiology.github.io/cardiac_geometries/">https://computationalphysiology.github.io/cardiac_geometries/</a> for more info about the geometries</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Specify path to the initial conditions for the cell model</span>
-<span class="n">initial_conditions_path</span> <span class="o">=</span> <span class="n">here</span> <span class="o">/</span> <span class="s2">&quot;initial_conditions/init_5000beats.json&quot;</span>
+<span class="n">initial_conditions_path</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">here</span> <span class="o">/</span> <span class="s2">&quot;initial_conditions/fully_coupled_ORdmm_Land/init_5000beats.json&quot;</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">Config</span><span class="p">(</span>
@@ -544,7 +546,7 @@ By Simula Research Laboratory
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Mar 14, 2023.
+  Last updated on Mar 15, 2023.
   <br/>
 </p>
   </div>
