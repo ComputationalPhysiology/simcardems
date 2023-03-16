@@ -35,6 +35,7 @@ class Config:
     popu_factors_file: utils.PathLike = ""
     disease_state: str = "healthy"
     dt_mech: float = 1.0
+    mech_threshold: float = 0.05
     mechanics_solve_strategy: typing_extensions.Literal[
         "fixed",
         "adaptive",
