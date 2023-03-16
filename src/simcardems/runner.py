@@ -143,7 +143,10 @@ class Runner:
 
         self.coupling.assigners.assign_pre()
         norm = self.coupling.assigners.compute_pre_norm()
-        return norm >= 0.05 or self.coupling.dt_mechanics > self._config.dt_mech
+        return (
+            norm >= self._config.mech_threshold
+            or self.coupling.dt_mechanics > self._config.dt_mech
+        )
 
     def _post_mechanics_solve(self) -> None:
         # Update previous lmbda
