@@ -1,12 +1,23 @@
-from pathlib import Path
+# # Patient specific geometry
+#
+# In this demo we show to use `simcardems` on a patient specific geometry coming from `gmsh`. We have uploaded a [gmsh file](https://github.com/ComputationalPhysiology/simcardems/blob/main/demos/geometries/patient.msh) of an LV geometry where the basal, endocardial and epicardial surfaces are marked. In order to run a simulation we need to first convert this geometry into FEniCS format and then generate some fiber orientations. To convert the mesh we will use a library called [`cardiac-geometries`](https://computationalphysiology.github.io/cardiac_geometries/) and we will generate rule-based fiber orientations using the [`ldrb algorithm`](https://finsberg.github.io/ldrb/README.html).
+#
+# First we make the necessary imports.
 
+from pathlib import Path
 import cardiac_geometries
 import ldrb
 import simcardems
 import pulse
 
+# Next we use `cardiac-geometries` to convert the gmsh file into FEniCS format.
+#
+
 msh_file = "geometries/patient.msh"
 geo = cardiac_geometries.gmsh2dolfin(msh_file)
+
+# The `geo` object now contains the markers, but the `ldrb` algorithm expects the markers in a dictionary with keys `base`, `lv` and `epi` so we create a translation for this.
+#
 
 ldrb_markers = {
     "base": geo.markers["BASE"][0],
@@ -14,9 +25,11 @@ ldrb_markers = {
     "epi": geo.markers["EPI"][0],
 }
 
+# We also need to specify a function space for the fibers. In this example we will will first order discontinuous lagrange elements.
+
 fiber_space = "DG_1"
 
-# Create a dictionary of fiber angles
+# We also need so specify the fiber fiber orientations on the endo- and epicardium.
 
 angles = dict(
     alpha_endo_lv=60,  # Fiber angle on the endocardium
@@ -25,6 +38,7 @@ angles = dict(
     beta_epi_lv=0,
 )
 
+# Now we can run the ldrb algorithm in order to get the fibers (`f0`), sheets (`s0`) and sheet-normal (`n0`) directions. For some reason we also need to allow these functions to be extrapolated.
 
 f0, s0, n0 = ldrb.dolfin_ldrb(
     mesh=geo.mesh,
@@ -37,15 +51,15 @@ f0.set_allow_extrapolation(True)
 s0.set_allow_extrapolation(True)
 n0.set_allow_extrapolation(True)
 
+
+# Next we define a directory where to store the output
+
 here = Path(__file__).absolute().parent
 outdir = here / "results_patient_specific_lv"
 outdir.mkdir(exist_ok=True)
 
-# # dolfin.File((outdir / "ffun.pvd").as_posix()) << geo.marker_functions.ffun
-# # dolfin.File((outdir / "f0.pvd").as_posix()) << f0
-# print(geo.markers)
-# exit()
-
+# and then we can load the geometry into simcardems.
+#
 
 geometry = simcardems.lvgeometry.LeftVentricularGeometry(
     mechanics_mesh=geo.mesh,
@@ -55,11 +69,15 @@ geometry = simcardems.lvgeometry.LeftVentricularGeometry(
     parameters={"num_refinements": 1, "fiber_space": fiber_space},
 )
 
+# For this example we will use the Tor-Land model with some non-default initial conditions specified in the following file
+#
 
 # Specify path to the initial conditions for the cell model
 initial_conditions_path = (
     here / "initial_conditions/fully_coupled_Tor_Land/init_5000beats.json"
 )
+
+# We will run the simulation for 1000 milliseconds. We apply a spring on the epicardium to mimic the pericardium and we set the traction on the endocardium to zero.
 
 config = simcardems.Config(
     outdir=outdir,
@@ -70,49 +88,35 @@ config = simcardems.Config(
     cell_init_file=initial_conditions_path,
 )
 
-# And create the coupling. Note that, here we are using a different method than usual for creating the coupling, since we need to also supply the geometry.
+# Now we can create the coupling.
 
 coupling = simcardems.models.em_model.setup_EM_model_from_config(
     config=config,
     geometry=geometry,
 )
 
-# Next we create the runner, and solve the problem
+# And to make things move a little bit more we will set the reference active tension to 60 kPa.
+
+coupling.mech_solver.material.T_ref.assign(60)
+
+# Now we create the runner
 
 runner = simcardems.Runner.from_models(config=config, coupling=coupling)
 
-# # First inflate ventricle
+# but before we run the EM simulations, we will inflate the LV to a cavity pressure of 1 kPa.
+
 pulse.iterate.iterate(
     problem=runner.coupling.mech_solver,
     control=runner.coupling.mech_solver.bcs.neumann[0].traction,
     target=1.0,  # Set it to 1kPa
 )
 
+# Now we run the EM simulation.
 
-runner.solve(T=config.T, save_freq=config.save_freq, show_progress_bar=False)
-
-# Now let us only extract the results of the membrane potential, and compare the values in different points in the mesh. For the slab geometry we can for example evaluate the functions a the minimum and maximum $x$ values and at the center. To do this, we need to first load the results
-
-# loader = simcardems.DataLoader(outdir / "results.h5")
+runner.solve(T=config.T, save_freq=config.save_freq, show_progress_bar=True)
 
 
-# simcardems.postprocess.plot_state_traces(outdir.joinpath("results.h5"))
-
-#
-# Here the traces generated by averaging over this domain.
-
-
-# This will create a figure in the output directory called `state_traces.png` which in this case is shown in {numref}`Figure {number} <lv_demo_state_traces>` we see the resulting state traces, and can also see the instant drop in the active tension ($T_a$) at the time of the triggered release.
-#
-# ```{figure} figures/lv_demo_state_traces.png
-# ---
-# name: lv_demo_state_traces
-# ---
-# Traces of the stretch ($\lambda$), the active tension ($T_a$), the membrane potential ($V$) and the intercellular calcium concentration ($Ca$) at the center of the geometry.
-# ```
-
-#
-# We can also save the output to xdmf-files that can be viewed in Paraview
+# And save the output to xdmf-files that can be viewed in Paraview
 #
 
 simcardems.postprocess.make_xdmffiles(outdir.joinpath("results.h5"), names=["u"])
