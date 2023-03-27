@@ -5,6 +5,7 @@
 # First we make the necessary imports.
 
 from pathlib import Path
+import math
 import cardiac_geometries
 import ldrb
 import simcardems
@@ -15,6 +16,11 @@ import pulse
 
 msh_file = "geometries/patient.msh"
 geo = cardiac_geometries.gmsh2dolfin(msh_file)
+
+# Mesh is currently in centimeters. Let us make sure it in a unit so that we can use kPa directly without scaling it.
+#
+
+geo.mesh.scale(1 / math.sqrt(10))
 
 # The `geo` object now contains the markers, but the `ldrb` algorithm expects the markers in a dictionary with keys `base`, `lv` and `epi` so we create a translation for this.
 #
@@ -58,6 +64,7 @@ here = Path(__file__).absolute().parent
 outdir = here / "results_patient_specific_lv"
 outdir.mkdir(exist_ok=True)
 
+
 # and then we can load the geometry into simcardems.
 #
 
@@ -83,9 +90,9 @@ config = simcardems.Config(
     outdir=outdir,
     coupling_type="fully_coupled_Tor_Land",
     T=1000,
-    spring=0.01,  # Sprint term on the epicardium to mimic pericardium
     traction=0.0,  # Pressure on the endocardium
     cell_init_file=initial_conditions_path,
+    mechanics_use_continuation=True,
 )
 
 # Now we can create the coupling.
@@ -95,22 +102,50 @@ coupling = simcardems.models.em_model.setup_EM_model_from_config(
     geometry=geometry,
 )
 
-# And to make things move a little bit more we will set the reference active tension to 60 kPa.
+# And to make things move a little bit more we will scale the reference active tension to 60 kPa.
 
-coupling.mech_solver.material.T_ref.assign(60)
+coupling.mech_solver.material.active.T_ref.assign(10.0)
 
 # Now we create the runner
 
 runner = simcardems.Runner.from_models(config=config, coupling=coupling)
 
-# but before we run the EM simulations, we will inflate the LV to a cavity pressure of 1 kPa.
+# but before we run the EM simulations, we will inflate the LV to a cavity pressure of 3 kPa.
+#
+# xdmf = dolfin.XDMFFile(dolfin.MPI.comm_world, "u.xdmf")
+# u = dolfin.Function(coupling.mech_solver.state_space.sub(0).collapse())
+# xdmf.write_checkpoint(u, "u", 0.0, dolfin.XDMFFile.Encoding.HDF5, True)
 
 pulse.iterate.iterate(
     problem=runner.coupling.mech_solver,
     control=runner.coupling.mech_solver.bcs.neumann[0].traction,
-    target=1.0,  # Set it to 1kPa
+    target=3,  # Set it to 3 kPa
+    initial_number_of_steps=50,
 )
 
+# u.assign(coupling.mech_solver.state.split(deepcopy=True)[0])
+# xdmf.write_checkpoint(u, "u", 1.0, dolfin.XDMFFile.Encoding.HDF5, True)
+
+# V = dolfin.FunctionSpace(coupling.geometry.mechanics_mesh, "CG", 1)
+# Ta = dolfin.Function(V)
+
+
+# class _Land(coupling.mech_solver.material.active.__class__):
+#     Ta = Ta
+
+
+# coupling.mech_solver.material.active.__class__ = _Land
+# coupling.mech_solver._init_forms()
+
+# pulse.iterate.iterate(
+#     problem=runner.coupling.mech_solver,
+#     control=Ta,
+#     target=60.0,
+#     initial_number_of_steps=100,
+# )
+
+# u.assign(coupling.mech_solver.state.split(deepcopy=True)[0])
+# xdmf.write_checkpoint(u, "u", 2.0, dolfin.XDMFFile.Encoding.HDF5, True)
 # Now we run the EM simulation.
 
 runner.solve(T=config.T, save_freq=config.save_freq, show_progress_bar=True)
