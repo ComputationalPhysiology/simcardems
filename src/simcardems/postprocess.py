@@ -87,7 +87,11 @@ def extract_traces(
     return values
 
 
-def plot_state_traces(results_file: utils.PathLike, reduction: str = "average"):
+def plot_state_traces(
+    results_file: utils.PathLike,
+    reduction: str = "average",
+    flag_peaks: bool = True,
+):
     results_file = Path(results_file)
     if not results_file.is_file():
         raise FileNotFoundError(f"File {results_file} does not exist")
@@ -99,7 +103,7 @@ def plot_state_traces(results_file: utils.PathLike, reduction: str = "average"):
 
     times = np.array(loader.time_stamps, dtype=float)
 
-    if times[-1] > 10000:
+    if times[-1] > 2000 and flag_peaks:
         plot_peaks(
             outdir.joinpath("compare-peak-values.png"),
             values["ep"]["Ca"],
