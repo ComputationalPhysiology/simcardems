@@ -446,7 +446,7 @@ document.write(`
 
     <span class="n">times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">loader</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">times</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">4000</span> <span class="ow">and</span> <span class="kc">False</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">times</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">10000</span><span class="p">:</span>
         <span class="n">plot_peaks</span><span class="p">(</span>
             <span class="n">outdir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;compare-peak-values.png&quot;</span><span class="p">),</span>
             <span class="n">values</span><span class="p">[</span><span class="s2">&quot;ep&quot;</span><span class="p">][</span><span class="s2">&quot;Ca&quot;</span><span class="p">],</span>
@@ -940,7 +940,7 @@ By Simula Research Laboratory
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Mar 26, 2023.
+  Last updated on Mar 28, 2023.
   <br/>
 </p>
   </div>
