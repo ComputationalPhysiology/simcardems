@@ -434,7 +434,11 @@ document.write(`
     <span class="k">return</span> <span class="n">values</span></div>
 
 
-<div class="viewcode-block" id="plot_state_traces"><a class="viewcode-back" href="../../api.html#simcardems.postprocess.plot_state_traces">[docs]</a><span class="k">def</span> <span class="nf">plot_state_traces</span><span class="p">(</span><span class="n">results_file</span><span class="p">:</span> <span class="n">utils</span><span class="o">.</span><span class="n">PathLike</span><span class="p">,</span> <span class="n">reduction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;average&quot;</span><span class="p">):</span>
+<div class="viewcode-block" id="plot_state_traces"><a class="viewcode-back" href="../../api.html#simcardems.postprocess.plot_state_traces">[docs]</a><span class="k">def</span> <span class="nf">plot_state_traces</span><span class="p">(</span>
+    <span class="n">results_file</span><span class="p">:</span> <span class="n">utils</span><span class="o">.</span><span class="n">PathLike</span><span class="p">,</span>
+    <span class="n">reduction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;average&quot;</span><span class="p">,</span>
+    <span class="n">flag_peaks</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">):</span>
     <span class="n">results_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">results_file</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">results_file</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
         <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;File </span><span class="si">{</span><span class="n">results_file</span><span class="si">}</span><span class="s2"> does not exist&quot;</span><span class="p">)</span>
@@ -446,7 +450,7 @@ document.write(`
 
     <span class="n">times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">loader</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">times</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">4000</span> <span class="ow">and</span> <span class="kc">False</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">times</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">2000</span> <span class="ow">and</span> <span class="n">flag_peaks</span><span class="p">:</span>
         <span class="n">plot_peaks</span><span class="p">(</span>
             <span class="n">outdir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;compare-peak-values.png&quot;</span><span class="p">),</span>
             <span class="n">values</span><span class="p">[</span><span class="s2">&quot;ep&quot;</span><span class="p">][</span><span class="s2">&quot;Ca&quot;</span><span class="p">],</span>
