@@ -99,7 +99,7 @@ def plot_state_traces(results_file: utils.PathLike, reduction: str = "average"):
 
     times = np.array(loader.time_stamps, dtype=float)
 
-    if times[-1] > 4000 and False:
+    if times[-1] > 10000:
         plot_peaks(
             outdir.joinpath("compare-peak-values.png"),
             values["ep"]["Ca"],
