@@ -1,3 +1,5 @@
+import itertools
+
 import numpy as np
 import pytest
 import simcardems
@@ -35,20 +37,27 @@ def tests_h5pyfile(dummyfile):
 
 
 @pytest.mark.parametrize(
-    "data",
-    (
-        {},
-        {"a": 1, "b": 2},
-        {"a": 1.0, "b": 2},
-        {"a": 1.0, "b": 2, "c": "three"},
-        {"a": 1.0, "b": 2, "c": "three", "d": [1, 2]},
+    "data, use_attrs",
+    itertools.product(
+        (
+            {},
+            {"a": 1, "b": 2},
+            {"a": 1.0, "b": 2},
+            {"a": 1.0, "b": 2, "c": "three"},
+            {"a": 1.0, "b": 2, "c": "three", "d": np.array([1, 2])},
+        ),
+        (True, False),
     ),
 )
-def test_dict_to_h5(data, dummyfile):
+def test_dict_to_h5(data, use_attrs, dummyfile):
     h5group = "testgroup"
-    slf.dict_to_h5(data, dummyfile, h5group)
+    slf.dict_to_h5(data, dummyfile, h5group, use_attrs=use_attrs)
 
     with slf.h5pyfile(dummyfile, "r") as h5file:
-        loaded_data = slf.h5_to_dict(h5file[h5group])
+        loaded_data = slf.h5_to_dict(h5file[h5group], use_attrs=use_attrs)
 
-    assert loaded_data == data
+    for k, v in data.items():
+        if isinstance(v, np.ndarray):
+            assert all(v == loaded_data[k])
+        else:
+            assert v == loaded_data[k]

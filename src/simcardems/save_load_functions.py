@@ -1,6 +1,7 @@
 import contextlib
 import warnings
 from pathlib import Path
+from typing import Any
 from typing import Dict
 from typing import Optional
 from typing import Type
@@ -8,6 +9,7 @@ from typing import Union
 
 import cbcbeat
 import dolfin
+import numpy as np
 from dolfin import FiniteElement  # noqa: F401
 from dolfin import MixedElement  # noqa: F401
 from dolfin import tetrahedron  # noqa: F401
@@ -44,19 +46,22 @@ def h5pyfile(h5name, filemode="r"):
     h5file.close()
 
 
-def dict_to_h5(data, h5name, h5group):
+def dict_to_h5(data, h5name, h5group, use_attrs: bool = True):
     with h5pyfile(h5name, "a") as h5file:
         if h5group == "":
             group = h5file
         else:
             group = h5file.create_group(h5group)
         for k, v in data.items():
-            try:
-                group.create_dataset(k, data=v)
-            except OSError:
-                logger.warning(
-                    f"Unable to save key {k} with data {v} in {h5name}/{h5group}",
-                )
+            if use_attrs:
+                group.attrs[k] = v
+            else:
+                try:
+                    group.create_dataset(k, data=v)
+                except OSError:
+                    logger.warning(
+                        f"Unable to save key {k} with data {v} in {h5name}/{h5group}",
+                    )
 
 
 def decode(x):
@@ -67,8 +72,19 @@ def decode(x):
     return x
 
 
-def h5_to_dict(h5group):
+def h5_to_dict(h5group, use_attrs: bool = True):
     import h5py
+
+    if use_attrs:
+        d: Dict[str, Any] = {}
+        for k, v in dict(h5group.attrs).items():
+            if isinstance(v, np.int64):
+                d[k] = int(v)
+            elif isinstance(v, np.float64):
+                d[k] = float(v)
+            else:
+                d[k] = v
+        return d
 
     group = {}
     for key, value in h5group.items():
