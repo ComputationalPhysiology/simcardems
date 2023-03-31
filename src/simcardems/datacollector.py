@@ -11,12 +11,12 @@ import cbcbeat
 import dolfin
 import h5py
 import numpy as np
+import pulse
 from dolfin import FiniteElement  # noqa: F401
 from dolfin import tetrahedron  # noqa: F401
 from dolfin import VectorElement  # noqa: F401
 from typing_extensions import Literal
 
-import pulse
 from . import utils
 from .geometry import BaseGeometry
 from .geometry import load_geometry

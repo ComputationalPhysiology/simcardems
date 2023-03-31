@@ -1,6 +1,7 @@
 import contextlib
 import warnings
 from pathlib import Path
+from typing import Any
 from typing import Dict
 from typing import Optional
 from typing import Type
@@ -75,7 +76,7 @@ def h5_to_dict(h5group, use_attrs: bool = True):
     import h5py
 
     if use_attrs:
-        d = {}
+        d: Dict[str, Any] = {}
         for k, v in dict(h5group.attrs).items():
             if isinstance(v, np.int64):
                 d[k] = int(v)

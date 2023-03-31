@@ -4,8 +4,8 @@ import logging
 import typing
 
 import dolfin
-
 import pulse
+
 from . import boundary_conditions
 from . import config
 from . import geometry
