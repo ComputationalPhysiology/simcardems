@@ -262,7 +262,7 @@ class TorLandFull(CardiacCellModel):
             params["HF_scaling_Gto"] = 0.4
             params["HF_scaling_Gncx"] = 1.6
             params["HF_scaling_Pnak"] = 0.7
-            params["HF_scaling_cat50_ref"] = 0.6
+            params["HF_scaling_cat50_ref"] = 0.7
 
         return params
 
