@@ -175,6 +175,9 @@ class Runner:
         save_freq: int = Config.save_freq,
         show_progress_bar: bool = Config.show_progress_bar,
         st_progress: typing.Any = None,
+        default_save_condition: typing.Callable[[int, float, float], bool] = (
+            lambda i, T, dt: i > 0 and T >= 40000 and i % int(10000 / dt) == 0
+        ),
     ):
         save_it = int(save_freq / self._dt)
         self._setup_time_stepper(T, use_ns=True, st_progress=st_progress)
@@ -201,6 +204,13 @@ class Runner:
             # Store every 'save_freq' ms
             if i % save_it == 0:
                 self.store()
+
+            # Save state every 10 beats if simulation is longer than 40 sec
+            if default_save_condition(i, T, self._dt):
+                self.coupling.save_state(
+                    path=self.outdir.joinpath(f"state_{int(i*self._dt/1000)}beat.h5"),
+                    config=self._config,
+                )
 
         self.save_state()
 
