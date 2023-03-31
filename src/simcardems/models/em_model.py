@@ -5,8 +5,8 @@ from pathlib import Path
 
 import cbcbeat
 import dolfin
-import pulse
 
+import pulse
 from .. import ep_model
 from .. import geometry as _geometry
 from .. import mechanics_model

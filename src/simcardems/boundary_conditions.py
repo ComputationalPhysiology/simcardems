@@ -1,8 +1,8 @@
 import typing
 
 import dolfin
-import pulse
 
+import pulse
 from . import config
 from . import lvgeometry
 from . import slabgeometry

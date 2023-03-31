@@ -4,9 +4,9 @@ from typing import Optional
 
 import dolfin
 import numpy as np
-import pulse
 import ufl
 
+import pulse
 from ... import utils
 from ...time_stepper import TimeStepper
 from .cell_model import ORdmmLandFull

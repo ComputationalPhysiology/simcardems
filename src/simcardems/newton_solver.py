@@ -1,6 +1,6 @@
 import dolfin
-import pulse
 
+import pulse
 from . import utils
 
 

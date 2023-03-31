@@ -1,6 +1,6 @@
 import dolfin
-import pulse
 
+import pulse
 from . import cell_model
 from . import em_model
 from .cell_model import ORdmmLandExplicit as CellModel

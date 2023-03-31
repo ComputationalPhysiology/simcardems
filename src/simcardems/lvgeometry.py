@@ -2,9 +2,9 @@ from typing import Dict
 from typing import Tuple
 
 import dolfin
-import pulse
 from cardiac_geometries.geometry import MeshTypes
 
+import pulse
 from .geometry import BaseGeometry
 
 

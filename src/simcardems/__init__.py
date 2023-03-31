@@ -3,11 +3,11 @@ import warnings as _warnings
 
 import daiquiri as _daiquiri
 import dolfin as _dolfin
-import pulse as _pulse
 from ffc.quadrature.deprecation import (
     QuadratureRepresentationDeprecationWarning as _QuadratureRepresentationDeprecationWarning,
 )
 
+import pulse as _pulse
 from . import boundary_conditions
 from . import cli
 from . import config

@@ -1,8 +1,9 @@
 import dolfin
 import numpy as np
-import pulse
 import pytest
 import simcardems
+
+import pulse
 
 
 @pytest.mark.xfail

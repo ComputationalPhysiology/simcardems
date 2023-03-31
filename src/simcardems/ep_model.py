@@ -9,9 +9,9 @@ from typing import TYPE_CHECKING
 
 import cbcbeat
 import dolfin
-import pulse
 import ufl
 
+import pulse
 from . import geometry
 from . import utils
 from .config import Config

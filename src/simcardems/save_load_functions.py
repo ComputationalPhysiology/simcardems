@@ -8,6 +8,7 @@ from typing import Union
 
 import cbcbeat
 import dolfin
+import numpy as np
 from dolfin import FiniteElement  # noqa: F401
 from dolfin import MixedElement  # noqa: F401
 from dolfin import tetrahedron  # noqa: F401
@@ -74,7 +75,15 @@ def h5_to_dict(h5group, use_attrs: bool = True):
     import h5py
 
     if use_attrs:
-        return dict(h5group.attrs)
+        d = {}
+        for k, v in dict(h5group.attrs).items():
+            if isinstance(v, np.int64):
+                d[k] = int(v)
+            elif isinstance(v, np.float64):
+                d[k] = float(v)
+            else:
+                d[k] = v
+        return d
 
     group = {}
     for key, value in h5group.items():
