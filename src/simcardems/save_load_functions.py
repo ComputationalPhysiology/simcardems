@@ -166,6 +166,7 @@ def load_state(
     logger.debug("Open file with h5py")
     with h5pyfile(path) as h5file:
         config = Config(**h5_to_dict(h5file["config"]))
+        config.coupling_type = "fully_coupled_Tor_Land"
 
     if config.coupling_type == "explicit_ORdmm_Land":
         from .models.explicit_ORdmm_Land import EMCoupling
