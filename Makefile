@@ -78,6 +78,7 @@ docs: ## generate Sphinx HTML documentation, including API docs
 	jupytext demos/extract_currents.py -o docs/extract_currents.md
 	jupytext demos/tracking_values.py -o docs/tracking_values.md
 	jupytext demos/custom_stimulus_domain.py -o docs/custom_stimulus_domain.md
+	jupytext demos/patient_specific_lv.py -o docs/patient_specific_lv.md
 	mkdir -p docs/_build
 	cp -r benchmarks docs/_build/
 	jupyter book build -W docs

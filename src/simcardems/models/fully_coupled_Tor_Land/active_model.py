@@ -45,6 +45,7 @@ class LandModel(pulse.ActiveModel):
         eta=0,
         scheme: Scheme = Scheme.analytic,
         dLambda_tol: float = 1e-12,
+        T_ref: float = 0.0,
         **kwargs,
     ):
         logger.debug("Initialize Land Model")
@@ -56,7 +57,7 @@ class LandModel(pulse.ActiveModel):
 
         self._eta = eta
         self.function_space = dolfin.FunctionSpace(coupling.mech_mesh, "CG", 1)
-
+        self.T_ref = dolfin.Constant(T_ref)
         self.XS = coupling.XS_mech
         self.XW = coupling.XW_mech
         if parameters is None:
@@ -235,7 +236,7 @@ class LandModel(pulse.ActiveModel):
         self.update_Zetas()
         self.update_Zetaw()
         return pulse.material.active_model.Wactive_transversally(
-            Ta=self.Ta,
+            Ta=self.Ta * self.T_ref,
             C=C,
             f0=self.f0,
             eta=self.eta,

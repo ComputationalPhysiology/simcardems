@@ -95,8 +95,9 @@ class MechanicsNewtonSolver(dolfin.NewtonSolver):
 
     def converged(self, r, p, i):
         self._converged_called = True
-
+        print("converged")
         res = r.norm("l2")
+        print(f"Mechanics solver residual: {res}")
         logger.debug(f"Mechanics solver residual: {res}")
 
         if self.debug:
@@ -130,7 +131,9 @@ class MechanicsNewtonSolver(dolfin.NewtonSolver):
     def solve(self):
         logger.debug("Solving mechanics")
         self._solve_called = True
+        print("Solve before")
         ret = super().solve(self._problem, self._state.vector())
+        print("Solve after")
         self._state.vector().apply("insert")
         logger.debug("Done solving mechanics")
         self.save_residuals()
@@ -143,6 +146,10 @@ class MechanicsNewtonSolver(dolfin.NewtonSolver):
         assert getattr(self, "_solver_setup_called", False)
         assert getattr(self, "_update_solution_called", False)
         assert getattr(self, "_solve_called", False)
+
+    def update_solution(self, x, dx, rp, p, i):
+        print("Update solution")
+        return super().update_solution(x, dx, rp, p, i)
 
 
 class MechanicsNewtonSolver_ODE(MechanicsNewtonSolver):
