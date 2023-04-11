@@ -1,0 +1,58 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: Run convergence test
+
+on: [push]
+
+
+jobs:
+  run-and-upload-report:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dx: [0.1, 0.2, 0.4]
+        include:
+          - dt: 0.05
+          - dt: 0.025
+            dx: 0.2
+          - dt: 0.1
+            dx: 0.2
+
+    container:
+      image: ghcr.io/scientificcomputing/fenics-gmsh:2023-02-20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install -e "."
+
+      - name: Run benchmark with dx = ${{ matrix.dx }} and dt = ${{ matrix.dt }}
+        run: python3 -m simcardems.benchmark "convergence_test/${{ github.sha }}" --dt=${{ matrix.dt }} --dx=${{ matrix.dx }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: results-${{ matrix.dx }}-${{ matrix.dt }}
+          path: convergence_test/results_dx*.json
+
+  download-report-and-upload-to-gist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/download-artifact@v3
+        with:
+          path: convergence_test
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Print files
+        run: python3 -c "from pathlib import Path; print(list(Path('convergence_test').iterdir()))"
