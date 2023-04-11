@@ -9,17 +9,19 @@ on: [push]
 
 
 jobs:
-  run-and-upload-report:
+  job_1:
+    name: run convergence tests
     runs-on: ubuntu-latest
     strategy:
       matrix:
         dx: [0.1, 0.2, 0.4]
+        dt: [0.05]
         include:
-          - dt: 0.05
           - dt: 0.025
             dx: 0.2
           - dt: 0.1
             dx: 0.2
+
 
     container:
       image: ghcr.io/scientificcomputing/fenics-gmsh:2023-02-20
@@ -41,7 +43,9 @@ jobs:
           name: results-${{ matrix.dx }}-${{ matrix.dt }}
           path: convergence_test/results_dx*.json
 
-  download-report-and-upload-to-gist:
+  job_2:
+    name: Download repost and upload to git
+    needs: job_1
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
