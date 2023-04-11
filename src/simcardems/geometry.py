@@ -322,8 +322,15 @@ class BaseGeometry(abc.ABC):
             return self._default_microstructure(mesh=self.ep_mesh, ffun=self.ffun_ep)
         else:
             V = dolfin.FunctionSpace(self.ep_mesh, element)
+            try:
+                f0 = dolfin.interpolate(self.f0, V)
+            except RuntimeError:
+                self.f0.set_allow_extrapolation(True)
+                self.s0.set_allow_extrapolation(True)
+                self.n0.set_allow_extrapolation(True)
 
-            f0 = dolfin.interpolate(self.f0, V)
+                f0 = dolfin.interpolate(self.f0, V)
+
             s0 = dolfin.interpolate(self.s0, V)
             n0 = dolfin.interpolate(self.n0, V)
             return pulse.Microstructure(f0=f0, s0=s0, n0=n0)
