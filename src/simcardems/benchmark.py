@@ -17,7 +17,8 @@ import_time = time.perf_counter() - t0
 @click.argument("outdir", required=True, type=click.Path())
 @click.option("--dt", type=float, default=0.05)
 @click.option("--dx", type=float, default=0.2)
-def main(outdir, dt, dx):
+@click.option("--sha", type=str, default="")
+def main(outdir, dt, dx, sha):
     data = {}
 
     data["import_time"] = import_time
@@ -25,6 +26,7 @@ def main(outdir, dt, dx):
     data["simcardems_version"] = simcardems.__version__
     data["dt"] = dt
     data["dx"] = dx
+    data["sha"] = sha
 
     config = simcardems.Config(
         outdir=outdir,

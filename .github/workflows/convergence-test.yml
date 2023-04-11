@@ -35,7 +35,7 @@ jobs:
           python3 -m pip install -e "."
 
       - name: Run benchmark with dx = ${{ matrix.dx }} and dt = ${{ matrix.dt }}
-        run: python3 -m simcardems.benchmark "convergence_test/${{ github.sha }}" --dt=${{ matrix.dt }} --dx=${{ matrix.dx }}
+        run: python3 -m simcardems.benchmark convergence_test --dt=${{ matrix.dt }} --dx=${{ matrix.dx }} --sha=${{ github.sha }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
@@ -44,7 +44,7 @@ jobs:
           path: convergence_test/results_dx*.json
 
   job_2:
-    name: Download repost and upload to git
+    name: Download repost and upload to gist
     needs: job_1
     runs-on: ubuntu-latest
     steps:
