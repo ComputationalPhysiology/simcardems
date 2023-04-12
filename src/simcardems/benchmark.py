@@ -44,13 +44,6 @@ def main(outdir, dt, dx, sha):
     data["num_vertices_mechanics"] = geo.mesh.num_vertices()
     data["num_vertices_ep"] = geo.ep_mesh.num_vertices()
 
-    print(data)
-    path = Path(outdir) / f"results_dx{int(100*dx)}_dt{int(1000*dt)}.json"
-    path.parent.mkdir(exist_ok=True, parents=True)
-    with open(path, "w") as f:
-        json.dump(data, f, indent=2)
-
-    return 0
     coupling = simcardems.models.em_model.setup_EM_model_from_config(
         config=config,
         geometry=geo,
@@ -79,7 +72,7 @@ def main(outdir, dt, dx, sha):
         ),
     )
 
-    path = Path(outdir) / "results.json"
+    path = Path(outdir) / f"results_dx{int(100*dx)}_dt{int(1000*dt)}.json"
     with open(path, "w") as f:
         json.dump(data, f, indent=2)
 
