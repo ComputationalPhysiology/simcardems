@@ -31,6 +31,8 @@ parts:
   - caption: Verification
     chapters:
     - file: "benchmark"
+    - file: "convergence_spatial"
+    - file: "convergence_temporal"
 
   - caption: Postprocessing
     chapters:

@@ -81,9 +81,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     print(response.reason)
 
     if response.status_code != 200:
-        return 0
-    else:
         return 4
+
+    return 0
 
 
 if __name__ == "__main__":
