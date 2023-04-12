@@ -47,9 +47,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 2
 
     data: Dict[str, Any] = defaultdict(dict)
-    for f in folder.iterdir():
-        if f.suffix != ".json":
-            continue
+
+    for f in folder.rglob("*.json"):
         d = json.loads(f.read_text())
         key = f"dx{d['dx']}_dt{d['dt']}"
         sha = d["sha"]

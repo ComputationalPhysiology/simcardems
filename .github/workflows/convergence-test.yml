@@ -40,7 +40,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: "results-${{ matrix.dx }}-${{ matrix.dt }}.json"
+          name: "results-${{ matrix.dx }}-${{ matrix.dt }}"
           path: convergence_test/results_dx*.json
 
   job_2:
