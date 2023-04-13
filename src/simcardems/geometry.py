@@ -325,6 +325,9 @@ class BaseGeometry(abc.ABC):
             try:
                 f0 = dolfin.interpolate(self.f0, V)
             except RuntimeError:
+                logger.info(
+                    "Extrapolate fibers in order to interpolate from mechanics to ep mesh",
+                )
                 self.f0.set_allow_extrapolation(True)
                 self.s0.set_allow_extrapolation(True)
                 self.n0.set_allow_extrapolation(True)
