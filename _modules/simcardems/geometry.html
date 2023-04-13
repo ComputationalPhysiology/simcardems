@@ -669,8 +669,18 @@ document.write(`
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_microstructure</span><span class="p">(</span><span class="n">mesh</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ep_mesh</span><span class="p">,</span> <span class="n">ffun</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ffun_ep</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">V</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">FunctionSpace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ep_mesh</span><span class="p">,</span> <span class="n">element</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">f0</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f0</span><span class="p">,</span> <span class="n">V</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                    <span class="s2">&quot;Extrapolate fibers in order to interpolate from mechanics to ep mesh&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">f0</span><span class="o">.</span><span class="n">set_allow_extrapolation</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">s0</span><span class="o">.</span><span class="n">set_allow_extrapolation</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">n0</span><span class="o">.</span><span class="n">set_allow_extrapolation</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
 
-            <span class="n">f0</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f0</span><span class="p">,</span> <span class="n">V</span><span class="p">)</span>
+                <span class="n">f0</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f0</span><span class="p">,</span> <span class="n">V</span><span class="p">)</span>
+
             <span class="n">s0</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">s0</span><span class="p">,</span> <span class="n">V</span><span class="p">)</span>
             <span class="n">n0</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n0</span><span class="p">,</span> <span class="n">V</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">(</span><span class="n">f0</span><span class="o">=</span><span class="n">f0</span><span class="p">,</span> <span class="n">s0</span><span class="o">=</span><span class="n">s0</span><span class="p">,</span> <span class="n">n0</span><span class="o">=</span><span class="n">n0</span><span class="p">)</span>
@@ -930,7 +940,7 @@ By Simula Research Laboratory
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Apr 11, 2023.
+  Last updated on Apr 13, 2023.
   <br/>
 </p>
   </div>
