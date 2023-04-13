@@ -5,7 +5,12 @@
 
 name: Run convergence test
 
-on: [push]
+on:
+  push:
+    branches:
+      - "!*"
+    tags:
+      - "v*"
 
 
 jobs:
