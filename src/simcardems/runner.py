@@ -7,9 +7,9 @@ from tqdm import tqdm
 from . import save_load_functions as io
 from . import utils
 from .config import Config
+from .ecg import ECG
 from .models import em_model
 from .time_stepper import TimeStepper
-
 
 logger = utils.getLogger(__name__)
 
@@ -110,11 +110,13 @@ class Runner:
     def from_models(
         cls,
         coupling: em_model.BaseEMCoupling,
+        ecg: ECG,
         config: typing.Optional[Config] = None,
         reset: bool = True,
     ):
         obj = cls(empty=True, config=config)
         obj.coupling = coupling
+        obj.ecg = ecg
         obj._t0 = coupling.t
         obj._reset = reset
         obj._time_stepper = None
@@ -211,6 +213,10 @@ class Runner:
                     path=self.outdir.joinpath(f"state_{int(i*self._dt/1000)}beat.h5"),
                     config=self._config,
                 )
+
+            # Compute ecg
+            if self._config.compute_ecg:
+                self.ecg.ecg_recovery(self._config.ecg_electrodes)
 
         self.save_state()
 

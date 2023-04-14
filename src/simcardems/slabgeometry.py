@@ -5,10 +5,10 @@ from typing import Tuple
 import dolfin
 import numpy as np
 import pulse
-from cardiac_geometries.geometry import MeshTypes
 
 from . import utils
 from .geometry import BaseGeometry
+from cardiac_geometries.geometry import MeshTypes
 
 logger = utils.getLogger(__name__)
 
@@ -44,6 +44,8 @@ class SlabGeometry(BaseGeometry):
             "Y1": (2, 4),
             "Z0": (2, 5),
             "Z1": (2, 6),
+            "Myocardium": (7, 3),
+            "Torso": (8, 3),
         }
 
     def _default_microstructure(
