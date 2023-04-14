@@ -663,7 +663,7 @@ class TorLandFull(CardiacCellModel):
         ) / (1.0 + ufl.exp(-0.1629 * (v - EK + 14.207)))
         K1ss = aK1 / (aK1 + bK1)
         GK1 = 0.6992 * scale_IK1 * scale_drug_IK1 * scale_popu_GK1 * HF_scaling_GK1
-        IK1 = ufl.sqrt(ko) * (-EK + v) * GK1 * GK1 * K1ss
+        IK1 = ufl.sqrt(ko / 5.0) * (-EK + v) * GK1 * K1ss
 
         # Expressions for the INaCa_i component
         hca = ufl.exp(F * qca * v / (R * T))
