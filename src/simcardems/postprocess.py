@@ -286,7 +286,7 @@ def plot_population(results, outdir, num_models, reset_time=True):
     for PoMm in range(1, num_models + 1):
         ax[0, 0].plot(
             times,
-            np.array(results[f"m{PoMm}"]["mechanics"]["lmbda"], dtype=float),
+            np.array(results[f"m{PoMm}"]["mechanics"]["lambda"], dtype=float),
         )
         ax[0, 1].plot(
             times,
