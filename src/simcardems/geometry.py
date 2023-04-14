@@ -159,9 +159,13 @@ class BaseGeometry(abc.ABC):
     def default_stimulus_domain(mesh: dolfin.Mesh) -> StimulusDomain:
         # Default is to stimulate the entire tissue
         marker = 1
+        #domain = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim())
+        #domain.set_all(marker)
+        subdomain = dolfin.CompiledSubDomain("x[0] < 1.0")
         domain = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim())
-        domain.set_all(marker)
-        return StimulusDomain(domain=domain, marker=marker)
+        domain.set_all(0)
+        subdomain.mark(domain, marker)
+    return StimulusDomain(domain=domain, marker=marker)
 
     @staticmethod
     def default_schema() -> Dict[str, H5Path]:
