@@ -165,7 +165,7 @@ class BaseGeometry(abc.ABC):
         domain = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim())
         domain.set_all(0)
         subdomain.mark(domain, marker)
-    return StimulusDomain(domain=domain, marker=marker)
+        return StimulusDomain(domain=domain, marker=marker)
 
     @staticmethod
     def default_schema() -> Dict[str, H5Path]:
