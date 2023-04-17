@@ -2,25 +2,19 @@ from __future__ import annotations
 
 from typing import Dict
 from typing import List
-from typing import TYPE_CHECKING
 
 import dolfin
 import ufl
 
-# from .config import Config
-
-if TYPE_CHECKING:
-    from .models.em_model import EMCoupling
+from .config import Config
 
 # logger = utils.getLogger(__name__)
 
 
 class ECG:
-    def __init__(self, em_model: EMCoupling, torso_mesh: dolfin.Mesh, sigma_t) -> None:
-        self.em_coupling = em_model
+    def __init__(self, torso_mesh: dolfin.Mesh, sigma_t) -> None:
         self.torso_mesh = torso_mesh
         self.sigma_t = sigma_t
-        self.sigma_i = self.em_coupling.ep_solver.intracellular_conductivity()
 
     @staticmethod
     def default_markers() -> Dict[str, List[int]]:
@@ -30,7 +24,7 @@ class ECG:
         }
 
     @property
-    def em_coupling(self) -> EMCoupling:
+    def em_coupling(self):
         return self.em_coupling
 
     ### --- ECG recovery --- ###
@@ -46,11 +40,16 @@ class ECG:
     # and vm (transmembrane potential)
     # r : distance between source (center of the tissue ?) and field points
     def ecg_recovery(
-        electrodes_pts: Dict[str, List[float]],
+        self,
+        config: Config,
+        em_coupling,
     ) -> Dict[str, dolfin.Function]:
         print("Not implemented yet")
+
+        self.sigma_i = em_coupling.ep_solver.intracellular_conductivity()
+
         # self.phi_e = ...
-        return None
+        return {}
 
     ### --- Augmented-monodomain --- ##
     # This function is used to computed a "corrected" conductivity
@@ -78,15 +77,34 @@ class ECG:
     ### --- Utils --- ###
     # Take the coordinates of the electrode, mark the region (point if it is a mech vertex, or if not the element containing the point)
     def electrodes_marking(
+        self,
         electrodes_pts: Dict[str, List[float]],
     ) -> Dict[str, dolfin.MeshFunction]:
         electrodes_markers = {}
+        # TO BE TESTED
+        # Read the coordinates
+        for tag, (name, coords) in enumerate(electrodes_pts.items()):
+            if coords in self.torso_mesh.coordinates():
+                marker = dolfin.MeshFunction("size_t", self.torso_mesh, 0, 0)
+                # TODO : Find vertex index
+                # marker[index] = tag
+            else:
+                bbt = self.torso_mesh.bounding_box_tree()
+                collisions1st = bbt.compute_first_entity_collision(dolfin.Point(coords))
+                # check
+                cell = dolfin.Cell(collisions1st)
+                contains = cell.contains(dolfin.Point(coords))
+                if contains:
+                    marker = dolfin.MeshFunction("size_t", self.torso_mesh, 3, 0)
+                    marker[cell.index()] = tag
+            electrodes_markers[name] = marker
         return electrodes_markers
 
     # Compute distance to the boundary as a function of the tissue
     # From : https://bitbucket.org/Epoxid/femorph/src/c7317791c8f00d70fe16d593344cb164a53cad9b/femorph/Legacy/SAD_MeshDeform.py?at=dokken%2Frestructuring
     # But this would require embedding the tissue mesh into the torso mesh
     def EikonalDistance(
+        self,
         em_coupling,
         boundary_parts=None,
         BoundaryIDs=[],

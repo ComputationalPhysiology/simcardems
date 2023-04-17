@@ -60,6 +60,7 @@ class Runner:
             # Create a new state
             self.coupling = em_model.setup_EM_model_from_config(self._config)
 
+        self.ecg: typing.Optional[ECG] = None
         self._t0 = self.coupling.t
         self._time_stepper: typing.Optional[TimeStepper] = None
         self._setup_datacollector()
@@ -110,8 +111,8 @@ class Runner:
     def from_models(
         cls,
         coupling: em_model.BaseEMCoupling,
-        ecg: ECG,
         config: typing.Optional[Config] = None,
+        ecg: typing.Optional[ECG] = None,
         reset: bool = True,
     ):
         obj = cls(empty=True, config=config)
@@ -215,8 +216,8 @@ class Runner:
                 )
 
             # Compute ecg
-            if self._config.compute_ecg:
-                self.ecg.ecg_recovery(self._config.ecg_electrodes)
+            if self._config.compute_ecg and self.ecg is not None:
+                self.ecg.ecg_recovery(self._config, self.coupling)
 
         self.save_state()
 

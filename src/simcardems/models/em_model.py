@@ -118,8 +118,6 @@ class BaseEMCoupling:
         logger.debug("Create EM coupling")
         self.geometry = geometry
         self.t = t
-        self.ep_solver = None
-        self.mech_solver = None
 
     @property
     def state_params(self):

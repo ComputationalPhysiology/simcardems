@@ -45,7 +45,6 @@ class SlabGeometry(BaseGeometry):
             "Z0": (2, 5),
             "Z1": (2, 6),
             "Myocardium": (7, 3),
-            "Torso": (8, 3),
         }
 
     def _default_microstructure(
