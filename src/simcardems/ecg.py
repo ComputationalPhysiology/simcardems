@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import Dict
 from typing import List
+from typing import Union
 
 import dolfin
 import ufl
@@ -23,9 +26,9 @@ class ECG:
             "Torso": [8],
         }
 
-    @property
-    def em_coupling(self):
-        return self.em_coupling
+    # @property
+    # def em_coupling(self):
+    #     return self.em_coupling
 
     ### --- ECG recovery --- ###
     # Recover \phi_e (extrac-cellular potential), as :
@@ -44,12 +47,32 @@ class ECG:
         config: Config,
         em_coupling,
     ) -> Dict[str, dolfin.Function]:
-        print("Not implemented yet")
+        phi_e_dict: Dict[str, dolfin.Function] = {}
+        print("Implementation in progress ...")
 
-        self.sigma_i = em_coupling.ep_solver.intracellular_conductivity()
+        self.sigma_i = em_coupling.ep_solver._model.intracellular_conductivity()
+        self.vm = em_coupling.ep_solver.vs[
+            0
+        ]  # transmembrane potential = \phi_i - \phi_e
+        # dc = ufl.dx(domain=em_coupling.geometry._mesh, subdomain_data=em_coupling.geometry.cfun)
 
-        # self.phi_e = ...
-        return {}
+        electrodes_markers = self.electrodes_marking(config.ecg_electrodes_file)
+        for tag, e in enumerate(electrodes_markers):
+            distance = self.EikonalDistance(
+                em_coupling,
+                boundary_parts=electrodes_markers[e],
+                BoundaryIDs=[tag + 1],
+                volume_parts=em_coupling.geometry.cfun,
+                id_myo=em_coupling.geometry.markers["Myocardium"][0],
+            )
+            with dolfin.XDMFFile("distance_to_" + e + ".xdmf") as xdmf:
+                xdmf.write(distance)
+
+            # integral = dolfin.assemble( ufl.inner(ufl.div(self.sigma_i), ufl.grad(self.vm)) ) * dc
+            # phi_e = 1/(4*pi*self.sigma_t)*(integral / distance)
+            # phi_e_dict[e] = phi_e
+
+        return phi_e_dict
 
     ### --- Augmented-monodomain --- ##
     # This function is used to computed a "corrected" conductivity
@@ -75,60 +98,77 @@ class ECG:
         return None
 
     ### --- Utils --- ###
-    # Take the coordinates of the electrode, mark the region (point if it is a mech vertex, or if not the element containing the point)
+    # Take the coordinates of the electrode, mark the region (facets point if it is a mech vertex, or if not the element containing the point)
     def electrodes_marking(
         self,
-        electrodes_pts: Dict[str, List[float]],
+        electrodes_path: Union[Path, str],
     ) -> Dict[str, dolfin.MeshFunction]:
         electrodes_markers = {}
-        # TO BE TESTED
-        # Read the coordinates
+        if electrodes_path is not None:
+            electrodes_pts = json.loads(Path(electrodes_path).read_text())
+
+        marker = dolfin.MeshFunction("size_t", self.torso_mesh, 2, 0)
         for tag, (name, coords) in enumerate(electrodes_pts.items()):
-            if coords in self.torso_mesh.coordinates():
-                marker = dolfin.MeshFunction("size_t", self.torso_mesh, 0, 0)
-                # TODO : Find vertex index
-                # marker[index] = tag
-            else:
+            is_point = False
+            for idx, val in enumerate(list(self.torso_mesh.coordinates())):
+                if (val == coords).all():
+                    is_point = True
+                    pt_entity = dolfin.MeshEntity(self.torso_mesh, 0, idx)
+                    facets = dolfin.facets(pt_entity)
+                    for f in facets:
+                        marker[f.index()] = tag + 1
+                    continue
+            if not is_point:
                 bbt = self.torso_mesh.bounding_box_tree()
-                collisions1st = bbt.compute_first_entity_collision(dolfin.Point(coords))
-                # check
-                cell = dolfin.Cell(collisions1st)
-                contains = cell.contains(dolfin.Point(coords))
-                if contains:
-                    marker = dolfin.MeshFunction("size_t", self.torso_mesh, 3, 0)
-                    marker[cell.index()] = tag
+                collision_idx = bbt.compute_first_entity_collision(dolfin.Point(coords))
+                cell_entity = dolfin.MeshEntity(self.torso_mesh, 3, collision_idx)
+                facets = dolfin.facets(cell_entity)
+                # FIXME : Only mark the facets which are on the boundary (facet.exterior() ?)?
+                for f in facets:
+                    marker[f.index()] = tag + 1
+
             electrodes_markers[name] = marker
+            with dolfin.XDMFFile("electrode_" + name + ".xdmf") as xdmf:
+                xdmf.write(electrodes_markers[name])
+
         return electrodes_markers
 
     # Compute distance to the boundary as a function of the tissue
     # From : https://bitbucket.org/Epoxid/femorph/src/c7317791c8f00d70fe16d593344cb164a53cad9b/femorph/Legacy/SAD_MeshDeform.py?at=dokken%2Frestructuring
-    # But this would require embedding the tissue mesh into the torso mesh
     def EikonalDistance(
         self,
         em_coupling,
         boundary_parts=None,
         BoundaryIDs=[],
+        volume_parts=None,
+        id_myo=7,
         stab=25,
         deg=2,
         UseLU=True,
     ):
-        V = dolfin.FunctionSpace(em_coupling.ep_solver.domain(), "CG", deg)
+        mesh = em_coupling.geometry._mesh
+        V = dolfin.FunctionSpace(mesh, "CG", deg)
         v = dolfin.TestFunction(V)
         u = dolfin.TrialFunction(V)
         f = dolfin.Constant(1.0)
         dist = dolfin.Function(V)
         bc = []
 
+        print("boundary parts dim = ", boundary_parts.dim())
         if BoundaryIDs == []:
             bc = dolfin.DirichletBC(V, dolfin.Constant(0.0), "on_boundary")
         else:
             for i in BoundaryIDs:
+                print("boundary id = ", 1)
                 bc.append(
                     dolfin.DirichletBC(V, dolfin.Constant(0.0), boundary_parts, i),
                 )
-
-        # dc = dx(domain=mesh)
-        F1 = (ufl.inner(ufl.grad(u), ufl.grad(v)) - f * v) * ufl.dx
+        dc = ufl.dx(domain=mesh)
+        F1 = (ufl.inner(ufl.grad(u), ufl.grad(v)) - f * v) * dc
+        # FIXME : Could we fine a way to integrate / compute the distance only
+        # in the myocardium ?
+        # dc = ufl.dx(domain=mesh, subdomain_data=volume_parts)
+        # F1 = (ufl.inner(ufl.grad(u), ufl.grad(v)) - f * v) * dc(id_myo)
 
         Problem1 = dolfin.LinearVariationalProblem(
             dolfin.lhs(F1),
@@ -147,7 +187,7 @@ class ECG:
         Solver1.solve()
 
         # Stabilized Eikonal equation
-        eps = dolfin.Constant(em_coupling.ep_solver.domain().hmax() / stab)
+        eps = dolfin.Constant(mesh.hmax() / stab)
         F = (
             ufl.sqrt(ufl.inner(ufl.grad(dist), ufl.grad(dist))) * v
             - f * v

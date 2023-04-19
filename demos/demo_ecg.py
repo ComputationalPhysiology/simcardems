@@ -14,8 +14,8 @@ config = simcardems.Config(
     geometry_schema_path=geometry_schema_path,
     coupling_type="pureEP_ORdmm_Land",
     T=10,
-    compute_ecg=False,
-    # ecg_electrodes={"e1":[0,0,0], "e2":[0,1,0]}
+    compute_ecg=True,
+    ecg_electrodes_file="electrodes.json",
 )
 
 

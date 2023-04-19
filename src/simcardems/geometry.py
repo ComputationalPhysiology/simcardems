@@ -109,6 +109,7 @@ class BaseGeometry(abc.ABC):
         if parameters is not None:
             self.parameters.update(parameters)
 
+        self._mesh = None
         self.cfun = cfun
         self.mechanics_mesh = mechanics_mesh
 
@@ -255,10 +256,10 @@ class BaseGeometry(abc.ABC):
     def facet_normal(self) -> dolfin.FacetNormal:
         return dolfin.FacetNormal(self.mesh)
 
-    @property
-    def mesh(self) -> dolfin.Mesh:
-        # FIXME: This should be optional
-        return self.mechanics_mesh
+    # @property
+    # def mesh(self) -> dolfin.Mesh:
+    #     # FIXME: This should be optional
+    #     return self.mechanics_mesh
 
     @property
     def dx(self):
@@ -376,6 +377,10 @@ class BaseGeometry(abc.ABC):
         return self.microstructure_ep.n0
 
     @property
+    def mesh(self) -> dolfin.Mesh:
+        return self._mesh  # type: ignore
+
+    @property
     def mechanics_mesh(self) -> dolfin.Mesh:
         return self._mechanics_mesh  # type: ignore
 
@@ -387,8 +392,10 @@ class BaseGeometry(abc.ABC):
                 mesh_path = self.outdir / "mesh.xdmf"
                 with dolfin.XDMFFile(mesh_path.as_posix()) as f:
                     f.write(mesh)
+        self._mesh = mesh
         # If the mesh contains heart + torso
         if "Torso" in self.markers:
+            self._mesh = mesh
             mesh = dolfin.MeshView.create(self.cfun, self.markers["Myocardium"][0])
         self._mechanics_mesh = mesh
 

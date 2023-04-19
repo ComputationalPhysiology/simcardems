@@ -215,9 +215,12 @@ class Runner:
                     config=self._config,
                 )
 
-            # Compute ecg
-            if self._config.compute_ecg and self.ecg is not None:
-                self.ecg.ecg_recovery(self._config, self.coupling)
+        # Compute ecg
+        if self._config.compute_ecg:
+            if self.ecg is None:
+                sigma_t = 1  # FIXME : Set this as parameter
+                self.ecg = ECG(self.coupling.geometry._mesh, sigma_t)
+            self.ecg.ecg_recovery(self._config, self.coupling)
 
         self.save_state()
 

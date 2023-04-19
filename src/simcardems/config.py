@@ -55,7 +55,7 @@ class Config:
         "pureEP_ORdmm_Land",
     ] = "fully_coupled_ORdmm_Land"
     compute_ecg: bool = False
-    ecg_electrodes: typing.Optional[typing.Dict[str, typing.List[float]]] = None
+    ecg_electrodes_file: utils.PathLike = ""
 
     def as_dict(self):
         return {k: v for k, v in self.__dict__.items()}
