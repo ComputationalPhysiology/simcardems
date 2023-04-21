@@ -639,7 +639,7 @@ def extract_sub_results(
                 ]
             except KeyError as e:
                 raise KeyError(
-                    "Invalid group {group_name} and function {func_name}",
+                    f"Invalid group {group_name} and function {func_name}",
                 ) from e
             collector.register(group_name, func_name, functions[group_name][func_name])
 
