@@ -1,4 +1,5 @@
 import json
+from collections import defaultdict
 from pathlib import Path
 from typing import Dict
 from typing import Iterable
@@ -14,6 +15,7 @@ import numpy as np
 import tqdm
 
 from . import utils
+from .datacollector import DataCollector
 from .datacollector import DataGroups
 from .datacollector import DataLoader
 
@@ -553,3 +555,99 @@ def activation_map(
         activation_map.vector()[np.where(dofs)[0]] = float(t)
 
     return activation_map
+
+
+def extract_sub_results(
+    results_file: utils.PathLike,
+    output_file: utils.PathLike,
+    t_start: float = 0.0,
+    t_end: float | None = None,
+    names: Optional[Dict[str, List[str]]] = None,
+) -> DataCollector:
+    """Extract sub results from another results file.
+    This can be useful if you have stored a lot of data in one file
+    and you want to create a smaller file containing only a subset
+    of the data (e.g only the last beat)
+
+    Parameters
+    ----------
+    results_file : utils.PathLike
+        The input result file
+    output_file : utils.PathLike
+        Path to file where you want to store the sub results
+    t_start : float, optional
+        Time point indicating when the sub results should start, by default 0.0
+    t_end : float | None, optional
+        Time point indicating when the sub results should end, by default None
+        in which case it will choose the last time point
+    names : Optional[Dict[str, List[str]]], optional
+        A dictionary of names for each group indicating which
+        functions to extract for the sub results. If not provided (default)
+        then all functions will be extracted.
+
+    Returns
+    -------
+    DataCollector
+        A data collector containing the sub results
+
+    Raises
+    ------
+    FileNotFoundError
+        If the input file does not exist
+    KeyError
+        If some of the names provided does not exists
+        in the input file
+    """
+    results_file = Path(results_file)
+    if not results_file.is_file():
+        raise FileNotFoundError(f"File {results_file} does not exist")
+
+    loader = DataLoader(results_file)
+    assert loader.time_stamps is not None
+    if names is None:
+        # Extract everything
+        names = loader.names
+
+    t_start_idx = next(
+        (i for i, t in enumerate(map(float, loader.time_stamps)) if t > t_start - 1e-12)
+    )
+    if t_end is None:
+        t_end_idx = len(loader.time_stamps) - 1
+    else:
+        try:
+            t_end_idx = next(
+                i
+                for i, t in enumerate(map(float, loader.time_stamps))
+                if t > t_end + 1e-12
+            )
+        except StopIteration:
+            t_end_idx = len(loader.time_stamps) - 1
+
+    out = Path(output_file)
+    collector = DataCollector(
+        outdir=out.parent,
+        outfilename=out.name,
+        geo=loader.geo,
+    )
+
+    functions: Dict[str, Dict[str, dolfin.Function]] = defaultdict(dict)
+    for group_name, group in names.items():
+        for func_name in group:
+            try:
+                functions[group_name][func_name] = loader._functions[group_name][
+                    func_name
+                ]
+            except KeyError as e:
+                raise KeyError(
+                    "Invalid group {group_name} and function {func_name}",
+                ) from e
+            collector.register(group_name, func_name, functions[group_name][func_name])
+
+    for ti in loader.time_stamps[t_start_idx:t_end_idx]:
+        for group_name, group in names.items():
+            for func_name in group:
+                functions[group_name][func_name].assign(
+                    loader.get(DataGroups[group_name], func_name, ti),
+                )
+        collector.store(float(ti))
+    return collector
