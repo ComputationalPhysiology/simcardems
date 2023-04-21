@@ -587,7 +587,7 @@ def extract_sub_results(
 
     Returns
     -------
-    DataCollector
+    datacollector.DataCollector
         A data collector containing the sub results
 
     Raises
