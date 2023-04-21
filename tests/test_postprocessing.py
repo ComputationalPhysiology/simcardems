@@ -54,13 +54,13 @@ def test_extract_sub_results(geo, tmp_path):
     )
 
     # Setup a two mech functions and one ep function
-    V_mech = dolfin.FunctionSpace(geo.mesh, "CG", 1)
+    V_mech = dolfin.FunctionSpace(geo.mesh, "Lagrange", 1)
     f1_mech = dolfin.Function(V_mech)
     collector.register("mechanics", "func1", f1_mech)
     f2_mech = dolfin.Function(V_mech)
     collector.register("mechanics", "func2", f2_mech)
 
-    V_ep = dolfin.FunctionSpace(geo.mesh, "CG", 1)
+    V_ep = dolfin.FunctionSpace(geo.mesh, "Lagrange", 1)
     f3_ep = dolfin.Function(V_ep)
     collector.register("ep", "func3", f3_ep)
 
