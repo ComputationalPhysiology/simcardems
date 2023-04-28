@@ -38,7 +38,7 @@ class ECG:
     # (bath = unbounded volume conductor the tissue is immersed in)
     # \beta = bidomain membrane surface to volume ratio
     # I_m = transmembrane currents
-    # \beta * I_m = div(\sigma_i) * grad(vm)
+    # \beta * I_m = div(\sigma_i * grad(vm) )
     # with \sigma_i (intracellular / tissue conductivity tensor)
     # and vm (transmembrane potential)
     # r : distance between source (center of the tissue ?) and field points
@@ -54,7 +54,9 @@ class ECG:
         self.vm = em_coupling.ep_solver.vs[
             0
         ]  # transmembrane potential = \phi_i - \phi_e
-        # dc = ufl.dx(domain=em_coupling.geometry._mesh, subdomain_data=em_coupling.geometry.cfun)
+        dc = ufl.dx(
+            domain=em_coupling.geometry._mesh, subdomain_data=em_coupling.geometry.cfun,
+        )
 
         electrodes_markers = self.electrodes_marking(config.ecg_electrodes_file)
         for tag, e in enumerate(electrodes_markers):
@@ -68,9 +70,13 @@ class ECG:
             with dolfin.XDMFFile("distance_to_" + e + ".xdmf") as xdmf:
                 xdmf.write(distance)
 
-            # integral = dolfin.assemble( ufl.inner(ufl.div(self.sigma_i), ufl.grad(self.vm)) ) * dc
-            # phi_e = 1/(4*pi*self.sigma_t)*(integral / distance)
-            # phi_e_dict[e] = phi_e
+            sigma = ufl.as_matrix(self.sigma_i)
+            grad_vm = ufl.as_vector(ufl.grad(self.vm))
+            int_heart_expr = (ufl.div(sigma * grad_vm) / distance) * dc(7)
+            int_heart = dolfin.assemble(int_heart_expr)
+
+            phi_e = 1 / (4 * ufl.pi * self.sigma_t) * int_heart
+            phi_e_dict[e] = phi_e
 
         return phi_e_dict
 
