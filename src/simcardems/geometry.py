@@ -422,12 +422,11 @@ class BaseGeometry(abc.ABC):
                 with dolfin.XDMFFile(ffun_path.as_posix()) as f:
                     f.write(self.ffun)
         elif ffun.mesh() != self.mechanics_mesh:
-            # TODO : Check if self.mechanics_mesh is a meshview of ffun.mesh
             assert ffun.mesh().id() in self.mechanics_mesh.topology().mapping()
             cell_map = (
                 self.mechanics_mesh.topology().mapping()[ffun.mesh().id()].cell_map()
             )
-            # Transfer markers to MeshView using the cell mapping
+
             D = ffun.mesh().topology().dim()
             self._ffun = dolfin.MeshFunction("size_t", self.mechanics_mesh, D - 1, 0)
             ffun.mesh().init(D - 1, D)
@@ -442,7 +441,7 @@ class BaseGeometry(abc.ABC):
                         cell_myo_id = cell_map[cells[1]]
                     else:
                         raise RuntimeError(
-                            "Error in transfering ffun to myocardium submesh",
+                            "Error in transferring ffun to myocardium submesh",
                         )
                     for c in dolfin.cells(self.mechanics_mesh):
                         if c.index() == cell_myo_id:

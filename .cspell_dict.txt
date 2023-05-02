@@ -428,6 +428,7 @@ slabgeometry
 splittingsolver
 streamlit
 subk
+submesh
 subv
 sundnes
 superlu
