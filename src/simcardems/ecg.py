@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from time import perf_counter
 from typing import Dict
 from typing import List
 from typing import Union
@@ -45,10 +44,6 @@ class ECG:
 
         sigma = ufl.as_matrix(self.sigma_i)
         grad_vm = ufl.as_vector(ufl.grad(self.vm))
-        dc = ufl.dx(
-            domain=em_coupling.geometry._mesh,
-            subdomain_data=em_coupling.geometry.cfun,
-        )
 
         electrodes_markers = self.electrodes_marking(config.ecg_electrodes_file)
         for tag, e in enumerate(electrodes_markers):
@@ -62,12 +57,8 @@ class ECG:
             # with dolfin.XDMFFile("distance_to_" + e + ".xdmf") as xdmf:
             #     xdmf.write(distance)
 
-            int_heart_expr = (ufl.div(sigma * grad_vm) / distance) * dc(7)
-
-            t2_start = perf_counter()
+            int_heart_expr = (ufl.div(sigma * grad_vm) / distance) * ufl.dx
             int_heart = dolfin.assemble(int_heart_expr)
-            t2_stop = perf_counter()
-            print("Assemble ecg time : ", t2_stop - t2_start)
 
             phi_e = 1 / (4 * ufl.pi * self.sigma_t) * int_heart
             phi_e_dict[e] = phi_e
@@ -141,7 +132,9 @@ class ECG:
         UseLU=True,
     ):
         mesh = em_coupling.geometry._mesh
+        heart_mesh = em_coupling.geometry.ep_mesh
         V = dolfin.FunctionSpace(mesh, "CG", deg)
+        heart_V = dolfin.FunctionSpace(heart_mesh, "CG", deg)
         v = dolfin.TestFunction(V)
         u = dolfin.TrialFunction(V)
         f = dolfin.Constant(1.0)
@@ -197,7 +190,9 @@ class ECG:
         Solver2.solve()
         dist.rename("b", "dist")
 
-        return dist
+        # Interpolating from parent (heart + torso) mesh to heart mesh
+        dist_heart = dolfin.interpolate(dist, heart_V)
+        return dist_heart
 
     def write_to_file(
         self,
