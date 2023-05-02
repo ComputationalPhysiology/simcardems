@@ -11,12 +11,12 @@ from typing import Union
 
 import dolfin
 import pulse
-from mpi4py import MPI
-
-from . import utils
 from cardiac_geometries.geometry import Geometry
 from cardiac_geometries.geometry import H5Path
 from cardiac_geometries.geometry import MeshTypes
+from mpi4py import MPI
+
+from . import utils
 
 logger = utils.getLogger(__name__)
 

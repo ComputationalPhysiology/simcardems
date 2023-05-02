@@ -5,10 +5,10 @@ from typing import Tuple
 import dolfin
 import numpy as np
 import pulse
+from cardiac_geometries.geometry import MeshTypes
 
 from . import utils
 from .geometry import BaseGeometry
-from cardiac_geometries.geometry import MeshTypes
 
 logger = utils.getLogger(__name__)
 

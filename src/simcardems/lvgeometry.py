@@ -3,9 +3,9 @@ from typing import Tuple
 
 import dolfin
 import pulse
+from cardiac_geometries.geometry import MeshTypes
 
 from .geometry import BaseGeometry
-from cardiac_geometries.geometry import MeshTypes
 
 
 class LeftVentricularGeometry(BaseGeometry):
