@@ -93,6 +93,7 @@ def default_conductivities():
         sigma_it=0.019,  # mS / mm
         sigma_el=0.62,  # mS / mm
         sigma_et=0.24,  # mS / mm
+        sigma_t=0.2,  # mS / mm
     )
 
 

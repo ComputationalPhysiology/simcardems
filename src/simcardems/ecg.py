@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from time import perf_counter
 from typing import Dict
 from typing import List
 from typing import Union
@@ -9,15 +10,13 @@ from typing import Union
 import dolfin
 import ufl
 
+from . import ep_model
 from .config import Config
-
-# logger = utils.getLogger(__name__)
 
 
 class ECG:
-    def __init__(self, torso_mesh: dolfin.Mesh, sigma_t) -> None:
+    def __init__(self, torso_mesh: dolfin.Mesh) -> None:
         self.torso_mesh = torso_mesh
-        self.sigma_t = sigma_t
 
     @staticmethod
     def default_markers() -> Dict[str, List[int]]:
@@ -26,36 +25,29 @@ class ECG:
             "Torso": [8],
         }
 
-    # @property
-    # def em_coupling(self):
-    #     return self.em_coupling
-
     ### --- ECG recovery --- ###
-    # Recover \phi_e (extrac-cellular potential), as :
-    # \phi_e = 1/(4*pi*\sigma_b) \int_{\heart} \beta*I_m / ||r||, where :
-
-    # \sigma_b = bath conductivity tensor
-    # (bath = unbounded volume conductor the tissue is immersed in)
-    # \beta = bidomain membrane surface to volume ratio
-    # I_m = transmembrane currents
-    # \beta * I_m = div(\sigma_i * grad(vm) )
-    # with \sigma_i (intracellular / tissue conductivity tensor)
-    # and vm (transmembrane potential)
-    # r : distance between source (center of the tissue ?) and field points
+    # \phi_e = 1/(4*pi*\sigma_t) \int_{\heart} div( \sigma_i* grad(vm) ) / ||r||
+    # where r = distance between source (center of the tissue ?) and field points
     def ecg_recovery(
         self,
         config: Config,
         em_coupling,
     ) -> Dict[str, dolfin.Function]:
         phi_e_dict: Dict[str, dolfin.Function] = {}
-        print("Implementation in progress ...")
 
+        # Intracellular conductivity
         self.sigma_i = em_coupling.ep_solver._model.intracellular_conductivity()
-        self.vm = em_coupling.ep_solver.vs[
-            0
-        ]  # transmembrane potential = \phi_i - \phi_e
+        # Torso conductivity (assumed isotropic)
+        # FIXME : Should be changeable from config
+        self.sigma_t = ep_model.default_conductivities()["sigma_t"]
+        # transmembrane potential = \phi_i - \phi_e
+        self.vm = em_coupling.ep_solver.vs[0]
+
+        sigma = ufl.as_matrix(self.sigma_i)
+        grad_vm = ufl.as_vector(ufl.grad(self.vm))
         dc = ufl.dx(
-            domain=em_coupling.geometry._mesh, subdomain_data=em_coupling.geometry.cfun,
+            domain=em_coupling.geometry._mesh,
+            subdomain_data=em_coupling.geometry.cfun,
         )
 
         electrodes_markers = self.electrodes_marking(config.ecg_electrodes_file)
@@ -67,13 +59,15 @@ class ECG:
                 volume_parts=em_coupling.geometry.cfun,
                 id_myo=em_coupling.geometry.markers["Myocardium"][0],
             )
-            with dolfin.XDMFFile("distance_to_" + e + ".xdmf") as xdmf:
-                xdmf.write(distance)
+            # with dolfin.XDMFFile("distance_to_" + e + ".xdmf") as xdmf:
+            #     xdmf.write(distance)
 
-            sigma = ufl.as_matrix(self.sigma_i)
-            grad_vm = ufl.as_vector(ufl.grad(self.vm))
             int_heart_expr = (ufl.div(sigma * grad_vm) / distance) * dc(7)
+
+            t2_start = perf_counter()
             int_heart = dolfin.assemble(int_heart_expr)
+            t2_stop = perf_counter()
+            print("Assemble ecg time : ", t2_stop - t2_start)
 
             phi_e = 1 / (4 * ufl.pi * self.sigma_t) * int_heart
             phi_e_dict[e] = phi_e
@@ -86,21 +80,15 @@ class ECG:
     # tensor - to be used in the monodomain solve and ecg recovery
     def augmented_bidomain(self):
         print("Not implemented yet")
-        # self.phi_e = ...
         return None
 
     ### --- Pseudo-bidomain --- ##
-    # This function is called inside the ep_model to solve (unfrequently)
+    # This function is called inside the ep_model to solve
     # additional problem to approximate the extracellular potential \phi_e
     # without solving the full bidomain model
     # Question : Should this be implemented into cbcbeat instead ?
     def pseudo_bidomain(self):
         print("Not implemented yet")
-        # self.phi_e = ...
-        return None
-
-    def save_ecg(self, path):
-        # Saving phi_e (for each electrode location) to hdf5 file
         return None
 
     ### --- Utils --- ###
@@ -160,12 +148,10 @@ class ECG:
         dist = dolfin.Function(V)
         bc = []
 
-        print("boundary parts dim = ", boundary_parts.dim())
         if BoundaryIDs == []:
             bc = dolfin.DirichletBC(V, dolfin.Constant(0.0), "on_boundary")
         else:
             for i in BoundaryIDs:
-                print("boundary id = ", 1)
                 bc.append(
                     dolfin.DirichletBC(V, dolfin.Constant(0.0), boundary_parts, i),
                 )
@@ -212,3 +198,19 @@ class ECG:
         dist.rename("b", "dist")
 
         return dist
+
+    def write_to_file(
+        self,
+        phi_e_dict: Dict[float, Dict[str, dolfin.Function]],
+        path: Union[str, Path],
+        file_format: str = "json",
+    ) -> None:
+        import pandas as pd
+
+        df = pd.DataFrame(data=phi_e_dict)
+        if file_format == "json":
+            df.to_json(str(path) + ".json", orient="columns")
+        elif file_format == "csv":
+            df.to_csv(str(path) + ".csv")
+        else:
+            print("ECG output format needs to be json or csv")

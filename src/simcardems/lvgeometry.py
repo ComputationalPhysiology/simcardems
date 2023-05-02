@@ -3,9 +3,9 @@ from typing import Tuple
 
 import dolfin
 import pulse
-from cardiac_geometries.geometry import MeshTypes
 
 from .geometry import BaseGeometry
+from cardiac_geometries.geometry import MeshTypes
 
 
 class LeftVentricularGeometry(BaseGeometry):
@@ -22,7 +22,8 @@ class LeftVentricularGeometry(BaseGeometry):
         mesh: dolfin.Mesh,
         ffun: dolfin.MeshFunction,
     ) -> pulse.Microstructure:
-        from cardiac_geometries import lv_ellipsoid_fibers
+        # from cardiac_geometries import lv_ellipsoid_fibers
+        from cardiac_geometries.fibers import _lv_ellipsoid as lv_ellipsoid_fibers
 
         return lv_ellipsoid_fibers.create_microstructure(
             function_space=self.parameters["fiber_space"],

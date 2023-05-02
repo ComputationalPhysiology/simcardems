@@ -79,6 +79,10 @@ class Runner:
         return self.outdir / "state.h5"
 
     @property
+    def ecg_path(self) -> Path:
+        return self.outdir / "ecg"
+
+    @property
     def outdir(self) -> Path:
         return Path(self._config.outdir)
 
@@ -190,6 +194,12 @@ class Runner:
             show_progress_bar=show_progress_bar,
         )
 
+        if self._config.compute_ecg:
+            # Nested dict {t1:{"e1":t1_e1, "e2":t1_e2, ...}, t2 : {"e1":t2_e1, "e2":t2_e2, ...}, ...}
+            phi_e_dict = {}
+            if self.ecg is None:
+                self.ecg = ECG(self.coupling.geometry._mesh)
+
         for i, (t0, t) in enumerate(pbar):
             logger.debug(
                 f"Solve EP model at step {i} from {TimeStepper.ns2ms(t0):.2f} ms to {TimeStepper.ns2ms(t):.2f} ms",
@@ -215,14 +225,13 @@ class Runner:
                     config=self._config,
                 )
 
-        # Compute ecg
-        if self._config.compute_ecg:
-            if self.ecg is None:
-                sigma_t = 1  # FIXME : Set this as parameter
-                self.ecg = ECG(self.coupling.geometry._mesh, sigma_t)
-            self.ecg.ecg_recovery(self._config, self.coupling)
+            # Compute ecg
+            if self.ecg is not None:
+                phi_e_dict[t] = self.ecg.ecg_recovery(self._config, self.coupling)
 
         self.save_state()
+        if self.ecg is not None:
+            self.ecg.write_to_file(phi_e_dict, self.ecg_path)
 
 
 def create_progressbar(
