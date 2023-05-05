@@ -348,6 +348,7 @@ document.write(`
                   
   <h1>Source code for simcardems.postprocess</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterable</span>
@@ -363,6 +364,7 @@ document.write(`
 <span class="kn">import</span> <span class="nn">tqdm</span>
 
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">utils</span>
+<span class="kn">from</span> <span class="nn">.datacollector</span> <span class="kn">import</span> <span class="n">DataCollector</span>
 <span class="kn">from</span> <span class="nn">.datacollector</span> <span class="kn">import</span> <span class="n">DataGroups</span>
 <span class="kn">from</span> <span class="nn">.datacollector</span> <span class="kn">import</span> <span class="n">DataLoader</span>
 
@@ -902,6 +904,102 @@ document.write(`
         <span class="n">activation_map</span><span class="o">.</span><span class="n">vector</span><span class="p">()[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">dofs</span><span class="p">)[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">activation_map</span></div>
+
+
+<div class="viewcode-block" id="extract_sub_results"><a class="viewcode-back" href="../../api.html#simcardems.postprocess.extract_sub_results">[docs]</a><span class="k">def</span> <span class="nf">extract_sub_results</span><span class="p">(</span>
+    <span class="n">results_file</span><span class="p">:</span> <span class="n">utils</span><span class="o">.</span><span class="n">PathLike</span><span class="p">,</span>
+    <span class="n">output_file</span><span class="p">:</span> <span class="n">utils</span><span class="o">.</span><span class="n">PathLike</span><span class="p">,</span>
+    <span class="n">t_start</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">t_end</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">names</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataCollector</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract sub results from another results file.</span>
+<span class="sd">    This can be useful if you have stored a lot of data in one file</span>
+<span class="sd">    and you want to create a smaller file containing only a subset</span>
+<span class="sd">    of the data (e.g only the last beat)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    results_file : utils.PathLike</span>
+<span class="sd">        The input result file</span>
+<span class="sd">    output_file : utils.PathLike</span>
+<span class="sd">        Path to file where you want to store the sub results</span>
+<span class="sd">    t_start : float, optional</span>
+<span class="sd">        Time point indicating when the sub results should start, by default 0.0</span>
+<span class="sd">    t_end : float | None, optional</span>
+<span class="sd">        Time point indicating when the sub results should end, by default None</span>
+<span class="sd">        in which case it will choose the last time point</span>
+<span class="sd">    names : Optional[Dict[str, List[str]]], optional</span>
+<span class="sd">        A dictionary of names for each group indicating which</span>
+<span class="sd">        functions to extract for the sub results. If not provided (default)</span>
+<span class="sd">        then all functions will be extracted.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    datacollector.DataCollector</span>
+<span class="sd">        A data collector containing the sub results</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    FileNotFoundError</span>
+<span class="sd">        If the input file does not exist</span>
+<span class="sd">    KeyError</span>
+<span class="sd">        If some of the names provided does not exists</span>
+<span class="sd">        in the input file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">results_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">results_file</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">results_file</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;File </span><span class="si">{</span><span class="n">results_file</span><span class="si">}</span><span class="s2"> does not exist&quot;</span><span class="p">)</span>
+
+    <span class="n">loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">results_file</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">loader</span><span class="o">.</span><span class="n">time_stamps</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">names</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Extract everything</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">names</span>
+
+    <span class="n">t_start_idx</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">loader</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">))</span> <span class="k">if</span> <span class="n">t</span> <span class="o">&gt;</span> <span class="n">t_start</span> <span class="o">-</span> <span class="mf">1e-12</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">t_end</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">t_end_idx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">loader</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">t_end_idx</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
+                <span class="n">i</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">loader</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">t</span> <span class="o">&gt;</span> <span class="n">t_end</span> <span class="o">+</span> <span class="mf">1e-12</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+            <span class="n">t_end_idx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">loader</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+
+    <span class="n">out</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">output_file</span><span class="p">)</span>
+    <span class="n">collector</span> <span class="o">=</span> <span class="n">DataCollector</span><span class="p">(</span>
+        <span class="n">outdir</span><span class="o">=</span><span class="n">out</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span>
+        <span class="n">outfilename</span><span class="o">=</span><span class="n">out</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+        <span class="n">geo</span><span class="o">=</span><span class="n">loader</span><span class="o">.</span><span class="n">geo</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">functions</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">]]</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">group_name</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">names</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">func_name</span> <span class="ow">in</span> <span class="n">group</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">functions</span><span class="p">[</span><span class="n">group_name</span><span class="p">][</span><span class="n">func_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">_functions</span><span class="p">[</span><span class="n">group_name</span><span class="p">][</span>
+                    <span class="n">func_name</span>
+                <span class="p">]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Invalid group </span><span class="si">{</span><span class="n">group_name</span><span class="si">}</span><span class="s2"> and function </span><span class="si">{</span><span class="n">func_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+            <span class="n">collector</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">group_name</span><span class="p">,</span> <span class="n">func_name</span><span class="p">,</span> <span class="n">functions</span><span class="p">[</span><span class="n">group_name</span><span class="p">][</span><span class="n">func_name</span><span class="p">])</span>
+
+    <span class="k">for</span> <span class="n">ti</span> <span class="ow">in</span> <span class="n">loader</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">[</span><span class="n">t_start_idx</span><span class="p">:</span><span class="n">t_end_idx</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">group_name</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">names</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">func_name</span> <span class="ow">in</span> <span class="n">group</span><span class="p">:</span>
+                <span class="n">functions</span><span class="p">[</span><span class="n">group_name</span><span class="p">][</span><span class="n">func_name</span><span class="p">]</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span>
+                    <span class="n">loader</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">DataGroups</span><span class="p">[</span><span class="n">group_name</span><span class="p">],</span> <span class="n">func_name</span><span class="p">,</span> <span class="n">ti</span><span class="p">),</span>
+                <span class="p">)</span>
+        <span class="n">collector</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">ti</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">collector</span></div>
 </pre></div>
 
                 </article>
@@ -952,7 +1050,7 @@ By Simula Research Laboratory
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Apr 21, 2023.
+  Last updated on May 05, 2023.
   <br/>
 </p>
   </div>

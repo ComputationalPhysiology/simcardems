@@ -1284,6 +1284,42 @@ better initial guess for the Newton solver</p>
 <dd></dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="simcardems.postprocess.extract_sub_results">
+<span class="sig-prename descclassname"><span class="pre">simcardems.postprocess.</span></span><span class="sig-name descname"><span class="pre">extract_sub_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#simcardems.datacollector.DataCollector" title="simcardems.datacollector.DataCollector"><span class="pre">DataCollector</span></a></span></span><a class="reference internal" href="_modules/simcardems/postprocess.html#extract_sub_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.postprocess.extract_sub_results" title="Permalink to this definition">#</a></dt>
+<dd><p>Extract sub results from another results file.
+This can be useful if you have stored a lot of data in one file
+and you want to create a smaller file containing only a subset
+of the data (e.g only the last beat)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>results_file</strong> (<em>utils.PathLike</em>) – The input result file</p></li>
+<li><p><strong>output_file</strong> (<em>utils.PathLike</em>) – Path to file where you want to store the sub results</p></li>
+<li><p><strong>t_start</strong> (<em>float</em><em>, </em><em>optional</em>) – Time point indicating when the sub results should start, by default 0.0</p></li>
+<li><p><strong>t_end</strong> (<em>float</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Time point indicating when the sub results should end, by default None
+in which case it will choose the last time point</p></li>
+<li><p><strong>names</strong> (<em>Optional</em><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – A dictionary of names for each group indicating which
+functions to extract for the sub results. If not provided (default)
+then all functions will be extracted.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A data collector containing the sub results</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#simcardems.datacollector.DataCollector" title="simcardems.datacollector.DataCollector">datacollector.DataCollector</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>FileNotFoundError</strong> – If the input file does not exist</p></li>
+<li><p><strong>KeyError</strong> – If some of the names provided does not exists
+    in the input file</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="simcardems.postprocess.extract_traces">
 <span class="sig-prename descclassname"><span class="pre">simcardems.postprocess.</span></span><span class="sig-name descname"><span class="pre">extract_traces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loader</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#simcardems.datacollector.DataLoader" title="simcardems.datacollector.DataLoader"><span class="pre">DataLoader</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'average'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/simcardems/postprocess.html#extract_traces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#simcardems.postprocess.extract_traces" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
@@ -2815,7 +2851,7 @@ By Simula Research Laboratory
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Apr 21, 2023.
+  Last updated on May 05, 2023.
   <br/>
 </p>
   </div>
