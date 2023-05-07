@@ -94,6 +94,7 @@ class BaseGeometry(abc.ABC):
         ep_mesh: Optional[dolfin.Mesh] = None,
         microstructure: Optional[pulse.Microstructure] = None,
         microstructure_ep: Optional[pulse.Microstructure] = None,
+        cfun: Optional[dolfin.MeshFunction] = None,
         ffun: Optional[dolfin.MeshFunction] = None,
         ffun_ep: Optional[dolfin.MeshFunction] = None,
         markers: Optional[Dict[str, Tuple[int, int]]] = None,
@@ -108,7 +109,10 @@ class BaseGeometry(abc.ABC):
         if parameters is not None:
             self.parameters.update(parameters)
 
+        self._mesh = None
+        self.cfun = cfun
         self.mechanics_mesh = mechanics_mesh
+
         self.ffun = ffun
         self.ep_mesh = ep_mesh
         self.stimulus_domain = self._handle_stimulus_domain(stimulus_domain)
@@ -173,6 +177,12 @@ class BaseGeometry(abc.ABC):
             "ep_mesh": H5Path(
                 h5group="/geometry/mesh/ep",
                 is_mesh=True,
+            ),
+            "cfun": H5Path(
+                h5group="/geometry/meshfunctions/cfun",
+                is_meshfunction=True,
+                dim=3,
+                mesh_key="mesh",
             ),
             "ffun": H5Path(
                 h5group="/geometry/meshfunctions/ffun",
@@ -246,10 +256,10 @@ class BaseGeometry(abc.ABC):
     def facet_normal(self) -> dolfin.FacetNormal:
         return dolfin.FacetNormal(self.mesh)
 
-    @property
-    def mesh(self) -> dolfin.Mesh:
-        # FIXME: This should be optional
-        return self.mechanics_mesh
+    # @property
+    # def mesh(self) -> dolfin.Mesh:
+    #     # FIXME: This should be optional
+    #     return self.mechanics_mesh
 
     @property
     def dx(self):
@@ -377,6 +387,10 @@ class BaseGeometry(abc.ABC):
         return self.microstructure_ep.n0
 
     @property
+    def mesh(self) -> dolfin.Mesh:
+        return self._mesh  # type: ignore
+
+    @property
     def mechanics_mesh(self) -> dolfin.Mesh:
         return self._mechanics_mesh  # type: ignore
 
@@ -388,7 +402,20 @@ class BaseGeometry(abc.ABC):
                 mesh_path = self.outdir / "mesh.xdmf"
                 with dolfin.XDMFFile(mesh_path.as_posix()) as f:
                     f.write(mesh)
+        self._mesh = mesh
+        # If the mesh contains heart + torso
+        if "Torso" in self.markers:
+            self._mesh = mesh
+            mesh = dolfin.MeshView.create(self.cfun, self.markers["Myocardium"][0])
         self._mechanics_mesh = mesh
+
+    @property
+    def cfun(self) -> dolfin.MeshFunction:
+        return self._cfun  # type: ignore
+
+    @cfun.setter
+    def cfun(self, cfun: Optional[dolfin.MeshFunction]) -> None:
+        self._cfun = cfun
 
     @property
     def ffun(self) -> dolfin.MeshFunction:
@@ -404,6 +431,37 @@ class BaseGeometry(abc.ABC):
                 ffun_path = self.outdir / "ffun.xdmf"
                 with dolfin.XDMFFile(ffun_path.as_posix()) as f:
                     f.write(self.ffun)
+        elif ffun.mesh() != self.mechanics_mesh:
+            assert ffun.mesh().id() in self.mechanics_mesh.topology().mapping()
+            cell_map = (
+                self.mechanics_mesh.topology().mapping()[ffun.mesh().id()].cell_map()
+            )
+
+            D = ffun.mesh().topology().dim()
+            self._ffun = dolfin.MeshFunction("size_t", self.mechanics_mesh, D - 1, 0)
+            ffun.mesh().init(D - 1, D)
+            for f in dolfin.facets(ffun.mesh()):
+                if ffun[f] != 0:
+                    # Adjacent cells to this facet in the parent mesh
+                    cells = f.entities(D)
+                    # Find corresponding cell in myocardium
+                    if cells[0] < len(cell_map):
+                        cell_myo_id = cell_map[cells[0]]
+                    elif len(cells) > 1 and cells[1] < len(cell_map):
+                        cell_myo_id = cell_map[cells[1]]
+                    else:
+                        raise RuntimeError(
+                            "Error in transferring ffun to myocardium submesh",
+                        )
+                    for c in dolfin.cells(self.mechanics_mesh):
+                        if c.index() == cell_myo_id:
+                            cell_myo = c
+                            continue
+                    # Find corresponding facet in myocardium and mark it
+                    for facet_myo_id in cell_myo.entities(D - 1):
+                        for facet_myo in dolfin.facets(cell_myo):
+                            if facet_myo.midpoint() == f.midpoint():
+                                self._ffun[facet_myo] = ffun[f]
         else:
             self._ffun = ffun
 
@@ -516,6 +574,7 @@ class BaseGeometry(abc.ABC):
     def from_geometry(cls, geo: Geometry, **kwargs):
         for attr_geo, attr_simcardems in [
             ("info", "parameters"),
+            ("cfun", "cfun"),
             ("mesh", "mechanics_mesh"),
             ("ep_mesh", "ep_mesh"),
             ("markers", "markers"),

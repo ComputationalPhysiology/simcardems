@@ -44,6 +44,7 @@ class SlabGeometry(BaseGeometry):
             "Y1": (2, 4),
             "Z0": (2, 5),
             "Z1": (2, 6),
+            "Myocardium": (7, 3),
         }
 
     def _default_microstructure(
@@ -51,7 +52,8 @@ class SlabGeometry(BaseGeometry):
         mesh: dolfin.Mesh,
         ffun: dolfin.MeshFunction,
     ) -> pulse.Microstructure:
-        from cardiac_geometries import slab_fibers
+        # from cardiac_geometries import slab_fibers
+        from cardiac_geometries.fibers import _slab as slab_fibers
 
         return slab_fibers.create_microstructure(
             function_space=self.parameters["fiber_space"],

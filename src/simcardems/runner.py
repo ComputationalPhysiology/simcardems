@@ -7,9 +7,9 @@ from tqdm import tqdm
 from . import save_load_functions as io
 from . import utils
 from .config import Config
+from .ecg import ECG
 from .models import em_model
 from .time_stepper import TimeStepper
-
 
 logger = utils.getLogger(__name__)
 
@@ -60,6 +60,7 @@ class Runner:
             # Create a new state
             self.coupling = em_model.setup_EM_model_from_config(self._config)
 
+        self.ecg: typing.Optional[ECG] = None
         self._t0 = self.coupling.t
         self._time_stepper: typing.Optional[TimeStepper] = None
         self._setup_datacollector()
@@ -76,6 +77,10 @@ class Runner:
     @property
     def state_path(self) -> Path:
         return self.outdir / "state.h5"
+
+    @property
+    def ecg_path(self) -> Path:
+        return self.outdir / "ecg"
 
     @property
     def outdir(self) -> Path:
@@ -111,10 +116,12 @@ class Runner:
         cls,
         coupling: em_model.BaseEMCoupling,
         config: typing.Optional[Config] = None,
+        ecg: typing.Optional[ECG] = None,
         reset: bool = True,
     ):
         obj = cls(empty=True, config=config)
         obj.coupling = coupling
+        obj.ecg = ecg
         obj._t0 = coupling.t
         obj._reset = reset
         obj._time_stepper = None
@@ -187,6 +194,12 @@ class Runner:
             show_progress_bar=show_progress_bar,
         )
 
+        if self._config.compute_ecg:
+            # Nested dict {t1:{"e1":t1_e1, "e2":t1_e2, ...}, t2 : {"e1":t2_e1, "e2":t2_e2, ...}, ...}
+            phi_e_dict = {}
+            if self.ecg is None:
+                self.ecg = ECG(self.coupling.geometry._mesh)
+
         for i, (t0, t) in enumerate(pbar):
             logger.debug(
                 f"Solve EP model at step {i} from {TimeStepper.ns2ms(t0):.2f} ms to {TimeStepper.ns2ms(t):.2f} ms",
@@ -212,7 +225,13 @@ class Runner:
                     config=self._config,
                 )
 
+            # Compute ecg
+            if self.ecg is not None:
+                phi_e_dict[t] = self.ecg.ecg_recovery(self._config, self.coupling)
+
         self.save_state()
+        if self.ecg is not None:
+            self.ecg.write_to_file(phi_e_dict, self.ecg_path)
 
 
 def create_progressbar(
