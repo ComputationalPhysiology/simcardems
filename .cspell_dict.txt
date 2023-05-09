@@ -24,6 +24,7 @@ axlast
 axpy
 Axrf
 Axrs
+aypx
 Bcai
 Bcajsr
 bCaMK
@@ -278,6 +279,7 @@ modelparams
 modifyitems
 monodomain
 mpio
+mult
 multigrid
 multiselect
 myocytes
@@ -447,6 +449,7 @@ usecols
 v
 Varr
 vcell
+Vecs
 vffrt
 vfrt
 vjsr
