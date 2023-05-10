@@ -160,13 +160,14 @@ class LandModel(pulse.ActiveModel):
         if self.dt < 1e-12:
             return
 
+        dLambda = self.dLambda.vector().get_local()
         res = Radau(
             fun=lambda t, y: fun_Zeta(
                 t=t,
                 zeta=y,
                 A=float(self.As),
                 c=float(self.cs),
-                dLambda=self.dLambda.vector().get_local(),
+                dLambda=dLambda,
             ),
             t0=0.0,
             y0=self.Zetas_prev.vector().get_local(),
@@ -184,6 +185,7 @@ class LandModel(pulse.ActiveModel):
         logger.debug("update Zetaw")
         if self.dt < 1e-12:
             return
+        dLambda = self.dLambda.vector().get_local()
 
         res = Radau(
             lambda t, y: fun_Zeta(
@@ -191,7 +193,7 @@ class LandModel(pulse.ActiveModel):
                 zeta=y,
                 A=float(self.Aw),
                 c=float(self.cw),
-                dLambda=self.dLambda.vector().get_local(),
+                dLambda=dLambda,
             ),
             0.0,
             self.Zetaw_prev.vector().get_local(),
