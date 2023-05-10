@@ -83,7 +83,7 @@ def extract_traces(
                     reduction=reduction,
                 )
 
-    # values["mechanics"]["inv_lmbda"] = 1 - values["mechanics"]["lmbda"]
+    values["mechanics"]["inv_lmbda"] = 1 - values["mechanics"]["lambda"]
     return values
 
 
@@ -409,7 +409,7 @@ def get_biomarkers(results, outdir, num_models):
         V = results[f"m{PoMm}"]["ep"]["V"]
         Ca = results[f"m{PoMm}"]["ep"]["Ca"]
         Ta = results[f"m{PoMm}"]["mechanics"]["Ta"]
-        lmbda = results[f"m{PoMm}"]["mechanics"]["lmbda"]
+        lmbda = results[f"m{PoMm}"]["mechanics"]["lambda"]
         u = results[f"m{PoMm}"]["mechanics"]["u"]
         inv_lmbda = results[f"m{PoMm}"]["mechanics"]["inv_lmbda"]
 
