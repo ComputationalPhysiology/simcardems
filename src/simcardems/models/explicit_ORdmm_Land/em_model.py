@@ -80,6 +80,24 @@ class EMCoupling(em_model.BaseEMCoupling):
             self.lmbda_ep.vector()[:] = lmbda.vector()
             self.lmbda_ep_prev.vector()[:] = lmbda.vector()
 
+        self.transfer_matrix = dolfin.PETScDMCollection.create_transfer_matrix(
+            self.V_mech,
+            self.V_ep,
+        ).mat()
+
+    def interpolate(
+        self,
+        f_mech: dolfin.Function,
+        f_ep: dolfin.Function,
+    ) -> dolfin.Function:
+        """Interpolates function from mechanics to ep mesh"""
+
+        x = dolfin.as_backend_type(f_mech.vector()).vec()
+        _, temp = self.transfer_matrix.getVecs()
+        self.transfer_matrix.mult(x, temp)
+        f_ep.vector().vec().aypx(0.0, temp)
+        f_ep.vector().apply("")
+
     def __eq__(self, __o: object) -> bool:
         if not isinstance(__o, type(self)):
             return NotImplemented
@@ -284,9 +302,7 @@ class EMCoupling(em_model.BaseEMCoupling):
             self.u_mech,
             utils.sub_function(self.mech_state, self._u_subspace_index),
         )
-        self.lmbda_ep.interpolate(self.lmbda_mech_func)
-        # self.u_ep.interpolate(self.u_mech)
-        # self._project_lmbda()
+        self.interpolate(self.lmbda_mech_func, self.lmbda_ep)
 
         logger.debug("Done transferring variables from mechanics to coupling")
 
