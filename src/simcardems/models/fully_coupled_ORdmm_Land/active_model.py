@@ -6,6 +6,7 @@ import dolfin
 import numpy as np
 import pulse
 import ufl
+from scipy.integrate import Radau
 
 from ... import utils
 from ...time_stepper import TimeStepper
@@ -32,6 +33,10 @@ def _Zeta(Zeta_prev, A, c, dLambda, dt, scheme: Scheme):
         return Zeta_prev + A * dLambda / (1.0 + c * dt)
     else:
         return Zeta_prev * (1.0 - c * dt) + A * dLambda
+
+
+def fun_Zeta(t, zeta, A, c, dLambda):
+    return dLambda * A - zeta * c
 
 
 class LandModel(pulse.ActiveModel):
@@ -152,14 +157,24 @@ class LandModel(pulse.ActiveModel):
 
     def update_Zetas(self):
         logger.debug("update Zetas")
-        self._Zetas.vector()[:] = _Zeta(
-            self.Zetas_prev.vector(),
-            self.As,
-            self.cs,
-            self.dLambda.vector(),
-            self.dt,
-            self._scheme,
+        if self.dt < 1e-12:
+            return
+
+        res = Radau(
+            fun=lambda t, y: fun_Zeta(
+                t=t,
+                zeta=y,
+                A=float(self.As),
+                c=float(self.cs),
+                dLambda=self.dLambda.vector().get_local(),
+            ),
+            t0=0.0,
+            y0=self.Zetas_prev.vector().get_local(),
+            t_bound=self.dt,
         )
+        while res.t < self.dt:
+            res.step()
+        self._Zetas.vector()[:] = res.y
 
     @property
     def Zetas(self):
@@ -167,14 +182,24 @@ class LandModel(pulse.ActiveModel):
 
     def update_Zetaw(self):
         logger.debug("update Zetaw")
-        self._Zetaw.vector()[:] = _Zeta(
-            self.Zetaw_prev.vector(),
-            self.Aw,
-            self.cw,
-            self.dLambda.vector(),
+        if self.dt < 1e-12:
+            return
+
+        res = Radau(
+            lambda t, y: fun_Zeta(
+                t=t,
+                zeta=y,
+                A=float(self.Aw),
+                c=float(self.cw),
+                dLambda=self.dLambda.vector().get_local(),
+            ),
+            0.0,
+            self.Zetaw_prev.vector().get_local(),
             self.dt,
-            self._scheme,
         )
+        while res.t < self.dt:
+            res.step()
+        self._Zetaw.vector()[:] = res.y
 
     @property
     def Zetaw(self):
