@@ -396,6 +396,24 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">Zetas_ep</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">V_ep</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Zetas_ep&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Zetaw_ep</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">V_ep</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Zetaw_ep&quot;</span><span class="p">)</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">transfer_matrix</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">PETScDMCollection</span><span class="o">.</span><span class="n">create_transfer_matrix</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">V_mech</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">V_ep</span><span class="p">,</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">mat</span><span class="p">()</span>
+
+<div class="viewcode-block" id="EMCoupling.interpolate"><a class="viewcode-back" href="../../../../api.html#simcardems.models.fully_coupled_ORdmm_Land.EMCoupling.interpolate">[docs]</a>    <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">f_mech</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">,</span>
+        <span class="n">f_ep</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Interpolates function from mechanics to ep mesh&quot;&quot;&quot;</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">as_backend_type</span><span class="p">(</span><span class="n">f_mech</span><span class="o">.</span><span class="n">vector</span><span class="p">())</span><span class="o">.</span><span class="n">vec</span><span class="p">()</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">temp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transfer_matrix</span><span class="o">.</span><span class="n">getVecs</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transfer_matrix</span><span class="o">.</span><span class="n">mult</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">temp</span><span class="p">)</span>
+        <span class="n">f_ep</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">vec</span><span class="p">()</span><span class="o">.</span><span class="n">aypx</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">temp</span><span class="p">)</span>
+        <span class="n">f_ep</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
+
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">coupling_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="s2">&quot;fully_coupled_ORdmm_Land&quot;</span>
@@ -545,9 +563,9 @@ document.write(`
 
 <div class="viewcode-block" id="EMCoupling.mechanics_to_coupling"><a class="viewcode-back" href="../../../../api.html#simcardems.models.fully_coupled_ORdmm_Land.EMCoupling.mechanics_to_coupling">[docs]</a>    <span class="k">def</span> <span class="nf">mechanics_to_coupling</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Interpolate EP&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">lmbda_ep</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lmbda_mech</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Zetas_ep</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Zetas_mech</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Zetaw_ep</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Zetaw_mech</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lmbda_mech</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lmbda_ep</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Zetas_mech</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Zetas_ep</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Zetaw_mech</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Zetaw_ep</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Done interpolating EP&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="EMCoupling.coupling_to_ep"><a class="viewcode-back" href="../../../../api.html#simcardems.models.fully_coupled_ORdmm_Land.EMCoupling.coupling_to_ep">[docs]</a>    <span class="k">def</span> <span class="nf">coupling_to_ep</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -740,7 +758,7 @@ By Simula Research Laboratory
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on May 05, 2023.
+  Last updated on May 10, 2023.
   <br/>
 </p>
   </div>
