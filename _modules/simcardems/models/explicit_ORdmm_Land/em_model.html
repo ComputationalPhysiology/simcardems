@@ -429,6 +429,24 @@ document.write(`
             <span class="bp">self</span><span class="o">.</span><span class="n">lmbda_ep</span><span class="o">.</span><span class="n">vector</span><span class="p">()[:]</span> <span class="o">=</span> <span class="n">lmbda</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">lmbda_ep_prev</span><span class="o">.</span><span class="n">vector</span><span class="p">()[:]</span> <span class="o">=</span> <span class="n">lmbda</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">transfer_matrix</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">PETScDMCollection</span><span class="o">.</span><span class="n">create_transfer_matrix</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">V_mech</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">V_ep</span><span class="p">,</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">mat</span><span class="p">()</span>
+
+<div class="viewcode-block" id="EMCoupling.interpolate"><a class="viewcode-back" href="../../../../api.html#simcardems.models.explicit_ORdmm_Land.EMCoupling.interpolate">[docs]</a>    <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">f_mech</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">,</span>
+        <span class="n">f_ep</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Interpolates function from mechanics to ep mesh&quot;&quot;&quot;</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">as_backend_type</span><span class="p">(</span><span class="n">f_mech</span><span class="o">.</span><span class="n">vector</span><span class="p">())</span><span class="o">.</span><span class="n">vec</span><span class="p">()</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">temp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transfer_matrix</span><span class="o">.</span><span class="n">getVecs</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transfer_matrix</span><span class="o">.</span><span class="n">mult</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">temp</span><span class="p">)</span>
+        <span class="n">f_ep</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">vec</span><span class="p">()</span><span class="o">.</span><span class="n">aypx</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">temp</span><span class="p">)</span>
+        <span class="n">f_ep</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
+
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">__o</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">__o</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
             <span class="k">return</span> <span class="bp">NotImplemented</span>
@@ -633,9 +651,7 @@ document.write(`
             <span class="bp">self</span><span class="o">.</span><span class="n">u_mech</span><span class="p">,</span>
             <span class="n">utils</span><span class="o">.</span><span class="n">sub_function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mech_state</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_u_subspace_index</span><span class="p">),</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">lmbda_ep</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lmbda_mech_func</span><span class="p">)</span>
-        <span class="c1"># self.u_ep.interpolate(self.u_mech)</span>
-        <span class="c1"># self._project_lmbda()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lmbda_mech_func</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lmbda_ep</span><span class="p">)</span>
 
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Done transferring variables from mechanics to coupling&quot;</span><span class="p">)</span></div>
 
