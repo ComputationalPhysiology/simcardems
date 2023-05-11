@@ -22,7 +22,7 @@ from .datacollector import DataLoader
 logger = utils.getLogger(__name__)
 
 
-def plot_peaks(fname, data, threshold):
+def plot_peaks(fname, data, threshold, save_trace):
     # Find peaks for assessment steady state
     from scipy.signal import find_peaks
 
@@ -38,6 +38,10 @@ def plot_peaks(fname, data, threshold):
 
     # Calculate difference between consecutive list elements
     change_y = [(s - q) / q * 100 for q, s in zip(y, y[1:])]
+
+    if save_trace:
+        change_y_np = np.array(change_y)
+        np.save(fname, change_y_np)
 
     fig, ax = plt.subplots()
     ax.plot(change_y)
@@ -107,10 +111,24 @@ def plot_state_traces(
 
     if times[-1] > 2000 and flag_peaks:
         plot_peaks(
-            outdir.joinpath("compare-peak-values.png"),
+            outdir.joinpath("compare-peak-values-Ca.png"),
             values["ep"]["Ca"],
             0.0002,
+            True,
         )
+        plot_peaks(
+            outdir.joinpath("compare-peak-values-V.png"),
+            values["ep"]["V"],
+            10.0,
+            True,
+        )
+        plot_peaks(
+            outdir.joinpath("compare-peak-values-Ta.png"),
+            values["mechanics"]["Ta"],
+            2.0,
+            True,
+        )
+
     fig, axs = plt.subplots(2, 2, figsize=(10, 8), sharex=True)
 
     for i, (group, key) in enumerate(
