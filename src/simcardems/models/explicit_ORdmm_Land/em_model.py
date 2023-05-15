@@ -93,10 +93,13 @@ class EMCoupling(em_model.BaseEMCoupling):
         """Interpolates function from mechanics to ep mesh"""
 
         x = dolfin.as_backend_type(f_mech.vector()).vec()
-        _, temp = self.transfer_matrix.getVecs()
+        a, temp = self.transfer_matrix.getVecs()
         self.transfer_matrix.mult(x, temp)
         f_ep.vector().vec().aypx(0.0, temp)
         f_ep.vector().apply("")
+        x.destroy()
+        a.destroy()
+        temp.destroy()
 
     def __eq__(self, __o: object) -> bool:
         if not isinstance(__o, type(self)):
