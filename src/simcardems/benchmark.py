@@ -14,25 +14,46 @@ import_time = time.perf_counter() - t0
 
 
 @click.command()
-@click.argument("outdir", required=True, type=click.Path())
-@click.option("--dt", type=float, default=0.05)
-@click.option("--dx", type=float, default=0.2)
-@click.option("--sha", type=str, default="")
-def main(outdir, dt, dx, sha):
-    data = {}
+@click.argument(
+    "outdir",
+    required=True,
+    type=click.Path(),
+)
+@click.option("--dt", type=float, default=0.05, help="Time step used in the EP solver")
+@click.option(
+    "--dx",
+    type=float,
+    default=0.2,
+    help="Spatial discretization for the mechanics mesh",
+)
+@click.option("--sha", type=str, default="", help="Current git SHA")
+@click.option(
+    "--pure-ep",
+    is_flag=True,
+    default=False,
+    help="Whether to run the fully coupled EM model or a pure ep model",
+)
+def main(outdir, dt, dx, sha, pure_ep):
+    if pure_ep:
+        coupling_type = "pureEP_ORdmm_Land"
+    else:
+        coupling_type = "fully_coupled_ORdmm_Land"
 
+    data = {}
     data["import_time"] = import_time
     data["timestamp"] = datetime.datetime.now().isoformat()
     data["simcardems_version"] = simcardems.__version__
     data["dt"] = dt
     data["dx"] = dx
     data["sha"] = sha
+    data["coupling_type"] = coupling_type
 
     config = simcardems.Config(
         outdir=outdir,
         T=1000,
         load_state=True,
         dt=dt,
+        coupling_type=coupling_type,
         outfilename="benchmark_results.h5",
     )
 
@@ -60,16 +81,24 @@ def main(outdir, dt, dx, sha):
     loader = simcardems.DataLoader(Path(outdir) / "benchmark_results.h5")
 
     values = extract_traces(loader=loader)
+
+    kwargs = {
+        "V": values["ep"]["V"],
+        "time": values["time"],
+        "Ca": values["ep"]["Ca"],
+    }
+    if not pure_ep:
+        kwargs.update(
+            {
+                "Ta": values["mechanics"]["Ta"],
+                "lmbda": values["mechanics"]["lambda"],
+                "inv_lmbda": 1 - values["mechanics"]["lambda"],
+                "u": values["mechanics"]["u"],
+            },
+        )
+
     data.update(
-        extract_biomarkers(
-            V=values["ep"]["V"],
-            Ta=values["mechanics"]["Ta"],
-            time=values["time"],
-            Ca=values["ep"]["Ca"],
-            lmbda=values["mechanics"]["lambda"],
-            inv_lmbda=1 - values["mechanics"]["lambda"],
-            u=values["mechanics"]["u"],
-        ),
+        extract_biomarkers(**kwargs),
     )
 
     path = Path(outdir) / f"results_dx{int(100*dx)}_dt{int(1000*dt)}.json"
