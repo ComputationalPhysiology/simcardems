@@ -444,9 +444,7 @@ document.write(`
 <p>The file <code class="docutils literal notranslate"><span class="pre">state.h5</span></code> contains the final state which can be used if you want use the final state as a starting point for the next simulation.
 The file <code class="docutils literal notranslate"><span class="pre">results.h5</span></code> contains output of different state variables for every time point.</p>
 <p>We can now plot the state traces, where we also specify that we want the trace from the center of the slab</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">simcardems</span><span class="o">.</span><span class="n">postprocess</span><span class="o">.</span><span class="n">plot_state_traces</span><span class="p">(</span><span class="n">outdir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;results.h5&quot;</span><span class="p">),</span> <span class="s2">&quot;center&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
+<p>simcardems.postprocess.plot_state_traces(outdir.joinpath(“results.h5”), “center”)</p>
 <p>This will create a figure in the output directory called <code class="docutils literal notranslate"><span class="pre">state_traces_center.png</span></code> which in this case is shown in <a class="reference internal" href="#simple-demo-state-traces"><span class="std std-numref">Figure 1</span></a> we see the resulting state traces, and can also see the instant drop in the active tension (<span class="math notranslate nohighlight">\(T_a\)</span>) at the time of the triggered release.</p>
 <figure class="align-default" id="simple-demo-state-traces">
 <img alt="_images/simple_demo_state_traces.png" src="_images/simple_demo_state_traces.png" />
@@ -455,9 +453,7 @@ The file <code class="docutils literal notranslate"><span class="pre">results.h5
 </figcaption>
 </figure>
 <p>We can also save the output to xdmf-files that can be viewed in Paraview</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">simcardems</span><span class="o">.</span><span class="n">postprocess</span><span class="o">.</span><span class="n">make_xdmffiles</span><span class="p">(</span><span class="n">outdir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;results.h5&quot;</span><span class="p">))</span>
-</pre></div>
-</div>
+<p>simcardems.postprocess.make_xdmffiles(outdir.joinpath(“results.h5”))</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">xdmf</span></code> files are can be opened in <a class="reference external" href="https://www.paraview.org/download/">Paraview</a> to visualize the different variables such as in <a class="reference internal" href="#simple-demo-paraview"><span class="std std-numref">Figure 2</span></a>.</p>
 <figure class="align-default" id="simple-demo-paraview">
 <img alt="_images/simple_demo.png" src="_images/simple_demo.png" />
@@ -553,7 +549,7 @@ By Simula Research Laboratory
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on May 10, 2023.
+  Last updated on May 16, 2023.
   <br/>
 </p>
   </div>

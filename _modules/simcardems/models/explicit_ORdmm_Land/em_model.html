@@ -442,10 +442,15 @@ document.write(`
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Interpolates function from mechanics to ep mesh&quot;&quot;&quot;</span>
 
         <span class="n">x</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">as_backend_type</span><span class="p">(</span><span class="n">f_mech</span><span class="o">.</span><span class="n">vector</span><span class="p">())</span><span class="o">.</span><span class="n">vec</span><span class="p">()</span>
-        <span class="n">_</span><span class="p">,</span> <span class="n">temp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transfer_matrix</span><span class="o">.</span><span class="n">getVecs</span><span class="p">()</span>
+        <span class="n">a</span><span class="p">,</span> <span class="n">temp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transfer_matrix</span><span class="o">.</span><span class="n">getVecs</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">transfer_matrix</span><span class="o">.</span><span class="n">mult</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">temp</span><span class="p">)</span>
         <span class="n">f_ep</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">vec</span><span class="p">()</span><span class="o">.</span><span class="n">aypx</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">temp</span><span class="p">)</span>
-        <span class="n">f_ep</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
+        <span class="n">f_ep</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Remember to free memory allocated by petsc: https://gitlab.com/petsc/petsc/-/issues/1309</span>
+        <span class="n">x</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+        <span class="n">a</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+        <span class="n">temp</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span></div>
 
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">__o</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">__o</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
@@ -813,7 +818,7 @@ By Simula Research Laboratory
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on May 10, 2023.
+  Last updated on May 16, 2023.
   <br/>
 </p>
   </div>

@@ -56,9 +56,9 @@ The file `results.h5` contains output of different state variables for every tim
 
 We can now plot the state traces, where we also specify that we want the trace from the center of the slab
 
-```python
+
 simcardems.postprocess.plot_state_traces(outdir.joinpath("results.h5"), "center")
-```
+
 
 This will create a figure in the output directory called `state_traces_center.png` which in this case is shown in {numref}`Figure {number} <simple_demo_state_traces>` we see the resulting state traces, and can also see the instant drop in the active tension ($T_a$) at the time of the triggered release.
 
@@ -72,9 +72,9 @@ Traces of the stretch ($\lambda$), the active tension ($T_a$), the membrane pote
 We can also save the output to xdmf-files that can be viewed in Paraview
 
 
-```python
+
 simcardems.postprocess.make_xdmffiles(outdir.joinpath("results.h5"))
-```
+
 
 The `xdmf` files are can be opened in [Paraview](https://www.paraview.org/download/) to visualize the different variables such as in {numref}`Figure {number} <simple-demo-paraview>`.
 
