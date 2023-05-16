@@ -65,6 +65,8 @@ class EMCoupling(BaseEMCoupling):
         self.transfer_matrix.mult(x, temp)
         f_ep.vector().vec().aypx(0.0, temp)
         f_ep.vector().apply("")
+
+        # Remember to free memory allocated by petsc: https://gitlab.com/petsc/petsc/-/issues/1309
         x.destroy()
         a.destroy()
         temp.destroy()
