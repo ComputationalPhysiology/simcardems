@@ -367,6 +367,7 @@ document.write(`
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">.models.em_model</span> <span class="kn">import</span> <span class="n">BaseEMCoupling</span>
+    <span class="kn">from</span> <span class="nn">.models.cell_model</span> <span class="kn">import</span> <span class="n">BaseCellModel</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -622,18 +623,20 @@ document.write(`
 
 
 <div class="viewcode-block" id="handle_cell_params"><a class="viewcode-back" href="../../api.html#simcardems.ep_model.handle_cell_params">[docs]</a><span class="k">def</span> <span class="nf">handle_cell_params</span><span class="p">(</span>
-    <span class="n">CellModel</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">cbcbeat</span><span class="o">.</span><span class="n">CardiacCellModel</span><span class="p">],</span>
+    <span class="n">CellModel</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">BaseCellModel</span><span class="p">],</span>
     <span class="n">cell_params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">disease_state</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;healthy&quot;</span><span class="p">,</span>
     <span class="n">drug_factors_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="n">popu_factors_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
 <span class="p">):</span>
-    <span class="n">cell_params_tmp</span> <span class="o">=</span> <span class="n">CellModel</span><span class="o">.</span><span class="n">default_parameters</span><span class="p">(</span><span class="n">disease_state</span><span class="p">)</span>
+    <span class="n">cell_params_tmp</span> <span class="o">=</span> <span class="n">CellModel</span><span class="o">.</span><span class="n">default_parameters</span><span class="p">()</span>
     <span class="c1"># FIXME: In this case we update the parameters first, while in the</span>
     <span class="c1"># initial condition case we do that last. We need to be consistent</span>
     <span class="c1"># about this.</span>
     <span class="k">if</span> <span class="n">cell_params</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">cell_params_tmp</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">cell_params</span><span class="p">)</span>
+
+    <span class="n">CellModel</span><span class="o">.</span><span class="n">update_disease_parameters</span><span class="p">(</span><span class="n">cell_params_tmp</span><span class="p">,</span> <span class="n">disease_state</span><span class="o">=</span><span class="n">disease_state</span><span class="p">)</span>
     <span class="c1"># Adding optional drug factors to parameters (if drug_factors_file exists)</span>
     <span class="k">if</span> <span class="n">file_exist</span><span class="p">(</span><span class="n">drug_factors_file</span><span class="p">,</span> <span class="s2">&quot;.json&quot;</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Drug scaling factors loaded from </span><span class="si">{</span><span class="n">drug_factors_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -729,7 +732,7 @@ By Simula Research Laboratory
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on May 18, 2023.
+  Last updated on May 22, 2023.
   <br/>
 </p>
   </div>
