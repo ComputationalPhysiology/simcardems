@@ -6,8 +6,8 @@ from cbcbeat import CardiacCellModel
 
 
 class BaseCellModel(CardiacCellModel, ABC):
-    @abstractmethod
     @staticmethod
+    @abstractmethod
     def update_disease_parameters(
         params: Dict[str, float],
         disease_state: str = "healthy",
