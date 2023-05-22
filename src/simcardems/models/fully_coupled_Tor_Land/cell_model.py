@@ -77,7 +77,7 @@ class TorLandFull(BaseCellModel):
             params["HF_scaling_cat50_ref"] = 0.7
 
     @staticmethod
-    def default_parameters(disease_state: str = "healthy") -> Dict[str, float]:
+    def default_parameters() -> Dict[str, float]:
         """Set-up and return default parameters.
 
         Parameters
