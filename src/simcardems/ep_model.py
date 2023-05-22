@@ -18,6 +18,7 @@ from .config import Config
 
 if TYPE_CHECKING:
     from .models.em_model import BaseEMCoupling
+    from .models.cell_model import BaseCellModel
 
 logger = utils.getLogger(__name__)
 
@@ -273,18 +274,20 @@ def load_json(filename: str):
 
 
 def handle_cell_params(
-    CellModel: Type[cbcbeat.CardiacCellModel],
+    CellModel: Type[BaseCellModel],
     cell_params: Optional[Dict[str, float]] = None,
     disease_state: str = "healthy",
     drug_factors_file: str = "",
     popu_factors_file: str = "",
 ):
-    cell_params_tmp = CellModel.default_parameters(disease_state)
+    cell_params_tmp = CellModel.default_parameters()
     # FIXME: In this case we update the parameters first, while in the
     # initial condition case we do that last. We need to be consistent
     # about this.
     if cell_params is not None:
         cell_params_tmp.update(cell_params)
+
+    CellModel.update_disease_parameters(cell_params_tmp, disease_state=disease_state)
     # Adding optional drug factors to parameters (if drug_factors_file exists)
     if file_exist(drug_factors_file, ".json"):
         logger.info(f"Drug scaling factors loaded from {drug_factors_file}")
