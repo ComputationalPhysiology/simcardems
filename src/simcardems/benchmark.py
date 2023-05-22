@@ -58,24 +58,24 @@ def main(outdir, dt, dx, sha, pure_ep):
     )
 
     t0 = time.perf_counter()
-    # geo = simcardems.slabgeometry.SlabGeometry(parameters={"dx": dx})
+    geo = simcardems.slabgeometry.SlabGeometry(parameters={"dx": dx})
 
-    # data["num_cells_mechanics"] = geo.mesh.num_cells()
-    # data["num_cells_ep"] = geo.ep_mesh.num_cells()
-    # data["num_vertices_mechanics"] = geo.mesh.num_vertices()
-    # data["num_vertices_ep"] = geo.ep_mesh.num_vertices()
+    data["num_cells_mechanics"] = geo.mesh.num_cells()
+    data["num_cells_ep"] = geo.ep_mesh.num_cells()
+    data["num_vertices_mechanics"] = geo.mesh.num_vertices()
+    data["num_vertices_ep"] = geo.ep_mesh.num_vertices()
 
-    # coupling = simcardems.models.em_model.setup_EM_model_from_config(
-    #     config=config,
-    #     geometry=geo,
-    # )
-    # runner = simcardems.Runner.from_models(config=config, coupling=coupling)
-    # data["create_runner_time"] = time.perf_counter() - t0
+    coupling = simcardems.models.em_model.setup_EM_model_from_config(
+        config=config,
+        geometry=geo,
+    )
+    runner = simcardems.Runner.from_models(config=config, coupling=coupling)
+    data["create_runner_time"] = time.perf_counter() - t0
 
-    # t0 = time.perf_counter()
+    t0 = time.perf_counter()
 
-    # if runner.t0 < config.T:
-    #     runner.solve(T=config.T, save_freq=config.save_freq, show_progress_bar=False)
+    if runner.t0 < config.T:
+        runner.solve(T=config.T, save_freq=config.save_freq, show_progress_bar=False)
     data["solve_time"] = time.perf_counter() - t0
 
     loader = simcardems.DataLoader(Path(outdir) / "benchmark_results.h5")

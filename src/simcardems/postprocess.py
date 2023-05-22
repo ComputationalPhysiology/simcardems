@@ -382,7 +382,7 @@ def extract_biomarkers(
     d["ampCa"] = np.max(Ca) - np.min(Ca)
     d["CaTD50"] = Ca_beat.apd(50)
     d["CaTD80"] = Ca_beat.apd(80)
-    d["CaTD90"] = Ca_beat.apd(90)
+
     if Ta is not None:
         Ta_beat = apf.Beat(Ta)
         d["maxTa"] = np.max(Ta.y)
