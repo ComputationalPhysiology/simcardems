@@ -356,48 +356,68 @@ def extract_last_beat(y, time, pacing, return_interval=False):
     return lastbeat.y, lastbeat.t
 
 
-def extract_biomarkers(V, Ta, time, Ca, lmbda, inv_lmbda, u):
+def extract_biomarkers(
+    *,
+    V: np.ndarray,
+    time: np.ndarray,
+    Ca: np.ndarray,
+    Ta: Optional[np.ndarray] = None,
+    lmbda: Optional[np.ndarray] = None,
+    inv_lmbda: Optional[np.ndarray] = None,
+    u: Optional[np.ndarray] = None,
+) -> Dict[str, float]:
     d = {}
-    d["maxTa"] = np.max(Ta)
-    d["ampTa"] = np.max(Ta) - np.min(Ta)
-    d["APD40"] = find_duration(V, time, 40)
-    d["APD50"] = find_duration(V, time, 50)
-    d["APD90"] = find_duration(V, time, 90)
-    d["triangulation"] = d["APD90"] - d["APD40"]
+
+    V_beat = apf.Beat(y=V, t=time)
+    Ca_beat = apf.Beat(y=Ca, t=time)
+
+    d["APD40"] = V_beat.apd(40)
+    d["APD50"] = V_beat.apd(50)
+    d["APD90"] = V_beat.apd(90)
+    d["triangulation"] = V_beat.triangulation(high=90, low=40)
     d["Vpeak"] = np.max(V)
     d["Vmin"] = np.min(V)
-    d["dvdt"] = (V[1] - V[0]) / 2.0
+    d["dvdt_max"] = V_beat.maximum_upstroke_velocity()
     d["maxCa"] = np.max(Ca)
     d["ampCa"] = np.max(Ca) - np.min(Ca)
-    d["CaTD50"] = find_duration(Ca, time, 50)
-    d["CaTD80"] = find_duration(Ca, time, 80)
-    d["CaTD90"] = find_duration(Ca, time, 90)
-    d["ttp_Ta"] = find_ttp(Ta, time)
-    d["rt50_Ta"] = find_decaytime(Ta, time, 50)
-    d["rt95_Ta"] = find_decaytime(Ta, time, 5)
-    d["maxlmbda"] = np.max(lmbda)
-    d["minlmbda"] = np.min(lmbda)
-    d["ttplmbda"] = find_ttp(inv_lmbda, time)
-    d["lmbdaD50"] = find_duration(inv_lmbda, time, 50)
-    d["lmbdaD80"] = find_duration(inv_lmbda, time, 80)
-    d["lmbdaD90"] = find_duration(inv_lmbda, time, 90)
-    d["rt50_lmbda"] = find_decaytime(inv_lmbda, time, 50)
-    d["rt95_lmbda"] = find_decaytime(inv_lmbda, time, 5)
+    d["CaTD50"] = Ca_beat.apd(50)
+    d["CaTD80"] = Ca_beat.apd(80)
+    d["CaTD90"] = Ca_beat.apd(90)
+    if Ta is not None:
+        Ta_beat = apf.Beat(Ta)
+        d["maxTa"] = np.max(Ta.y)
+        d["ampTa"] = np.max(Ta.y) - np.min(Ta.y)
+        d["ttp_Ta"] = Ta_beat.ttp()
+        d["rt50_Ta"] = Ta_beat.tau(50)
+        d["rt95_Ta"] = Ta_beat.tau(5)
+    if lmbda is not None:
+        d["maxlmbda"] = np.max(lmbda)
+        d["minlmbda"] = np.min(lmbda)
 
-    u_norm = np.linalg.norm(u, axis=1)
-    ux, uy, uz = u.T
-    for name, arr in zip(["norm", "x", "y", "z"], [u_norm, ux, uy, uz]):
-        d[f"max_displacement_{name}"] = np.abs(np.max(arr))
-        d[f"rel_max_displacement_{name}"] = np.abs(
-            np.min(arr) - np.max(arr),
-        )
-        d[f"max_displacement_perc_{name}"] = d[f"max_displacement_{name}"] * 100 / 20.0
-        d[f"rel_max_displacement_perc_{name}"] = (
-            d[f"rel_max_displacement_{name}"] * 100 / (20.0 - np.abs(np.max(arr)))
-        )
-        d[f"time_to_max_displacement_{name}"] = (
-            time[np.where(arr == np.min(arr))[0][0]] % 1000
-        )
+    if inv_lmbda is not None:
+        inv_lmbda_beat = apf.Beat(y=inv_lmbda, t=time)
+        d["ttplmbda"] = inv_lmbda_beat.ttp()
+        d["lmbdaD50"] = inv_lmbda_beat.apd(50)
+        d["lmbdaD80"] = inv_lmbda_beat.apd(80)
+        d["lmbdaD90"] = inv_lmbda_beat.apd(90)
+        d["rt50_lmbda"] = inv_lmbda_beat.tau(50)
+        d["rt95_lmbda"] = inv_lmbda_beat.tau(5)
+
+    if u is not None:
+        u_norm = np.linalg.norm(u, axis=1)
+        ux, uy, uz = u.T
+        for name, arr in zip(["norm", "x", "y", "z"], [u_norm, ux, uy, uz]):
+            d[f"max_displacement_{name}"] = np.max(arr)
+            d[f"min_displacement_{name}"] = np.min(arr)
+            d[f"time_to_max_displacement_{name}"] = apf.features.time_to_peak(
+                y=arr,
+                x=time,
+            )
+            d[f"time_to_min_displacement_{name}"] = apf.features.time_to_peak(
+                y=-arr,
+                x=time,
+            )
+
     return d
 
 
