@@ -346,20 +346,20 @@ def generate_report(outdir):
     (Path(outdir) / "report.tex").write_text(text)
 
     pdflatex = shutil.which("pdflatex")
-    # if pdflatex is None:
-    print("Unable to generate pdf report since pdflatex is not install")
+    if pdflatex is None:
+        print("Unable to generate pdf report since pdflatex is not install")
 
-    msg = """
-    export DEBIAN_FRONTEND=noninteractive
-    apt-get update &&
-    apt-get install texlive-latex-base
-        texlive-fonts-recommended
-        texlive-fonts-extra
-        texlive-latex-extra
-    """
-    print(f"Try {msg}")
-
-    subprocess.run([pdflatex, "report.tex"], cwd=outdir)
+        msg = """
+        export DEBIAN_FRONTEND=noninteractive
+        apt-get update &&
+        apt-get install texlive-latex-base
+            texlive-fonts-recommended
+            texlive-fonts-extra
+            texlive-latex-extra
+        """
+        print(f"Try {msg}")
+    else:
+        subprocess.run([pdflatex, "report.tex"], cwd=outdir)
 
 
 @click.group()
