@@ -385,8 +385,8 @@ def extract_biomarkers(
 
     if Ta is not None:
         Ta_beat = apf.Beat(Ta, t=time)
-        d["maxTa"] = np.max(Ta.y)
-        d["ampTa"] = np.max(Ta.y) - np.min(Ta.y)
+        d["maxTa"] = np.max(Ta_beat.y)
+        d["ampTa"] = np.max(Ta_beat.y) - np.min(Ta_beat.y)
         d["ttp_Ta"] = Ta_beat.ttp()
         d["rt50_Ta"] = Ta_beat.tau(50)
         d["rt95_Ta"] = Ta_beat.tau(5)
