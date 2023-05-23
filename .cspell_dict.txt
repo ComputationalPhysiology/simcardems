@@ -92,6 +92,7 @@ dnass
 dnca
 docname
 docnames
+documentclass
 dofs
 dolfin
 dtype
@@ -143,6 +144,7 @@ GNa
 Gncx
 gotran
 GpCa
+graphicx
 Gsac
 Gsac_k
 Gsac_ns
@@ -178,6 +180,7 @@ icntl
 iF
 iFp
 Ilsbeth
+includegraphics
 infp
 iS
 Isac
@@ -295,6 +298,7 @@ Neumann
 Nicolay
 Niederer
 nonconvergence
+noninteractive
 ntm
 ntrpn
 numpyfy
@@ -312,6 +316,7 @@ Panfilov
 pathophysiology
 pbar
 PCab
+pdflatex
 perc
 permodel
 petsc
@@ -415,6 +420,7 @@ tauj
 taujp
 taum
 testgroup
+texlive
 tfcaf
 tfcafp
 tfcas
@@ -446,6 +452,7 @@ uflacs
 undiseased
 updegrove
 usecols
+usepackage
 v
 Varr
 vcell
