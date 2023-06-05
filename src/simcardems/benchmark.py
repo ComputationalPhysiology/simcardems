@@ -212,7 +212,7 @@ def create_table_dx(feature_keys, features, fixed_dt, dxs):
     """,
     ).format(
         c="c" * (len(dxs) + 1),
-        heading=" &".join(["feature"] + [f"dt={dx}" for dx in dxs]) + "\\\\ \n",
+        heading=" &".join(["feature"] + [f"dx={dx}" for dx in dxs]) + "\\\\ \n",
         body=body,
     )
     return table
