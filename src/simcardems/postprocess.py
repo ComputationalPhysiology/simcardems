@@ -579,7 +579,7 @@ def extract_sub_results(
     results_file: utils.PathLike,
     output_file: utils.PathLike,
     t_start: float = 0.0,
-    t_end: float | None = None,
+    t_end: Optional[float] = None,
     names: Optional[Dict[str, List[str]]] = None,
 ) -> DataCollector:
     """Extract sub results from another results file.

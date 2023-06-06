@@ -210,6 +210,9 @@ class ORdmmLandFull(BaseCellModel):
                 ("scale_drug_IpCa", 1.0),
                 ("scale_drug_Isacns", 1.0),
                 ("scale_drug_Isack", 1.0),
+                ("scale_drug_kws", 1.0),
+                ("scale_drug_kuw", 1.0),
+                ("scale_drug_kwu", 1.0),
                 # Population factors
                 ("scale_popu_GNa", 1.0),
                 ("scale_popu_GCaL", 1.0),
@@ -990,6 +993,9 @@ class ORdmmLandFull(BaseCellModel):
         scale_drug_IpCa = self._parameters["scale_drug_IpCa"]
         scale_drug_Isacns = self._parameters["scale_drug_Isacns"]
         scale_drug_Isack = self._parameters["scale_drug_Isack"]
+        scale_drug_kws = self._parameters["scale_drug_kws"]
+        scale_drug_kuw = self._parameters["scale_drug_kuw"]
+        scale_drug_kwu = self._parameters["scale_drug_kwu"]
 
         # Population factors
         scale_popu_GNa = self._parameters["scale_popu_GNa"]
@@ -1592,12 +1598,14 @@ class ORdmmLandFull(BaseCellModel):
         )
         gammasu = gammas * Max(zetas1, zetas2)
 
-        F_expressions[39] = kws * scale_popu_kws * XW - XS * gammasu - XS * ksu
+        F_expressions[39] = (
+            kws * scale_drug_kws * scale_popu_kws * XW - XS * gammasu - XS * ksu
+        )
         F_expressions[40] = (
-            kuw * scale_popu_kuw * XU
-            - kws * scale_popu_kws * XW
+            kuw * scale_drug_kuw * scale_popu_kuw * XU
+            - kws * scale_drug_kws * scale_popu_kws * XW
             - XW * gammawu
-            - XW * kwu
+            - XW * kwu * scale_drug_kwu
         )
         cat50 = (
             cat50_ref * scale_popu_CaT50ref + Beta1 * (-1.0 + lambda_min12)
