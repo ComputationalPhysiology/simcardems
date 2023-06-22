@@ -291,6 +291,7 @@ class EMCoupling(BaseEMCoupling):
             self.cell_params(),
             path,
             "ep/cell_params",
+            comm=self.geometry.comm(),
         )
 
     @classmethod
