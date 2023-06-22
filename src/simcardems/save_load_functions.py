@@ -48,8 +48,10 @@ def h5pyfile(h5name, filemode="r", force_serial: bool = False):
     h5file.close()
 
 
-def dict_to_h5(data, h5name, h5group, use_attrs: bool = False):
-    if dolfin.MPI.comm_world.rank == 0:
+def dict_to_h5(data, h5name, h5group, use_attrs: bool = False, comm=None):
+    if comm is None:
+        comm = dolfin.MPI.comm_world
+    if comm.rank == 0:
         with h5pyfile(h5name, "a", force_serial=True) as h5file:
             if h5group == "":
                 group = h5file
@@ -65,6 +67,8 @@ def dict_to_h5(data, h5name, h5group, use_attrs: bool = False):
                         logger.warning(
                             f"Unable to save key {k} with data {v} in {h5name}/{h5group}",
                         )
+    # Synchronize
+    dolfin.MPI.barrier(comm)
 
 
 def decode(x):
@@ -153,10 +157,10 @@ def save_state(
     logger.debug("Save using dolfin.HDF5File")
 
     logger.debug("Save using h5py")
-    dict_to_h5(serialize_dict(config.as_dict()), path, "config")
+    dict_to_h5(serialize_dict(config.as_dict()), path, "config", comm=geo.comm())
     if state_params is None:
         state_params = {}
-    dict_to_h5(serialize_dict(state_params), path, "state_params")
+    dict_to_h5(serialize_dict(state_params), path, "state_params", comm=geo.comm())
 
 
 def load_state(
