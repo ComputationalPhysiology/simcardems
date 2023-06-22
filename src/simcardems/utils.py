@@ -24,7 +24,7 @@ def getLogger(name):
     import daiquiri
 
     logger = daiquiri.getLogger(name)
-    logger.logger.addFilter(mpi_filt)
+    # logger.logger.addFilter(mpi_filt)
     return logger
 
 

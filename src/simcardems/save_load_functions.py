@@ -31,11 +31,15 @@ def vs_functions_to_dict(vs, state_names):
 
 
 @contextlib.contextmanager
-def h5pyfile(h5name, filemode="r"):
+def h5pyfile(h5name, filemode="r", force_serial: bool = False):
     import h5py
     from mpi4py import MPI
 
-    if h5py.h5.get_config().mpi and dolfin.MPI.size(dolfin.MPI.comm_world) > 1:
+    if (
+        h5py.h5.get_config().mpi
+        and dolfin.MPI.size(dolfin.MPI.comm_world) > 1
+        and not force_serial
+    ):
         h5file = h5py.File(h5name, filemode, driver="mpio", comm=MPI.COMM_WORLD)
     else:
         if dolfin.MPI.size(dolfin.MPI.comm_world) > 1:
@@ -47,21 +51,22 @@ def h5pyfile(h5name, filemode="r"):
 
 
 def dict_to_h5(data, h5name, h5group, use_attrs: bool = True):
-    with h5pyfile(h5name, "a") as h5file:
-        if h5group == "":
-            group = h5file
-        else:
-            group = h5file.create_group(h5group)
-        for k, v in data.items():
-            if use_attrs:
-                group.attrs[k] = v
+    if dolfin.MPI.comm_world.rank == 0:
+        with h5pyfile(h5name, "a", force_serial=True) as h5file:
+            if h5group == "":
+                group = h5file
             else:
-                try:
-                    group.create_dataset(k, data=v)
-                except OSError:
-                    logger.warning(
-                        f"Unable to save key {k} with data {v} in {h5name}/{h5group}",
-                    )
+                group = h5file.create_group(h5group)
+            for k, v in data.items():
+                if use_attrs:
+                    group.attrs[k] = v
+                else:
+                    try:
+                        group.create_dataset(k, data=v)
+                    except OSError:
+                        logger.warning(
+                            f"Unable to save key {k} with data {v} in {h5name}/{h5group}",
+                        )
 
 
 def decode(x):

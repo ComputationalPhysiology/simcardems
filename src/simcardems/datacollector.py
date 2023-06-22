@@ -218,10 +218,11 @@ class DataCollector:
 
             version = parse(__version__)
 
-            with h5pyfile(self._results_file, "a") as f:
-                f.create_dataset("version_major", data=version.major)
-                f.create_dataset("version_minor", data=version.minor)
-                f.create_dataset("version_micro", data=version.micro)
+            if self.comm.rank == 0:
+                with h5pyfile(self._results_file, "a", force_serial=True) as f:
+                    f.create_dataset("version_major", data=version.major)
+                    f.create_dataset("version_minor", data=version.minor)
+                    f.create_dataset("version_micro", data=version.micro)
 
         else:
             try:
@@ -238,6 +239,9 @@ class DataCollector:
             "ep": {},
             "mechanics": {},
         }
+        # Let us synchronize so that we done have any processors
+        # that starts storing data before all processors get here
+        dolfin.MPI.barrier(self.comm)
 
     @property
     def valid_reductions(self) -> List[str]:
@@ -293,6 +297,10 @@ class DataCollector:
         self._times_stamps.add(t_str)
 
         # First do the full values
+        logger.warning(
+            f"FILE : {self.results_file}, EXISTS : {Path(self.results_file).exists()}",
+        )
+
         with dolfin.HDF5File(self.comm, self.results_file, "a") as h5file:
             for group, names in self.names.items():
                 logger.debug(

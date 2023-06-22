@@ -45,8 +45,8 @@ def test_activation_map():
     assert math.isclose(act(1.0, 0.5, 0.5), 2.0)
 
 
-def test_extract_sub_results(geo, tmp_path):
-    results_file = tmp_path / "results.h5"
+def test_extract_sub_results(geo, mpi_tmp_path):
+    results_file = mpi_tmp_path / "results.h5"
     collector = simcardems.DataCollector(
         outdir=results_file.parent,
         outfilename=results_file.name,
@@ -66,15 +66,14 @@ def test_extract_sub_results(geo, tmp_path):
 
     times = np.arange(0, 10, 0.5)
     for t in times:
-        f1_mech.vector()[:] = t
-        f2_mech.vector()[:] = 10 + t
-        f3_ep.vector()[:] = 42 + t
+        f1_mech.assign(dolfin.Constant(t))
+        f2_mech.assign(dolfin.Constant(10 + t))
         collector.store(t)
 
     loader = simcardems.DataLoader(collector.results_file)
 
     assert loader.time_stamps == [f"{ti:.2f}" for ti in times]
-    sub_results_file = tmp_path / "sub_results.h5"
+    sub_results_file = mpi_tmp_path / "sub_results.h5"
     sub_collector = simcardems.postprocess.extract_sub_results(
         results_file=results_file,
         output_file=sub_results_file,
