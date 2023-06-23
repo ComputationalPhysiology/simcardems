@@ -278,11 +278,12 @@ class BaseGeometry(abc.ABC):
 
         kwargs = {k: getattr(self, k) for k in schema if k != "info"}
         kwargs["info"] = self.parameters
+        logger.debug("Instantiating geometry")
         geo = Geometry(**kwargs, schema=schema)
 
         if schema_path is None:
             schema_path = path.with_suffix(".json")
-
+        logger.debug("Save geo")
         geo.save(path, schema_path=schema_path, unlink=unlink)
         logger.info(f"Saved geometry to {fname}")
 
