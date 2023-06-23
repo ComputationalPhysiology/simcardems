@@ -6,23 +6,12 @@ jobs:
   test:
     name: Run tests with in paralell
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     container:
       image: ghcr.io/scientificcomputing/fenics-gmsh:2023-02-20
 
     steps:
       - uses: actions/checkout@v3
-
-      - name: Cache
-        id: cache-primes
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cache/instant
-            ~/.cache/dijitso
-            ~/.cache/pip
-          key: cache_v5
-          restore-keys: |
-            cache_v5
 
       - name: Install dependencies
         run: |
