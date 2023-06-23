@@ -244,6 +244,7 @@ class DataCollector:
                     self._times_stamps = set(f["ep"]["V"].keys())
             except KeyError:
                 pass
+        logger.debug("Done in datacollector init")
 
         self._functions: Dict[str, Dict[str, dolfin.Function]] = {
             "ep": {},

@@ -141,7 +141,7 @@ def compute_norm(x, x_prev):
     return norm
 
 
-def remove_file(path, comm):
+def remove_file(path, comm=None):
     if comm is None:
         comm = dolfin.MPI.comm_world
     path = Path(path)
