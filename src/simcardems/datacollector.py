@@ -204,15 +204,28 @@ class DataCollector:
     ) -> None:
         self.outdir = Path(outdir)
         self._results_file = self.outdir / outfilename
-        self.comm = geo.mesh.mpi_comm()  # FIXME: Is this important?
+        self.comm = geo.mesh.mpi_comm()
+
         self._value_extractor = ValueExtractor(geo)
 
+        file_exist = False
         if reset_state:
-            utils.remove_file(self._results_file)
+            logger.debug("Reset state")
+            utils.remove_file(self._results_file, comm=self.comm)
+
+        else:
+            dolfin.MPI.barrier(self.comm)
+            if self.comm.rank == 0:
+                file_exist = self._results_file.is_file()
+            file_exist = self.comm.bcast(file_exist, root=0)
+            dolfin.MPI.barrier(self.comm)
 
         self._times_stamps = set()
-        if not self._results_file.is_file():
+        logger.debug(f"File {self._results_file} exists: {file_exist}")
+        if not file_exist:
+            logger.debug("Dump geometry")
             geo.dump(self.results_file)
+            logger.debug("Done with dumping geometry")
             from . import __version__
             from packaging.version import parse
 
@@ -225,6 +238,7 @@ class DataCollector:
                     f.create_dataset("version_micro", data=version.micro)
 
         else:
+            logger.debug("Try to read time stamps")
             try:
                 with h5pyfile(self._results_file, "r") as f:
                     self._times_stamps = set(f["ep"]["V"].keys())
@@ -241,7 +255,7 @@ class DataCollector:
         }
         # Let us synchronize so that we done have any processors
         # that starts storing data before all processors get here
-        dolfin.MPI.barrier(self.comm)
+        # dolfin.MPI.barrier(self.comm)
 
     @property
     def valid_reductions(self) -> List[str]:
@@ -297,31 +311,37 @@ class DataCollector:
         self._times_stamps.add(t_str)
 
         # First do the full values
-        logger.warning(
-            f"FILE : {self.results_file}, EXISTS : {Path(self.results_file).exists()}",
+        logger.debug(
+            f"Store in file : {self.results_file}, exists: {Path(self.results_file).exists()}",
         )
 
         with dolfin.HDF5File(self.comm, self.results_file, "a") as h5file:
             for group, names in self.names.items():
                 logger.debug(
-                    f"Save full states in HDF5File {self.results_file} for group {group}",
+                    f"1. Save full states in HDF5File {self.results_file} for group {group}",
                 )
                 for name in names:
-                    logger.debug(f"Save {name}")
+                    logger.debug(
+                        f"1. Save {name}: reduction {self._reductions[group][name]}",
+                    )
                     if self._reductions[group][name] == "full":
                         f = self._functions[group][name]
                         h5file.write(f, f"{group}/{name}/{t_str}")
 
         # Next do the other reductions
-        with h5pyfile(self.results_file, "a") as h5file:
+        with h5pyfile(self.results_file, "a", comm=self.comm) as h5file:
             for group, names in self.names.items():
                 logger.debug(
-                    f"Save reduced states in HDF5File {self.results_file} for group {group}",
+                    f"2. Save reduced states in HDF5File {self.results_file} for group {group}",
                 )
                 for name in names:
-                    logger.debug(f"Save {name}")
+                    logger.debug(
+                        f"2. Save {name}, reduction: {self._reductions[group][name]}",
+                    )
                     if self._reductions[group][name] == "full":
                         continue
+
+                    logger.debug("Here")
 
                     f = self._functions[group][name]
                     value = self._value_extractor.eval(
@@ -331,6 +351,7 @@ class DataCollector:
                     if f"{group}/{name}" not in h5file:
                         h5file.create_group(f"{group}/{name}")
                     h5file[f"{group}/{name}"].create_dataset(t_str, data=value)
+        logger.debug("Done storing")
 
     def save_residual(self, residual, index):
         logger.debug("Save residual")
@@ -366,7 +387,7 @@ class DataLoader:
             raise FileNotFoundError(f"File {h5name} does not exist")
 
         self.geo = load_geometry(self._h5name)
-        self._h5pyfile = h5pyfile(self._h5name, "r").__enter__()
+        self._h5pyfile = h5pyfile(self._h5name, "r", comm=self.geo.comm()).__enter__()
 
         self.version_major = extract_number_from_h5py(
             self._h5pyfile.get("version_major"),

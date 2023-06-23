@@ -29,18 +29,17 @@ def vs_functions_to_dict(vs, state_names):
 
 
 @contextlib.contextmanager
-def h5pyfile(h5name, filemode="r", force_serial: bool = False):
+def h5pyfile(h5name, filemode="r", force_serial: bool = False, comm=None):
     import h5py
     from mpi4py import MPI
 
-    if (
-        h5py.h5.get_config().mpi
-        and dolfin.MPI.size(dolfin.MPI.comm_world) > 1
-        and not force_serial
-    ):
+    if comm is None:
+        comm = dolfin.MPI.comm_world
+
+    if h5py.h5.get_config().mpi and dolfin.MPI.size(comm) > 1 and not force_serial:
         h5file = h5py.File(h5name, filemode, driver="mpio", comm=MPI.COMM_WORLD)
     else:
-        if dolfin.MPI.size(dolfin.MPI.comm_world) > 1:
+        if dolfin.MPI.size(comm) > 1:
             warnings.warn("h5py is not installed with MPI support")
         h5file = h5py.File(h5name, filemode)
     yield h5file
@@ -150,7 +149,7 @@ def save_state(
     state_params: Optional[Dict[str, float]] = None,
 ):
     path = Path(path)
-    utils.remove_file(path)
+    utils.remove_file(path, comm=geo.comm())
 
     logger.info(f"Save state to {path}")
     geo.dump(path)

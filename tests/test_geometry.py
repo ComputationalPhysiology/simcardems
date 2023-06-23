@@ -7,11 +7,13 @@ from simcardems import slabgeometry
 
 here = Path(__file__).absolute().parent
 
-
-@pytest.mark.skipif(
+no_mpi = pytest.mark.skipif(
     dolfin.MPI.size(dolfin.MPI.comm_world) > 1,
     reason="Only works in serial",
 )
+
+
+@no_mpi
 def test_create_slab_geometry_normal():
     parameters = {"lx": 1, "ly": 1, "lz": 1, "dx": 1, "num_refinements": 1}
     geo = slabgeometry.SlabGeometry(parameters=parameters)
@@ -23,10 +25,7 @@ def test_create_slab_geometry_normal():
     assert geo.num_refinements == 1
 
 
-@pytest.mark.skipif(
-    dolfin.MPI.size(dolfin.MPI.comm_world) > 1,
-    reason="Only works in serial",
-)
+@no_mpi
 def test_create_slab_geometry_with_mechanics_mesh():
     parameters = {"lx": 1, "ly": 1, "lz": 1, "dx": 1, "num_refinements": 1}
     mesh = dolfin.UnitCubeMesh(1, 1, 1)
@@ -42,10 +41,7 @@ def test_create_slab_geometry_with_mechanics_mesh():
     assert geo.num_refinements == 1
 
 
-@pytest.mark.skipif(
-    dolfin.MPI.size(dolfin.MPI.comm_world) > 1,
-    reason="Only works in serial",
-)
+@no_mpi
 def test_load_geometry():
     mesh_folder = here / ".." / "demos" / "geometries"
     mesh_path = mesh_folder / "slab.h5"

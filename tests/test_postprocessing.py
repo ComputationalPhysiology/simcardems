@@ -3,9 +3,14 @@ from pathlib import Path
 
 import dolfin
 import numpy as np
+import pytest
 import simcardems
 
 
+@pytest.mark.skipif(
+    dolfin.MPI.size(dolfin.MPI.comm_world) > 1,
+    reason="Only works in serial",
+)
 def test_activation_map():
     mesh = dolfin.UnitCubeMesh(5, 5, 5)
     V = dolfin.FunctionSpace(mesh, "CG", 1)

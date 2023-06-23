@@ -18,7 +18,7 @@ class ValueExtractor:
     def __init__(self, geo: BaseGeometry):
         self.geo = geo
         self.volume = dolfin.assemble(dolfin.Constant(1.0) * dolfin.dx(domain=geo.mesh))
-        logger.debug("Creating ValueExtractor with geo: {geo!r}")
+        logger.debug(f"Creating ValueExtractor with geo: {geo!r}")
 
         if isinstance(self.geo, SlabGeometry):
             self.boundary: Boundary = SlabBoundary(geo.mesh)
@@ -26,6 +26,7 @@ class ValueExtractor:
             self.boundary = LVBoundary(geo.mesh)
         else:
             raise NotImplementedError
+        logger.debug("Done")
 
     def average(self, func: dolfin.Function) -> float:
         if func.value_rank() == 0:
