@@ -7,9 +7,7 @@
 
 from pathlib import Path
 import simcardems
-import logging
 
-logging.basicConfig(level=logging.DEBUG)
 
 # First we specifcy the path to the output directory where we want to store the results
 here = Path(__file__).absolute().parent
@@ -27,6 +25,7 @@ config = simcardems.Config(
     outdir=outdir,
     geometry_path=geometry_path,
     geometry_schema_path=geometry_schema_path,
+    loglevel=10,
     coupling_type="fully_coupled_ORdmm_Land",
     T=20,
 )

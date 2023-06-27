@@ -555,18 +555,15 @@ class DataLoader:
         self._function_spaces = {}
         logger.debug(f"Create functions from signatures: {self._signatures}")
 
-        for group, signature_dict in self._signatures.items():
+        for group, signature_dict in sorted(self._signatures.items()):
             mesh = self.ep_mesh if group == "ep" else self.mech_mesh
 
-            self._function_spaces.update(
-                {
-                    group: {
-                        signature: dolfin.FunctionSpace(mesh, eval(signature))
-                        for signature in set(signature_dict.values())
-                        if signature is not None
-                    },
-                },
-            )
+            logger.debug(group, signature_dict)
+            fs_group = {}
+            for signature in sorted(set(signature_dict.values())):
+                logger.debug(signature)
+                fs_group[signature] = dolfin.FunctionSpace(mesh, eval(signature))
+            self._function_spaces[group] = fs_group
 
         self._functions = {
             group: {

@@ -41,7 +41,7 @@ def h5pyfile(h5name, filemode="r", force_serial: bool = False, comm=None):
     if h5py.h5.get_config().mpi and dolfin.MPI.size(comm) > 1 and not force_serial:
         h5file = h5py.File(h5name, filemode, driver="mpio", comm=MPI.COMM_WORLD)
     else:
-        if dolfin.MPI.size(comm) > 0 and not force_serial:
+        if dolfin.MPI.size(comm) > 1 and not force_serial:
             warnings.warn("h5py is not installed with MPI support")
         h5file = h5py.File(h5name, filemode)
     yield h5file
