@@ -558,7 +558,6 @@ class DataLoader:
         for group, signature_dict in sorted(self._signatures.items()):
             mesh = self.ep_mesh if group == "ep" else self.mech_mesh
 
-            logger.debug(group, signature_dict)
             fs_group = {}
             for signature in sorted(set(signature_dict.values())):
                 logger.debug(signature)
