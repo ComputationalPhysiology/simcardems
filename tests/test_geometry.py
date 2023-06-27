@@ -56,7 +56,6 @@ def test_dump_geometry(tmp_path):
         mesh_path=outpath,
         schema_path=outpath.with_suffix(".json"),
     )
-    print(geo.parameters, " != ", dumped_geo.parameters)
     assert dumped_geo == geo
 
 

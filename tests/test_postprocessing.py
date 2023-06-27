@@ -66,8 +66,9 @@ def test_extract_sub_results(geo, tmp_path):
 
     times = np.arange(0, 10, 0.5)
     for t in times:
-        f1_mech.assign(dolfin.Constant(t))
-        f2_mech.assign(dolfin.Constant(10 + t))
+        f1_mech.vector()[:] = t
+        f2_mech.vector()[:] = 10 + t
+        f3_ep.vector()[:] = 42 + t
         collector.store(t)
 
     loader = simcardems.DataLoader(collector.results_file)
