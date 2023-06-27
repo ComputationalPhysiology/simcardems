@@ -39,24 +39,6 @@ from .version import __version__
 def set_log_level(level):
     from daiquiri import set_default_log_levels
 
-    loggers = [
-        "simcardems.benchmark.logger"
-        "simcardems.boundary_conditions.logger"
-        "simcardems.cli.logger"
-        "simcardems.config.logger"
-        "simcardems.datacollector.logger"
-        "simcardems.ep_model.logger"
-        "simcardems.geometry.logger"
-        "simcardems.gui.logger"
-        "simcardems.mechanics_model.logger"
-        "simcardems.newton_solver.logger"
-        "simcardems.postprocess.logger"
-        "simcardems.save_load_functions.logger"
-        "simcardems.runner.logger"
-        "simcardems.utils.logger"
-        "simcardems.value_extractor.logger",
-        "simcardems.slabgeometry.logger",
-    ] + models.loggers
     _pulse.set_log_level(level)
     _daiquiri.setup(level=level)
 
@@ -71,7 +53,7 @@ def set_log_level(level):
             _logger = _logging.getLogger(module)
             _logger.setLevel(_logging.INFO)
 
-    set_default_log_levels((logger, level) for logger in loggers)
+    set_default_log_levels([("simcardems", level)])
 
 
 set_log_level(_logging.INFO)
@@ -118,4 +100,5 @@ __all__ = [
     "MechanicsNewtonSolver",
     "config",
     "Config",
+    "models",
 ]

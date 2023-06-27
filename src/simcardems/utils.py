@@ -24,6 +24,7 @@ def getLogger(name):
     import daiquiri
 
     logger = daiquiri.getLogger(name)
+
     logger.logger.addFilter(mpi_filt)
     return logger
 
@@ -141,12 +142,14 @@ def compute_norm(x, x_prev):
     return norm
 
 
-def remove_file(path):
+def remove_file(path, comm=None):
+    if comm is None:
+        comm = dolfin.MPI.comm_world
     path = Path(path)
-    if dolfin.MPI.rank(dolfin.MPI.comm_world) == 0:
+    if comm.rank == 0:
         if path.is_file():
             path.unlink()
-    dolfin.MPI.barrier(dolfin.MPI.comm_world)
+    dolfin.MPI.barrier(comm)
 
 
 def setup_assigner(vs, index):

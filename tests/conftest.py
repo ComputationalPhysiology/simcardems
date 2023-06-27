@@ -33,7 +33,7 @@ def geo():
     )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture  # (scope="session")
 def mesh(geo):
     return geo.mesh
 
