@@ -627,11 +627,12 @@ document.write(`
 
         <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">schema</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s2">&quot;info&quot;</span><span class="p">}</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;info&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Instantiating geometry&quot;</span><span class="p">)</span>
         <span class="n">geo</span> <span class="o">=</span> <span class="n">Geometry</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">schema_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">schema_path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">&quot;.json&quot;</span><span class="p">)</span>
-
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Save geo&quot;</span><span class="p">)</span>
         <span class="n">geo</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">schema_path</span><span class="o">=</span><span class="n">schema_path</span><span class="p">,</span> <span class="n">unlink</span><span class="o">=</span><span class="n">unlink</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saved geometry to </span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
@@ -942,7 +943,7 @@ By Simula Research Laboratory
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Jun 13, 2023.
+  Last updated on Jun 27, 2023.
   <br/>
 </p>
   </div>

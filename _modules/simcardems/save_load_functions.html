@@ -380,14 +380,17 @@ document.write(`
 
 
 <div class="viewcode-block" id="h5pyfile"><a class="viewcode-back" href="../../api.html#simcardems.save_load_functions.h5pyfile">[docs]</a><span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
-<span class="k">def</span> <span class="nf">h5pyfile</span><span class="p">(</span><span class="n">h5name</span><span class="p">,</span> <span class="n">filemode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">h5pyfile</span><span class="p">(</span><span class="n">h5name</span><span class="p">,</span> <span class="n">filemode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">force_serial</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">comm</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="kn">import</span> <span class="nn">h5py</span>
     <span class="kn">from</span> <span class="nn">mpi4py</span> <span class="kn">import</span> <span class="n">MPI</span>
 
-    <span class="k">if</span> <span class="n">h5py</span><span class="o">.</span><span class="n">h5</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">mpi</span> <span class="ow">and</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">dolfin</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">comm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">comm</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span>
+
+    <span class="k">if</span> <span class="n">h5py</span><span class="o">.</span><span class="n">h5</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">mpi</span> <span class="ow">and</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">comm</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">force_serial</span><span class="p">:</span>
         <span class="n">h5file</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">h5name</span><span class="p">,</span> <span class="n">filemode</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">&quot;mpio&quot;</span><span class="p">,</span> <span class="n">comm</span><span class="o">=</span><span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">dolfin</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">comm</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">force_serial</span><span class="p">:</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;h5py is not installed with MPI support&quot;</span><span class="p">)</span>
         <span class="n">h5file</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">h5name</span><span class="p">,</span> <span class="n">filemode</span><span class="p">)</span>
     <span class="k">yield</span> <span class="n">h5file</span>
@@ -395,22 +398,27 @@ document.write(`
     <span class="n">h5file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="dict_to_h5"><a class="viewcode-back" href="../../api.html#simcardems.save_load_functions.dict_to_h5">[docs]</a><span class="k">def</span> <span class="nf">dict_to_h5</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">h5name</span><span class="p">,</span> <span class="n">h5group</span><span class="p">,</span> <span class="n">use_attrs</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
-    <span class="k">with</span> <span class="n">h5pyfile</span><span class="p">(</span><span class="n">h5name</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">h5file</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">h5group</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-            <span class="n">group</span> <span class="o">=</span> <span class="n">h5file</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">group</span> <span class="o">=</span> <span class="n">h5file</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="n">h5group</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">use_attrs</span><span class="p">:</span>
-                <span class="n">group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+<div class="viewcode-block" id="dict_to_h5"><a class="viewcode-back" href="../../api.html#simcardems.save_load_functions.dict_to_h5">[docs]</a><span class="k">def</span> <span class="nf">dict_to_h5</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">h5name</span><span class="p">,</span> <span class="n">h5group</span><span class="p">,</span> <span class="n">use_attrs</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">comm</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">comm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">comm</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span>
+    <span class="k">if</span> <span class="n">comm</span><span class="o">.</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">h5pyfile</span><span class="p">(</span><span class="n">h5name</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">force_serial</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">h5file</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">h5group</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                <span class="n">group</span> <span class="o">=</span> <span class="n">h5file</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="n">group</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">v</span><span class="p">)</span>
-                <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;Unable to save key </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> with data </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">h5name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">h5group</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                    <span class="p">)</span></div>
+                <span class="n">group</span> <span class="o">=</span> <span class="n">h5file</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="n">h5group</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">use_attrs</span><span class="p">:</span>
+                    <span class="n">group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">group</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">v</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;Unable to save key </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> with data </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">h5name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">h5group</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="p">)</span>
+    <span class="c1"># Synchronize</span>
+    <span class="n">dolfin</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">comm</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="decode"><a class="viewcode-back" href="../../api.html#simcardems.save_load_functions.decode">[docs]</a><span class="k">def</span> <span class="nf">decode</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
@@ -503,17 +511,17 @@ document.write(`
     <span class="n">state_params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-    <span class="n">utils</span><span class="o">.</span><span class="n">remove_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="n">utils</span><span class="o">.</span><span class="n">remove_file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">comm</span><span class="o">=</span><span class="n">geo</span><span class="o">.</span><span class="n">comm</span><span class="p">())</span>
 
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Save state to </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">geo</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Save using dolfin.HDF5File&quot;</span><span class="p">)</span>
 
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Save using h5py&quot;</span><span class="p">)</span>
-    <span class="n">dict_to_h5</span><span class="p">(</span><span class="n">serialize_dict</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">as_dict</span><span class="p">()),</span> <span class="n">path</span><span class="p">,</span> <span class="s2">&quot;config&quot;</span><span class="p">)</span>
+    <span class="n">dict_to_h5</span><span class="p">(</span><span class="n">serialize_dict</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">as_dict</span><span class="p">()),</span> <span class="n">path</span><span class="p">,</span> <span class="s2">&quot;config&quot;</span><span class="p">,</span> <span class="n">comm</span><span class="o">=</span><span class="n">geo</span><span class="o">.</span><span class="n">comm</span><span class="p">())</span>
     <span class="k">if</span> <span class="n">state_params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">state_params</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="n">dict_to_h5</span><span class="p">(</span><span class="n">serialize_dict</span><span class="p">(</span><span class="n">state_params</span><span class="p">),</span> <span class="n">path</span><span class="p">,</span> <span class="s2">&quot;state_params&quot;</span><span class="p">)</span></div>
+    <span class="n">dict_to_h5</span><span class="p">(</span><span class="n">serialize_dict</span><span class="p">(</span><span class="n">state_params</span><span class="p">),</span> <span class="n">path</span><span class="p">,</span> <span class="s2">&quot;state_params&quot;</span><span class="p">,</span> <span class="n">comm</span><span class="o">=</span><span class="n">geo</span><span class="o">.</span><span class="n">comm</span><span class="p">())</span></div>
 
 
 <div class="viewcode-block" id="load_state"><a class="viewcode-back" href="../../api.html#simcardems.save_load_functions.load_state">[docs]</a><span class="k">def</span> <span class="nf">load_state</span><span class="p">(</span>
@@ -628,7 +636,7 @@ By Simula Research Laboratory
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Jun 13, 2023.
+  Last updated on Jun 27, 2023.
   <br/>
 </p>
   </div>

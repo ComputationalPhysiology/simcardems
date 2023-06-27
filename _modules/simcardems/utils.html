@@ -373,6 +373,7 @@ document.write(`
     <span class="kn">import</span> <span class="nn">daiquiri</span>
 
     <span class="n">logger</span> <span class="o">=</span> <span class="n">daiquiri</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
     <span class="n">logger</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">addFilter</span><span class="p">(</span><span class="n">mpi_filt</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">logger</span></div>
 
@@ -490,12 +491,14 @@ document.write(`
     <span class="k">return</span> <span class="n">norm</span></div>
 
 
-<div class="viewcode-block" id="remove_file"><a class="viewcode-back" href="../../api.html#simcardems.utils.remove_file">[docs]</a><span class="k">def</span> <span class="nf">remove_file</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+<div class="viewcode-block" id="remove_file"><a class="viewcode-back" href="../../api.html#simcardems.utils.remove_file">[docs]</a><span class="k">def</span> <span class="nf">remove_file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">comm</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">comm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">comm</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">dolfin</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">comm</span><span class="o">.</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
             <span class="n">path</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
-    <span class="n">dolfin</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">dolfin</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span></div>
+    <span class="n">dolfin</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">comm</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="setup_assigner"><a class="viewcode-back" href="../../api.html#simcardems.utils.setup_assigner">[docs]</a><span class="k">def</span> <span class="nf">setup_assigner</span><span class="p">(</span><span class="n">vs</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
@@ -584,7 +587,7 @@ By Simula Research Laboratory
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Jun 13, 2023.
+  Last updated on Jun 27, 2023.
   <br/>
 </p>
   </div>
