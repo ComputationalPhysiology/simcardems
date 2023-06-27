@@ -388,72 +388,10 @@ class DataLoader:
             raise FileNotFoundError(f"File {h5name} does not exist")
 
         self.geo = load_geometry(self._h5name)
-        self._h5pyfile = h5pyfile(self._h5name, "r", comm=self.geo.comm()).__enter__()
-
-        self.version_major = extract_number_from_h5py(
-            self._h5pyfile.get("version_major"),
-        )
-        self.version_minor = extract_number_from_h5py(
-            self._h5pyfile.get("version_minor"),
-        )
-        self.version_micro = extract_number_from_h5py(
-            self._h5pyfile.get("version_micro"),
-        )
-
-        # Find the remaining functions
-        self.names = {
-            group: [name for name in self._h5pyfile.get(group, {}).keys()]
-            for group in ["ep", "mechanics"]
-        }
-        if not empty_ok and len(self.names["ep"]) + len(self.names["mechanics"]) == 0:
-            raise ValueError("No functions found in results file")
-
-        # Get time stamps
-        all_time_stamps = {
-            "{group}:{name}": sorted(
-                list(self._h5pyfile[group][name].keys()),
-                key=lambda x: float(x),
-            )
-            for group, names in self.names.items()
-            for name in names
-        }
-
-        # An verify that they are all the same
-        self.time_stamps = (
-            None
-            if not all_time_stamps
-            else all_time_stamps[next(iter(all_time_stamps.keys()))]
-        )
-        for name in all_time_stamps.keys():
-            assert self.time_stamps == all_time_stamps[name], name
-
-        if not empty_ok and (self.time_stamps is None or len(self.time_stamps) == 0):
-            raise ValueError("No time stamps found")
-
-        # Get the signatures - FIXME: Add a check that the signature exist.
-        self._signatures: Dict[str, Dict[str, Optional[str]]] = {}
-        for group, names in self.names.items():
-            self._signatures[group] = {}
-            for name in names:
-                try:
-                    self._signatures[group][name] = (
-                        self._h5pyfile[group][name][self.time_stamps[0]]  # type: ignore
-                        .attrs["signature"]
-                        .decode()
-                    )
-                except KeyError:
-                    self._signatures[group][name] = None
-
-        if "residual" in self._h5pyfile:
-            self._residual = [
-                self._h5pyfile["residual"][k][...]
-                for k in self._h5pyfile["residual"].keys()
-            ]
-        else:
-            self._residual = []
+        self._gather_h5py_attributes(empty_ok=empty_ok)
 
         self._h5file = dolfin.HDF5File(
-            self.ep_mesh.mpi_comm(),
+            self.geo.comm(),
             self._h5name.as_posix(),
             "r",
         )
@@ -466,6 +404,114 @@ class DataLoader:
             close_h5pyfile,
             self._h5pyfile,
         )
+
+    def _bcast_attributes(self) -> None:
+        comm = self.geo.comm()
+        if dolfin.MPI.size(comm) == 1:
+            # There is nothing to do
+            return
+
+        dolfin.MPI.barrier(comm)
+        self.version_major: Optional[int] = comm.bcast(self.version_major, root=0)
+        self.version_minor: Optional[int] = comm.bcast(self.version_minor, root=0)
+        self.version_micro: Optional[int] = comm.bcast(self.version_micro, root=0)
+        self.names: Dict[str, List[str]] = comm.bcast(self.names, root=0)
+        self.time_stamps: Optional[np.ndarray] = comm.bcast(self.time_stamps, root=0)
+        self._signatures: Dict[str, Dict[str, Optional[str]]] = comm.bcast(
+            self._signatures,
+            root=0,
+        )
+        self._residual: List[float] = comm.bcast(self._residual, root=0)
+        dolfin.MPI.barrier(comm)
+
+    def _gather_h5py_attributes(self, empty_ok=False):
+        if dolfin.MPI.rank(self.geo.comm()) == 0:
+            self._h5pyfile = h5pyfile(
+                self._h5name,
+                "r",
+                comm=self.geo.comm(),
+                force_serial=True,
+            ).__enter__()
+
+            self.version_major = extract_number_from_h5py(
+                self._h5pyfile.get("version_major"),
+            )
+            self.version_minor = extract_number_from_h5py(
+                self._h5pyfile.get("version_minor"),
+            )
+            self.version_micro = extract_number_from_h5py(
+                self._h5pyfile.get("version_micro"),
+            )
+
+            # Find the remaining functions
+            self.names = {
+                group: [name for name in self._h5pyfile.get(group, {}).keys()]
+                for group in ["ep", "mechanics"]
+            }
+
+            if (
+                not empty_ok
+                and len(self.names["ep"]) + len(self.names["mechanics"]) == 0
+            ):
+                raise ValueError("No functions found in results file")
+
+            # Get time stamps
+            all_time_stamps = {
+                "{group}:{name}": sorted(
+                    list(self._h5pyfile[group][name].keys()),
+                    key=lambda x: float(x),
+                )
+                for group, names in self.names.items()
+                for name in names
+            }
+
+            # An verify that they are all the same
+            self.time_stamps = (
+                None
+                if not all_time_stamps
+                else all_time_stamps[next(iter(all_time_stamps.keys()))]
+            )
+            for name in all_time_stamps.keys():
+                assert self.time_stamps == all_time_stamps[name], name
+
+            if not empty_ok and (
+                self.time_stamps is None or len(self.time_stamps) == 0
+            ):
+                raise ValueError("No time stamps found")
+
+            # Get the signatures -
+            self._signatures = {}
+            for group, names in self.names.items():
+                self._signatures[group] = {}
+                for name in names:
+                    try:
+                        self._signatures[group][name] = (
+                            self._h5pyfile[group][name][self.time_stamps[0]]  # type: ignore
+                            .attrs["signature"]
+                            .decode()
+                        )
+                    except KeyError:
+                        self._signatures[group][name] = None
+
+            if "residual" in self._h5pyfile:
+                self._residual = [
+                    self._h5pyfile["residual"][k][...]
+                    for k in self._h5pyfile["residual"].keys()
+                ]
+            else:
+                self._residual = []
+        else:
+            # Get these from broadcasting
+            self.version_major = None
+            self.version_minor = None
+            self.version_micro = None
+            self.names = {}
+            self.time_stamps = None
+            self._signatures = {}
+            self._residual = []
+
+        dolfin.MPI.barrier(self.geo.comm())
+        self._bcast_attributes()
 
     def __enter__(self):
         return self
@@ -507,6 +553,7 @@ class DataLoader:
 
     def _create_functions(self):
         self._function_spaces = {}
+        logger.debug(f"Create functions from signatures: {self._signatures}")
 
         for group, signature_dict in self._signatures.items():
             mesh = self.ep_mesh if group == "ep" else self.mech_mesh
@@ -614,7 +661,14 @@ class DataLoader:
         try:
             func = self._functions[group_str][name]
         except KeyError:
-            return self._h5pyfile[group_str][name][t][...].item()  # type: ignore
+            comm = self.geo.comm()
+
+            value = None
+            if dolfin.MPI.rank(comm) == 0:
+                value = self._h5pyfile[group_str][name][t][...].item()  # type: ignore
+            value = comm.bcast(value, root=0)
+
+            return value
         else:
             self._h5file.read(func, f"{group_str}/{name}/{t}/")
             return func

@@ -1,19 +1,12 @@
 from pathlib import Path
 
 import dolfin
-import pytest
 from simcardems import geometry
 from simcardems import slabgeometry
 
 here = Path(__file__).absolute().parent
 
-no_mpi = pytest.mark.skipif(
-    dolfin.MPI.size(dolfin.MPI.comm_world) > 1,
-    reason="Only works in serial",
-)
 
-
-@no_mpi
 def test_create_slab_geometry_normal():
     parameters = {"lx": 1, "ly": 1, "lz": 1, "dx": 1, "num_refinements": 1}
     geo = slabgeometry.SlabGeometry(parameters=parameters)
@@ -25,7 +18,6 @@ def test_create_slab_geometry_normal():
     assert geo.num_refinements == 1
 
 
-@no_mpi
 def test_create_slab_geometry_with_mechanics_mesh():
     parameters = {"lx": 1, "ly": 1, "lz": 1, "dx": 1, "num_refinements": 1}
     mesh = dolfin.UnitCubeMesh(1, 1, 1)
@@ -41,7 +33,6 @@ def test_create_slab_geometry_with_mechanics_mesh():
     assert geo.num_refinements == 1
 
 
-@no_mpi
 def test_load_geometry():
     mesh_folder = here / ".." / "demos" / "geometries"
     mesh_path = mesh_folder / "slab.h5"
@@ -53,12 +44,12 @@ def test_load_geometry():
     assert geo.stimulus_domain.marker == 1
 
 
-def test_dump_geometry(mpi_tmp_path):
+def test_dump_geometry(tmp_path):
     mesh_folder = here / ".." / "demos" / "geometries"
     mesh_path = mesh_folder / "slab.h5"
     schema_path = mesh_folder / "slab.json"
     geo = geometry.load_geometry(mesh_path=mesh_path, schema_path=schema_path)
-    outpath = mpi_tmp_path / "state.h5"
+    outpath = tmp_path / "state.h5"
     geo.dump(outpath)
 
     dumped_geo = geometry.load_geometry(

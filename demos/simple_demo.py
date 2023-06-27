@@ -7,6 +7,9 @@
 
 from pathlib import Path
 import simcardems
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
 
 # First we specifcy the path to the output directory where we want to store the results
 here = Path(__file__).absolute().parent
@@ -25,12 +28,13 @@ config = simcardems.Config(
     geometry_path=geometry_path,
     geometry_schema_path=geometry_schema_path,
     coupling_type="fully_coupled_ORdmm_Land",
-    T=1000,
+    T=20,
 )
 
 # To see all different configuration options you can visit https://computationalphysiology.github.io/simcardems/api.html#module-simcardems.config
 
 # Next we create a runner for running the simulation, and we also specify how often we want to save the results
+
 runner = simcardems.Runner(config)
 runner.solve(T=config.T, save_freq=config.save_freq, show_progress_bar=True)
 
@@ -46,7 +50,7 @@ runner.solve(T=config.T, save_freq=config.save_freq, show_progress_bar=True)
 #
 # We can now plot the state traces, where we also specify that we want the trace from the center of the slab
 
-# simcardems.postprocess.plot_state_traces(outdir.joinpath("results.h5"), "center")
+simcardems.postprocess.plot_state_traces(outdir.joinpath("results.h5"), "center")
 
 # This will create a figure in the output directory called `state_traces_center.png` which in this case is shown in {numref}`Figure {number} <simple_demo_state_traces>` we see the resulting state traces, and can also see the instant drop in the active tension ($T_a$) at the time of the triggered release.
 #
@@ -60,7 +64,7 @@ runner.solve(T=config.T, save_freq=config.save_freq, show_progress_bar=True)
 # We can also save the output to xdmf-files that can be viewed in Paraview
 #
 
-# simcardems.postprocess.make_xdmffiles(outdir.joinpath("results.h5"))
+simcardems.postprocess.make_xdmffiles(outdir.joinpath("results.h5"))
 
 # The `xdmf` files are can be opened in [Paraview](https://www.paraview.org/download/) to visualize the different variables such as in {numref}`Figure {number} <simple-demo-paraview>`.
 #

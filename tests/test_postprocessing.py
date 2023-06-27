@@ -3,14 +3,9 @@ from pathlib import Path
 
 import dolfin
 import numpy as np
-import pytest
 import simcardems
 
 
-@pytest.mark.skipif(
-    dolfin.MPI.size(dolfin.MPI.comm_world) > 1,
-    reason="Only works in serial",
-)
 def test_activation_map():
     mesh = dolfin.UnitCubeMesh(5, 5, 5)
     V = dolfin.FunctionSpace(mesh, "CG", 1)
@@ -50,8 +45,8 @@ def test_activation_map():
     assert math.isclose(act(1.0, 0.5, 0.5), 2.0)
 
 
-def test_extract_sub_results(geo, mpi_tmp_path):
-    results_file = mpi_tmp_path / "results.h5"
+def test_extract_sub_results(geo, tmp_path):
+    results_file = tmp_path / "results.h5"
     collector = simcardems.DataCollector(
         outdir=results_file.parent,
         outfilename=results_file.name,
@@ -78,7 +73,7 @@ def test_extract_sub_results(geo, mpi_tmp_path):
     loader = simcardems.DataLoader(collector.results_file)
 
     assert loader.time_stamps == [f"{ti:.2f}" for ti in times]
-    sub_results_file = mpi_tmp_path / "sub_results.h5"
+    sub_results_file = tmp_path / "sub_results.h5"
     sub_collector = simcardems.postprocess.extract_sub_results(
         results_file=results_file,
         output_file=sub_results_file,
