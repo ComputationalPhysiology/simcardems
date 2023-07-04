@@ -95,7 +95,7 @@ class EMCoupling(simcardems.models.em_model.BaseEMCoupling):
 
     @classmethod
     def from_state(
-        cls, path: typing.Union[str, Path], *args, **kwargs
+        cls, path: typing.Union[str, Path], *args, **kwargs,
     ) -> simcardems.models.em_model.BaseEMCoupling:
         print(f"Load state from path {path}")
         path = Path(path)
