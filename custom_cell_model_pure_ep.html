@@ -502,7 +502,10 @@ For this demo we will copy the <a class="reference external" href="https://githu
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">from_state</span><span class="p">(</span>
-        <span class="bp">cls</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">em_model</span><span class="o">.</span><span class="n">BaseEMCoupling</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Load state from path </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
@@ -795,7 +798,7 @@ By Simula Research Laboratory
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Jun 28, 2023.
+  Last updated on Jul 12, 2023.
   <br/>
 </p>
   </div>
