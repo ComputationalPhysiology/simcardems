@@ -258,7 +258,8 @@ class Simulation:
         coupling = simcardems.EMCoupling(geometry)
         st.info("Create EP model")
         ep_solver = simcardems.setup_models.setup_ep_solver(
-            coupling=coupling, **ep_solver_args,
+            coupling=coupling,
+            **ep_solver_args,
         )
         coupling.register_ep_model(ep_solver)
         st.info("Create Mechanics model")

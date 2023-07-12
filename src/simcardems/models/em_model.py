@@ -113,7 +113,10 @@ def setup_EM_model_from_config(
 
 class BaseEMCoupling:
     def __init__(
-        self, geometry: _geometry.BaseGeometry, t: float = 0.0, **kwargs,
+        self,
+        geometry: _geometry.BaseGeometry,
+        t: float = 0.0,
+        **kwargs,
     ) -> None:
         logger.debug("Create EM coupling")
         self.geometry = geometry
