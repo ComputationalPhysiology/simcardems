@@ -42,7 +42,7 @@ repos:
         additional_dependencies: ['types-requests']
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v6.31.0
+    rev: v6.31.1
     hooks:
       - id: cspell
         files: src/|docs/source/(.+).md|docs/source/(.+).rst|tests|README.md
