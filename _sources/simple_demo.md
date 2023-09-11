@@ -76,9 +76,9 @@ Traces of the stretch ($\lambda$), the active tension ($T_a$), the membrane pote
 We can also save the output to xdmf-files that can be viewed in Paraview
 
 
-```python
+
 simcardems.postprocess.make_xdmffiles(outdir.joinpath("results.h5"))
-```
+
 
 The `xdmf` files are can be opened in [Paraview](https://www.paraview.org/download/) to visualize the different variables such as in {numref}`Figure {number} <simple-demo-paraview>`.
 
