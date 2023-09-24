@@ -72,7 +72,7 @@ const thebe_selector_output = ".output, .cell_output"
     <link rel="prev" title="Left ventricular geometry" href="ventricular_geometry.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Sep 23, 2023"/>
+    <meta name="docbuild:last-update" content="Sep 24, 2023"/>
   </head>
   
   
@@ -440,10 +440,15 @@ For this demo we will copy the <a class="reference external" href="https://githu
 <span class="kn">import</span> <span class="nn">simcardems.save_load_functions</span> <span class="k">as</span> <span class="nn">io</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
-<span class="kn">import</span> <span class="nn">ufl</span>
 <span class="kn">import</span> <span class="nn">dolfin</span>
 <span class="kn">import</span> <span class="nn">cbcbeat</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">ufl_legacy</span> <span class="k">as</span> <span class="nn">ufl</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">ufl</span>
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">simcardems</span></code> provide an interface for this class which can be found in the <a class="reference external" href="https://github.com/ComputationalPhysiology/simcardems/blob/main/src/simcardems/models/em_model.py"><code class="docutils literal notranslate"><span class="pre">em_model</span></code> module</a>. This class comes with some methods already implemented, but it is also possible to provide custom implementations of these methods. Note that all of the methods provided in this base class are used in some way when running a simulation</p>
@@ -805,7 +810,7 @@ By Simula Research Laboratory
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Sep 23, 2023.
+  Last updated on Sep 24, 2023.
   <br/>
 </p>
   </div>

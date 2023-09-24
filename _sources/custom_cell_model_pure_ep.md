@@ -21,10 +21,16 @@ import simcardems
 import simcardems.save_load_functions as io
 from pathlib import Path
 from collections import OrderedDict
-import ufl
 import dolfin
 import cbcbeat
 import matplotlib.pyplot as plt
+```
+
+```python
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
 ```
 
 

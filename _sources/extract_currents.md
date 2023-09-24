@@ -7,9 +7,15 @@ First we will make the necessary imports.
 ```python
 import simcardems
 from pathlib import Path
-import ufl
 import dolfin
 import matplotlib.pyplot as plt
+```
+
+```python
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
 ```
 
 
