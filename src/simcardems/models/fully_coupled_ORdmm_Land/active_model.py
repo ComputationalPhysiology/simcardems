@@ -5,7 +5,11 @@ from typing import Optional
 import dolfin
 import numpy as np
 import pulse
-import ufl
+
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
 
 from ... import utils
 from ...time_stepper import TimeStepper
