@@ -10,7 +10,11 @@ from typing import Union
 import cbcbeat
 import dolfin
 import numpy as np
-import ufl
+
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
 from dolfin import FiniteElement  # noqa: F401
 from dolfin import MixedElement  # noqa: F401
 from dolfin import tetrahedron  # noqa: F401
