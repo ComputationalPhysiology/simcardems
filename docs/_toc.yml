@@ -24,6 +24,7 @@ parts:
     - file: "extract_currents"
     - file: "tracking_values"
     - file: "custom_stimulus_domain"
+    - file: "niederer_benchmark"
     - file: "cli"
     - file: "docker"
     - file: "gui"
