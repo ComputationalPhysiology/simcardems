@@ -38,12 +38,12 @@ class SlabGeometry(BaseGeometry):
     @staticmethod
     def default_markers() -> Dict[str, Tuple[int, int]]:
         return {
-            "X0": (2, 1),
+            "X0": (1, 2),
             "X1": (2, 2),
-            "Y0": (2, 3),
-            "Y1": (2, 4),
-            "Z0": (2, 5),
-            "Z1": (2, 6),
+            "Y0": (3, 2),
+            "Y1": (4, 2),
+            "Z0": (5, 2),
+            "Z1": (6, 2),
         }
 
     def _default_microstructure(
@@ -128,14 +128,14 @@ def create_slab_facet_function(
     ffun = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim() - 1)
     ffun.set_all(0)
 
-    x0.mark(ffun, markers["X0"][1])
-    x1.mark(ffun, markers["X1"][1])
+    x0.mark(ffun, markers["X0"][0])
+    x1.mark(ffun, markers["X1"][0])
 
-    y0.mark(ffun, markers["Y0"][1])
-    y1.mark(ffun, markers["Y1"][1])
+    y0.mark(ffun, markers["Y0"][0])
+    y1.mark(ffun, markers["Y1"][0])
 
-    z0.mark(ffun, markers["Z0"][1])
-    z1.mark(ffun, markers["Z1"][1])
+    z0.mark(ffun, markers["Z0"][0])
+    z1.mark(ffun, markers["Z1"][0])
     return ffun
 
 
