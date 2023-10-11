@@ -1,0 +1,681 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Niederer benchmark &#8212; simcardems</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=ac02cc09edc035673794" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794" />
+  <script src="_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=ac02cc09edc035673794"></script>
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="_static/sphinx-thebe.js"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'niederer_benchmark';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Command line interface" href="cli.html" />
+    <link rel="prev" title="Custom stimulus domain" href="custom_stimulus_domain.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+    <meta name="docbuild:last-update" content="Oct 11, 2023"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/logo.png" class="logo__image only-light" alt="Logo image"/>
+    <script>document.write(`<img src="_static/logo.png" class="logo__image only-dark" alt="Logo image"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="index.html">
+                    Simula Cardiac Electro-Mechanics Solver
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Installation</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_docker.html">Install with Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_pip.html">Install with <code class="docutils literal notranslate"><span class="pre">pip</span></code></a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Mathematical Theory</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="mechanics_model.html">Tissue level mechanics model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="electrophysiology_model.html">Tissue level electrophysiology model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cell_model.html">Cellular model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="electro_mechanical_coupling.html">Electro-Mechanical coupling</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Demos</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="simple_demo.html">Simple demo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="initial_conditions_demo.html">initial conditions demo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="release_test.html">Release test</a></li>
+<li class="toctree-l1"><a class="reference internal" href="drug_effects_demo.html">Drug effects demo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ventricular_geometry.html">Left ventricular geometry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="custom_cell_model_pure_ep.html">Custom model (pure EP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extract_currents.html">Extracting currents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tracking_values.html">Tracking Values</a></li>
+<li class="toctree-l1"><a class="reference internal" href="custom_stimulus_domain.html">Custom stimulus domain</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Niederer benchmark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Command line interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docker.html">Run using Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gui.html">Graphical user interface</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Verification</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="benchmark.html">Benchmark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="convergence_spatial.html">Spatial convergence test</a></li>
+<li class="toctree-l1"><a class="reference internal" href="convergence_temporal.html">Temporal convergence test</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Postprocessing</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="visualization.html">Data visualization</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Community</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="CONTRIBUTING.html">Contributing</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Programmers reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="api.html">API documentaion</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/ComputationalPhysiology/simcardems" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/ComputationalPhysiology/simcardems/issues/new?title=Issue%20on%20page%20%2Fniederer_benchmark.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/niederer_benchmark.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Niederer benchmark</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="niederer-benchmark">
+<h1>Niederer benchmark<a class="headerlink" href="#niederer-benchmark" title="Permalink to this heading">#</a></h1>
+<p>In this example we will use the same setup as in the Niederer benchmark</p>
+<blockquote>
+<div><p>Niederer SA, Kerfoot E, Benson AP, Bernabeu MO, Bernus O, Bradley C, Cherry EM, Clayton R, Fenton FH, Garny A, Heidenreich E, Land S, Maleckar M, Pathmanathan P, Plank G, Rodríguez JF, Roy I, Sachse FB, Seemann G, Skavhaug O, Smith NP. Verification of cardiac tissue electrophysiology simulators using an N-version benchmark. Philos Trans A Math Phys Eng Sci. 2011 Nov 13;369(1954):4331-51. doi: 10.1098/rsta.2011.0139. PMID: 21969679; PMCID: PMC3263775.</p>
+</div></blockquote>
+<p>However, we will be using an electromechanics model and also compute some pseudo ecg.</p>
+<p>First me make the necessary imports</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">dolfin</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">simcardems</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+</pre></div>
+</div>
+<p>And we specify the path to the output directory where we want to store the results</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">here</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span>
+<span class="n">outdir</span> <span class="o">=</span> <span class="n">here</span> <span class="o">/</span> <span class="s2">&quot;results_niederer_benchmark&quot;</span>
+</pre></div>
+</div>
+<p>Next we define the stimulus domain</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">stimulus_domain</span><span class="p">(</span><span class="n">mesh</span><span class="p">):</span>
+    <span class="n">marker</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">subdomain</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">CompiledSubDomain</span><span class="p">(</span>
+        <span class="s2">&quot;x[0] &lt;= L + DOLFIN_EPS &amp;&amp; x[1] &lt;= L + DOLFIN_EPS &amp;&amp; x[2] &lt;= L + DOLFIN_EPS&quot;</span><span class="p">,</span>
+        <span class="n">L</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">domain</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">(</span><span class="s2">&quot;size_t&quot;</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">mesh</span><span class="o">.</span><span class="n">topology</span><span class="p">()</span><span class="o">.</span><span class="n">dim</span><span class="p">())</span>
+    <span class="n">domain</span><span class="o">.</span><span class="n">set_all</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">subdomain</span><span class="o">.</span><span class="n">mark</span><span class="p">(</span><span class="n">domain</span><span class="p">,</span> <span class="n">marker</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">StimulusDomain</span><span class="p">(</span><span class="n">domain</span><span class="o">=</span><span class="n">domain</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="n">marker</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>and create the geometry</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">geo</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">slabgeometry</span><span class="o">.</span><span class="n">SlabGeometry</span><span class="p">(</span>
+    <span class="n">parameters</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;lx&quot;</span><span class="p">:</span> <span class="mf">20.0</span><span class="p">,</span> <span class="s2">&quot;ly&quot;</span><span class="p">:</span> <span class="mf">7.0</span><span class="p">,</span> <span class="s2">&quot;lz&quot;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span> <span class="s2">&quot;dx&quot;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">},</span>
+    <span class="n">stimulus_domain</span><span class="o">=</span><span class="n">stimulus_domain</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>We now create the configurations</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">Config</span><span class="p">(</span>
+    <span class="n">outdir</span><span class="o">=</span><span class="n">outdir</span><span class="p">,</span>
+    <span class="n">coupling_type</span><span class="o">=</span><span class="s2">&quot;fully_coupled_ORdmm_Land&quot;</span><span class="p">,</span>
+    <span class="n">T</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>And create the coupling. Note that, here we are using a different method than usual for creating the coupling, since we need to also supply the geometry.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">coupling</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">em_model</span><span class="o">.</span><span class="n">setup_EM_model_from_config</span><span class="p">(</span>
+    <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
+    <span class="n">geometry</span><span class="o">=</span><span class="n">geo</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Next we create the runner, and solve the problem</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">runner</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">Runner</span><span class="o">.</span><span class="n">from_models</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span> <span class="n">coupling</span><span class="o">=</span><span class="n">coupling</span><span class="p">)</span>
+<span class="n">runner</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">T</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">save_freq</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">save_freq</span><span class="p">,</span> <span class="n">show_progress_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now let us only extract the results of the membrane potential, and compare the values in different points in the mesh. For the slab geometry we can for example evaluate the functions a the minimum and maximum <span class="math notranslate nohighlight">\(x\)</span> values and at the center. To do this, we need to first load the results</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">loader</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">outdir</span> <span class="o">/</span> <span class="s2">&quot;results.h5&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>and save the voltage and displacement to xdmf to be viewed in Paraview</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">simcardems</span><span class="o">.</span><span class="n">postprocess</span><span class="o">.</span><span class="n">make_xdmffiles</span><span class="p">(</span><span class="n">outdir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;results.h5&quot;</span><span class="p">),</span> <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;u&quot;</span><span class="p">,</span> <span class="s2">&quot;V&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p><video controls src="./_static/niederer.mp4"></video></p>
+<p>Now let us first select some points outside the domain which will serve as our leads for the ecg computation</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">time_stamps</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">time_stamps</span> <span class="ow">or</span> <span class="p">[]</span>
+</pre></div>
+</div>
+<p>Here we plot the mesh with the leads as red dots and the ground lead as a black dot</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="p">(</span><span class="mf">22.0</span><span class="p">,</span> <span class="mf">8.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">),</span>
+        <span class="p">(</span><span class="mf">22.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">),</span>
+        <span class="p">(</span><span class="mf">22.0</span><span class="p">,</span> <span class="mf">8.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+        <span class="p">(</span><span class="mf">22.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">),</span>
+        <span class="p">(</span><span class="mf">22.0</span><span class="p">,</span> <span class="mf">3.5</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">),</span>
+        <span class="p">(</span><span class="mf">22.0</span><span class="p">,</span> <span class="mf">3.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">),</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+<span class="n">ground</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">))</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="n">projection</span><span class="o">=</span><span class="s2">&quot;3d&quot;</span><span class="p">)</span>
+
+<span class="n">dolfin</span><span class="o">.</span><span class="n">common</span><span class="o">.</span><span class="n">plotting</span><span class="o">.</span><span class="n">mplot_mesh</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">mesh</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="o">*</span><span class="n">points</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="o">*</span><span class="n">ground</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">outdir</span> <span class="o">/</span> <span class="s2">&quot;mesh_with_leads.png&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-default" id="mesh-with-leads">
+<img alt="_images/mesh_with_leads.png" src="_images/mesh_with_leads.png" />
+<figcaption>
+<p><span class="caption-number">Fig. 13 </span><span class="caption-text">Mesh with leads as red dots and ground lead as black dot</span><a class="headerlink" href="#mesh-with-leads" title="Permalink to this image">#</a></p>
+</figcaption>
+</figure>
+<p>We will now compute the pseudo-ecg using the recovery formula. In this approach we estimate the extracellular potential using the formula</p>
+<div class="math notranslate nohighlight">
+\[
+\phi_b(\mathbf{x}, t) = \frac{1}{4 \pi \sigma_b} \int_{\Omega} \frac{ M_i \nabla V(\tilde{\mathbf{x}}, t)  (\tilde{\mathbf{x}} - \mathbf{x})}{\| \tilde{\mathbf{x}} - \mathbf{x} \|^3} \mathrm{d}\tilde{\mathbf{x}}
+\]</div>
+<p>And we compute the pseudo-ECG by subtracting <span class="math notranslate nohighlight">\(\phi_b(\mathbf{x}_p, t) - \phi_b(\mathbf{x}_g, t)\)</span> where <span class="math notranslate nohighlight">\(\mathbf{x}_p\)</span> is the position of the lead and <span class="math notranslate nohighlight">\(\mathbf{x}_g\)</span> is the position of a ground lead.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">voltage_traces</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">time_stamps</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">loader</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ep&quot;</span><span class="p">,</span> <span class="s2">&quot;V&quot;</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">point</span> <span class="ow">in</span> <span class="n">points</span><span class="p">:</span>
+    <span class="n">ecg</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">postprocess</span><span class="o">.</span><span class="n">ecg</span><span class="p">(</span>
+        <span class="n">voltage_traces</span><span class="p">(),</span>
+        <span class="n">sigma_b</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">point1</span><span class="o">=</span><span class="n">point</span><span class="p">,</span>
+        <span class="n">point2</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">10.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">10.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">10.0</span><span class="p">),</span>
+    <span class="p">)</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">time_stamps</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span> <span class="n">ecg</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">point</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">outdir</span> <span class="o">/</span> <span class="s2">&quot;ecg.png&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-default" id="ecg">
+<img alt="_images/ecg.png" src="_images/ecg.png" />
+<figcaption>
+<p><span class="caption-number">Fig. 14 </span><span class="caption-text">Pseudo-ECG</span><a class="headerlink" href="#ecg" title="Permalink to this image">#</a></p>
+</figcaption>
+</figure>
+<p>Next we use a function for computing the activation map, and indicate that the threshold value should be 0.0. The activation map, will then be a function over the mesh where the value at a given point will be the time it takes for the voltage to first reach 0.0 mV.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">activation_map</span> <span class="o">=</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">postprocess</span><span class="o">.</span><span class="n">activation_map</span><span class="p">(</span>
+    <span class="n">voltage_traces</span><span class="p">(),</span>
+    <span class="n">time_stamps</span><span class="o">=</span><span class="n">time_stamps</span><span class="p">,</span>
+    <span class="n">V</span><span class="o">=</span><span class="n">loader</span><span class="o">.</span><span class="n">_functions</span><span class="p">[</span><span class="s2">&quot;ep&quot;</span><span class="p">][</span><span class="s2">&quot;V&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">function_space</span><span class="p">(),</span>
+    <span class="n">threshold</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>and compute the activation times for all points through the center of the mesh, from <span class="math notranslate nohighlight">\(x=0\)</span> to <span class="math notranslate nohighlight">\(x=L_x\)</span>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;lx&quot;</span><span class="p">],</span> <span class="mi">50</span><span class="p">)</span>
+<span class="n">act</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">activation_map</span><span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;ly&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;lz&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">xi</span> <span class="ow">in</span> <span class="n">x</span>
+<span class="p">]</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">act</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;$x$ coordinate&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Activation time [ms]&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">outdir</span> <span class="o">/</span> <span class="s2">&quot;activation_times.png&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-default" id="activation-times-niederer">
+<img alt="_images/activation_times_niederer.png" src="_images/activation_times_niederer.png" />
+<figcaption>
+<p><span class="caption-number">Fig. 15 </span><span class="caption-text">Activation times through the center of the mesh.</span><a class="headerlink" href="#activation-times-niederer" title="Permalink to this image">#</a></p>
+</figcaption>
+</figure>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="custom_stimulus_domain.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Custom stimulus domain</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="cli.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Command line interface</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Simula Research Laboratory
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2022.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="last-updated">
+  Last updated on Oct 11, 2023.
+  <br/>
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=ac02cc09edc035673794"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
