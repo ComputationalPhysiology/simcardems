@@ -60,4 +60,5 @@ def test_pure_ep_ORdmm_Land(geo, tmpdir):
     new_coupling = models.pureEP_ORdmm_Land.EMCoupling.from_state(
         path=runner.state_path,
     )
+
     assert new_coupling == coupling

@@ -124,7 +124,7 @@ class Runner:
 
     def store(self):
         # Assign u, v and Ca for postprocessing
-        self.coupling.assigners.assign()
+        # self.coupling.assigners.assign()
         self.collector.store(TimeStepper.ns2ms(self.t))
 
     def _setup_datacollector(self):
@@ -136,18 +136,19 @@ class Runner:
             reset_state=self._reset,
             outfilename=self._config.outfilename,
         )
-        self.coupling.register_datacollector(self.collector)
+        # self.coupling.register_datacollector(self.collector)
 
     def _solve_mechanics_now(self) -> bool:
         if self._config.mechanics_solve_strategy == "fixed":
             return self.coupling.dt_mechanics > self._config.dt_mech
 
-        self.coupling.assigners.assign_pre()
-        norm = self.coupling.assigners.compute_pre_norm()
-        return (
-            norm >= self._config.mech_threshold
-            or self.coupling.dt_mechanics > self._config.dt_mech
-        )
+        # self.coupling.assigners.assign_pre()
+        # norm = self.coupling.assigners.compute_pre_norm()
+        # return (
+        #     norm >= self._config.mech_threshold
+        #     or self.coupling.dt_mechanics > self._config.dt_mech
+        # )
+        return True
 
     def _post_mechanics_solve(self) -> None:
         # Update previous lmbda

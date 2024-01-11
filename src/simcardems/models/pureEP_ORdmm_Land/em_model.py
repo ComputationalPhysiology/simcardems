@@ -33,8 +33,8 @@ class EMCoupling(BaseEMCoupling):
         return "pureEP_ORdmm_Land"
 
     @property
-    def vs(self) -> dolfin.Function:
-        return self.ep_solver.solution_fields()[0]
+    def vs(self) -> np.ndarray:
+        return self.ep_solver.ode.values
 
     def register_ep_model(self, solver: cbcbeat.SplittingSolver):
         logger.debug("Registering EP model")
@@ -48,7 +48,7 @@ class EMCoupling(BaseEMCoupling):
         if not super().__eq__(__o):
             return False
 
-        if not np.allclose(self.vs.vector().get_local(), __o.vs.vector().get_local()):
+        if not np.allclose(self.vs, __o.vs):
             return False
         return True
 
@@ -61,42 +61,46 @@ class EMCoupling(BaseEMCoupling):
         self._assigners = assigners
 
     def setup_assigners(self) -> None:
-        from ...datacollector import Assigners
+        ...
+        # from ...datacollector import Assigners
 
-        self.assigners = Assigners(vs=self.vs, mech_state=None)
-        for name, index in [
-            ("V", 0),
-            ("Ca", 45),
-            ("XS", 40),
-            ("XW", 41),
-            ("CaTrpn", 42),
-            ("TmB", 43),
-            ("Cd", 44),
-        ]:
-            self.assigners.register_subfunction(
-                name=name,
-                group="ep",
-                subspace_index=index,
-            )
+        # self.assigners = Assigners(vs=self.vs, mech_state=None)
+        # for name, index in [
+        #     ("V", 0),
+        #     ("Ca", 41),
+        #     ("XS", 40),
+        #     ("XW", 41),
+        #     ("CaTrpn", 42),
+        #     ("TmB", 43),
+        #     ("Cd", 44),
+        # ]:
+        #     self.assigners.register_subfunction(
+        #         name=name,
+        #         group="ep",
+        #         subspace_index=index,
+        #     )
+        # pass
 
     def solve_ep(self, interval: Tuple[float, float]) -> None:
         self.ep_solver.step(interval)
 
     def print_ep_info(self):
         # Output some degrees of freedom
-        total_dofs = self.vs.function_space().dim()
+
+        total_dofs = self.ep_solver.pde.V.dim()
         logger.info("EP model")
         utils.print_mesh_info(self.ep_mesh, total_dofs)
 
     def cell_params(self):
-        return self.ep_solver.ode_solver._model.parameters()
+        return self.ep_solver.ode.parameters
 
     @property
     def ep_mesh(self):
         return self.geometry.ep_mesh
 
     def update_prev_ep(self):
-        self.ep_solver.vs_.assign(self.ep_solver.vs)
+        ...
+        # self.ep_solver.vs_.assign(self.ep_solver.vs)
 
     def save_state(
         self,
@@ -104,20 +108,30 @@ class EMCoupling(BaseEMCoupling):
         config: Optional[Config] = None,
     ) -> None:
         super().save_state(path=path, config=config)
+        # breakpoint()
 
-        with dolfin.HDF5File(
-            self.geometry.comm(),
-            Path(path).as_posix(),
-            "a",
-        ) as h5file:
-            h5file.write(self.ep_solver.vs, "/ep/vs")
+        # with dolfin.HDF5File(
+        #     self.geometry.comm(),
+        #     Path(path).as_posix(),
+        #     "a",
+        # ) as h5file:
+        #     h5file.write(self.ep_solver.vs, "/ep/vs")
+        with io.h5pyfile(path, "a") as h5file:
+            h5file["ep/vs"] = self.vs
+            h5file["ep/cell_params"] = self.cell_params()
 
-        io.dict_to_h5(
-            self.cell_params(),
-            path,
-            "ep/cell_params",
-            comm=self.geometry.comm(),
-        )
+        # io.dict_to_h5(
+        #     self.vs,
+        #     path,
+        #     "ep/vs",
+        #     comm=self.geometry.comm(),
+        # )
+        # io.dict_to_h5(
+        #     self.cell_params(),
+        #     path,
+        #     "ep/cell_params",
+        #     comm=self.geometry.comm(),
+        # )
 
     @classmethod
     def from_state(
@@ -138,26 +152,28 @@ class EMCoupling(BaseEMCoupling):
         with io.h5pyfile(path) as h5file:
             config = Config(**io.h5_to_dict(h5file["config"]))
             state_params = io.h5_to_dict(h5file["state_params"])
-            cell_params = io.h5_to_dict(h5file["ep"]["cell_params"])
-            vs_signature = h5file["ep"]["vs"].attrs["signature"].decode()
+            cell_params = h5file["ep"]["cell_params"][:]
+            vs = h5file["ep"]["vs"][:]
+            # vs_signature = h5file["ep"]["vs"].attrs["signature"].decode()
 
         config.drug_factors_file = drug_factors_file
         config.popu_factors_file = popu_factors_file
         config.disease_state = disease_state
         config.PCL = PCL
 
-        VS = dolfin.FunctionSpace(geo.ep_mesh, eval(vs_signature))
-        vs = dolfin.Function(VS)
+        # VS = dolfin.FunctionSpace(geo.ep_mesh, eval(vs_signature))
+        # vs = dolfin.Function(VS)
         logger.debug("Load functions")
-        with dolfin.HDF5File(geo.ep_mesh.mpi_comm(), path.as_posix(), "r") as h5file:
-            h5file.read(vs, "/ep/vs")
+        # with dolfin.HDF5File(geo.ep_mesh.mpi_comm(), path.as_posix(), "r") as h5file:
+        #     h5file.read(vs, "/ep/vs")
+        # from . import cell_model as model
 
         from . import CellModel, ActiveModel
 
-        cell_inits = io.vs_functions_to_dict(
-            vs,
-            state_names=CellModel.default_initial_conditions().keys(),
-        )
+        # cell_inits = io.vs_functions_to_dict(
+        #     vs,
+        #     state_names=CellModel.default_initial_conditions().keys(),
+        # )
 
         return setup_EM_model(
             cls_EMCoupling=cls,
@@ -165,7 +181,7 @@ class EMCoupling(BaseEMCoupling):
             cls_ActiveModel=ActiveModel,
             geometry=geo,
             config=config,
-            cell_inits=cell_inits,
+            cell_inits=vs,
             cell_params=cell_params,
             state_params=state_params,
         )

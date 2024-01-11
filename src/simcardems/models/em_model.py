@@ -3,7 +3,7 @@ from __future__ import annotations
 import typing
 from pathlib import Path
 
-import cbcbeat
+import beat
 import dolfin
 import pulse
 
@@ -40,7 +40,7 @@ def setup_EM_model(
     coupling = cls_EMCoupling(geometry, **state_params)
 
     cellmodel = ep_model.setup_cell_model(
-        cls=cls_CellModel,
+        model=cls_CellModel,
         coupling=coupling,
         cell_init_file=config.cell_init_file,
         drug_factors_file=config.drug_factors_file,
@@ -57,6 +57,7 @@ def setup_EM_model(
         PCL=config.PCL,
         cellmodel=cellmodel,
     )
+
     coupling.register_ep_model(solver)
 
     mech_heart = mechanics_model.setup_solver(
@@ -150,7 +151,7 @@ class BaseEMCoupling:
     def coupling_type(self):
         "CustomType"
 
-    def register_ep_model(self, solver: cbcbeat.SplittingSolver) -> None:
+    def register_ep_model(self, solver: beat.MonodomainSplittingSolver) -> None:
         pass
 
     def register_mech_model(self, solver: pulse.MechanicsProblem) -> None:
