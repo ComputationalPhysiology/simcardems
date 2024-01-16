@@ -7,11 +7,9 @@ from typing import Optional
 from typing import Tuple
 from typing import Union
 
-import cbcbeat
 import dolfin
 import h5py
 import numpy as np
-import pulse
 from dolfin import FiniteElement  # noqa: F401
 from dolfin import tetrahedron  # noqa: F401
 from dolfin import VectorElement  # noqa: F401
@@ -51,17 +49,21 @@ class Assigners:
     def __init__(
         self,
         *,
-        vs: Optional[cbcbeat.SplittingSolver] = None,
-        mech_state: Optional[pulse.MechanicsProblem] = None,
+        vs: Optional[np.ndarray] = None,
+        mech_state: Optional[dolfin.Function] = None,
+        V_mech: Optional[dolfin.FunctionSpace] = None,
+        V_ep: Optional[dolfin.FunctionSpace] = None,
     ) -> None:
         self.vs = vs
         self.mech_state = mech_state
+        self.V_mech = V_mech
+        self.V_ep = V_ep
 
         self.functions: Dict[str, Dict[str, dolfin.Function]] = {
             "ep": {},
             "mechanics": {},
         }
-        self.assigners: Dict[str, Dict[str, dolfin.FunctionAssigner]] = {
+        self.assigners: Dict[str, Dict[str, Optional[dolfin.FunctionAssigner]]] = {
             "ep": {},
             "mechanics": {},
         }
@@ -74,7 +76,7 @@ class Assigners:
             "ep": {},
             "mechanics": {},
         }
-        self.pre_assigners: Dict[str, Dict[str, dolfin.FunctionAssigner]] = {
+        self.pre_assigners: Dict[str, Dict[str, Optional[dolfin.FunctionAssigner]]] = {
             "ep": {},
             "mechanics": {},
         }
@@ -89,14 +91,14 @@ class Assigners:
 
     def assign_pre(self) -> None:
         self.assign_pre_mechanics()
-        self.assign_ep()
+        self.assign_pre_ep()
 
     def _get(
         self,
         is_pre: bool,
     ) -> Tuple[
         Dict[str, Dict[str, dolfin.Function]],
-        Dict[str, Dict[str, dolfin.FunctionAssigner]],
+        Dict[str, Dict[str, Optional[dolfin.FunctionAssigner]]],
         Dict[str, Dict[str, int]],
     ]:
         if is_pre:
@@ -142,15 +144,11 @@ class Assigners:
             raise RuntimeError("Unable to assign EP, no EP state registered")
 
         for name in keys:
-            assigner = assigners["ep"].get(name)
             index = subspace_indices["ep"].get(name)
             f = functions["ep"].get(name)
-            if assign_item_is_None(f, assigner, index):
+            if f is None or index is None:
                 continue
-
-            # Could ass a typeguard here: https://peps.python.org/pep-0647/
-            # but this will need python3.10
-            assigner.assign(f, utils.sub_function(self.vs, index))  # type: ignore
+            f.vector()[:] = self.vs[index]
 
     def assign_pre_ep(self) -> None:
         self._assign_ep(is_pre=True)
@@ -182,8 +180,16 @@ class Assigners:
         subspace_index: int,
         is_pre: bool = False,
     ) -> None:
-        func = self.vs if group == "ep" else self.mech_state
-        f, assigner = utils.setup_assigner(func, subspace_index)
+        V = self.V_ep if group == "ep" else self.V_mech
+        if V is None:
+            raise RuntimeError(
+                f"Unable to register subfunction {name} in group {group}, no function space",
+            )
+        if group == "ep":
+            assigner = None
+            f = dolfin.Function(V)
+        else:
+            f, assigner = utils.setup_assigner(self.mech_state, subspace_index)
         functions, assigners, subspace_indices = self._get(is_pre)
         functions[group][name] = f
         assigners[group][name] = assigner

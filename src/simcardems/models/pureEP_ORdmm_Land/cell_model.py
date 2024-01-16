@@ -1,10 +1,7 @@
+# flake8: noqa: F841
 import math
 
 import numpy
-
-
-class ORdmmLandPureEp:
-    pass
 
 
 def parameter_index(name: str) -> float:
@@ -496,7 +493,11 @@ def init_state_values(**values):
     return states
 
 
-def rhs(t, states, parameters):
+def forward_generalized_rush_larsen(coupling):
+    return forward_generalized_rush_larsen_
+
+
+def forward_generalized_rush_larsen_(states, t, dt, parameters):
     # Assign states
     hL = states[0]
     a = states[1]
@@ -555,14 +556,11 @@ def rhs(t, states, parameters):
     Beta0 = parameters[4]
     Beta1 = parameters[5]
     CaMKo = parameters[6]
-    Esac_ns = parameters[7]
     F = parameters[8]
     GKb = parameters[9]
     GNa = parameters[10]
     Gncx = parameters[11]
     GpCa = parameters[12]
-    Gsac_k = parameters[13]
-    Gsac_ns = parameters[14]
     Gto = parameters[15]
     H = parameters[16]
     Khp = parameters[17]
@@ -595,10 +593,8 @@ def rhs(t, states, parameters):
     amp = parameters[44]
     bCaMK = parameters[45]
     bt = parameters[46]
-    calib = parameters[47]
     cao = parameters[48]
     cat50_ref = parameters[49]
-    celltype = parameters[50]
     cmdnmax = parameters[51]
     csqnmax = parameters[52]
     dLambda = parameters[53]
@@ -606,12 +602,10 @@ def rhs(t, states, parameters):
     delta_epi = parameters[55]
     duration = parameters[56]
     eP = parameters[57]
-    emcoupling = parameters[58]
     etal = parameters[59]
     etas = parameters[60]
     gammas = parameters[61]
     gammaw = parameters[62]
-    isacs = parameters[63]
     k1m = parameters[64]
     k1p = parameters[65]
     k2m = parameters[66]
@@ -626,7 +620,6 @@ def rhs(t, states, parameters):
     kcaon = parameters[75]
     kmcmdn = parameters[76]
     kmcsqn = parameters[77]
-    kmtrpn = parameters[78]
     kna1 = parameters[79]
     kna2 = parameters[80]
     kna3 = parameters[81]
@@ -635,9 +628,7 @@ def rhs(t, states, parameters):
     ku = parameters[84]
     kuw = parameters[85]
     kws = parameters[86]
-    lambda_max = parameters[87]
     lmbda = parameters[88]
-    mode = parameters[89]
     nao = parameters[90]
     ntm = parameters[91]
     ntrpn = parameters[92]
@@ -676,8 +667,6 @@ def rhs(t, states, parameters):
     scale_drug_INaL = parameters[125]
     scale_drug_INab = parameters[126]
     scale_drug_IpCa = parameters[127]
-    scale_drug_Isack = parameters[128]
-    scale_drug_Isacns = parameters[129]
     scale_drug_Ito = parameters[130]
     thL = parameters[131]
     tjca = parameters[132]
@@ -776,39 +765,36 @@ def rhs(t, states, parameters):
     KsCa = 1.0 + 0.6 / ((3.8e-05 / cai) ** 1.4 + 1.0)
     Bcai = 1.0 / ((cmdnmax * kmcmdn) / (cai + kmcmdn) ** 2.0 + 1.0)
     Bcajsr = 1.0 / ((csqnmax * kmcsqn) / (cajsr + kmcsqn) ** 2.0 + 1.0)
-    Jdiff = (-cai + cass) / 0.2
     Bcass = 1.0 / (
         (BSLmax * KmBSL) / (KmBSL + cass) ** 2.0
         + ((BSRmax * KmBSR) / (KmBSR + cass) ** 2.0 + 1.0)
     )
+    Jdiff = (-cai + cass) / 0.2
     CaMKb = (CaMKo * (1.0 - CaMKt)) / (KmCaM / cass + 1.0)
-    CaTrpn_max = (CaTrpn) * (CaTrpn > 0) + (0) * numpy.logical_not((CaTrpn > 0))
-    vffrt = (F * (F * v)) / ((R * T))
-    vfrt = (F * v) / ((R * T))
-    EK = ((R * T) / F) * numpy.log(ko / ki)
     rk1 = 1.0 / (numpy.exp((-2.6 * ko + (v + 105.8)) / 9.493) + 1.0)
     xk1ss = 1.0 / (
         numpy.exp((-((2.5538 * ko + v) + 144.59)) / (1.5692 * ko + 3.8115)) + 1.0
     )
-    ENa = ((R * T) / F) * numpy.log(nao / nai)
+    EK = ((R * T) / F) * numpy.log(ko / ki)
+    vffrt = (F * (F * v)) / ((R * T))
+    vfrt = (F * v) / ((R * T))
     EKs = ((R * T) / F) * numpy.log((PKNa * nao + ko) / (PKNa * nai + ki))
+    ENa = ((R * T) / F) * numpy.log(nao / nai)
     GK1 = scale_HF_GK1 * ((0.1908 * scale_IK1) * scale_drug_IK1)
     GKr = (0.046 * scale_IKr) * scale_drug_IKr
     GKs = (0.0034 * scale_IKs) * scale_drug_IKs
     GNaL = scale_HF_GNaL * ((0.0075 * scale_INaL) * scale_drug_INaL)
     km2n = 1.0 * jca
     IpCa = (cai * (GpCa * scale_drug_IpCa)) / (cai + 0.0005)
-    Istim = (amp) * (duration >= t) + (0) * numpy.logical_not((duration >= t))
+    Istim = 0  # (amp) * (duration >= t) + (0) * numpy.logical_not((duration >= t))
     JdiffK = (-ki + kss) / 2.0
     JdiffNa = (-nai + nass) / 2.0
-    Jtr = (-cajsr + cansr) / 100.0
     Jleak = ((0.0039375 * cansr) * scale_HF_Jleak) / 15.0
+    Jtr = (-cajsr + cansr) / 100.0
     Knai = Knai0 * numpy.exp((F * (delta * v)) / (((3.0 * R) * T)))
     Knao = Knao0 * numpy.exp((F * (v * (1.0 - delta))) / (((3.0 * R) * T)))
     P = eP / (((H / Khp + 1.0) + nai / Knap) + ki / Kxkur)
     PCa = (0.0001 * scale_ICaL) * scale_drug_ICaL
-    XW_max = (XW) * (XW > 0) + (0) * numpy.logical_not((XW > 0))
-    XS_max = (XS) * (XS > 0) + (0) * numpy.logical_not((XS > 0))
     XU = -XW + (-XS + (1 - TmB))
     a2 = k2p
     a4 = ((MgATP * k4p) / Kmgatp) / (1.0 + MgATP / Kmgatp)
@@ -818,815 +804,20 @@ def rhs(t, states, parameters):
     allo_i = 1.0 / ((KmCaAct / cai) ** 2.0 + 1.0)
     allo_ss = 1.0 / ((KmCaAct / cass) ** 2.0 + 1.0)
     b1 = MgADP * k1m
-    cs = ((kws * phi) * (rw * (1 - rs))) / rs
     ksu = (kws * rw) * (-1 + 1 / rs)
+    cs = ((kws * phi) * (rw * (1 - rs))) / rs
     cw = ((kuw * phi) * ((1 - rs) * (1 - rw))) / ((rw * (1 - rs)))
     kwu = kuw * (-1 + 1 / rw) - kws
-    gammasu = (
-        gammas * Zetas * 1 * (Zetas > 0)
-        + 0
-        * (~(Zetas > 0))
-        * numpy.logical_and.reduce(
-            (
-                numpy.logical_or((Zetas > -1), (Zetas > 0)),
-                numpy.logical_or((Zetas > 0), (Zetas < -1)),
-                numpy.logical_or.reduce(
-                    ((Zetas >= -1), (Zetas <= 0), (Zetas > -1 / 2)),
-                ),
-            ),
-        )
-        + (-Zetas - 1) * 1 * (Zetas < -1)
-        + 0
-        * (~(Zetas < -1))
-        * (
-            ~numpy.logical_and.reduce(
-                (
-                    numpy.logical_or((Zetas > -1), (Zetas > 0)),
-                    numpy.logical_or((Zetas > 0), (Zetas < -1)),
-                    numpy.logical_or.reduce(
-                        ((Zetas >= -1), (Zetas <= 0), (Zetas > -1 / 2)),
-                    ),
-                ),
-            )
-        )
+    gammasu = gammas * numpy.where(
+        Zetas * (Zetas > 0) > (-1 - Zetas) * (Zetas < -1),
+        Zetas * (Zetas > 0),
+        (-1 - Zetas) * (Zetas < -1),
     )
     gammawu = gammaw * numpy.abs(Zetaw)
-    h10 = (nao / kna1) * (1 + nao / kna2) + (kasymm + 1.0)
-    h10_i = (nao / kna1) * (1.0 + nao / kna2) + (kasymm + 1.0)
     h4 = (nass / kna1) * (1 + nass / kna2) + 1.0
     h4_i = (nai / kna1) * (1 + nai / kna2) + 1.0
-    hca = numpy.exp((F * (qca * v)) / ((R * T)))
-    hna = numpy.exp((F * (qna * v)) / ((R * T)))
-    k2 = kcaoff
-    k2_i = kcaoff
-    k5 = kcaoff
-    k5_i = kcaoff
-    kb = (Trpn50**ntm * ku) / (-rw * (1 - rs) + (1 - rs))
-    lambda_min12 = (lmbda) * (lmbda < 1.2) + (1.2) * numpy.logical_not((lmbda < 1.2))
-    thLp = scale_HF_thL * (3.0 * thL)
-    tiF = (
-        delta_epi
-        * (
-            1
-            / (
-                0.3933 * numpy.exp((-(v + 100.0)) / 100.0)
-                + 0.08004 * numpy.exp((v + 50.0) / 16.59)
-            )
-        )
-        + 4.562
-    )
-    tiS = (
-        delta_epi
-        * (
-            1
-            / (
-                0.001416 * numpy.exp((-(v + 96.52)) / 59.05)
-                + 1.78e-08 * numpy.exp((v + 114.1) / 8.079)
-            )
-        )
-        + 23.62
-    )
-    Afcas = 1.0 - Afcaf
-    AiS = 1.0 - AiF
-    Axrs = 1.0 - Axrf
-    fcass = fss
-    dhL_dt = (-hL + hLss) / ((scale_HF_thL * thL))
-    values[0] = dhL_dt
-    jss = hss
-    da_dt = (-a + ass) / ta
-    values[1] = da_dt
-    dap_dt = (-ap + assp) / ta
-    values[2] = dap_dt
-    dd_dt = (-d + dss) / td
-    values[3] = dd_dt
-    tfcafp = 2.5 * tfcaf
-    tffp = 2.5 * tff
-    dff_dt = (-ff + fss) / tff
-    values[4] = dff_dt
-    dfs_dt = (-fs + fss) / tfs
-    values[5] = dfs_dt
-    dhf_dt = (-hf + hss) / thf
-    values[6] = dhf_dt
-    thsp = 3.0 * ths
-    dhs_dt = (-hs + hss) / ths
-    values[7] = dhs_dt
-    tjp = 1.46 * tj
-    tmL = tm
-    dm_dt = (-m + mss) / tm
-    values[8] = dm_dt
-    dxrf_dt = (-xrf + xrss) / txrf
-    values[9] = dxrf_dt
-    dxrs_dt = (-xrs + xrss) / txrs
-    values[10] = dxrs_dt
-    xs2ss = xs1ss
-    dxs1_dt = (-xs1 + xs1ss) / txs1
-    values[11] = dxs1_dt
-    f = Aff * ff + Afs * fs
-    fp = Aff * ffp + Afs * fs
-    Acap = 2 * Ageo
-    vjsr = 0.0048 * vcell
-    vmyo = 0.68 * vcell
-    vnsr = 0.0552 * vcell
-    vss = 0.02 * vcell
-    h = Ahf * hf + Ahs * hs
-    hp = Ahf * hf + Ahs * hsp
-    As = Aw
-    CaMKa = scale_HF_CaMKa * (CaMKb + CaMKt)
-    dCaMKt_dt = -CaMKt * bCaMK + (CaMKb * aCaMK) * (CaMKb + CaMKt)
-    values[12] = dCaMKt_dt
-    ICab = (
-        (vffrt * (4.0 * (PCab * scale_drug_ICab)))
-        * (cai * numpy.exp(2.0 * vfrt) - 0.341 * cao)
-    ) / (numpy.exp(2.0 * vfrt) - 1.0)
-    INab = ((vffrt * (PNab * scale_drug_INab)) * (nai * numpy.exp(vfrt) - nao)) / (
-        numpy.exp(vfrt) - 1.0
-    )
-    PhiCaK = ((1.0 * vffrt) * (-0.75 * ko + (0.75 * kss) * numpy.exp(1.0 * vfrt))) / (
-        numpy.exp(1.0 * vfrt) - 1.0
-    )
-    PhiCaL = ((4.0 * vffrt) * (-0.341 * cao + cass * numpy.exp(2.0 * vfrt))) / (
-        numpy.exp(2.0 * vfrt) - 1.0
-    )
-    PhiCaNa = (
-        (1.0 * vffrt) * (-0.75 * nao + (0.75 * nass) * numpy.exp(1.0 * vfrt))
-    ) / (numpy.exp(1.0 * vfrt) - 1.0)
-    IKb = (xkb * (GKb * scale_drug_IKb)) * (-EK + v)
-    dxk1_dt = (-xk1 + xk1ss) / txk1
-    values[13] = dxk1_dt
-    IK1 = (xk1 * (rk1 * (GK1 * math.sqrt(ko)))) * (-EK + v)
-    IKs = (xs2 * (xs1 * (GKs * KsCa))) * (-EKs + v)
-    anca = 1.0 / (k2n / km2n + (Kmn / cass + 1.0) ** 4.0)
-    a1 = (k1p * (nai / Knai) ** 3.0) / (
-        ((1.0 + ki / Kki) ** 2.0 + (1.0 + nai / Knai) ** 3.0) - 1.0
-    )
-    b4 = (k4m * (ki / Kki) ** 2.0) / (
-        ((1.0 + ki / Kki) ** 2.0 + (1.0 + nai / Knai) ** 3.0) - 1.0
-    )
-    a3 = (k3p * (ko / Kko) ** 2.0) / (
-        ((1.0 + ko / Kko) ** 2.0 + (1.0 + nao / Knao) ** 3.0) - 1.0
-    )
-    b2 = (k2m * (nao / Knao) ** 3.0) / (
-        ((1.0 + ko / Kko) ** 2.0 + (1.0 + nao / Knao) ** 3.0) - 1.0
-    )
-    b3 = (H * (P * k3m)) / (1.0 + MgATP / Kmgatp)
-    PCaK = 0.0003574 * PCa
-    PCaNa = 0.00125 * PCa
-    PCap = 1.1 * PCa
-    a_relp = 0.5 * btp
-    tau_relp_tmp = btp / (1.0 + 0.0123 / cajsr)
-    tau_rel = (0.001) * (tau_rel_tmp < 0.001) + (tau_rel_tmp) * numpy.logical_not(
-        (tau_rel_tmp < 0.001),
-    )
-    dZetaw_dt = Aw * dLambda - Zetaw * cw
-    values[14] = dZetaw_dt
-    dXS_dt = -XS * gammasu + (-XS * ksu + XW * kws)
-    values[15] = dXS_dt
-    dXW_dt = -XW * gammawu + (-XW * kws + (XU * kuw - XW * kwu))
-    values[16] = dXW_dt
-    h11 = (nao * nao) / ((kna2 * (h10 * kna1)))
-    h12 = 1.0 / h10
-    h11_i = (nao * nao) / ((kna2 * (h10_i * kna1)))
-    h12_i = 1.0 / h10_i
-    h5 = (nass * nass) / ((kna2 * (h4 * kna1)))
-    h6 = 1.0 / h4
-    h5_i = (nai * nai) / ((kna2 * (h4_i * kna1)))
-    h6_i = 1.0 / h4_i
-    h1 = (nass / kna3) * (hna + 1) + 1
-    h1_i = (nai / kna3) * (hna + 1) + 1
-    h7 = (nao / kna3) * (1.0 + 1.0 / hna) + 1.0
-    h7_i = (nao / kna3) * (1.0 + 1.0 / hna) + 1.0
-    dTmB_dt = -TmB * CaTrpn ** (ntm / 2) * ku + XU * (
-        kb * CaTrpn ** ((-ntm) / 2) * (CaTrpn ** ((-ntm) / 2) < 100)
-        + 100 * (~(CaTrpn ** ((-ntm) / 2) < 100))
-    )
-    if numpy.isnan(dTmB_dt):
-        dTmB_dt = 0
-    values[17] = dTmB_dt
-    C = lambda_min12 - 1
-    cat50 = scale_HF_cat50_ref * (Beta1 * (lambda_min12 - 1) + cat50_ref)
-    lambda_min087 = (lambda_min12) * (lambda_min12 < 0.87) + (0.87) * numpy.logical_not(
-        (lambda_min12 < 0.87),
-    )
-    dhLp_dt = (-hLp + hLssp) / thLp
-    values[18] = dhLp_dt
-    tiFp = tiF * (dti_develop * dti_recover)
-    diF_dt = (-iF + iss) / tiF
-    values[19] = diF_dt
-    tiSp = tiS * (dti_develop * dti_recover)
-    diS_dt = (-iS + iss) / tiS
-    values[20] = diS_dt
-    fca = Afcaf * fcaf + Afcas * fcas
-    fcap = Afcaf * fcafp + Afcas * fcas
-    i = AiF * iF + AiS * iS
-    ip = AiF * iFp + AiS * iSp
-    xr = Axrf * xrf + Axrs * xrs
-    dfcaf_dt = (-fcaf + fcass) / tfcaf
-    values[21] = dfcaf_dt
-    dfcas_dt = (-fcas + fcass) / tfcas
-    values[22] = dfcas_dt
-    djca_dt = (fcass - jca) / tjca
-    values[23] = djca_dt
-    dj_dt = (-j + jss) / tj
-    values[24] = dj_dt
-    dfcafp_dt = (-fcafp + fcass) / tfcafp
-    values[25] = dfcafp_dt
-    dffp_dt = (-ffp + fss) / tffp
-    values[26] = dffp_dt
-    dhsp_dt = (-hsp + hssp) / thsp
-    values[27] = dhsp_dt
-    djp_dt = (-jp + jss) / tjp
-    values[28] = djp_dt
-    dmL_dt = (-mL + mLss) / tmL
-    values[29] = dmL_dt
-    dxs2_dt = (-xs2 + xs2ss) / txs2
-    values[30] = dxs2_dt
-    dZetas_dt = As * dLambda - Zetas * cs
-    values[31] = dZetas_dt
-    fICaLp = 1.0 / (1.0 + KmCaMK / CaMKa)
-    fINaLp = 1.0 / (1.0 + KmCaMK / CaMKa)
-    fINap = 1.0 / (1.0 + KmCaMK / CaMKa)
-    fItop = 1.0 / (1.0 + KmCaMK / CaMKa)
-    fJrelp = 1.0 / (1.0 + KmCaMK / CaMKa)
-    fJupp = 1.0 / (1.0 + KmCaMK / CaMKa)
-    dnca_dt = anca * k2n - km2n * nca
-    values[32] = dnca_dt
-    x2 = b4 * (a2 * a3) + (b4 * (a3 * b1) + (a3 * (a1 * a2) + b4 * (b1 * b2)))
-    x1 = a2 * (a1 * b3) + (b3 * (a2 * b4) + (a2 * (a1 * a4) + b3 * (b2 * b4)))
-    x3 = b1 * (a3 * a4) + (a4 * (b1 * b2) + (a4 * (a2 * a3) + b1 * (b2 * b3)))
-    x4 = a1 * (b2 * b3) + (a1 * (a4 * b2) + (a1 * (a3 * a4) + b2 * (b3 * b4)))
-    PCaKp = 0.0003574 * PCap
-    PCaNap = 0.00125 * PCap
-    tau_relp = (0.001) * (tau_relp_tmp < 0.001) + (tau_relp_tmp) * numpy.logical_not(
-        (tau_relp_tmp < 0.001),
-    )
-    k1 = kcaon * (cao * h12)
-    k1_i = kcaon * (cao * h12_i)
-    k6 = kcaon * (cass * h6)
-    k6_i = kcaon * (cai * h6_i)
-    h2 = (hna * nass) / ((h1 * kna3))
-    h3 = 1.0 / h1
-    h2_i = (hna * nai) / ((h1_i * kna3))
-    h3_i = 1.0 / h1_i
-    h8 = nao / ((h7 * (hna * kna3)))
-    h9 = 1.0 / h7
-    h8_i = nao / ((h7_i * (hna * kna3)))
-    h9_i = 1.0 / h7_i
-    F1 = numpy.exp(C * p_b) - 1
-    dCd = C - Cd
-    dCaTrpn_dt = ktrpn * (-CaTrpn + ((1000 * cai) / cat50) ** ntrpn * (1 - CaTrpn))
-    values[33] = dCaTrpn_dt
-    h_lambda_prima = Beta0 * ((lambda_min087 + lambda_min12) - 1.87) + 1
-    diFp_dt = (-iFp + iss) / tiFp
-    values[34] = diFp_dt
-    diSp_dt = (-iSp + iss) / tiSp
-    values[35] = diSp_dt
-    IKr = (rkr * (xr * (GKr * (0.4303314829119352 * math.sqrt(ko))))) * (-EK + v)
-    ICaL = (d * (PhiCaL * (PCa * (1.0 - fICaLp)))) * (
-        f * (1.0 - nca) + nca * (fca * jca)
-    ) + (d * (PhiCaL * (PCap * fICaLp))) * (fp * (1.0 - nca) + nca * (fcap * jca))
-    INaL = (mL * (GNaL * (-ENa + v))) * (fINaLp * hLp + hL * (1.0 - fINaLp))
-    INa = (m**3.0 * ((GNa * scale_drug_INa) * (-ENa + v))) * (
-        j * (h * (1.0 - fINap)) + jp * (fINap * hp)
-    )
-    Ito = ((scale_HF_Gto * (Gto * scale_drug_Ito)) * (-EK + v)) * (
-        i * (a * (1.0 - fItop)) + ip * (ap * fItop)
-    )
-    Jrel = Jrelnp * (1.0 - fJrelp) + Jrelp * fJrelp
-    Jup = -Jleak + (Jupnp * (1.0 - fJupp) + scale_HF_Jup * (Jupp * fJupp))
-    E1 = x1 / (x4 + (x3 + (x1 + x2)))
-    E2 = x2 / (x4 + (x3 + (x1 + x2)))
-    E3 = x3 / (x4 + (x3 + (x1 + x2)))
-    E4 = x4 / (x4 + (x3 + (x1 + x2)))
-    ICaK = (d * (PhiCaK * (PCaK * (1.0 - fICaLp)))) * (
-        f * (1.0 - nca) + nca * (fca * jca)
-    ) + (d * (PhiCaK * (PCaKp * fICaLp))) * (fp * (1.0 - nca) + nca * (fcap * jca))
-    ICaNa = (d * (PhiCaNa * (PCaNa * (1.0 - fICaLp)))) * (
-        f * (1.0 - nca) + nca * (fca * jca)
-    ) + (d * (PhiCaNa * (PCaNap * fICaLp))) * (fp * (1.0 - nca) + nca * (fcap * jca))
-    k4pp = h2 * wnaca
-    k7 = wna * (h2 * h5)
-    k4p_ss = (h3 * wca) / hca
-    k4pp_i = h2_i * wnaca
-    k7_i = wna * (h2_i * h5_i)
-    k4p_i = (h3_i * wca) / hca
-    k3pp = h8 * wnaca
-    k8 = wna * (h11 * h8)
-    k3p_ss = h9 * wca
-    k3pp_i = h8_i * wnaca
-    k8_i = wna * (h11_i * h8_i)
-    k3p_i = h9_i * wca
-    eta = (etas) * (dCd < 0) + (etal) * numpy.logical_not((dCd < 0))
-    J_TRPN = dCaTrpn_dt * trpnmax
-    h_lambda = (h_lambda_prima) * (h_lambda_prima > 0) + (0) * numpy.logical_not(
-        (h_lambda_prima > 0),
-    )
-    Jrel_inf = ((-ICaL) * a_rel) / (((1.5 * scale_HF_Jrel_inf) / cajsr) ** 8.0 + 1.0)
-    Jrel_infp = ((-ICaL) * a_relp) / (((1.5 * scale_HF_Jrel_inf) / cajsr) ** 8.0 + 1.0)
-    dcajsr_dt = Bcajsr * (-Jrel + Jtr)
-    values[36] = dcajsr_dt
-    dcansr_dt = Jup - (Jtr * vjsr) / vnsr
-    values[37] = dcansr_dt
-    JnakNa = 3.0 * (E1 * a3 - E2 * b3)
-    JnakK = 2.0 * (-E3 * a1 + E4 * b1)
-    dkss_dt = -JdiffK + (Acap * (-ICaK)) / ((F * vss))
-    values[38] = dkss_dt
-    k4 = k4p_ss + k4pp
-    k4_i = k4p_i + k4pp_i
-    k3 = k3p_ss + k3pp
-    k3_i = k3p_i + k3pp_i
-    Fd = dCd * eta
-    dCd_dt = (p_k * (C - Cd)) / eta
-    values[39] = dCd_dt
-    Ta = (h_lambda * (Tref / rs)) * (XS * (Zetas + 1) + XW * Zetaw)
-    dJrelnp_dt = (Jrel_inf - Jrelnp) / tau_rel
-    values[40] = dJrelnp_dt
-    dJrelp_dt = (Jrel_infp - Jrelp) / tau_relp
-    values[41] = dJrelp_dt
-    INaK = (Pnak * scale_HF_Pnak) * (JnakK * zk + JnakNa * zna)
-    x2_ss = (k1 * k7) * (k4 + k5) + (k4 * k6) * (k1 + k8)
-    x2_i = (k1_i * k7_i) * (k4_i + k5_i) + (k4_i * k6_i) * (k1_i + k8_i)
-    x1_ss = (k2 * k4) * (k6 + k7) + (k5 * k7) * (k2 + k3)
-    x3_ss = (k1 * k3) * (k6 + k7) + (k6 * k8) * (k2 + k3)
-    x4_ss = (k2 * k8) * (k4 + k5) + (k3 * k5) * (k1 + k8)
-    x1_i = (k2_i * k4_i) * (k6_i + k7_i) + (k5_i * k7_i) * (k2_i + k3_i)
-    x3_i = (k1_i * k3_i) * (k6_i + k7_i) + (k6_i * k8_i) * (k2_i + k3_i)
-    x4_i = (k2_i * k8_i) * (k4_i + k5_i) + (k3_i * k5_i) * (k1_i + k8_i)
-    Tp = p_a * (F1 + Fd)
-    dki_dt = (
-        Acap
-        * (
-            -(
-                -2.0 * INaK
-                + (
-                    Istim
-                    + (Isac_P_ns / 3 + (Isac_P_k + (IKb + (IK1 + (IKs + (IKr + Ito))))))
-                )
-            )
-        )
-    ) / ((F * vmyo)) + (JdiffK * vss) / vmyo
-    values[42] = dki_dt
-    E1_ss = x1_ss / (x4_ss + (x3_ss + (x1_ss + x2_ss)))
-    E2_ss = x2_ss / (x4_ss + (x3_ss + (x1_ss + x2_ss)))
-    E3_ss = x3_ss / (x4_ss + (x3_ss + (x1_ss + x2_ss)))
-    E4_ss = x4_ss / (x4_ss + (x3_ss + (x1_ss + x2_ss)))
-    E1_i = x1_i / (x4_i + (x3_i + (x1_i + x2_i)))
-    E2_i = x2_i / (x4_i + (x3_i + (x1_i + x2_i)))
-    E3_i = x3_i / (x4_i + (x3_i + (x1_i + x2_i)))
-    E4_i = x4_i / (x4_i + (x3_i + (x1_i + x2_i)))
-    Ttot = Ta + Tp
-    JncxCa_ss = -E1_ss * k1 + E2_ss * k2
-    JncxNa_ss = -E2_ss * k3pp + (E3_ss * k4pp + 3.0 * (-E1_ss * k8 + E4_ss * k7))
-    JncxCa_i = -E1_i * k1_i + E2_i * k2_i
-    JncxNa_i = -E2_i * k3pp_i + (E3_i * k4pp_i + 3.0 * (-E1_i * k8_i + E4_i * k7_i))
-    INaCa_ss = (allo_ss * ((0.2 * Gncx) * scale_HF_Gncx)) * (
-        JncxCa_ss * zca + JncxNa_ss * zna
-    )
-    INaCa_i = (allo_i * ((0.8 * Gncx) * scale_HF_Gncx)) * (
-        JncxCa_i * zca + JncxNa_i * zna
-    )
-    dcass_dt = Bcass * (
-        -Jdiff
-        + (
-            (Acap * (-(ICaL - 2.0 * INaCa_ss))) / (((2.0 * F) * vss))
-            + (Jrel * vjsr) / vss
-        )
-    )
-    values[43] = dcass_dt
-    dnass_dt = -JdiffNa + (Acap * (-(ICaNa + 3.0 * INaCa_ss))) / ((F * vss))
-    values[44] = dnass_dt
-    dcai_dt = Bcai * (
-        -J_TRPN
-        + (
-            (
-                (Acap * (-(Isac_P_ns / 3 + (-2.0 * INaCa_i + (ICab + IpCa)))))
-                / (((2.0 * F) * vmyo))
-                - (Jup * vnsr) / vmyo
-            )
-            + (Jdiff * vss) / vmyo
-        )
-    )
-    values[45] = dcai_dt
-    dnai_dt = (
-        Acap
-        * (-(Isac_P_ns / 3 + (INab + (3.0 * INaK + (3.0 * INaCa_i + (INa + INaL))))))
-    ) / ((F * vmyo)) + (JdiffNa * vss) / vmyo
-    values[46] = dnai_dt
-    dv_dt = -(
-        Isac_P_k
-        + (
-            Isac_P_ns
-            + (
-                Istim
-                + (
-                    ICab
-                    + (
-                        IpCa
-                        + (
-                            IKb
-                            + (
-                                INab
-                                + (
-                                    INaK
-                                    + (
-                                        INaCa_ss
-                                        + (
-                                            INaCa_i
-                                            + (
-                                                IK1
-                                                + (
-                                                    IKs
-                                                    + (
-                                                        IKr
-                                                        + (
-                                                            ICaK
-                                                            + (
-                                                                ICaNa
-                                                                + (
-                                                                    ICaL
-                                                                    + (
-                                                                        Ito
-                                                                        + (INa + INaL)
-                                                                    )
-                                                                )
-                                                            )
-                                                        )
-                                                    )
-                                                )
-                                            )
-                                        )
-                                    )
-                                )
-                            )
-                        )
-                    )
-                )
-            )
-        )
-    )
-    values[47] = dv_dt
-
-    return values
-
-
-def forward_generalized_rush_larsen(states, t, dt, parameters):
-    # Assign states
-    hL = states[0]
-    a = states[1]
-    ap = states[2]
-    d = states[3]
-    ff = states[4]
-    fs = states[5]
-    hf = states[6]
-    hs = states[7]
-    m = states[8]
-    xrf = states[9]
-    xrs = states[10]
-    xs1 = states[11]
-    CaMKt = states[12]
-    xk1 = states[13]
-    Zetaw = states[14]
-    XS = states[15]
-    XW = states[16]
-    TmB = states[17]
-    hLp = states[18]
-    iF = states[19]
-    iS = states[20]
-    fcaf = states[21]
-    fcas = states[22]
-    jca = states[23]
-    j = states[24]
-    fcafp = states[25]
-    ffp = states[26]
-    hsp = states[27]
-    jp = states[28]
-    mL = states[29]
-    xs2 = states[30]
-    Zetas = states[31]
-    nca = states[32]
-    CaTrpn = states[33]
-    iFp = states[34]
-    iSp = states[35]
-    cajsr = states[36]
-    cansr = states[37]
-    kss = states[38]
-    Cd = states[39]
-    Jrelnp = states[40]
-    Jrelp = states[41]
-    ki = states[42]
-    cass = states[43]
-    nass = states[44]
-    cai = states[45]
-    nai = states[46]
-    v = states[47]
-
-    # Assign parameters
-    Aff = parameters[0]
-    Ahf = parameters[1]
-    BSLmax = parameters[2]
-    BSRmax = parameters[3]
-    Beta0 = parameters[4]
-    Beta1 = parameters[5]
-    CaMKo = parameters[6]
-    Esac_ns = parameters[7]
-    F = parameters[8]
-    GKb = parameters[9]
-    GNa = parameters[10]
-    Gncx = parameters[11]
-    GpCa = parameters[12]
-    Gsac_k = parameters[13]
-    Gsac_ns = parameters[14]
-    Gto = parameters[15]
-    H = parameters[16]
-    Khp = parameters[17]
-    Kki = parameters[18]
-    Kko = parameters[19]
-    KmBSL = parameters[20]
-    KmBSR = parameters[21]
-    KmCaAct = parameters[22]
-    KmCaM = parameters[23]
-    KmCaMK = parameters[24]
-    Kmgatp = parameters[25]
-    Kmn = parameters[26]
-    Knai0 = parameters[27]
-    Knao0 = parameters[28]
-    Knap = parameters[29]
-    Kxkur = parameters[30]
-    L = parameters[31]
-    MgADP = parameters[32]
-    MgATP = parameters[33]
-    PCab = parameters[34]
-    PKNa = parameters[35]
-    PNab = parameters[36]
-    Pnak = parameters[37]
-    R = parameters[38]
-    T = parameters[39]
-    Tot_A = parameters[40]
-    Tref = parameters[41]
-    Trpn50 = parameters[42]
-    aCaMK = parameters[43]
-    amp = parameters[44]
-    bCaMK = parameters[45]
-    bt = parameters[46]
-    calib = parameters[47]
-    cao = parameters[48]
-    cat50_ref = parameters[49]
-    celltype = parameters[50]
-    cmdnmax = parameters[51]
-    csqnmax = parameters[52]
-    dLambda = parameters[53]
-    delta = parameters[54]
-    delta_epi = parameters[55]
-    duration = parameters[56]
-    eP = parameters[57]
-    emcoupling = parameters[58]
-    etal = parameters[59]
-    etas = parameters[60]
-    gammas = parameters[61]
-    gammaw = parameters[62]
-    isacs = parameters[63]
-    k1m = parameters[64]
-    k1p = parameters[65]
-    k2m = parameters[66]
-    k2n = parameters[67]
-    k2p = parameters[68]
-    k3m = parameters[69]
-    k3p = parameters[70]
-    k4m = parameters[71]
-    k4p = parameters[72]
-    kasymm = parameters[73]
-    kcaoff = parameters[74]
-    kcaon = parameters[75]
-    kmcmdn = parameters[76]
-    kmcsqn = parameters[77]
-    kmtrpn = parameters[78]
-    kna1 = parameters[79]
-    kna2 = parameters[80]
-    kna3 = parameters[81]
-    ko = parameters[82]
-    ktrpn = parameters[83]
-    ku = parameters[84]
-    kuw = parameters[85]
-    kws = parameters[86]
-    lambda_max = parameters[87]
-    lmbda = parameters[88]
-    mode = parameters[89]
-    nao = parameters[90]
-    ntm = parameters[91]
-    ntrpn = parameters[92]
-    p_a = parameters[93]
-    p_b = parameters[94]
-    p_k = parameters[95]
-    phi = parameters[96]
-    qca = parameters[97]
-    qna = parameters[98]
-    rad = parameters[99]
-    rs = parameters[100]
-    rw = parameters[101]
-    scale_HF_CaMKa = parameters[102]
-    scale_HF_GK1 = parameters[103]
-    scale_HF_GNaL = parameters[104]
-    scale_HF_Gncx = parameters[105]
-    scale_HF_Gto = parameters[106]
-    scale_HF_Jleak = parameters[107]
-    scale_HF_Jrel_inf = parameters[108]
-    scale_HF_Jup = parameters[109]
-    scale_HF_Pnak = parameters[110]
-    scale_HF_cat50_ref = parameters[111]
-    scale_HF_thL = parameters[112]
-    scale_ICaL = parameters[113]
-    scale_IK1 = parameters[114]
-    scale_IKr = parameters[115]
-    scale_IKs = parameters[116]
-    scale_INaL = parameters[117]
-    scale_drug_ICaL = parameters[118]
-    scale_drug_ICab = parameters[119]
-    scale_drug_IK1 = parameters[120]
-    scale_drug_IKb = parameters[121]
-    scale_drug_IKr = parameters[122]
-    scale_drug_IKs = parameters[123]
-    scale_drug_INa = parameters[124]
-    scale_drug_INaL = parameters[125]
-    scale_drug_INab = parameters[126]
-    scale_drug_IpCa = parameters[127]
-    scale_drug_Isack = parameters[128]
-    scale_drug_Isacns = parameters[129]
-    scale_drug_Ito = parameters[130]
-    thL = parameters[131]
-    tjca = parameters[132]
-    trpnmax = parameters[133]
-    wca = parameters[134]
-    wna = parameters[135]
-    wnaca = parameters[136]
-    zca = parameters[137]
-    zk = parameters[138]
-
-    # Assign expressions
-    values = numpy.zeros_like(states)
-    zna = 1.0
-    Isac_P_k = 0
-    Isac_P_ns = 0
-    Afcaf = 0.3 + 0.6 / (numpy.exp((v - 10.0) / 10.0) + 1.0)
-    AiF = 1.0 / (numpy.exp((v - 213.6) / 151.2) + 1.0)
-    Axrf = 1.0 / (numpy.exp((v + 54.81) / 38.21) + 1.0)
-    ass = 1.0 / (numpy.exp((-(v - 14.34)) / 14.82) + 1.0)
-    assp = 1.0 / (numpy.exp((-(v - 24.34)) / 14.82) + 1.0)
-    dss = 1.0 / (numpy.exp((-(v + 3.94)) / 4.23) + 1.0)
-    dti_develop = 1.354 + 0.0001 / (
-        numpy.exp((-(v - 12.23)) / 0.2154) + numpy.exp((v - 167.4) / 15.89)
-    )
-    dti_recover = 1.0 - 0.5 / (numpy.exp((v + 70.0) / 20.0) + 1.0)
-    fss = 1.0 / (numpy.exp((v + 19.58) / 3.696) + 1.0)
-    hLss = 1.0 / (numpy.exp((v + 87.61) / 7.488) + 1.0)
-    hLssp = 1.0 / (numpy.exp((v + 93.81) / 7.488) + 1.0)
-    hss = 1.0 / (numpy.exp((v + 78.5) / 6.22) + 1)
-    hssp = 1.0 / (numpy.exp(((v + 78.5) + 6.2) / 6.22) + 1)
-    iss = 1.0 / (numpy.exp((v + 43.94) / 5.711) + 1.0)
-    mLss = 1.0 / (numpy.exp((-(v + 42.85)) / 5.264) + 1.0)
-    mss = 1.0 / (numpy.exp((-((v + 39.57) + 9.4)) / 7.5) + 1.0)
-    rkr = (1.0 * (1.0 / (numpy.exp((v + 55.0) / 75.0) + 1.0))) / (
-        numpy.exp((v - 10.0) / 30.0) + 1.0
-    )
-    ta = 1.0515 / (
-        1.0 / ((1.2089 * (numpy.exp((-(v - 18.4099)) / 29.3814) + 1.0)))
-        + 3.5 / (numpy.exp((v + 100.0) / 29.3814) + 1.0)
-    )
-    td = 0.6 + 1.0 / (numpy.exp((-0.05) * (v + 6.0)) + numpy.exp(0.09 * (v + 14.0)))
-    tfcaf = 7.0 + 1.0 / (
-        0.04 * numpy.exp((-(v - 4.0)) / 7.0) + 0.04 * numpy.exp((v - 4.0) / 7.0)
-    )
-    tfcas = 100.0 + 1.0 / (
-        0.00012 * numpy.exp((-v) / 3.0) + 0.00012 * numpy.exp(v / 7.0)
-    )
-    tff = 7.0 + 1.0 / (
-        0.0045 * numpy.exp((-(v + 20.0)) / 10.0) + 0.0045 * numpy.exp((v + 20.0) / 10.0)
-    )
-    tfs = 1000.0 + 1.0 / (
-        3.5e-05 * numpy.exp((-(v + 5.0)) / 4.0) + 3.5e-05 * numpy.exp((v + 5.0) / 6.0)
-    )
-    thf = 1.0 / (
-        6.149 * numpy.exp((v + 0.5096) / 20.27)
-        + 1.432e-05 * numpy.exp((-(v + 1.196)) / 6.285)
-    )
-    ths = 1.0 / (
-        0.009794 * numpy.exp((-(v + 17.95)) / 28.05)
-        + 0.3343 * numpy.exp((v + 5.73) / 56.66)
-    )
-    tj = 2.038 + 1.0 / (
-        0.3052 * numpy.exp((v + 0.9941) / 38.45)
-        + 0.02136 * numpy.exp((-(v + 100.6)) / 8.281)
-    )
-    tm = 1.0 / (
-        6.765 * numpy.exp((v + 11.64) / 34.77)
-        + 8.552 * numpy.exp((-(v + 77.42)) / 5.955)
-    )
-    txk1 = 122.2 / (numpy.exp((-(v + 127.2)) / 20.36) + numpy.exp((v + 236.8) / 69.33))
-    txrf = 12.98 + 1.0 / (
-        4.123e-05 * numpy.exp((-(v - 47.78)) / 20.38)
-        + 0.3652 * numpy.exp((v - 31.66) / 3.869)
-    )
-    txrs = 1.865 + 1.0 / (
-        1.128e-05 * numpy.exp((-(v - 29.74)) / 25.94)
-        + 0.06629 * numpy.exp((v - 34.7) / 7.355)
-    )
-    txs1 = 817.3 + 1.0 / (
-        0.0002326 * numpy.exp((v + 48.28) / 17.8)
-        + 0.001292 * numpy.exp((-(v + 210.0)) / 230.0)
-    )
-    txs2 = 1.0 / (
-        0.01 * numpy.exp((v - 50.0) / 20.0) + 0.0193 * numpy.exp((-(v + 66.54)) / 31.0)
-    )
-    xkb = 1.0 / (numpy.exp((-(v - 14.48)) / 18.34) + 1.0)
-    xrss = 1.0 / (numpy.exp((-(v + 8.337)) / 6.789) + 1.0)
-    xs1ss = 1.0 / (numpy.exp((-(v + 11.6)) / 8.932) + 1.0)
-    Afs = 1.0 - Aff
-    Ageo = L * ((2 * 3.14) * rad) + rad * ((2 * 3.14) * rad)
-    vcell = L * (rad * ((3.14 * 1000) * rad))
-    Ahs = 1.0 - Ahf
-    Aw = (Tot_A * rs) / (rs + rw * (1 - rs))
-    Jupnp = (0.004375 * cai) / (cai + 0.00092)
-    Jupp = ((0.004375 * 2.75) * cai) / ((cai + 0.00092) - 0.00017)
-    KsCa = 1.0 + 0.6 / ((3.8e-05 / cai) ** 1.4 + 1.0)
-    Bcai = 1.0 / ((cmdnmax * kmcmdn) / (cai + kmcmdn) ** 2.0 + 1.0)
-    Bcajsr = 1.0 / ((csqnmax * kmcsqn) / (cajsr + kmcsqn) ** 2.0 + 1.0)
-    Jdiff = (-cai + cass) / 0.2
-    Bcass = 1.0 / (
-        (BSLmax * KmBSL) / (KmBSL + cass) ** 2.0
-        + ((BSRmax * KmBSR) / (KmBSR + cass) ** 2.0 + 1.0)
-    )
-    CaMKb = (CaMKo * (1.0 - CaMKt)) / (KmCaM / cass + 1.0)
-    CaTrpn_max = (CaTrpn) * (CaTrpn > 0) + (0) * numpy.logical_not((CaTrpn > 0))
-    vffrt = (F * (F * v)) / ((R * T))
-    vfrt = (F * v) / ((R * T))
-    EK = ((R * T) / F) * numpy.log(ko / ki)
-    rk1 = 1.0 / (numpy.exp((-2.6 * ko + (v + 105.8)) / 9.493) + 1.0)
-    xk1ss = 1.0 / (
-        numpy.exp((-((2.5538 * ko + v) + 144.59)) / (1.5692 * ko + 3.8115)) + 1.0
-    )
-    ENa = ((R * T) / F) * numpy.log(nao / nai)
-    EKs = ((R * T) / F) * numpy.log((PKNa * nao + ko) / (PKNa * nai + ki))
-    GK1 = scale_HF_GK1 * ((0.1908 * scale_IK1) * scale_drug_IK1)
-    GKr = (0.046 * scale_IKr) * scale_drug_IKr
-    GKs = (0.0034 * scale_IKs) * scale_drug_IKs
-    GNaL = scale_HF_GNaL * ((0.0075 * scale_INaL) * scale_drug_INaL)
-    km2n = 1.0 * jca
-    IpCa = (cai * (GpCa * scale_drug_IpCa)) / (cai + 0.0005)
-    Istim = (amp) * (duration >= t) + (0) * numpy.logical_not((duration >= t))
-    JdiffK = (-ki + kss) / 2.0
-    JdiffNa = (-nai + nass) / 2.0
-    Jtr = (-cajsr + cansr) / 100.0
-    Jleak = ((0.0039375 * cansr) * scale_HF_Jleak) / 15.0
-    Knai = Knai0 * numpy.exp((F * (delta * v)) / (((3.0 * R) * T)))
-    Knao = Knao0 * numpy.exp((F * (v * (1.0 - delta))) / (((3.0 * R) * T)))
-    P = eP / (((H / Khp + 1.0) + nai / Knap) + ki / Kxkur)
-    PCa = (0.0001 * scale_ICaL) * scale_drug_ICaL
-    XW_max = (XW) * (XW > 0) + (0) * numpy.logical_not((XW > 0))
-    XS_max = (XS) * (XS > 0) + (0) * numpy.logical_not((XS > 0))
-    XU = -XW + (-XS + (1 - TmB))
-    a2 = k2p
-    a4 = ((MgATP * k4p) / Kmgatp) / (1.0 + MgATP / Kmgatp)
-    a_rel = 0.5 * bt
-    btp = 1.25 * bt
-    tau_rel_tmp = bt / (1.0 + 0.0123 / cajsr)
-    allo_i = 1.0 / ((KmCaAct / cai) ** 2.0 + 1.0)
-    allo_ss = 1.0 / ((KmCaAct / cass) ** 2.0 + 1.0)
-    b1 = MgADP * k1m
-    cs = ((kws * phi) * (rw * (1 - rs))) / rs
-    ksu = (kws * rw) * (-1 + 1 / rs)
-    cw = ((kuw * phi) * ((1 - rs) * (1 - rw))) / ((rw * (1 - rs)))
-    kwu = kuw * (-1 + 1 / rw) - kws
-    gammasu = (
-        gammas * Zetas * 1 * (Zetas > 0)
-        + 0
-        * (~(Zetas > 0))
-        * numpy.logical_and.reduce(
-            (
-                numpy.logical_or((Zetas > -1), (Zetas > 0)),
-                numpy.logical_or((Zetas > 0), (Zetas < -1)),
-                numpy.logical_or.reduce(
-                    ((Zetas >= -1), (Zetas <= 0), (Zetas > -1 / 2)),
-                ),
-            ),
-        )
-        + (-Zetas - 1) * 1 * (Zetas < -1)
-        + 0
-        * (~(Zetas < -1))
-        * (
-            ~numpy.logical_and.reduce(
-                (
-                    numpy.logical_or((Zetas > -1), (Zetas > 0)),
-                    numpy.logical_or((Zetas > 0), (Zetas < -1)),
-                    numpy.logical_or.reduce(
-                        ((Zetas >= -1), (Zetas <= 0), (Zetas > -1 / 2)),
-                    ),
-                ),
-            )
-        )
-    )
-    gammawu = gammaw * numpy.abs(Zetaw)
     h10 = (nao / kna1) * (1 + nao / kna2) + (kasymm + 1.0)
     h10_i = (nao / kna1) * (1.0 + nao / kna2) + (kasymm + 1.0)
-    h4 = (nass / kna1) * (1 + nass / kna2) + 1.0
-    h4_i = (nai / kna1) * (1 + nai / kna2) + 1.0
     hca = numpy.exp((F * (qca * v)) / ((R * T)))
     hna = numpy.exp((F * (qna * v)) / ((R * T)))
     k2 = kcaoff
@@ -1744,6 +935,12 @@ def forward_generalized_rush_larsen(states, t, dt, parameters):
         * (numpy.abs(dCaMKt_dt_linearized) > 1e-08)
         + dCaMKt_dt * dt * (~(numpy.abs(dCaMKt_dt_linearized) > 1e-08))
     )
+    dxk1_dt = (-xk1 + xk1ss) / txk1
+    dxk1_dt_linearized = -1 / txk1
+    values[13] = (
+        dxk1_dt * (numpy.exp(dt * dxk1_dt_linearized) - 1) / dxk1_dt_linearized + xk1
+    )
+    IKb = (xkb * (GKb * scale_drug_IKb)) * (-EK + v)
     ICab = (
         (vffrt * (4.0 * (PCab * scale_drug_ICab)))
         * (cai * numpy.exp(2.0 * vfrt) - 0.341 * cao)
@@ -1760,12 +957,6 @@ def forward_generalized_rush_larsen(states, t, dt, parameters):
     PhiCaNa = (
         (1.0 * vffrt) * (-0.75 * nao + (0.75 * nass) * numpy.exp(1.0 * vfrt))
     ) / (numpy.exp(1.0 * vfrt) - 1.0)
-    IKb = (xkb * (GKb * scale_drug_IKb)) * (-EK + v)
-    dxk1_dt = (-xk1 + xk1ss) / txk1
-    dxk1_dt_linearized = -1 / txk1
-    values[13] = (
-        dxk1_dt * (numpy.exp(dt * dxk1_dt_linearized) - 1) / dxk1_dt_linearized + xk1
-    )
     IK1 = (xk1 * (rk1 * (GK1 * math.sqrt(ko)))) * (-EK + v)
     IKs = (xs2 * (xs1 * (GKs * KsCa))) * (-EKs + v)
     anca = 1.0 / (k2n / km2n + (Kmn / cass + 1.0) ** 4.0)
@@ -1810,6 +1001,7 @@ def forward_generalized_rush_larsen(states, t, dt, parameters):
         * (numpy.abs(dXS_dt_linearized) > 1e-08)
         + dXS_dt * dt * (~(numpy.abs(dXS_dt_linearized) > 1e-08))
     )
+
     dXW_dt = -XW * gammawu + (-XW * kws + (XU * kuw - XW * kwu))
     dXW_dt_linearized = -gammawu - kws - kwu
     values[16] = (
@@ -1820,23 +1012,27 @@ def forward_generalized_rush_larsen(states, t, dt, parameters):
         * (numpy.abs(dXW_dt_linearized) > 1e-08)
         + dXW_dt * dt * (~(numpy.abs(dXW_dt_linearized) > 1e-08))
     )
-    h11 = (nao * nao) / ((kna2 * (h10 * kna1)))
-    h12 = 1.0 / h10
-    h11_i = (nao * nao) / ((kna2 * (h10_i * kna1)))
-    h12_i = 1.0 / h10_i
     h5 = (nass * nass) / ((kna2 * (h4 * kna1)))
     h6 = 1.0 / h4
     h5_i = (nai * nai) / ((kna2 * (h4_i * kna1)))
     h6_i = 1.0 / h4_i
+    h11 = (nao * nao) / ((kna2 * (h10 * kna1)))
+    h12 = 1.0 / h10
+    h11_i = (nao * nao) / ((kna2 * (h10_i * kna1)))
+    h12_i = 1.0 / h10_i
     h1 = (nass / kna3) * (hna + 1) + 1
     h1_i = (nai / kna3) * (hna + 1) + 1
     h7 = (nao / kna3) * (1.0 + 1.0 / hna) + 1.0
     h7_i = (nao / kna3) * (1.0 + 1.0 / hna) + 1.0
     dTmB_dt = -TmB * CaTrpn ** (ntm / 2) * ku + XU * (
-        kb * CaTrpn ** ((-ntm) / 2) * (CaTrpn ** ((-ntm) / 2) < 100)
-        + 100 * (~(CaTrpn ** ((-ntm) / 2) < 100))
+        kb
+        * numpy.where((CaTrpn ** (-1 / 2 * ntm) < 100), CaTrpn ** (-1 / 2 * ntm), 100)
     )
-    dTmB_dt_linearized = -(CaTrpn ** (ntm / 2)) * ku
+    dTmB_dt_linearized = numpy.where(
+        numpy.isclose(CaTrpn, 0),
+        0,
+        -(CaTrpn ** (ntm / 2)) * ku,
+    )
     values[17] = (
         TmB
         + dTmB_dt
@@ -1958,10 +1154,10 @@ def forward_generalized_rush_larsen(states, t, dt, parameters):
     tau_relp = (0.001) * (tau_relp_tmp < 0.001) + (tau_relp_tmp) * numpy.logical_not(
         (tau_relp_tmp < 0.001),
     )
-    k1 = kcaon * (cao * h12)
-    k1_i = kcaon * (cao * h12_i)
     k6 = kcaon * (cass * h6)
     k6_i = kcaon * (cai * h6_i)
+    k1 = kcaon * (cao * h12)
+    k1_i = kcaon * (cao * h12_i)
     h2 = (hna * nass) / ((h1 * kna3))
     h3 = 1.0 / h1
     h2_i = (hna * nai) / ((h1_i * kna3))
@@ -1970,7 +1166,7 @@ def forward_generalized_rush_larsen(states, t, dt, parameters):
     h9 = 1.0 / h7
     h8_i = nao / ((h7_i * (hna * kna3)))
     h9_i = 1.0 / h7_i
-    F1 = numpy.exp(C * p_b) - 1
+    # F1 = numpy.exp(C * p_b) - 1
     dCd = C - Cd
     dCaTrpn_dt = ktrpn * (-CaTrpn + ((1000 * cai) / cat50) ** ntrpn * (1 - CaTrpn))
     dCaTrpn_dt_linearized = ktrpn * (-(((1000 * cai) / cat50) ** ntrpn) - 1)
@@ -1982,7 +1178,7 @@ def forward_generalized_rush_larsen(states, t, dt, parameters):
         * (numpy.abs(dCaTrpn_dt_linearized) > 1e-08)
         + dCaTrpn_dt * dt * (~(numpy.abs(dCaTrpn_dt_linearized) > 1e-08))
     )
-    h_lambda_prima = Beta0 * ((lambda_min087 + lambda_min12) - 1.87) + 1
+    # h_lambda_prima = Beta0 * ((lambda_min087 + lambda_min12) - 1.87) + 1
     diFp_dt = (-iFp + iss) / tiFp
     diFp_dt_linearized = -1 / tiFp
     values[34] = (
@@ -2030,9 +1226,9 @@ def forward_generalized_rush_larsen(states, t, dt, parameters):
     k3p_i = h9_i * wca
     eta = (etas) * (dCd < 0) + (etal) * numpy.logical_not((dCd < 0))
     J_TRPN = dCaTrpn_dt * trpnmax
-    h_lambda = (h_lambda_prima) * (h_lambda_prima > 0) + (0) * numpy.logical_not(
-        (h_lambda_prima > 0),
-    )
+    # h_lambda = (h_lambda_prima) * (h_lambda_prima > 0) + (0) * numpy.logical_not(
+    #     (h_lambda_prima > 0),
+    # )
     Jrel_inf = ((-ICaL) * a_rel) / (((1.5 * scale_HF_Jrel_inf) / cajsr) ** 8.0 + 1.0)
     Jrel_infp = ((-ICaL) * a_relp) / (((1.5 * scale_HF_Jrel_inf) / cajsr) ** 8.0 + 1.0)
     dcajsr_dt = Bcajsr * (-Jrel + Jtr)
@@ -2047,7 +1243,7 @@ def forward_generalized_rush_larsen(states, t, dt, parameters):
     k4_i = k4p_i + k4pp_i
     k3 = k3p_ss + k3pp
     k3_i = k3p_i + k3pp_i
-    Fd = dCd * eta
+    # Fd = dCd * eta
     dCd_dt = (p_k * (C - Cd)) / eta
     dCd_dt_linearized = -p_k / eta
     values[39] = (
@@ -2058,7 +1254,7 @@ def forward_generalized_rush_larsen(states, t, dt, parameters):
         * (numpy.abs(dCd_dt_linearized) > 1e-08)
         + dCd_dt * dt * (~(numpy.abs(dCd_dt_linearized) > 1e-08))
     )
-    Ta = (h_lambda * (Tref / rs)) * (XS * (Zetas + 1) + XW * Zetaw)
+    # Ta = (h_lambda * (Tref / rs)) * (XS * (Zetas + 1) + XW * Zetaw)
     dJrelnp_dt = (Jrel_inf - Jrelnp) / tau_rel
     dJrelnp_dt_linearized = -1 / tau_rel
     values[40] = (
@@ -2082,7 +1278,7 @@ def forward_generalized_rush_larsen(states, t, dt, parameters):
     x1_i = (k2_i * k4_i) * (k6_i + k7_i) + (k5_i * k7_i) * (k2_i + k3_i)
     x3_i = (k1_i * k3_i) * (k6_i + k7_i) + (k6_i * k8_i) * (k2_i + k3_i)
     x4_i = (k2_i * k8_i) * (k4_i + k5_i) + (k3_i * k5_i) * (k1_i + k8_i)
-    Tp = p_a * (F1 + Fd)
+    # Tp = p_a * (F1 + Fd)
     dki_dt = (
         Acap
         * (
@@ -2104,7 +1300,6 @@ def forward_generalized_rush_larsen(states, t, dt, parameters):
     E2_i = x2_i / (x4_i + (x3_i + (x1_i + x2_i)))
     E3_i = x3_i / (x4_i + (x3_i + (x1_i + x2_i)))
     E4_i = x4_i / (x4_i + (x3_i + (x1_i + x2_i)))
-    Ttot = Ta + Tp
     JncxCa_ss = -E1_ss * k1 + E2_ss * k2
     JncxNa_ss = -E2_ss * k3pp + (E3_ss * k4pp + 3.0 * (-E1_ss * k8 + E4_ss * k7))
     JncxCa_i = -E1_i * k1_i + E2_i * k2_i
@@ -2196,777 +1391,7 @@ def forward_generalized_rush_larsen(states, t, dt, parameters):
     )
     values[47] = dt * dv_dt + v
 
-    return values
-
-
-def forward_explicit_euler(states, t, dt, parameters):
-    # Assign states
-    hL = states[0]
-    a = states[1]
-    ap = states[2]
-    d = states[3]
-    ff = states[4]
-    fs = states[5]
-    hf = states[6]
-    hs = states[7]
-    m = states[8]
-    xrf = states[9]
-    xrs = states[10]
-    xs1 = states[11]
-    CaMKt = states[12]
-    xk1 = states[13]
-    Zetaw = states[14]
-    XS = states[15]
-    XW = states[16]
-    TmB = states[17]
-    hLp = states[18]
-    iF = states[19]
-    iS = states[20]
-    fcaf = states[21]
-    fcas = states[22]
-    jca = states[23]
-    j = states[24]
-    fcafp = states[25]
-    ffp = states[26]
-    hsp = states[27]
-    jp = states[28]
-    mL = states[29]
-    xs2 = states[30]
-    Zetas = states[31]
-    nca = states[32]
-    CaTrpn = states[33]
-    iFp = states[34]
-    iSp = states[35]
-    cajsr = states[36]
-    cansr = states[37]
-    kss = states[38]
-    Cd = states[39]
-    Jrelnp = states[40]
-    Jrelp = states[41]
-    ki = states[42]
-    cass = states[43]
-    nass = states[44]
-    cai = states[45]
-    nai = states[46]
-    v = states[47]
-
-    # Assign parameters
-    Aff = parameters[0]
-    Ahf = parameters[1]
-    BSLmax = parameters[2]
-    BSRmax = parameters[3]
-    Beta0 = parameters[4]
-    Beta1 = parameters[5]
-    CaMKo = parameters[6]
-    Esac_ns = parameters[7]
-    F = parameters[8]
-    GKb = parameters[9]
-    GNa = parameters[10]
-    Gncx = parameters[11]
-    GpCa = parameters[12]
-    Gsac_k = parameters[13]
-    Gsac_ns = parameters[14]
-    Gto = parameters[15]
-    H = parameters[16]
-    Khp = parameters[17]
-    Kki = parameters[18]
-    Kko = parameters[19]
-    KmBSL = parameters[20]
-    KmBSR = parameters[21]
-    KmCaAct = parameters[22]
-    KmCaM = parameters[23]
-    KmCaMK = parameters[24]
-    Kmgatp = parameters[25]
-    Kmn = parameters[26]
-    Knai0 = parameters[27]
-    Knao0 = parameters[28]
-    Knap = parameters[29]
-    Kxkur = parameters[30]
-    L = parameters[31]
-    MgADP = parameters[32]
-    MgATP = parameters[33]
-    PCab = parameters[34]
-    PKNa = parameters[35]
-    PNab = parameters[36]
-    Pnak = parameters[37]
-    R = parameters[38]
-    T = parameters[39]
-    Tot_A = parameters[40]
-    Tref = parameters[41]
-    Trpn50 = parameters[42]
-    aCaMK = parameters[43]
-    amp = parameters[44]
-    bCaMK = parameters[45]
-    bt = parameters[46]
-    calib = parameters[47]
-    cao = parameters[48]
-    cat50_ref = parameters[49]
-    celltype = parameters[50]
-    cmdnmax = parameters[51]
-    csqnmax = parameters[52]
-    dLambda = parameters[53]
-    delta = parameters[54]
-    delta_epi = parameters[55]
-    duration = parameters[56]
-    eP = parameters[57]
-    emcoupling = parameters[58]
-    etal = parameters[59]
-    etas = parameters[60]
-    gammas = parameters[61]
-    gammaw = parameters[62]
-    isacs = parameters[63]
-    k1m = parameters[64]
-    k1p = parameters[65]
-    k2m = parameters[66]
-    k2n = parameters[67]
-    k2p = parameters[68]
-    k3m = parameters[69]
-    k3p = parameters[70]
-    k4m = parameters[71]
-    k4p = parameters[72]
-    kasymm = parameters[73]
-    kcaoff = parameters[74]
-    kcaon = parameters[75]
-    kmcmdn = parameters[76]
-    kmcsqn = parameters[77]
-    kmtrpn = parameters[78]
-    kna1 = parameters[79]
-    kna2 = parameters[80]
-    kna3 = parameters[81]
-    ko = parameters[82]
-    ktrpn = parameters[83]
-    ku = parameters[84]
-    kuw = parameters[85]
-    kws = parameters[86]
-    lambda_max = parameters[87]
-    lmbda = parameters[88]
-    mode = parameters[89]
-    nao = parameters[90]
-    ntm = parameters[91]
-    ntrpn = parameters[92]
-    p_a = parameters[93]
-    p_b = parameters[94]
-    p_k = parameters[95]
-    phi = parameters[96]
-    qca = parameters[97]
-    qna = parameters[98]
-    rad = parameters[99]
-    rs = parameters[100]
-    rw = parameters[101]
-    scale_HF_CaMKa = parameters[102]
-    scale_HF_GK1 = parameters[103]
-    scale_HF_GNaL = parameters[104]
-    scale_HF_Gncx = parameters[105]
-    scale_HF_Gto = parameters[106]
-    scale_HF_Jleak = parameters[107]
-    scale_HF_Jrel_inf = parameters[108]
-    scale_HF_Jup = parameters[109]
-    scale_HF_Pnak = parameters[110]
-    scale_HF_cat50_ref = parameters[111]
-    scale_HF_thL = parameters[112]
-    scale_ICaL = parameters[113]
-    scale_IK1 = parameters[114]
-    scale_IKr = parameters[115]
-    scale_IKs = parameters[116]
-    scale_INaL = parameters[117]
-    scale_drug_ICaL = parameters[118]
-    scale_drug_ICab = parameters[119]
-    scale_drug_IK1 = parameters[120]
-    scale_drug_IKb = parameters[121]
-    scale_drug_IKr = parameters[122]
-    scale_drug_IKs = parameters[123]
-    scale_drug_INa = parameters[124]
-    scale_drug_INaL = parameters[125]
-    scale_drug_INab = parameters[126]
-    scale_drug_IpCa = parameters[127]
-    scale_drug_Isack = parameters[128]
-    scale_drug_Isacns = parameters[129]
-    scale_drug_Ito = parameters[130]
-    thL = parameters[131]
-    tjca = parameters[132]
-    trpnmax = parameters[133]
-    wca = parameters[134]
-    wna = parameters[135]
-    wnaca = parameters[136]
-    zca = parameters[137]
-    zk = parameters[138]
-
-    # Assign expressions
-    values = numpy.zeros_like(states)
-    zna = 1.0
-    Isac_P_k = 0
-    Isac_P_ns = 0
-    Afcaf = 0.3 + 0.6 / (numpy.exp((v - 10.0) / 10.0) + 1.0)
-    AiF = 1.0 / (numpy.exp((v - 213.6) / 151.2) + 1.0)
-    Axrf = 1.0 / (numpy.exp((v + 54.81) / 38.21) + 1.0)
-    ass = 1.0 / (numpy.exp((-(v - 14.34)) / 14.82) + 1.0)
-    assp = 1.0 / (numpy.exp((-(v - 24.34)) / 14.82) + 1.0)
-    dss = 1.0 / (numpy.exp((-(v + 3.94)) / 4.23) + 1.0)
-    dti_develop = 1.354 + 0.0001 / (
-        numpy.exp((-(v - 12.23)) / 0.2154) + numpy.exp((v - 167.4) / 15.89)
-    )
-    dti_recover = 1.0 - 0.5 / (numpy.exp((v + 70.0) / 20.0) + 1.0)
-    fss = 1.0 / (numpy.exp((v + 19.58) / 3.696) + 1.0)
-    hLss = 1.0 / (numpy.exp((v + 87.61) / 7.488) + 1.0)
-    hLssp = 1.0 / (numpy.exp((v + 93.81) / 7.488) + 1.0)
-    hss = 1.0 / (numpy.exp((v + 78.5) / 6.22) + 1)
-    hssp = 1.0 / (numpy.exp(((v + 78.5) + 6.2) / 6.22) + 1)
-    iss = 1.0 / (numpy.exp((v + 43.94) / 5.711) + 1.0)
-    mLss = 1.0 / (numpy.exp((-(v + 42.85)) / 5.264) + 1.0)
-    mss = 1.0 / (numpy.exp((-((v + 39.57) + 9.4)) / 7.5) + 1.0)
-    rkr = (1.0 * (1.0 / (numpy.exp((v + 55.0) / 75.0) + 1.0))) / (
-        numpy.exp((v - 10.0) / 30.0) + 1.0
-    )
-    ta = 1.0515 / (
-        1.0 / ((1.2089 * (numpy.exp((-(v - 18.4099)) / 29.3814) + 1.0)))
-        + 3.5 / (numpy.exp((v + 100.0) / 29.3814) + 1.0)
-    )
-    td = 0.6 + 1.0 / (numpy.exp((-0.05) * (v + 6.0)) + numpy.exp(0.09 * (v + 14.0)))
-    tfcaf = 7.0 + 1.0 / (
-        0.04 * numpy.exp((-(v - 4.0)) / 7.0) + 0.04 * numpy.exp((v - 4.0) / 7.0)
-    )
-    tfcas = 100.0 + 1.0 / (
-        0.00012 * numpy.exp((-v) / 3.0) + 0.00012 * numpy.exp(v / 7.0)
-    )
-    tff = 7.0 + 1.0 / (
-        0.0045 * numpy.exp((-(v + 20.0)) / 10.0) + 0.0045 * numpy.exp((v + 20.0) / 10.0)
-    )
-    tfs = 1000.0 + 1.0 / (
-        3.5e-05 * numpy.exp((-(v + 5.0)) / 4.0) + 3.5e-05 * numpy.exp((v + 5.0) / 6.0)
-    )
-    thf = 1.0 / (
-        6.149 * numpy.exp((v + 0.5096) / 20.27)
-        + 1.432e-05 * numpy.exp((-(v + 1.196)) / 6.285)
-    )
-    ths = 1.0 / (
-        0.009794 * numpy.exp((-(v + 17.95)) / 28.05)
-        + 0.3343 * numpy.exp((v + 5.73) / 56.66)
-    )
-    tj = 2.038 + 1.0 / (
-        0.3052 * numpy.exp((v + 0.9941) / 38.45)
-        + 0.02136 * numpy.exp((-(v + 100.6)) / 8.281)
-    )
-    tm = 1.0 / (
-        6.765 * numpy.exp((v + 11.64) / 34.77)
-        + 8.552 * numpy.exp((-(v + 77.42)) / 5.955)
-    )
-    txk1 = 122.2 / (numpy.exp((-(v + 127.2)) / 20.36) + numpy.exp((v + 236.8) / 69.33))
-    txrf = 12.98 + 1.0 / (
-        4.123e-05 * numpy.exp((-(v - 47.78)) / 20.38)
-        + 0.3652 * numpy.exp((v - 31.66) / 3.869)
-    )
-    txrs = 1.865 + 1.0 / (
-        1.128e-05 * numpy.exp((-(v - 29.74)) / 25.94)
-        + 0.06629 * numpy.exp((v - 34.7) / 7.355)
-    )
-    txs1 = 817.3 + 1.0 / (
-        0.0002326 * numpy.exp((v + 48.28) / 17.8)
-        + 0.001292 * numpy.exp((-(v + 210.0)) / 230.0)
-    )
-    txs2 = 1.0 / (
-        0.01 * numpy.exp((v - 50.0) / 20.0) + 0.0193 * numpy.exp((-(v + 66.54)) / 31.0)
-    )
-    xkb = 1.0 / (numpy.exp((-(v - 14.48)) / 18.34) + 1.0)
-    xrss = 1.0 / (numpy.exp((-(v + 8.337)) / 6.789) + 1.0)
-    xs1ss = 1.0 / (numpy.exp((-(v + 11.6)) / 8.932) + 1.0)
-    Afs = 1.0 - Aff
-    Ageo = L * ((2 * 3.14) * rad) + rad * ((2 * 3.14) * rad)
-    vcell = L * (rad * ((3.14 * 1000) * rad))
-    Ahs = 1.0 - Ahf
-    Aw = (Tot_A * rs) / (rs + rw * (1 - rs))
-    Jupnp = (0.004375 * cai) / (cai + 0.00092)
-    Jupp = ((0.004375 * 2.75) * cai) / ((cai + 0.00092) - 0.00017)
-    KsCa = 1.0 + 0.6 / ((3.8e-05 / cai) ** 1.4 + 1.0)
-    Bcai = 1.0 / ((cmdnmax * kmcmdn) / (cai + kmcmdn) ** 2.0 + 1.0)
-    Bcajsr = 1.0 / ((csqnmax * kmcsqn) / (cajsr + kmcsqn) ** 2.0 + 1.0)
-    Jdiff = (-cai + cass) / 0.2
-    Bcass = 1.0 / (
-        (BSLmax * KmBSL) / (KmBSL + cass) ** 2.0
-        + ((BSRmax * KmBSR) / (KmBSR + cass) ** 2.0 + 1.0)
-    )
-    CaMKb = (CaMKo * (1.0 - CaMKt)) / (KmCaM / cass + 1.0)
-    CaTrpn_max = (CaTrpn) * (CaTrpn > 0) + (0) * numpy.logical_not((CaTrpn > 0))
-    vffrt = (F * (F * v)) / ((R * T))
-    vfrt = (F * v) / ((R * T))
-    EK = ((R * T) / F) * numpy.log(ko / ki)
-    rk1 = 1.0 / (numpy.exp((-2.6 * ko + (v + 105.8)) / 9.493) + 1.0)
-    xk1ss = 1.0 / (
-        numpy.exp((-((2.5538 * ko + v) + 144.59)) / (1.5692 * ko + 3.8115)) + 1.0
-    )
-    ENa = ((R * T) / F) * numpy.log(nao / nai)
-    EKs = ((R * T) / F) * numpy.log((PKNa * nao + ko) / (PKNa * nai + ki))
-    GK1 = scale_HF_GK1 * ((0.1908 * scale_IK1) * scale_drug_IK1)
-    GKr = (0.046 * scale_IKr) * scale_drug_IKr
-    GKs = (0.0034 * scale_IKs) * scale_drug_IKs
-    GNaL = scale_HF_GNaL * ((0.0075 * scale_INaL) * scale_drug_INaL)
-    km2n = 1.0 * jca
-    IpCa = (cai * (GpCa * scale_drug_IpCa)) / (cai + 0.0005)
-    Istim = (amp) * (duration >= t) + (0) * numpy.logical_not((duration >= t))
-    JdiffK = (-ki + kss) / 2.0
-    JdiffNa = (-nai + nass) / 2.0
-    Jtr = (-cajsr + cansr) / 100.0
-    Jleak = ((0.0039375 * cansr) * scale_HF_Jleak) / 15.0
-    Knai = Knai0 * numpy.exp((F * (delta * v)) / (((3.0 * R) * T)))
-    Knao = Knao0 * numpy.exp((F * (v * (1.0 - delta))) / (((3.0 * R) * T)))
-    P = eP / (((H / Khp + 1.0) + nai / Knap) + ki / Kxkur)
-    PCa = (0.0001 * scale_ICaL) * scale_drug_ICaL
-    XW_max = (XW) * (XW > 0) + (0) * numpy.logical_not((XW > 0))
-    XS_max = (XS) * (XS > 0) + (0) * numpy.logical_not((XS > 0))
-    XU = -XW + (-XS + (1 - TmB))
-    a2 = k2p
-    a4 = ((MgATP * k4p) / Kmgatp) / (1.0 + MgATP / Kmgatp)
-    a_rel = 0.5 * bt
-    btp = 1.25 * bt
-    tau_rel_tmp = bt / (1.0 + 0.0123 / cajsr)
-    allo_i = 1.0 / ((KmCaAct / cai) ** 2.0 + 1.0)
-    allo_ss = 1.0 / ((KmCaAct / cass) ** 2.0 + 1.0)
-    b1 = MgADP * k1m
-    cs = ((kws * phi) * (rw * (1 - rs))) / rs
-    ksu = (kws * rw) * (-1 + 1 / rs)
-    cw = ((kuw * phi) * ((1 - rs) * (1 - rw))) / ((rw * (1 - rs)))
-    kwu = kuw * (-1 + 1 / rw) - kws
-    gammasu = (
-        gammas * Zetas * 1 * (Zetas > 0)
-        + 0
-        * (~(Zetas > 0))
-        * numpy.logical_and.reduce(
-            (
-                numpy.logical_or((Zetas > -1), (Zetas > 0)),
-                numpy.logical_or((Zetas > 0), (Zetas < -1)),
-                numpy.logical_or.reduce(
-                    ((Zetas >= -1), (Zetas <= 0), (Zetas > -1 / 2)),
-                ),
-            ),
-        )
-        + (-Zetas - 1) * 1 * (Zetas < -1)
-        + 0
-        * (~(Zetas < -1))
-        * (
-            ~numpy.logical_and.reduce(
-                (
-                    numpy.logical_or((Zetas > -1), (Zetas > 0)),
-                    numpy.logical_or((Zetas > 0), (Zetas < -1)),
-                    numpy.logical_or.reduce(
-                        ((Zetas >= -1), (Zetas <= 0), (Zetas > -1 / 2)),
-                    ),
-                ),
-            )
-        )
-    )
-    gammawu = gammaw * numpy.abs(Zetaw)
-    h10 = (nao / kna1) * (1 + nao / kna2) + (kasymm + 1.0)
-    h10_i = (nao / kna1) * (1.0 + nao / kna2) + (kasymm + 1.0)
-    h4 = (nass / kna1) * (1 + nass / kna2) + 1.0
-    h4_i = (nai / kna1) * (1 + nai / kna2) + 1.0
-    hca = numpy.exp((F * (qca * v)) / ((R * T)))
-    hna = numpy.exp((F * (qna * v)) / ((R * T)))
-    k2 = kcaoff
-    k2_i = kcaoff
-    k5 = kcaoff
-    k5_i = kcaoff
-    kb = (Trpn50**ntm * ku) / (-rw * (1 - rs) + (1 - rs))
-    lambda_min12 = (lmbda) * (lmbda < 1.2) + (1.2) * numpy.logical_not((lmbda < 1.2))
-    thLp = scale_HF_thL * (3.0 * thL)
-    tiF = (
-        delta_epi
-        * (
-            1
-            / (
-                0.3933 * numpy.exp((-(v + 100.0)) / 100.0)
-                + 0.08004 * numpy.exp((v + 50.0) / 16.59)
-            )
-        )
-        + 4.562
-    )
-    tiS = (
-        delta_epi
-        * (
-            1
-            / (
-                0.001416 * numpy.exp((-(v + 96.52)) / 59.05)
-                + 1.78e-08 * numpy.exp((v + 114.1) / 8.079)
-            )
-        )
-        + 23.62
-    )
-    Afcas = 1.0 - Afcaf
-    AiS = 1.0 - AiF
-    Axrs = 1.0 - Axrf
-    fcass = fss
-    dhL_dt = (-hL + hLss) / ((scale_HF_thL * thL))
-    values[0] = dhL_dt * dt + hL
-    jss = hss
-    da_dt = (-a + ass) / ta
-    values[1] = a + da_dt * dt
-    dap_dt = (-ap + assp) / ta
-    values[2] = ap + dap_dt * dt
-    dd_dt = (-d + dss) / td
-    values[3] = d + dd_dt * dt
-    tfcafp = 2.5 * tfcaf
-    tffp = 2.5 * tff
-    dff_dt = (-ff + fss) / tff
-    values[4] = dff_dt * dt + ff
-    dfs_dt = (-fs + fss) / tfs
-    values[5] = dfs_dt * dt + fs
-    dhf_dt = (-hf + hss) / thf
-    values[6] = dhf_dt * dt + hf
-    thsp = 3.0 * ths
-    dhs_dt = (-hs + hss) / ths
-    values[7] = dhs_dt * dt + hs
-    tjp = 1.46 * tj
-    tmL = tm
-    dm_dt = (-m + mss) / tm
-    values[8] = dm_dt * dt + m
-    dxrf_dt = (-xrf + xrss) / txrf
-    values[9] = dt * dxrf_dt + xrf
-    dxrs_dt = (-xrs + xrss) / txrs
-    values[10] = dt * dxrs_dt + xrs
-    xs2ss = xs1ss
-    dxs1_dt = (-xs1 + xs1ss) / txs1
-    values[11] = dt * dxs1_dt + xs1
-    f = Aff * ff + Afs * fs
-    fp = Aff * ffp + Afs * fs
-    Acap = 2 * Ageo
-    vjsr = 0.0048 * vcell
-    vmyo = 0.68 * vcell
-    vnsr = 0.0552 * vcell
-    vss = 0.02 * vcell
-    h = Ahf * hf + Ahs * hs
-    hp = Ahf * hf + Ahs * hsp
-    As = Aw
-    CaMKa = scale_HF_CaMKa * (CaMKb + CaMKt)
-    dCaMKt_dt = -CaMKt * bCaMK + (CaMKb * aCaMK) * (CaMKb + CaMKt)
-    values[12] = CaMKt + dCaMKt_dt * dt
-    ICab = (
-        (vffrt * (4.0 * (PCab * scale_drug_ICab)))
-        * (cai * numpy.exp(2.0 * vfrt) - 0.341 * cao)
-    ) / (numpy.exp(2.0 * vfrt) - 1.0)
-    INab = ((vffrt * (PNab * scale_drug_INab)) * (nai * numpy.exp(vfrt) - nao)) / (
-        numpy.exp(vfrt) - 1.0
-    )
-    PhiCaK = ((1.0 * vffrt) * (-0.75 * ko + (0.75 * kss) * numpy.exp(1.0 * vfrt))) / (
-        numpy.exp(1.0 * vfrt) - 1.0
-    )
-    PhiCaL = ((4.0 * vffrt) * (-0.341 * cao + cass * numpy.exp(2.0 * vfrt))) / (
-        numpy.exp(2.0 * vfrt) - 1.0
-    )
-    PhiCaNa = (
-        (1.0 * vffrt) * (-0.75 * nao + (0.75 * nass) * numpy.exp(1.0 * vfrt))
-    ) / (numpy.exp(1.0 * vfrt) - 1.0)
-    IKb = (xkb * (GKb * scale_drug_IKb)) * (-EK + v)
-    dxk1_dt = (-xk1 + xk1ss) / txk1
-    values[13] = dt * dxk1_dt + xk1
-    IK1 = (xk1 * (rk1 * (GK1 * math.sqrt(ko)))) * (-EK + v)
-    IKs = (xs2 * (xs1 * (GKs * KsCa))) * (-EKs + v)
-    anca = 1.0 / (k2n / km2n + (Kmn / cass + 1.0) ** 4.0)
-    a1 = (k1p * (nai / Knai) ** 3.0) / (
-        ((1.0 + ki / Kki) ** 2.0 + (1.0 + nai / Knai) ** 3.0) - 1.0
-    )
-    b4 = (k4m * (ki / Kki) ** 2.0) / (
-        ((1.0 + ki / Kki) ** 2.0 + (1.0 + nai / Knai) ** 3.0) - 1.0
-    )
-    a3 = (k3p * (ko / Kko) ** 2.0) / (
-        ((1.0 + ko / Kko) ** 2.0 + (1.0 + nao / Knao) ** 3.0) - 1.0
-    )
-    b2 = (k2m * (nao / Knao) ** 3.0) / (
-        ((1.0 + ko / Kko) ** 2.0 + (1.0 + nao / Knao) ** 3.0) - 1.0
-    )
-    b3 = (H * (P * k3m)) / (1.0 + MgATP / Kmgatp)
-    PCaK = 0.0003574 * PCa
-    PCaNa = 0.00125 * PCa
-    PCap = 1.1 * PCa
-    a_relp = 0.5 * btp
-    tau_relp_tmp = btp / (1.0 + 0.0123 / cajsr)
-    tau_rel = (0.001) * (tau_rel_tmp < 0.001) + (tau_rel_tmp) * numpy.logical_not(
-        (tau_rel_tmp < 0.001),
-    )
-    dZetaw_dt = Aw * dLambda - Zetaw * cw
-    values[14] = Zetaw + dZetaw_dt * dt
-    dXS_dt = -XS * gammasu + (-XS * ksu + XW * kws)
-    values[15] = XS + dXS_dt * dt
-    dXW_dt = -XW * gammawu + (-XW * kws + (XU * kuw - XW * kwu))
-    values[16] = XW + dXW_dt * dt
-    h11 = (nao * nao) / ((kna2 * (h10 * kna1)))
-    h12 = 1.0 / h10
-    h11_i = (nao * nao) / ((kna2 * (h10_i * kna1)))
-    h12_i = 1.0 / h10_i
-    h5 = (nass * nass) / ((kna2 * (h4 * kna1)))
-    h6 = 1.0 / h4
-    h5_i = (nai * nai) / ((kna2 * (h4_i * kna1)))
-    h6_i = 1.0 / h4_i
-    h1 = (nass / kna3) * (hna + 1) + 1
-    h1_i = (nai / kna3) * (hna + 1) + 1
-    h7 = (nao / kna3) * (1.0 + 1.0 / hna) + 1.0
-    h7_i = (nao / kna3) * (1.0 + 1.0 / hna) + 1.0
-    dTmB_dt = -TmB * CaTrpn ** (ntm / 2) * ku + XU * (
-        kb * CaTrpn ** ((-ntm) / 2) * (CaTrpn ** ((-ntm) / 2) < 100)
-        + 100 * (~(CaTrpn ** ((-ntm) / 2) < 100))
-    )
-    values[17] = TmB + dTmB_dt * dt
-    C = lambda_min12 - 1
-    cat50 = scale_HF_cat50_ref * (Beta1 * (lambda_min12 - 1) + cat50_ref)
-    lambda_min087 = (lambda_min12) * (lambda_min12 < 0.87) + (0.87) * numpy.logical_not(
-        (lambda_min12 < 0.87),
-    )
-    dhLp_dt = (-hLp + hLssp) / thLp
-    values[18] = dhLp_dt * dt + hLp
-    tiFp = tiF * (dti_develop * dti_recover)
-    diF_dt = (-iF + iss) / tiF
-    values[19] = diF_dt * dt + iF
-    tiSp = tiS * (dti_develop * dti_recover)
-    diS_dt = (-iS + iss) / tiS
-    values[20] = diS_dt * dt + iS
-    fca = Afcaf * fcaf + Afcas * fcas
-    fcap = Afcaf * fcafp + Afcas * fcas
-    i = AiF * iF + AiS * iS
-    ip = AiF * iFp + AiS * iSp
-    xr = Axrf * xrf + Axrs * xrs
-    dfcaf_dt = (-fcaf + fcass) / tfcaf
-    values[21] = dfcaf_dt * dt + fcaf
-    dfcas_dt = (-fcas + fcass) / tfcas
-    values[22] = dfcas_dt * dt + fcas
-    djca_dt = (fcass - jca) / tjca
-    values[23] = djca_dt * dt + jca
-    dj_dt = (-j + jss) / tj
-    values[24] = dj_dt * dt + j
-    dfcafp_dt = (-fcafp + fcass) / tfcafp
-    values[25] = dfcafp_dt * dt + fcafp
-    dffp_dt = (-ffp + fss) / tffp
-    values[26] = dffp_dt * dt + ffp
-    dhsp_dt = (-hsp + hssp) / thsp
-    values[27] = dhsp_dt * dt + hsp
-    djp_dt = (-jp + jss) / tjp
-    values[28] = djp_dt * dt + jp
-    dmL_dt = (-mL + mLss) / tmL
-    values[29] = dmL_dt * dt + mL
-    dxs2_dt = (-xs2 + xs2ss) / txs2
-    values[30] = dt * dxs2_dt + xs2
-    dZetas_dt = As * dLambda - Zetas * cs
-    values[31] = Zetas + dZetas_dt * dt
-    fICaLp = 1.0 / (1.0 + KmCaMK / CaMKa)
-    fINaLp = 1.0 / (1.0 + KmCaMK / CaMKa)
-    fINap = 1.0 / (1.0 + KmCaMK / CaMKa)
-    fItop = 1.0 / (1.0 + KmCaMK / CaMKa)
-    fJrelp = 1.0 / (1.0 + KmCaMK / CaMKa)
-    fJupp = 1.0 / (1.0 + KmCaMK / CaMKa)
-    dnca_dt = anca * k2n - km2n * nca
-    values[32] = dnca_dt * dt + nca
-    x2 = b4 * (a2 * a3) + (b4 * (a3 * b1) + (a3 * (a1 * a2) + b4 * (b1 * b2)))
-    x1 = a2 * (a1 * b3) + (b3 * (a2 * b4) + (a2 * (a1 * a4) + b3 * (b2 * b4)))
-    x3 = b1 * (a3 * a4) + (a4 * (b1 * b2) + (a4 * (a2 * a3) + b1 * (b2 * b3)))
-    x4 = a1 * (b2 * b3) + (a1 * (a4 * b2) + (a1 * (a3 * a4) + b2 * (b3 * b4)))
-    PCaKp = 0.0003574 * PCap
-    PCaNap = 0.00125 * PCap
-    tau_relp = (0.001) * (tau_relp_tmp < 0.001) + (tau_relp_tmp) * numpy.logical_not(
-        (tau_relp_tmp < 0.001),
-    )
-    k1 = kcaon * (cao * h12)
-    k1_i = kcaon * (cao * h12_i)
-    k6 = kcaon * (cass * h6)
-    k6_i = kcaon * (cai * h6_i)
-    h2 = (hna * nass) / ((h1 * kna3))
-    h3 = 1.0 / h1
-    h2_i = (hna * nai) / ((h1_i * kna3))
-    h3_i = 1.0 / h1_i
-    h8 = nao / ((h7 * (hna * kna3)))
-    h9 = 1.0 / h7
-    h8_i = nao / ((h7_i * (hna * kna3)))
-    h9_i = 1.0 / h7_i
-    F1 = numpy.exp(C * p_b) - 1
-    dCd = C - Cd
-    dCaTrpn_dt = ktrpn * (-CaTrpn + ((1000 * cai) / cat50) ** ntrpn * (1 - CaTrpn))
-    values[33] = CaTrpn + dCaTrpn_dt * dt
-    h_lambda_prima = Beta0 * ((lambda_min087 + lambda_min12) - 1.87) + 1
-    diFp_dt = (-iFp + iss) / tiFp
-    values[34] = diFp_dt * dt + iFp
-    diSp_dt = (-iSp + iss) / tiSp
-    values[35] = diSp_dt * dt + iSp
-    IKr = (rkr * (xr * (GKr * (0.4303314829119352 * math.sqrt(ko))))) * (-EK + v)
-    ICaL = (d * (PhiCaL * (PCa * (1.0 - fICaLp)))) * (
-        f * (1.0 - nca) + nca * (fca * jca)
-    ) + (d * (PhiCaL * (PCap * fICaLp))) * (fp * (1.0 - nca) + nca * (fcap * jca))
-    INaL = (mL * (GNaL * (-ENa + v))) * (fINaLp * hLp + hL * (1.0 - fINaLp))
-    INa = (m**3.0 * ((GNa * scale_drug_INa) * (-ENa + v))) * (
-        j * (h * (1.0 - fINap)) + jp * (fINap * hp)
-    )
-    Ito = ((scale_HF_Gto * (Gto * scale_drug_Ito)) * (-EK + v)) * (
-        i * (a * (1.0 - fItop)) + ip * (ap * fItop)
-    )
-    Jrel = Jrelnp * (1.0 - fJrelp) + Jrelp * fJrelp
-    Jup = -Jleak + (Jupnp * (1.0 - fJupp) + scale_HF_Jup * (Jupp * fJupp))
-    E1 = x1 / (x4 + (x3 + (x1 + x2)))
-    E2 = x2 / (x4 + (x3 + (x1 + x2)))
-    E3 = x3 / (x4 + (x3 + (x1 + x2)))
-    E4 = x4 / (x4 + (x3 + (x1 + x2)))
-    ICaK = (d * (PhiCaK * (PCaK * (1.0 - fICaLp)))) * (
-        f * (1.0 - nca) + nca * (fca * jca)
-    ) + (d * (PhiCaK * (PCaKp * fICaLp))) * (fp * (1.0 - nca) + nca * (fcap * jca))
-    ICaNa = (d * (PhiCaNa * (PCaNa * (1.0 - fICaLp)))) * (
-        f * (1.0 - nca) + nca * (fca * jca)
-    ) + (d * (PhiCaNa * (PCaNap * fICaLp))) * (fp * (1.0 - nca) + nca * (fcap * jca))
-    k4pp = h2 * wnaca
-    k7 = wna * (h2 * h5)
-    k4p_ss = (h3 * wca) / hca
-    k4pp_i = h2_i * wnaca
-    k7_i = wna * (h2_i * h5_i)
-    k4p_i = (h3_i * wca) / hca
-    k3pp = h8 * wnaca
-    k8 = wna * (h11 * h8)
-    k3p_ss = h9 * wca
-    k3pp_i = h8_i * wnaca
-    k8_i = wna * (h11_i * h8_i)
-    k3p_i = h9_i * wca
-    eta = (etas) * (dCd < 0) + (etal) * numpy.logical_not((dCd < 0))
-    J_TRPN = dCaTrpn_dt * trpnmax
-    h_lambda = (h_lambda_prima) * (h_lambda_prima > 0) + (0) * numpy.logical_not(
-        (h_lambda_prima > 0),
-    )
-    Jrel_inf = ((-ICaL) * a_rel) / (((1.5 * scale_HF_Jrel_inf) / cajsr) ** 8.0 + 1.0)
-    Jrel_infp = ((-ICaL) * a_relp) / (((1.5 * scale_HF_Jrel_inf) / cajsr) ** 8.0 + 1.0)
-    dcajsr_dt = Bcajsr * (-Jrel + Jtr)
-    values[36] = cajsr + dcajsr_dt * dt
-    dcansr_dt = Jup - (Jtr * vjsr) / vnsr
-    values[37] = cansr + dcansr_dt * dt
-    JnakNa = 3.0 * (E1 * a3 - E2 * b3)
-    JnakK = 2.0 * (-E3 * a1 + E4 * b1)
-    dkss_dt = -JdiffK + (Acap * (-ICaK)) / ((F * vss))
-    values[38] = dkss_dt * dt + kss
-    k4 = k4p_ss + k4pp
-    k4_i = k4p_i + k4pp_i
-    k3 = k3p_ss + k3pp
-    k3_i = k3p_i + k3pp_i
-    Fd = dCd * eta
-    dCd_dt = (p_k * (C - Cd)) / eta
-    values[39] = Cd + dCd_dt * dt
-    Ta = (h_lambda * (Tref / rs)) * (XS * (Zetas + 1) + XW * Zetaw)
-    dJrelnp_dt = (Jrel_inf - Jrelnp) / tau_rel
-    values[40] = Jrelnp + dJrelnp_dt * dt
-    dJrelp_dt = (Jrel_infp - Jrelp) / tau_relp
-    values[41] = Jrelp + dJrelp_dt * dt
-    INaK = (Pnak * scale_HF_Pnak) * (JnakK * zk + JnakNa * zna)
-    x2_ss = (k1 * k7) * (k4 + k5) + (k4 * k6) * (k1 + k8)
-    x2_i = (k1_i * k7_i) * (k4_i + k5_i) + (k4_i * k6_i) * (k1_i + k8_i)
-    x1_ss = (k2 * k4) * (k6 + k7) + (k5 * k7) * (k2 + k3)
-    x3_ss = (k1 * k3) * (k6 + k7) + (k6 * k8) * (k2 + k3)
-    x4_ss = (k2 * k8) * (k4 + k5) + (k3 * k5) * (k1 + k8)
-    x1_i = (k2_i * k4_i) * (k6_i + k7_i) + (k5_i * k7_i) * (k2_i + k3_i)
-    x3_i = (k1_i * k3_i) * (k6_i + k7_i) + (k6_i * k8_i) * (k2_i + k3_i)
-    x4_i = (k2_i * k8_i) * (k4_i + k5_i) + (k3_i * k5_i) * (k1_i + k8_i)
-    Tp = p_a * (F1 + Fd)
-    dki_dt = (
-        Acap
-        * (
-            -(
-                -2.0 * INaK
-                + (
-                    Istim
-                    + (Isac_P_ns / 3 + (Isac_P_k + (IKb + (IK1 + (IKs + (IKr + Ito))))))
-                )
-            )
-        )
-    ) / ((F * vmyo)) + (JdiffK * vss) / vmyo
-    values[42] = dki_dt * dt + ki
-    E1_ss = x1_ss / (x4_ss + (x3_ss + (x1_ss + x2_ss)))
-    E2_ss = x2_ss / (x4_ss + (x3_ss + (x1_ss + x2_ss)))
-    E3_ss = x3_ss / (x4_ss + (x3_ss + (x1_ss + x2_ss)))
-    E4_ss = x4_ss / (x4_ss + (x3_ss + (x1_ss + x2_ss)))
-    E1_i = x1_i / (x4_i + (x3_i + (x1_i + x2_i)))
-    E2_i = x2_i / (x4_i + (x3_i + (x1_i + x2_i)))
-    E3_i = x3_i / (x4_i + (x3_i + (x1_i + x2_i)))
-    E4_i = x4_i / (x4_i + (x3_i + (x1_i + x2_i)))
-    Ttot = Ta + Tp
-    JncxCa_ss = -E1_ss * k1 + E2_ss * k2
-    JncxNa_ss = -E2_ss * k3pp + (E3_ss * k4pp + 3.0 * (-E1_ss * k8 + E4_ss * k7))
-    JncxCa_i = -E1_i * k1_i + E2_i * k2_i
-    JncxNa_i = -E2_i * k3pp_i + (E3_i * k4pp_i + 3.0 * (-E1_i * k8_i + E4_i * k7_i))
-    INaCa_ss = (allo_ss * ((0.2 * Gncx) * scale_HF_Gncx)) * (
-        JncxCa_ss * zca + JncxNa_ss * zna
-    )
-    INaCa_i = (allo_i * ((0.8 * Gncx) * scale_HF_Gncx)) * (
-        JncxCa_i * zca + JncxNa_i * zna
-    )
-    dcass_dt = Bcass * (
-        -Jdiff
-        + (
-            (Acap * (-(ICaL - 2.0 * INaCa_ss))) / (((2.0 * F) * vss))
-            + (Jrel * vjsr) / vss
-        )
-    )
-    values[43] = cass + dcass_dt * dt
-    dnass_dt = -JdiffNa + (Acap * (-(ICaNa + 3.0 * INaCa_ss))) / ((F * vss))
-    values[44] = dnass_dt * dt + nass
-    dcai_dt = Bcai * (
-        -J_TRPN
-        + (
-            (
-                (Acap * (-(Isac_P_ns / 3 + (-2.0 * INaCa_i + (ICab + IpCa)))))
-                / (((2.0 * F) * vmyo))
-                - (Jup * vnsr) / vmyo
-            )
-            + (Jdiff * vss) / vmyo
-        )
-    )
-    values[45] = cai + dcai_dt * dt
-    dnai_dt = (
-        Acap
-        * (-(Isac_P_ns / 3 + (INab + (3.0 * INaK + (3.0 * INaCa_i + (INa + INaL))))))
-    ) / ((F * vmyo)) + (JdiffNa * vss) / vmyo
-    values[46] = dnai_dt * dt + nai
-    dv_dt = -(
-        Isac_P_k
-        + (
-            Isac_P_ns
-            + (
-                Istim
-                + (
-                    ICab
-                    + (
-                        IpCa
-                        + (
-                            IKb
-                            + (
-                                INab
-                                + (
-                                    INaK
-                                    + (
-                                        INaCa_ss
-                                        + (
-                                            INaCa_i
-                                            + (
-                                                IK1
-                                                + (
-                                                    IKs
-                                                    + (
-                                                        IKr
-                                                        + (
-                                                            ICaK
-                                                            + (
-                                                                ICaNa
-                                                                + (
-                                                                    ICaL
-                                                                    + (
-                                                                        Ito
-                                                                        + (INa + INaL)
-                                                                    )
-                                                                )
-                                                            )
-                                                        )
-                                                    )
-                                                )
-                                            )
-                                        )
-                                    )
-                                )
-                            )
-                        )
-                    )
-                )
-            )
-        )
-    )
-    values[47] = dt * dv_dt + v
-
-    return values
+    return numpy.nan_to_num(values, nan=0.0)
 
 
 # """This module contains a ORdmm_Land_em_coupling cardiac cell model
@@ -3755,7 +2180,7 @@ def forward_explicit_euler(states, t, dt, parameters):
 #         )
 
 #         # Expressions for the Istim component
-#         Istim = 0  # amp*(ufl.le(time, duration))
+#         Istim = 0 # 0  # amp*(ufl.le(time, duration))
 
 #         # Expressions for the membrane potential component
 #         current[0] = (
@@ -4465,7 +2890,7 @@ def forward_explicit_euler(states, t, dt, parameters):
 #         )
 
 #         # Expressions for the Istim component
-#         Istim = 0  # amp*(ufl.le(time, duration))
+#         Istim = 0 # 0  # amp*(ufl.le(time, duration))
 
 #         # Expressions for the diffusion fluxes component
 #         JdiffNa = 0.5 * nass - 0.5 * nai

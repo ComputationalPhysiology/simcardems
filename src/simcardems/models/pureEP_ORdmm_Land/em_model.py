@@ -6,8 +6,7 @@ from typing import Tuple
 from typing import TYPE_CHECKING
 from typing import Union
 
-import cbcbeat
-import dolfin
+import beat
 import numpy as np
 from dolfin import FiniteElement  # noqa: F401
 from dolfin import MixedElement  # noqa: F401
@@ -36,7 +35,7 @@ class EMCoupling(BaseEMCoupling):
     def vs(self) -> np.ndarray:
         return self.ep_solver.ode.values
 
-    def register_ep_model(self, solver: cbcbeat.SplittingSolver):
+    def register_ep_model(self, solver: beat.MonodomainSplittingSolver):
         logger.debug("Registering EP model")
         self.ep_solver = solver
         logger.debug("Done registering EP model")
@@ -108,30 +107,9 @@ class EMCoupling(BaseEMCoupling):
         config: Optional[Config] = None,
     ) -> None:
         super().save_state(path=path, config=config)
-        # breakpoint()
-
-        # with dolfin.HDF5File(
-        #     self.geometry.comm(),
-        #     Path(path).as_posix(),
-        #     "a",
-        # ) as h5file:
-        #     h5file.write(self.ep_solver.vs, "/ep/vs")
         with io.h5pyfile(path, "a") as h5file:
             h5file["ep/vs"] = self.vs
             h5file["ep/cell_params"] = self.cell_params()
-
-        # io.dict_to_h5(
-        #     self.vs,
-        #     path,
-        #     "ep/vs",
-        #     comm=self.geometry.comm(),
-        # )
-        # io.dict_to_h5(
-        #     self.cell_params(),
-        #     path,
-        #     "ep/cell_params",
-        #     comm=self.geometry.comm(),
-        # )
 
     @classmethod
     def from_state(
@@ -154,26 +132,15 @@ class EMCoupling(BaseEMCoupling):
             state_params = io.h5_to_dict(h5file["state_params"])
             cell_params = h5file["ep"]["cell_params"][:]
             vs = h5file["ep"]["vs"][:]
-            # vs_signature = h5file["ep"]["vs"].attrs["signature"].decode()
 
         config.drug_factors_file = drug_factors_file
         config.popu_factors_file = popu_factors_file
         config.disease_state = disease_state
         config.PCL = PCL
 
-        # VS = dolfin.FunctionSpace(geo.ep_mesh, eval(vs_signature))
-        # vs = dolfin.Function(VS)
         logger.debug("Load functions")
-        # with dolfin.HDF5File(geo.ep_mesh.mpi_comm(), path.as_posix(), "r") as h5file:
-        #     h5file.read(vs, "/ep/vs")
-        # from . import cell_model as model
 
         from . import CellModel, ActiveModel
-
-        # cell_inits = io.vs_functions_to_dict(
-        #     vs,
-        #     state_names=CellModel.default_initial_conditions().keys(),
-        # )
 
         return setup_EM_model(
             cls_EMCoupling=cls,

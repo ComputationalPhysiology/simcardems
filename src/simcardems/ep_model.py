@@ -6,14 +6,13 @@ from typing import Callable
 from typing import Dict
 from typing import NamedTuple
 from typing import Optional
-from typing import Type
+from typing import Protocol
 from typing import TYPE_CHECKING
 
 import beat
 import dolfin
+import numpy as np
 import pulse
-
-# import cbcbeat
 
 try:
     import ufl_legacy as ufl
@@ -37,15 +36,31 @@ class CellModel(NamedTuple):
     parameters: Dict[str, float] | Dict[int, Dict[str, float]]
     v_index: int | Dict[int, int]
     fun: Callable | Dict[int, Callable]
-    markers = None
 
     @property
     def num_states(self):
         return len(self.init_states)
 
 
+class CellModelType(Protocol):
+    def init_state_values(self) -> Dict[str, float]:
+        ...
+
+    def init_parameter_values(self) -> Dict[str, float]:
+        ...
+
+    def state_index(self, name: str) -> int:
+        ...
+
+    def forward_generalized_rush_larsen(
+        self,
+        coupling: BaseEMCoupling,
+    ) -> Callable[[np.ndarray, float, float, np.ndarray], np.ndarray]:
+        ...
+
+
 def setup_cell_model(
-    model,
+    model: CellModelType,
     coupling: BaseEMCoupling,
     cell_params=None,
     cell_inits=None,
@@ -61,6 +76,7 @@ def setup_cell_model(
     #     popu_factors_file=popu_factors_file,
     #     CellModel=cls,
     # )
+    # FIXME: Handle case when files are passed in
     if cell_params is None:
         parameters = model.init_parameter_values()
     else:
@@ -82,13 +98,11 @@ def setup_cell_model(
     #     coupling=coupling,
     # )
 
-    # model = beat.cellmodels.torord_dyn_chloride.mid
-
     return CellModel(
         init_states=init_states,
         parameters=parameters,
         v_index=model.state_index("v"),
-        fun=model.forward_generalized_rush_larsen,
+        fun=model.forward_generalized_rush_larsen(coupling=coupling),
     )
 
 
@@ -269,38 +283,38 @@ def load_json(filename: str):
     return d
 
 
-def handle_cell_params(
-    CellModel: Type[BaseCellModel],
-    cell_params: Optional[Dict[str, float]] = None,
-    disease_state: str = "healthy",
-    drug_factors_file: str = "",
-    popu_factors_file: str = "",
-):
-    cell_params_tmp = CellModel.default_parameters()
-    # FIXME: In this case we update the parameters first, while in the
-    # initial condition case we do that last. We need to be consistent
-    # about this.
-    if cell_params is not None:
-        cell_params_tmp.update(cell_params)
+# def handle_cell_params(
+#     CellModel: Type[BaseCellModel],
+#     cell_params: Optional[Dict[str, float]] = None,
+#     disease_state: str = "healthy",
+#     drug_factors_file: str = "",
+#     popu_factors_file: str = "",
+# ):
+#     cell_params_tmp = CellModel.default_parameters()
+#     # FIXME: In this case we update the parameters first, while in the
+#     # initial condition case we do that last. We need to be consistent
+#     # about this.
+#     if cell_params is not None:
+#         cell_params_tmp.update(cell_params)
 
-    CellModel.update_disease_parameters(cell_params_tmp, disease_state=disease_state)
-    # Adding optional drug factors to parameters (if drug_factors_file exists)
-    if file_exist(drug_factors_file, ".json"):
-        logger.info(f"Drug scaling factors loaded from {drug_factors_file}")
-        cell_params_tmp.update(load_json(drug_factors_file))
-    else:
-        if drug_factors_file != "":
-            logger.warning(f"Unable to load drug factors file {drug_factors_file}")
-    # FIXME: A problem here is that popu_factors_file will overwrite the
-    # drug_factors_file. Is it possible to only have one file?
-    if file_exist(popu_factors_file, ".json"):
-        logger.info(f"Population scaling factors loaded from {popu_factors_file}")
-        cell_params_tmp.update(load_json(popu_factors_file))
-    else:
-        if popu_factors_file != "":
-            logger.warning(f"Unable to load popu factors file {popu_factors_file}")
+#     CellModel.update_disease_parameters(cell_params_tmp, disease_state=disease_state)
+#     # Adding optional drug factors to parameters (if drug_factors_file exists)
+#     if file_exist(drug_factors_file, ".json"):
+#         logger.info(f"Drug scaling factors loaded from {drug_factors_file}")
+#         cell_params_tmp.update(load_json(drug_factors_file))
+#     else:
+#         if drug_factors_file != "":
+#             logger.warning(f"Unable to load drug factors file {drug_factors_file}")
+#     # FIXME: A problem here is that popu_factors_file will overwrite the
+#     # drug_factors_file. Is it possible to only have one file?
+#     if file_exist(popu_factors_file, ".json"):
+#         logger.info(f"Population scaling factors loaded from {popu_factors_file}")
+#         cell_params_tmp.update(load_json(popu_factors_file))
+#     else:
+#         if popu_factors_file != "":
+#             logger.warning(f"Unable to load popu factors file {popu_factors_file}")
 
-    return cell_params_tmp
+#     return cell_params_tmp
 
 
 # def handle_cell_inits(

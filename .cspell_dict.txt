@@ -303,6 +303,7 @@ noninteractive
 ntm
 ntrpn
 numpyfy
+odesolver
 onlylastbeat
 opencarp
 opencmiss

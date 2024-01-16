@@ -7,7 +7,7 @@ from typing import Tuple
 from typing import TYPE_CHECKING
 from typing import Union
 
-import cbcbeat
+import beat
 import dolfin
 import numpy as np
 
@@ -115,7 +115,6 @@ class EMCoupling(em_model.BaseEMCoupling):
             return False
 
         for attr in [
-            "vs",
             "mech_state",
             "lmbda_mech_func",
             "Zetas_mech",
@@ -123,17 +122,23 @@ class EMCoupling(em_model.BaseEMCoupling):
             "lmbda_ep",
             "lmbda_ep_prev",
             "dLambda_ep",
+            "XS_mech",
+            "XW_mech",
             "Zetas_ep",
             "Zetaw_ep",
             "XS_ep",
             "XW_ep",
-            "XS_mech",
-            "XW_mech",
         ]:
             if not np.allclose(
                 getattr(self, attr).vector().get_local(),
                 getattr(__o, attr).vector().get_local(),
             ):
+                logger.info(f"{attr} differs in equality")
+                return False
+        for attr in [
+            "vs",
+        ]:
+            if not np.allclose(getattr(self, attr), getattr(__o, attr)):
                 logger.info(f"{attr} differs in equality")
                 return False
 
@@ -153,21 +158,19 @@ class EMCoupling(em_model.BaseEMCoupling):
 
     def setup_assigners(self) -> None:
         from ...datacollector import Assigners
+        from . import cell_model
 
-        self.assigners = Assigners(vs=self.vs, mech_state=self.mech_state)
-        for name, index in [
-            ("V", 0),
-            ("Ca", 45),
-            ("XS", 40),
-            ("XW", 41),
-            ("CaTrpn", 42),
-            ("TmB", 43),
-            ("Cd", 44),
-        ]:
+        self.assigners = Assigners(
+            vs=self.vs,
+            mech_state=self.mech_state,
+            V_mech=self.V_mech,
+            V_ep=self.V_ep,
+        )
+        for name in ["v", "cai", "XS", "XW", "CaTrpn", "TmB", "Cd"]:
             self.assigners.register_subfunction(
                 name=name,
                 group="ep",
-                subspace_index=index,
+                subspace_index=cell_model.state_index(name),
             )
 
         self.assigners.register_subfunction(
@@ -183,9 +186,10 @@ class EMCoupling(em_model.BaseEMCoupling):
             self.assigners.register_subfunction(
                 name=name,
                 group="ep",
-                subspace_index=index,
+                subspace_index=cell_model.state_index(name),
                 is_pre=True,
             )
+        pass
 
     @property
     def mech_mesh(self):
@@ -200,8 +204,8 @@ class EMCoupling(em_model.BaseEMCoupling):
         return self.mech_solver.state
 
     @property
-    def vs(self) -> dolfin.Function:
-        return self.ep_solver.solution_fields()[0]
+    def vs(self) -> np.ndarray:
+        return self.ep_solver.ode.values
 
     @property
     def dLambda_ep(self):
@@ -225,25 +229,26 @@ class EMCoupling(em_model.BaseEMCoupling):
         self.lmbda_ep_prev.vector()[:] = self.lmbda_ep.vector()
 
     def update_prev_ep(self):
-        self.ep_solver.vs_.assign(self.ep_solver.vs)
+        pass
+        # self.ep_solver.vs_.assign(self.ep_solver.vs)
 
     # def _project_lmbda(self):
     #     F = dolfin.grad(self.u_ep) + dolfin.Identity(3)
     #     f = F * self.geometry.f0_ep
     #     self._projector_V_ep(self.lmbda_ep, dolfin.project(dolfin.sqrt(f**2)))
 
-    def register_ep_model(self, solver: cbcbeat.SplittingSolver):
+    def register_ep_model(self, solver: beat.MonodomainSplittingSolver):
         logger.debug("Registering EP model")
-        self.ep_solver = solver
-        self.XS_ep, self.XS_ep_assigner = utils.setup_assigner(self.vs, 40)
-        self.XW_ep, self.XW_ep_assigner = utils.setup_assigner(self.vs, 41)
-        self.Zetas_ep, self.Zetas_ep_assigner = utils.setup_assigner(self.vs, 46)
-        self.Zetaw_ep, self.Zetaw_ep_assigner = utils.setup_assigner(self.vs, 47)
 
-        params = self.ep_solver.ode_solver._model.parameters()
-        self._Tref = params["Tref"]
-        self._rs = params["rs"]
-        self._Beta0 = params["Beta0"]
+        self.ep_solver = solver
+        from . import cell_model
+
+        params = self.ep_solver.ode.parameters
+
+        self._Tref = params[cell_model.parameter_index("Tref")]
+        self._rs = params[cell_model.parameter_index("rs")]
+        self._Beta0 = params[cell_model.parameter_index("Beta0")]
+        self.ep_to_coupling()
 
         if hasattr(self, "mech_solver"):
             self.mechanics_to_coupling()
@@ -277,10 +282,12 @@ class EMCoupling(em_model.BaseEMCoupling):
 
     def ep_to_coupling(self):
         logger.debug("Transfer variables from EP to coupling")
-        self.XS_ep_assigner.assign(self.XS_ep, utils.sub_function(self.vs, 40))
-        self.XW_ep_assigner.assign(self.XW_ep, utils.sub_function(self.vs, 41))
-        self.Zetas_ep_assigner.assign(self.Zetas_ep, utils.sub_function(self.vs, 46))
-        self.Zetaw_ep_assigner.assign(self.Zetaw_ep, utils.sub_function(self.vs, 47))
+        from . import cell_model
+
+        self.XS_ep.vector()[:] = self.vs[cell_model.state_index("XS")]
+        self.XW_ep.vector()[:] = self.vs[cell_model.state_index("XW")]
+        self.Zetas_ep.vector()[:] = self.vs[cell_model.state_index("Zetas")]
+        self.Zetaw_ep.vector()[:] = self.vs[cell_model.state_index("Zetaw")]
 
         logger.debug("Done transferring variables from EP to coupling")
 
@@ -303,6 +310,7 @@ class EMCoupling(em_model.BaseEMCoupling):
                 Beta0=self._Beta0,
             ),
         )
+
         logger.debug("Done transferring variables from coupling to mechanics")
 
     def mechanics_to_coupling(self):
@@ -332,12 +340,12 @@ class EMCoupling(em_model.BaseEMCoupling):
 
     def print_ep_info(self):
         # Output some degrees of freedom
-        total_dofs = self.vs.function_space().dim()
+        total_dofs = self.ep_solver.pde.V.dim()
         logger.info("EP model")
         utils.print_mesh_info(self.ep_mesh, total_dofs)
 
     def cell_params(self):
-        return self.ep_solver.ode_solver._model.parameters()
+        return self.ep_solver.ode.parameters
 
     def save_state(
         self,
@@ -352,15 +360,13 @@ class EMCoupling(em_model.BaseEMCoupling):
             "a",
         ) as h5file:
             h5file.write(self.lmbda_ep_prev, "/em/lmbda_prev")
-            h5file.write(self.ep_solver.vs, "/ep/vs")
+            h5file.write(self.Zetas_mech, "/em/Zetas_prev")
+            h5file.write(self.Zetaw_mech, "/em/Zetaw_prev")
             h5file.write(self.mech_solver.state, "/mechanics/state")
 
-        io.dict_to_h5(
-            self.cell_params(),
-            path,
-            "ep/cell_params",
-            comm=self.geometry.comm(),
-        )
+        with io.h5pyfile(path, "a") as h5file:
+            h5file["ep/vs"] = self.vs
+            h5file["ep/cell_params"] = self.cell_params()
 
     @classmethod
     def from_state(
@@ -381,37 +387,28 @@ class EMCoupling(em_model.BaseEMCoupling):
         with io.h5pyfile(path) as h5file:
             config = Config(**io.h5_to_dict(h5file["config"]))
             state_params = io.h5_to_dict(h5file["state_params"])
-            cell_params = io.h5_to_dict(h5file["ep"]["cell_params"])
-            vs_signature = h5file["ep"]["vs"].attrs["signature"].decode()
             mech_signature = h5file["mechanics"]["state"].attrs["signature"].decode()
+            cell_params = h5file["ep"]["cell_params"][:]
+            vs = h5file["ep"]["vs"][:]
 
         config.drug_factors_file = drug_factors_file
         config.popu_factors_file = popu_factors_file
         config.disease_state = disease_state
         config.PCL = PCL
 
-        VS = dolfin.FunctionSpace(geo.ep_mesh, eval(vs_signature))
-        vs = dolfin.Function(VS)
-
         W = dolfin.FunctionSpace(geo.mechanics_mesh, eval(mech_signature))
         mech_state = dolfin.Function(W)
 
         V = dolfin.FunctionSpace(geo.ep_mesh, "CG", 1)
-        lmbda = dolfin.Function(V, name="lambda")
+        lmbda_prev = dolfin.Function(V, name="lambda")
         logger.debug("Load functions")
         with dolfin.HDF5File(geo.ep_mesh.mpi_comm(), path.as_posix(), "r") as h5file:
-            h5file.read(vs, "/ep/vs")
             h5file.read(mech_state, "/mechanics/state")
-            h5file.read(lmbda, "/em/lmbda_prev")
+            h5file.read(lmbda_prev, "/em/lmbda_prev")
 
         from . import CellModel, ActiveModel
 
-        cell_inits = io.vs_functions_to_dict(
-            vs,
-            state_names=CellModel.default_initial_conditions().keys(),
-        )
-
-        cls_EMCoupling = partial(cls, lmbda=lmbda)
+        cls_EMCoupling = partial(cls, lmbda=lmbda_prev)
 
         return em_model.setup_EM_model(
             cls_EMCoupling=cls_EMCoupling,
@@ -419,7 +416,7 @@ class EMCoupling(em_model.BaseEMCoupling):
             cls_ActiveModel=ActiveModel,
             geometry=geo,
             config=config,
-            cell_inits=cell_inits,
+            cell_inits=vs,
             cell_params=cell_params,
             mech_state_init=mech_state,
             state_params=state_params,
