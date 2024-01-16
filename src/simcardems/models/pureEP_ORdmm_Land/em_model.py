@@ -60,25 +60,23 @@ class EMCoupling(BaseEMCoupling):
         self._assigners = assigners
 
     def setup_assigners(self) -> None:
-        ...
-        # from ...datacollector import Assigners
+        from ...datacollector import Assigners
 
-        # self.assigners = Assigners(vs=self.vs, mech_state=None)
-        # for name, index in [
-        #     ("V", 0),
-        #     ("Ca", 41),
-        #     ("XS", 40),
-        #     ("XW", 41),
-        #     ("CaTrpn", 42),
-        #     ("TmB", 43),
-        #     ("Cd", 44),
-        # ]:
-        #     self.assigners.register_subfunction(
-        #         name=name,
-        #         group="ep",
-        #         subspace_index=index,
-        #     )
-        # pass
+        self.assigners = Assigners(vs=self.vs, V_ep=self.ep_solver.pde.V)
+        for name, index in [
+            ("V", 0),
+            ("Ca", 45),
+            ("CaTrpn", 42),
+            ("TmB", 43),
+            ("Cd", 44),
+            ("XS", 40),
+            ("XW", 41),
+        ]:
+            self.assigners.register_subfunction(
+                name=name,
+                group="ep",
+                subspace_index=index,
+            )
 
     def solve_ep(self, interval: Tuple[float, float]) -> None:
         self.ep_solver.step(interval)

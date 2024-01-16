@@ -27,6 +27,8 @@ config = simcardems.Config(
     geometry_schema_path=geometry_schema_path,
     loglevel=10,
     coupling_type="fully_coupled_ORdmm_Land",
+    # coupling_type="explicit_ORdmm_Land",
+    # mechanics_solve_strategy="fixed",
     T=20,
 )
 
@@ -63,7 +65,7 @@ simcardems.postprocess.plot_state_traces(outdir.joinpath("results.h5"), "center"
 # We can also save the output to xdmf-files that can be viewed in Paraview
 #
 
-# simcardems.postprocess.make_xdmffiles(outdir.joinpath("results.h5"))
+simcardems.postprocess.make_xdmffiles(outdir.joinpath("results.h5"))
 
 # The `xdmf` files are can be opened in [Paraview](https://www.paraview.org/download/) to visualize the different variables such as in {numref}`Figure {number} <simple-demo-paraview>`.
 #

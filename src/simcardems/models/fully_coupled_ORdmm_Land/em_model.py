@@ -83,7 +83,6 @@ class EMCoupling(BaseEMCoupling):
             return False
 
         for attr in [
-            "vs",
             "mech_state",
             "lmbda_mech",
             "Zetas_mech",
@@ -98,6 +97,12 @@ class EMCoupling(BaseEMCoupling):
                 getattr(self, attr).vector().get_local(),
                 getattr(__o, attr).vector().get_local(),
             ):
+                logger.info(f"{attr} differs in equality")
+                return False
+        for attr in [
+            "vs",
+        ]:
+            if not np.allclose(getattr(self, attr), getattr(__o, attr)):
                 logger.info(f"{attr} differs in equality")
                 return False
 
@@ -124,8 +129,8 @@ class EMCoupling(BaseEMCoupling):
         return self.mech_solver.state
 
     @property
-    def vs(self) -> dolfin.Function:
-        return self.ep_solver.solution_fields()[0]
+    def vs(self) -> np.ndarray:
+        return self.ep_solver.ode.values
 
     @property
     def assigners(self) -> datacollector.Assigners:
@@ -137,21 +142,19 @@ class EMCoupling(BaseEMCoupling):
 
     def setup_assigners(self) -> None:
         from ...datacollector import Assigners
+        from . import cell_model
 
-        self.assigners = Assigners(vs=self.vs, mech_state=self.mech_state)
-        for name, index in [
-            ("V", 0),
-            ("Ca", 45),
-            ("CaTrpn", 42),
-            ("TmB", 43),
-            ("Cd", 44),
-            ("XS", 40),
-            ("XW", 41),
-        ]:
+        self.assigners = Assigners(
+            vs=self.vs,
+            mech_state=self.mech_state,
+            V_mech=self.V_mech,
+            V_ep=self.V_ep,
+        )
+        for name in ["v", "cai", "XS", "XW", "CaTrpn", "TmB", "Cd"]:
             self.assigners.register_subfunction(
                 name=name,
                 group="ep",
-                subspace_index=index,
+                subspace_index=cell_model.state_index(name),
             )
 
         self.assigners.register_subfunction(
@@ -167,10 +170,9 @@ class EMCoupling(BaseEMCoupling):
             self.assigners.register_subfunction(
                 name=name,
                 group="ep",
-                subspace_index=index,
+                subspace_index=cell_model.state_index(name),
                 is_pre=True,
             )
-
         self.coupling_to_mechanics()
 
     def register_ep_model(self, solver):
@@ -204,7 +206,8 @@ class EMCoupling(BaseEMCoupling):
         self.mech_solver.material.active.update_prev()
 
     def update_prev_ep(self):
-        self.ep_solver.vs_.assign(self.ep_solver.vs)
+        pass
+        # self.ep_solver.vs_.assign(self.ep_solver.vs)
 
     def ep_to_coupling(self):
         logger.debug("Update mechanics")
@@ -244,12 +247,12 @@ class EMCoupling(BaseEMCoupling):
 
     def print_ep_info(self):
         # Output some degrees of freedom
-        total_dofs = self.vs.function_space().dim()
+        total_dofs = self.ep_solver.pde.V.dim()
         logger.info("EP model")
         utils.print_mesh_info(self.ep_mesh, total_dofs)
 
     def cell_params(self):
-        return self.ep_solver.ode_solver._model.parameters()
+        return self.ep_solver.ode.parameters
 
     def register_datacollector(self, collector: datacollector.DataCollector) -> None:
         super().register_datacollector(collector=collector)
@@ -284,15 +287,11 @@ class EMCoupling(BaseEMCoupling):
             h5file.write(self.lmbda_mech, "/em/lmbda_prev")
             h5file.write(self.Zetas_mech, "/em/Zetas_prev")
             h5file.write(self.Zetaw_mech, "/em/Zetaw_prev")
-            h5file.write(self.ep_solver.vs, "/ep/vs")
             h5file.write(self.mech_solver.state, "/mechanics/state")
 
-        io.dict_to_h5(
-            self.cell_params(),
-            path,
-            "ep/cell_params",
-            comm=self.geometry.comm(),
-        )
+        with io.h5pyfile(path, "a") as h5file:
+            h5file["ep/vs"] = self.vs
+            h5file["ep/cell_params"] = self.cell_params()
 
     @classmethod
     def from_state(
@@ -313,17 +312,14 @@ class EMCoupling(BaseEMCoupling):
         with io.h5pyfile(path) as h5file:
             config = Config(**io.h5_to_dict(h5file["config"]))
             state_params = io.h5_to_dict(h5file["state_params"])
-            cell_params = io.h5_to_dict(h5file["ep"]["cell_params"])
-            vs_signature = h5file["ep"]["vs"].attrs["signature"].decode()
             mech_signature = h5file["mechanics"]["state"].attrs["signature"].decode()
+            cell_params = h5file["ep"]["cell_params"][:]
+            vs = h5file["ep"]["vs"][:]
 
         config.drug_factors_file = drug_factors_file
         config.popu_factors_file = popu_factors_file
         config.disease_state = disease_state
         config.PCL = PCL
-
-        VS = dolfin.FunctionSpace(geo.ep_mesh, eval(vs_signature))
-        vs = dolfin.Function(VS)
 
         W = dolfin.FunctionSpace(geo.mechanics_mesh, eval(mech_signature))
         mech_state = dolfin.Function(W)
@@ -335,18 +331,12 @@ class EMCoupling(BaseEMCoupling):
         Zetaw_prev = dolfin.Function(V, name="Zetaw")
         logger.debug("Load functions")
         with dolfin.HDF5File(geo.ep_mesh.mpi_comm(), path.as_posix(), "r") as h5file:
-            h5file.read(vs, "/ep/vs")
             h5file.read(mech_state, "/mechanics/state")
             h5file.read(lmbda_prev, "/em/lmbda_prev")
             h5file.read(Zetas_prev, "/em/Zetas_prev")
             h5file.read(Zetaw_prev, "/em/Zetaw_prev")
 
         from . import CellModel, ActiveModel
-
-        cell_inits = io.vs_functions_to_dict(
-            vs,
-            state_names=CellModel.default_initial_conditions().keys(),
-        )
 
         cls_ActiveModel = partial(
             ActiveModel,
@@ -361,7 +351,7 @@ class EMCoupling(BaseEMCoupling):
             cls_ActiveModel=cls_ActiveModel,
             geometry=geo,
             config=config,
-            cell_inits=cell_inits,
+            cell_inits=vs,
             cell_params=cell_params,
             mech_state_init=mech_state,
             state_params=state_params,

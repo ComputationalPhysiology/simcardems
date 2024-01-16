@@ -13,8 +13,8 @@ except ImportError:
 
 from ... import utils
 from ...time_stepper import TimeStepper
-from .cell_model import ORdmmLandFull
 from .em_model import EMCoupling
+from .cell_model import init_parameter_values, parameter_index
 
 
 logger = utils.getLogger(__name__)
@@ -27,15 +27,21 @@ class Scheme(str, Enum):
 
 
 def _Zeta(Zeta_prev, A, c, dLambda, dt, scheme: Scheme):
-    if scheme == Scheme.analytic:
-        return Zeta_prev * dolfin.exp(-c * dt) + (A * dLambda / c * dt) * (
-            1.0 - dolfin.exp(-c * dt)
-        )
+    dZeta_dt = A * dLambda - Zeta_prev * c
+    dZeta_dt_linearized = -c
+    return (
+        Zeta_prev
+        + dZeta_dt * (dolfin.exp(dZeta_dt_linearized * dt) - 1) / dZeta_dt_linearized
+    )
+    # if scheme == Scheme.analytic:
+    #     return Zeta_prev * dolfin.exp(-c * dt) + (A * dLambda / c * dt) * (
+    #         1.0 - dolfin.exp(-c * dt)
+    #     )
 
-    elif scheme == Scheme.bd:
-        return Zeta_prev + A * dLambda / (1.0 + c * dt)
-    else:
-        return Zeta_prev * (1.0 - c * dt) + A * dLambda
+    # elif scheme == Scheme.bd:
+    #     return Zeta_prev + A * dLambda / (1.0 + c * dt)
+    # else:
+    #     return Zeta_prev * (1.0 - c * dt) + A * dLambda
 
 
 class LandModel(pulse.ActiveModel):
@@ -64,7 +70,7 @@ class LandModel(pulse.ActiveModel):
         self.XS = coupling.XS_mech
         self.XW = coupling.XW_mech
         if parameters is None:
-            parameters = ORdmmLandFull.default_parameters()
+            parameters = init_parameter_values()
 
         self._parameters = parameters
 
@@ -103,11 +109,11 @@ class LandModel(pulse.ActiveModel):
 
     @property
     def Aw(self):
-        Tot_A = self._parameters["Tot_A"]
-        rs = self._parameters["rs"]
-        rw = self._parameters["rw"]
-        scale_popu_rw = self._parameters["scale_popu_rw"]
-        scale_popu_rs = self._parameters["scale_popu_rs"]
+        Tot_A = self._parameters[parameter_index("Tot_A")]
+        rs = self._parameters[parameter_index("rs")]
+        rw = self._parameters[parameter_index("rw")]
+        scale_popu_rw = 1.0  # self._parameters[parameter_index("scale_popu_rw")]
+        scale_popu_rs = 1.0  # self._parameters[parameter_index("scale_popu_rs")]
         return (
             Tot_A
             * rs
@@ -121,12 +127,12 @@ class LandModel(pulse.ActiveModel):
 
     @property
     def cw(self):
-        phi = self._parameters["phi"]
-        kuw = self._parameters["kuw"]
-        rw = self._parameters["rw"]
+        phi = self._parameters[parameter_index("phi")]
+        kuw = self._parameters[parameter_index("kuw")]
+        rw = self._parameters[parameter_index("rw")]
 
-        scale_popu_kuw = self._parameters["scale_popu_kuw"]
-        scale_popu_rw = self._parameters["scale_popu_rw"]
+        scale_popu_kuw = 1.0  # self._parameters[parameter_index("scale_popu_kuw")]
+        scale_popu_rw = 1.0  # self._parameters[parameter_index("scale_popu_rw")]
         return (
             kuw
             * scale_popu_kuw
@@ -137,13 +143,13 @@ class LandModel(pulse.ActiveModel):
 
     @property
     def cs(self):
-        phi = self._parameters["phi"]
-        kws = self._parameters["kws"]
-        rs = self._parameters["rs"]
-        rw = self._parameters["rw"]
-        scale_popu_kws = self._parameters["scale_popu_kws"]
-        scale_popu_rw = self._parameters["scale_popu_rw"]
-        scale_popu_rs = self._parameters["scale_popu_rs"]
+        phi = self._parameters[parameter_index("phi")]
+        kws = self._parameters[parameter_index("kws")]
+        rs = self._parameters[parameter_index("rs")]
+        rw = self._parameters[parameter_index("rw")]
+        scale_popu_kws = 1.0  # self._parameters[parameter_index("scale_popu_kws")]
+        scale_popu_rw = 1.0  # self._parameters[parameter_index("scale_popu_rw")]
+        scale_popu_rs = 1.0  # self._parameters[parameter_index("scale_popu_rs")]
         return (
             kws
             * scale_popu_kws
@@ -209,11 +215,11 @@ class LandModel(pulse.ActiveModel):
     @property
     def Ta(self):
         logger.debug("Evaluate Ta")
-        Tref = self._parameters["Tref"]
-        rs = self._parameters["rs"]
-        scale_popu_Tref = self._parameters["scale_popu_Tref"]
-        scale_popu_rs = self._parameters["scale_popu_rs"]
-        Beta0 = self._parameters["Beta0"]
+        Tref = self._parameters[parameter_index("Tref")]
+        rs = self._parameters[parameter_index("rs")]
+        scale_popu_Tref = 1.0  # self._parameters[parameter_index("scale_popu_Tref")]
+        scale_popu_rs = 1.0  # self._parameters[parameter_index("scale_popu_rs")]
+        Beta0 = self._parameters[parameter_index("Beta0")]
 
         _min = ufl.min_value
         _max = ufl.max_value
@@ -224,11 +230,19 @@ class LandModel(pulse.ActiveModel):
         h_lambda_prima = 1.0 + Beta0 * (lmbda + _min(lmbda, 0.87) - 1.87)
         h_lambda = _max(0, h_lambda_prima)
 
-        return (
+        Ta = (
             h_lambda
             * (Tref * scale_popu_Tref / (rs * scale_popu_rs))
             * (self.XS * (self.Zetas + 1.0) + self.XW * self.Zetaw)
         )
+        print("Ta", self.Ta_current.vector().get_local())
+        print("Zetas", self.Zetas.vector().get_local())
+        print("Zetaw", self.Zetaw.vector().get_local())
+        print("XS", self.XS.vector().get_local())
+        print("XW", self.XW.vector().get_local())
+        print("dLambda", self.dLambda.vector().get_local())
+
+        return Ta
 
     def Wactive(self, F, **kwargs):
         """Active stress energy"""

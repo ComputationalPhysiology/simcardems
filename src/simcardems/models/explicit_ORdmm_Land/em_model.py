@@ -189,7 +189,6 @@ class EMCoupling(em_model.BaseEMCoupling):
                 subspace_index=cell_model.state_index(name),
                 is_pre=True,
             )
-        pass
 
     @property
     def mech_mesh(self):
