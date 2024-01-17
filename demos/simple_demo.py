@@ -25,11 +25,9 @@ config = simcardems.Config(
     outdir=outdir,
     geometry_path=geometry_path,
     geometry_schema_path=geometry_schema_path,
-    loglevel=10,
+    # loglevel=10,
     coupling_type="fully_coupled_ORdmm_Land",
-    # coupling_type="explicit_ORdmm_Land",
-    # mechanics_solve_strategy="fixed",
-    T=20,
+    T=200,
 )
 
 # To see all different configuration options you can visit https://computationalphysiology.github.io/simcardems/api.html#module-simcardems.config

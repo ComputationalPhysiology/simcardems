@@ -119,7 +119,7 @@ def plot_state_traces(
     fig, axs = plt.subplots(2, 2, figsize=(10, 8), sharex=True)
 
     for i, (group, key) in enumerate(
-        (("ep", "lambda"), ("mechanics", "Ta"), ("ep", "V"), ("ep", "Ca")),
+        (("ep", "lambda"), ("mechanics", "Ta"), ("ep", "v"), ("ep", "cai")),
     ):
         ax = axs.flatten()[i]
         try:

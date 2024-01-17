@@ -235,12 +235,12 @@ class LandModel(pulse.ActiveModel):
             * (Tref * scale_popu_Tref / (rs * scale_popu_rs))
             * (self.XS * (self.Zetas + 1.0) + self.XW * self.Zetaw)
         )
-        print("Ta", self.Ta_current.vector().get_local())
-        print("Zetas", self.Zetas.vector().get_local())
-        print("Zetaw", self.Zetaw.vector().get_local())
-        print("XS", self.XS.vector().get_local())
-        print("XW", self.XW.vector().get_local())
-        print("dLambda", self.dLambda.vector().get_local())
+        # print("Ta", self.Ta_current.vector().get_local())
+        # print("Zetas", self.Zetas.vector().get_local())
+        # print("Zetaw", self.Zetaw.vector().get_local())
+        # print("XS", self.XS.vector().get_local())
+        # print("XW", self.XW.vector().get_local())
+        # print("dLambda", self.dLambda.vector().get_local())
 
         return Ta
 

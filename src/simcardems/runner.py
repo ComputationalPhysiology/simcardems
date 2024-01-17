@@ -142,12 +142,12 @@ class Runner:
         if self._config.mechanics_solve_strategy == "fixed":
             return self.coupling.dt_mechanics > self._config.dt_mech
 
-        self.coupling.assigners.assign_pre()
-        norm = self.coupling.assigners.compute_pre_norm()
-        return (
-            norm >= self._config.mech_threshold
-            or self.coupling.dt_mechanics > self._config.dt_mech
-        )
+        # self.coupling.assigners.assign_pre()
+        # norm = self.coupling.assigners.compute_pre_norm()
+        # return (
+        #     norm >= self._config.mech_threshold
+        #     or self.coupling.dt_mechanics > self._config.dt_mech
+        # )
         return True
 
     def _post_mechanics_solve(self) -> None:

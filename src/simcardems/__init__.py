@@ -59,7 +59,7 @@ def set_log_level(level):
 set_log_level(_logging.INFO)
 
 _dolfin.set_log_level(_logging.WARNING)
-for module in ["matplotlib", "h5py", "FFC", "UFL", "UFL_LEGACY"]:
+for module in ["matplotlib", "h5py", "FFC", "UFL", "UFL_LEGACY", "beat"]:
     _logger = _logging.getLogger(module)
     _logger.setLevel(_logging.WARNING)
 
