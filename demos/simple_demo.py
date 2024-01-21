@@ -25,7 +25,6 @@ config = simcardems.Config(
     outdir=outdir,
     geometry_path=geometry_path,
     geometry_schema_path=geometry_schema_path,
-    # loglevel=10,
     coupling_type="fully_coupled_ORdmm_Land",
     T=200,
 )

@@ -197,6 +197,7 @@ class Runner:
             # Solve EP model
             self.coupling.t = TimeStepper.ns2ms(t)
             self.coupling.solve_ep((TimeStepper.ns2ms(t0), TimeStepper.ns2ms(t)))
+            # breakpoint()
             self._post_ep()
 
             if self._solve_mechanics_now():

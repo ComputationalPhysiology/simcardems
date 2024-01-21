@@ -130,7 +130,7 @@ class EMCoupling(BaseEMCoupling):
 
     @property
     def vs(self) -> np.ndarray:
-        return self.ep_solver.ode.values
+        return self.ep_solver.ode.full_values
 
     @property
     def assigners(self) -> datacollector.Assigners:
@@ -291,7 +291,12 @@ class EMCoupling(BaseEMCoupling):
 
         with io.h5pyfile(path, "a") as h5file:
             h5file["ep/vs"] = self.vs
-            h5file["ep/cell_params"] = self.cell_params()
+            cell_params = self.cell_params()
+            if isinstance(cell_params, dict):
+                for k, v in cell_params.items():
+                    h5file[f"ep/cell_params/{k}"] = v
+            else:
+                h5file["ep/cell_params"] = cell_params
 
     @classmethod
     def from_state(

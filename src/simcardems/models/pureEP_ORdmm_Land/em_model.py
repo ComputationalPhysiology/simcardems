@@ -33,7 +33,7 @@ class EMCoupling(BaseEMCoupling):
 
     @property
     def vs(self) -> np.ndarray:
-        return self.ep_solver.ode.values
+        return self.ep_solver.ode.full_values
 
     def register_ep_model(self, solver: beat.MonodomainSplittingSolver):
         logger.debug("Registering EP model")

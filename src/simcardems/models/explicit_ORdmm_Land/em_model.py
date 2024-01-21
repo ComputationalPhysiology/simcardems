@@ -204,7 +204,7 @@ class EMCoupling(em_model.BaseEMCoupling):
 
     @property
     def vs(self) -> np.ndarray:
-        return self.ep_solver.ode.values
+        return self.ep_solver.ode.full_values
 
     @property
     def dLambda_ep(self):

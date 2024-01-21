@@ -71,6 +71,9 @@ class LandModel(pulse.ActiveModel):
         self.XW = coupling.XW_mech
         if parameters is None:
             parameters = init_parameter_values()
+        if isinstance(parameters, dict):
+            # Just pick the endo parameters for now
+            parameters = parameters[0]  # type: ignore
 
         self._parameters = parameters
 
