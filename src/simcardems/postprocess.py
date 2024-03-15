@@ -469,7 +469,7 @@ def extract_biomarkers(
     return d
 
 
-def get_biomarkers(results, outdir, num_models, pcl):
+def get_biomarkers(results, outdir, num_models, pcl=1000):
     biomarker_dict = {}
     fig, ax = plt.subplots()
     for PoMm in range(1, num_models + 1):
