@@ -142,12 +142,13 @@ class Runner:
         if self._config.mechanics_solve_strategy == "fixed":
             return self.coupling.dt_mechanics > self._config.dt_mech
 
-        self.coupling.assigners.assign_pre()
-        norm = self.coupling.assigners.compute_pre_norm()
-        return (
-            norm >= self._config.mech_threshold
-            or self.coupling.dt_mechanics > self._config.dt_mech
-        )
+        # self.coupling.assigners.assign_pre()
+        # norm = self.coupling.assigners.compute_pre_norm()
+        # return (
+        #     norm >= self._config.mech_threshold
+        #     or self.coupling.dt_mechanics > self._config.dt_mech
+        # )
+        return True
 
     def _post_mechanics_solve(self) -> None:
         # Update previous lmbda
@@ -196,6 +197,7 @@ class Runner:
             # Solve EP model
             self.coupling.t = TimeStepper.ns2ms(t)
             self.coupling.solve_ep((TimeStepper.ns2ms(t0), TimeStepper.ns2ms(t)))
+            # breakpoint()
             self._post_ep()
 
             if self._solve_mechanics_now():

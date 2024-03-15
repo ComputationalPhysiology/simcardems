@@ -15,7 +15,7 @@ def test_explicit_ORdmm_Land(geo, tmpdir):
     )
     config = simcardems.Config(outdir=Path(tmpdir), coupling_type="explicit_ORdmm_Land")
     runner = simcardems.Runner.from_models(coupling=coupling, config=config)
-    runner.solve(1.0)
+    runner.solve(10.0)
     assert runner.state_path.is_file()
     new_coupling = models.explicit_ORdmm_Land.EMCoupling.from_state(
         path=runner.state_path,
@@ -55,9 +55,10 @@ def test_pure_ep_ORdmm_Land(geo, tmpdir):
     )
 
     runner = simcardems.Runner.from_models(coupling=coupling, config=config)
-    runner.solve(1.0)
+    runner.solve(10.0)
     assert runner.state_path.is_file()
     new_coupling = models.pureEP_ORdmm_Land.EMCoupling.from_state(
         path=runner.state_path,
     )
+
     assert new_coupling == coupling

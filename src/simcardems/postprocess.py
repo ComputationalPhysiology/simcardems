@@ -119,7 +119,7 @@ def plot_state_traces(
     fig, axs = plt.subplots(2, 2, figsize=(10, 8), sharex=True)
 
     for i, (group, key) in enumerate(
-        (("ep", "lambda"), ("mechanics", "Ta"), ("ep", "V"), ("ep", "Ca")),
+        (("ep", "lambda"), ("mechanics", "Ta"), ("ep", "v"), ("ep", "cai")),
     ):
         ax = axs.flatten()[i]
         try:
@@ -451,19 +451,25 @@ def extract_biomarkers(
         for name, arr in zip(["norm", "x", "y", "z"], [u_norm, ux, uy, uz]):
             d[f"max_displacement_{name}"] = np.max(arr)
             d[f"min_displacement_{name}"] = np.min(arr)
-            d[f"time_to_max_displacement_{name}"] = apf.features.time_to_peak(
-                y=arr,
-                x=time,
+            d[f"time_to_max_displacement_{name}"] = (
+                apf.features.time_to_peak(
+                    y=arr,
+                    x=time,
+                )
+                - time[0]
             )
-            d[f"time_to_min_displacement_{name}"] = apf.features.time_to_peak(
-                y=-arr,
-                x=time,
+            d[f"time_to_min_displacement_{name}"] = (
+                apf.features.time_to_peak(
+                    y=-arr,
+                    x=time,
+                )
+                - time[0]
             )
 
     return d
 
 
-def get_biomarkers(results, outdir, num_models):
+def get_biomarkers(results, outdir, num_models, pcl=1000):
     biomarker_dict = {}
     fig, ax = plt.subplots()
     for PoMm in range(1, num_models + 1):
@@ -473,7 +479,7 @@ def get_biomarkers(results, outdir, num_models):
         V = results[f"m{PoMm}"]["ep"]["V"]
         Ca = results[f"m{PoMm}"]["ep"]["Ca"]
         Ta = results[f"m{PoMm}"]["mechanics"]["Ta"]
-        lmbda = results[f"m{PoMm}"]["mechanics"]["lmbda"]
+        # lmbda = results[f"m{PoMm}"]["mechanics"]["lmbda"]
         u = results[f"m{PoMm}"]["mechanics"]["u"]
         inv_lmbda = results[f"m{PoMm}"]["mechanics"]["inv_lmbda"]
 
@@ -486,7 +492,7 @@ def get_biomarkers(results, outdir, num_models):
             # Create a list with pacing indicators
             pacing = np.zeros_like(time)
             for i in range(0, len(pacing)):
-                if time[i] % 1000 <= 0.09 or i == 0:
+                if time[i] % pcl <= 0.09 or i == 0:
                     pacing[i] = 1
 
             # Overwrite the variables with data from only the last beat
@@ -496,9 +502,10 @@ def get_biomarkers(results, outdir, num_models):
                 pacing,
                 return_interval=True,
             )
+
             Ca = Ca[interval[0] : interval[1]]
             Ta = Ta[interval[0] : interval[1]]
-            lmbda = lmbda[interval[0] : interval[1]]
+            # lmbda = lmbda[interval[0] : interval[1]]
 
             u = u[interval[0] : interval[1], :]
             inv_lmbda = inv_lmbda[interval[0] : interval[1]]
@@ -515,7 +522,7 @@ def get_biomarkers(results, outdir, num_models):
             Ta=Ta,
             time=time,
             Ca=Ca,
-            lmbda=lmbda,
+            # lmbda=lmbda,
             inv_lmbda=inv_lmbda,
             u=u,
         )

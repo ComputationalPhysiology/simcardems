@@ -1,7 +1,9 @@
 from . import cell_model
+from . import cell_model as CellModel
 from . import em_model
-from .cell_model import ORdmmLandPureEp as CellModel
 from .em_model import EMCoupling
+
+# from .cell_model import ORdmmLandPureEp as CellModel
 
 ActiveModel = None
 loggers = [

@@ -1,8 +1,8 @@
 from . import active_model
 from . import cell_model
+from . import cell_model as CellModel
 from . import em_model
 from .active_model import LandModel as ActiveModel
-from .cell_model import ORdmmLandFull as CellModel
 from .em_model import EMCoupling
 
 loggers = [

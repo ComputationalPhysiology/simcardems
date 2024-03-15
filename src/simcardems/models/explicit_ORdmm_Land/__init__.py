@@ -2,9 +2,11 @@ import dolfin
 import pulse
 
 from . import cell_model
+from . import cell_model as CellModel
 from . import em_model
-from .cell_model import ORdmmLandExplicit as CellModel
 from .em_model import EMCoupling
+
+# from .cell_model import ORdmmLandExplicit as CellModel
 
 loggers = [
     "simcardems.explicit_ORdmm_Land.cell_model.logger",
