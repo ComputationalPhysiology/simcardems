@@ -147,13 +147,11 @@ class BaseGeometry(abc.ABC):
 
     @staticmethod
     @abc.abstractmethod
-    def default_markers() -> Dict[str, Tuple[int, int]]:
-        ...
+    def default_markers() -> Dict[str, Tuple[int, int]]: ...
 
     @staticmethod
     @abc.abstractmethod
-    def default_parameters() -> Dict[str, Any]:
-        ...
+    def default_parameters() -> Dict[str, Any]: ...
 
     @staticmethod
     def default_stimulus_domain(mesh: dolfin.Mesh) -> StimulusDomain:
@@ -231,16 +229,13 @@ class BaseGeometry(abc.ABC):
         self,
         mesh: dolfin.Mesh,
         ffun: dolfin.MeshFunction,
-    ) -> pulse.Microstructure:
-        ...
+    ) -> pulse.Microstructure: ...
 
     @abc.abstractmethod
-    def _default_ffun(self, mesh: dolfin.Mesh) -> dolfin.MeshFunction:
-        ...
+    def _default_ffun(self, mesh: dolfin.Mesh) -> dolfin.MeshFunction: ...
 
     @abc.abstractmethod
-    def _default_mesh(self) -> dolfin.Mesh:
-        ...
+    def _default_mesh(self) -> dolfin.Mesh: ...
 
     @property
     def facet_normal(self) -> dolfin.FacetNormal:

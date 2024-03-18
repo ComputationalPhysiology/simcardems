@@ -11,5 +11,4 @@ class BaseCellModel(CardiacCellModel, ABC):
     def update_disease_parameters(
         params: Dict[str, float],
         disease_state: str = "healthy",
-    ) -> None:
-        ...
+    ) -> None: ...
