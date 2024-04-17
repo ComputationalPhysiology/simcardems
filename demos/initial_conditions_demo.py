@@ -20,9 +20,7 @@ geometry_schema_path = here / "geometries/slab.json"
 # Please see https://computationalphysiology.github.io/cardiac_geometries/ for more info about the geometries
 
 # Specify path to the initial conditions for the cell model
-initial_conditions_path = (
-    here / "initial_conditions/fully_coupled_ORdmm_Land/init_5000beats.json"
-)
+initial_conditions_path = here / "initial_conditions/fully_coupled_ORdmm_Land/init_5000beats.json"
 
 config = simcardems.Config(
     outdir=outdir,

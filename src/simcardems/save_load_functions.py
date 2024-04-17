@@ -25,9 +25,7 @@ logger = utils.getLogger(__name__)
 
 
 def vs_functions_to_dict(vs, state_names):
-    return {
-        name: utils.sub_function(vs, index) for index, name in enumerate(state_names)
-    }
+    return {name: utils.sub_function(vs, index) for index, name in enumerate(state_names)}
 
 
 @contextlib.contextmanager

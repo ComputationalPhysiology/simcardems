@@ -73,11 +73,7 @@ class SlabGeometry(BaseGeometry):
 
     def _default_mesh(self) -> dolfin.Mesh:
         return create_boxmesh(
-            **{
-                k: v
-                for k, v in self.parameters.items()
-                if k in ["lx", "ly", "lz", "dx"]
-            },
+            **{k: v for k, v in self.parameters.items() if k in ["lx", "ly", "lz", "dx"]},
         )
 
     @staticmethod

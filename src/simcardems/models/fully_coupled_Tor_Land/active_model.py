@@ -24,9 +24,7 @@ class Scheme(str, Enum):
 
 def _Zeta(Zeta_prev, A, c, dLambda, dt, scheme: Scheme):
     if scheme == Scheme.analytic:
-        return Zeta_prev * dolfin.exp(-c * dt) + (A * dLambda / c * dt) * (
-            1.0 - dolfin.exp(-c * dt)
-        )
+        return Zeta_prev * dolfin.exp(-c * dt) + (A * dLambda / c * dt) * (1.0 - dolfin.exp(-c * dt))
 
     elif scheme == Scheme.bd:
         return Zeta_prev + A * dLambda / (1.0 + c * dt)
@@ -92,9 +90,7 @@ class LandModel(pulse.ActiveModel):
     def dLambda(self):
         logger.debug("Evaluate dLambda")
         self._dLambda.vector()[:] = self.lmbda.vector() - self.lmbda_prev.vector()
-        self._dLambda.vector()[
-            np.where(np.abs(self._dLambda.vector().get_local()) < self._dLambda_tol)[0]
-        ] = 0.0
+        self._dLambda.vector()[np.where(np.abs(self._dLambda.vector().get_local()) < self._dLambda_tol)[0]] = 0.0
         return self._dLambda
 
     @property
@@ -104,12 +100,7 @@ class LandModel(pulse.ActiveModel):
         rw = self._parameters["rw"]
         scale_popu_rw = self._parameters["scale_popu_rw"]
         scale_popu_rs = self._parameters["scale_popu_rs"]
-        return (
-            Tot_A
-            * rs
-            * scale_popu_rs
-            / (rs * scale_popu_rs + rw * scale_popu_rw * (1.0 - (rs * scale_popu_rs)))
-        )
+        return Tot_A * rs * scale_popu_rs / (rs * scale_popu_rs + rw * scale_popu_rw * (1.0 - (rs * scale_popu_rs)))
 
     @property
     def As(self):
@@ -123,13 +114,7 @@ class LandModel(pulse.ActiveModel):
 
         scale_popu_kuw = self._parameters["scale_popu_kuw"]
         scale_popu_rw = self._parameters["scale_popu_rw"]
-        return (
-            kuw
-            * scale_popu_kuw
-            * phi
-            * (1.0 - (rw * scale_popu_rw))
-            / (rw * scale_popu_rw)
-        )
+        return kuw * scale_popu_kuw * phi * (1.0 - (rw * scale_popu_rw)) / (rw * scale_popu_rw)
 
     @property
     def cs(self):
@@ -140,15 +125,7 @@ class LandModel(pulse.ActiveModel):
         scale_popu_kws = self._parameters["scale_popu_kws"]
         scale_popu_rw = self._parameters["scale_popu_rw"]
         scale_popu_rs = self._parameters["scale_popu_rs"]
-        return (
-            kws
-            * scale_popu_kws
-            * phi
-            * rw
-            * scale_popu_rw
-            * (1.0 - (rs * scale_popu_rs))
-            / (rs * scale_popu_rs)
-        )
+        return kws * scale_popu_kws * phi * rw * scale_popu_rw * (1.0 - (rs * scale_popu_rs)) / (rs * scale_popu_rs)
 
     def update_Zetas(self):
         logger.debug("update Zetas")

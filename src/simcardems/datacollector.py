@@ -297,10 +297,7 @@ class DataCollector:
 
     @property
     def function_names(self) -> Dict[str, List[str]]:
-        return {
-            k: [k1 for k1, v1 in v.items() if v1 is not None]
-            for k, v in self._functions.items()
-        }
+        return {k: [k1 for k1, v1 in v.items() if v1 is not None] for k, v in self._functions.items()}
 
     def store(self, t: float) -> None:
         t_str = f"{t:.2f}"
@@ -445,14 +442,10 @@ class DataLoader:
 
             # Find the remaining functions
             self.names = {
-                group: [name for name in self._h5pyfile.get(group, {}).keys()]
-                for group in ["ep", "mechanics"]
+                group: [name for name in self._h5pyfile.get(group, {}).keys()] for group in ["ep", "mechanics"]
             }
 
-            if (
-                not empty_ok
-                and len(self.names["ep"]) + len(self.names["mechanics"]) == 0
-            ):
+            if not empty_ok and len(self.names["ep"]) + len(self.names["mechanics"]) == 0:
                 raise ValueError("No functions found in results file")
 
             # Get time stamps
@@ -466,17 +459,11 @@ class DataLoader:
             }
 
             # An verify that they are all the same
-            self.time_stamps = (
-                None
-                if not all_time_stamps
-                else all_time_stamps[next(iter(all_time_stamps.keys()))]
-            )
+            self.time_stamps = None if not all_time_stamps else all_time_stamps[next(iter(all_time_stamps.keys()))]
             for name in all_time_stamps.keys():
                 assert self.time_stamps == all_time_stamps[name], name
 
-            if not empty_ok and (
-                self.time_stamps is None or len(self.time_stamps) == 0
-            ):
+            if not empty_ok and (self.time_stamps is None or len(self.time_stamps) == 0):
                 raise ValueError("No time stamps found")
 
             # Get the signatures -
@@ -494,10 +481,7 @@ class DataLoader:
                         self._signatures[group][name] = None
 
             if "residual" in self._h5pyfile:
-                self._residual = [
-                    self._h5pyfile["residual"][k][...]
-                    for k in self._h5pyfile["residual"].keys()
-                ]
+                self._residual = [self._h5pyfile["residual"][k][...] for k in self._h5pyfile["residual"].keys()]
             else:
                 self._residual = []
         else:
@@ -525,10 +509,7 @@ class DataLoader:
 
     @property
     def function_names(self) -> Dict[str, List[str]]:
-        return {
-            k: [k1 for k1, v1 in v.items() if v1 is not None]
-            for k, v in self._functions.items()
-        }
+        return {k: [k1 for k1, v1 in v.items() if v1 is not None] for k, v in self._functions.items()}
 
     @property
     def residual(self) -> List[np.ndarray]:
@@ -576,10 +557,7 @@ class DataLoader:
         }
 
         self._dofs = {
-            group: {
-                name: func.function_space().tabulate_dof_coordinates()
-                for name, func in functions.items()
-            }
+            group: {name: func.function_space().tabulate_dof_coordinates() for name, func in functions.items()}
             for group, functions in self._functions.items()
         }
 

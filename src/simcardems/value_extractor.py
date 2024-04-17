@@ -78,8 +78,7 @@ class Boundary(abc.ABC):
 
     @staticmethod
     @abc.abstractmethod
-    def nodes() -> typing.Sequence[str]:
-        ...
+    def nodes() -> typing.Sequence[str]: ...
 
 
 class LVBoundary(Boundary):

@@ -263,14 +263,12 @@ class Simulation:
         )
         coupling.register_ep_model(ep_solver)
         st.info("Create Mechanics model")
-        mech_heart: pulse.MechanicsProblem = (
-            simcardems.setup_models.setup_mechanics_solver(
-                coupling=coupling,
-                cell_params=ep_solver.ode_solver._model.parameters(),
-                linear_solver="superlu_dist",
-                geo=geometry,
-                **mechanics_args,
-            )
+        mech_heart: pulse.MechanicsProblem = simcardems.setup_models.setup_mechanics_solver(
+            coupling=coupling,
+            cell_params=ep_solver.ode_solver._model.parameters(),
+            linear_solver="superlu_dist",
+            geo=geometry,
+            **mechanics_args,
         )
         st.success("Done loading model")
         return simcardems.Runner.from_models(
