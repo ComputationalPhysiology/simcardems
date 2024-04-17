@@ -472,10 +472,7 @@ document.write(`
 
         <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">assigners</span><span class="o">.</span><span class="n">assign_pre</span><span class="p">()</span>
         <span class="n">norm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">assigners</span><span class="o">.</span><span class="n">compute_pre_norm</span><span class="p">()</span>
-        <span class="k">return</span> <span class="p">(</span>
-            <span class="n">norm</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">mech_threshold</span>
-            <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">dt_mechanics</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">dt_mech</span>
-        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">norm</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">mech_threshold</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">dt_mechanics</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">dt_mech</span>
 
     <span class="k">def</span> <span class="nf">_post_mechanics_solve</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># Update previous lmbda</span>

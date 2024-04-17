@@ -176,9 +176,7 @@ We can also compute the activation times for all points through the center of th
 
 ```python
 x = np.linspace(0, geo.parameters["lx"], 50)
-act = [
-    activation_map(xi, geo.parameters["ly"] / 2, geo.parameters["lz"] / 2) for xi in x
-]
+act = [activation_map(xi, geo.parameters["ly"] / 2, geo.parameters["lz"] / 2) for xi in x]
 fig, ax = plt.subplots()
 ax.plot(x, act)
 ax.set_xlabel("$x$ coordinate")

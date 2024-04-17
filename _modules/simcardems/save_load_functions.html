@@ -347,9 +347,7 @@ document.write(`
 <div class="viewcode-block" id="vs_functions_to_dict">
 <a class="viewcode-back" href="../../api.html#simcardems.save_load_functions.vs_functions_to_dict">[docs]</a>
 <span class="k">def</span> <span class="nf">vs_functions_to_dict</span><span class="p">(</span><span class="n">vs</span><span class="p">,</span> <span class="n">state_names</span><span class="p">):</span>
-    <span class="k">return</span> <span class="p">{</span>
-        <span class="n">name</span><span class="p">:</span> <span class="n">utils</span><span class="o">.</span><span class="n">sub_function</span><span class="p">(</span><span class="n">vs</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span> <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">state_names</span><span class="p">)</span>
-    <span class="p">}</span></div>
+    <span class="k">return</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">utils</span><span class="o">.</span><span class="n">sub_function</span><span class="p">(</span><span class="n">vs</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span> <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">state_names</span><span class="p">)}</span></div>
 
 
 

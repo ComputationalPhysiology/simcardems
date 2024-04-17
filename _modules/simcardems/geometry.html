@@ -354,9 +354,7 @@ document.write(`
 <span class="k">def</span> <span class="nf">load_geometry</span><span class="p">(</span>
     <span class="n">mesh_path</span><span class="p">:</span> <span class="n">utils</span><span class="o">.</span><span class="n">PathLike</span><span class="p">,</span>
     <span class="n">schema_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">utils</span><span class="o">.</span><span class="n">PathLike</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">stimulus_domain</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span>
-        <span class="n">Union</span><span class="p">[</span><span class="n">StimulusDomain</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">],</span> <span class="n">StimulusDomain</span><span class="p">]]</span>
-    <span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">stimulus_domain</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">StimulusDomain</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">],</span> <span class="n">StimulusDomain</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;BaseGeometry&quot;</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">.slabgeometry</span> <span class="kn">import</span> <span class="n">SlabGeometry</span>
     <span class="kn">from</span> <span class="nn">.lvgeometry</span> <span class="kn">import</span> <span class="n">LeftVentricularGeometry</span>
@@ -418,9 +416,7 @@ document.write(`
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">parameters</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">stimulus_domain</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span>
-            <span class="n">Union</span><span class="p">[</span><span class="n">StimulusDomain</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">],</span> <span class="n">StimulusDomain</span><span class="p">]]</span>
-        <span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">stimulus_domain</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">StimulusDomain</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">],</span> <span class="n">StimulusDomain</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">mechanics_mesh</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">ep_mesh</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">microstructure</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -457,9 +453,7 @@ document.write(`
 
     <span class="k">def</span> <span class="nf">_handle_stimulus_domain</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">stimulus_domain</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span>
-            <span class="n">Union</span><span class="p">[</span><span class="n">StimulusDomain</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">],</span> <span class="n">StimulusDomain</span><span class="p">]]</span>
-        <span class="p">],</span>
+        <span class="n">stimulus_domain</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">StimulusDomain</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">],</span> <span class="n">StimulusDomain</span><span class="p">]]],</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StimulusDomain</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">stimulus_domain</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">default_stimulus_domain</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ep_mesh</span><span class="p">)</span>
@@ -486,16 +480,14 @@ document.write(`
 <a class="viewcode-back" href="../../api.html#simcardems.geometry.BaseGeometry.default_markers">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">default_markers</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
-        <span class="o">...</span></div>
+    <span class="k">def</span> <span class="nf">default_markers</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span> <span class="o">...</span></div>
 
 
 <div class="viewcode-block" id="BaseGeometry.default_parameters">
 <a class="viewcode-back" href="../../api.html#simcardems.geometry.BaseGeometry.default_parameters">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">default_parameters</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-        <span class="o">...</span></div>
+    <span class="k">def</span> <span class="nf">default_parameters</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span> <span class="o">...</span></div>
 
 
 <div class="viewcode-block" id="BaseGeometry.default_stimulus_domain">
@@ -580,16 +572,13 @@ document.write(`
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">mesh</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">,</span>
         <span class="n">ffun</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">:</span>
-        <span class="o">...</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">:</span> <span class="o">...</span>
 
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">_default_ffun</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mesh</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">:</span>
-        <span class="o">...</span>
+    <span class="k">def</span> <span class="nf">_default_ffun</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mesh</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">:</span> <span class="o">...</span>
 
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">_default_mesh</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">:</span>
-        <span class="o">...</span>
+    <span class="k">def</span> <span class="nf">_default_mesh</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">:</span> <span class="o">...</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">facet_normal</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">FacetNormal</span><span class="p">:</span>
