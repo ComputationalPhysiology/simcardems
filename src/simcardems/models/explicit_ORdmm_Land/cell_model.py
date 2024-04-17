@@ -7,9 +7,13 @@ from collections import OrderedDict
 from typing import Dict
 
 import dolfin
-import ufl
 from dolfin import as_vector
 from dolfin import Constant
+
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
 
 from ... import utils
 from ..cell_model import BaseCellModel

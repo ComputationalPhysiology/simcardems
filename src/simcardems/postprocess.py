@@ -14,6 +14,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tqdm
 
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
+
 from . import utils
 from .datacollector import DataCollector
 from .datacollector import DataGroups
@@ -274,6 +279,43 @@ def make_xdmffiles(results_file, names=None):
 
             except RuntimeError:
                 logger.info(f"Could not save {name}")
+
+
+def ecg_recovery(
+    *,
+    v: dolfin.Function,
+    sigma_b: Union[dolfin.Constant, float],
+    mesh: dolfin.Mesh,
+    dx: Optional[dolfin.Measure] = None,
+    point: Optional[np.ndarray] = None,
+    r: Optional[dolfin.Function] = None,
+) -> float:
+    if dx is None:
+        dx = dolfin.dx(domain=mesh)
+    if r is None:
+        r = dolfin.SpatialCoordinate(mesh) - dolfin.Constant(point)
+    r3 = ufl.sqrt((r**2)) ** 3
+    return (1 / (4 * ufl.pi * sigma_b)) * dolfin.assemble(
+        (ufl.inner(ufl.grad(v), r) / r3) * dx,
+    )
+
+
+def ecg(
+    voltage: Iterable[dolfin.Function],
+    sigma_b: float,
+    point1: tuple[float, float, float],
+    point2: tuple[float, float, float],
+    mesh: Optional[dolfin.Mesh] = None,
+) -> list[float]:
+    values = []
+    for v in voltage:
+        if mesh is None:
+            mesh = v.function_space().mesh()
+        phi1 = ecg_recovery(v=v, sigma_b=sigma_b, point=point1, mesh=mesh)
+        phi2 = ecg_recovery(v=v, sigma_b=sigma_b, point=point2, mesh=mesh)
+        values.append(phi1 - phi2)
+
+    return values
 
 
 def plot_population(results, outdir, num_models, reset_time=True):

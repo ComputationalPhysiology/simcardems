@@ -10,7 +10,11 @@ from typing import TYPE_CHECKING
 import cbcbeat
 import dolfin
 import pulse
-import ufl
+
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
 
 from . import geometry
 from . import utils
