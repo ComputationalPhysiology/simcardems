@@ -204,31 +204,47 @@ class DataCollector:
     ) -> None:
         self.outdir = Path(outdir)
         self._results_file = self.outdir / outfilename
-        self.comm = geo.mesh.mpi_comm()  # FIXME: Is this important?
+        self.comm = geo.mesh.mpi_comm()
+
         self._value_extractor = ValueExtractor(geo)
 
+        file_exist = False
         if reset_state:
-            utils.remove_file(self._results_file)
+            logger.debug("Reset state")
+            utils.remove_file(self._results_file, comm=self.comm)
+
+        else:
+            dolfin.MPI.barrier(self.comm)
+            if self.comm.rank == 0:
+                file_exist = self._results_file.is_file()
+            file_exist = self.comm.bcast(file_exist, root=0)
+            dolfin.MPI.barrier(self.comm)
 
         self._times_stamps = set()
-        if not self._results_file.is_file():
+        logger.debug(f"File {self._results_file} exists: {file_exist}")
+        if not file_exist:
+            logger.debug("Dump geometry")
             geo.dump(self.results_file)
+            logger.debug("Done with dumping geometry")
             from . import __version__
             from packaging.version import parse
 
             version = parse(__version__)
 
-            with h5pyfile(self._results_file, "a") as f:
-                f.create_dataset("version_major", data=version.major)
-                f.create_dataset("version_minor", data=version.minor)
-                f.create_dataset("version_micro", data=version.micro)
+            if self.comm.rank == 0:
+                with h5pyfile(self._results_file, "a", force_serial=True) as f:
+                    f.create_dataset("version_major", data=version.major)
+                    f.create_dataset("version_minor", data=version.minor)
+                    f.create_dataset("version_micro", data=version.micro)
 
         else:
+            logger.debug("Try to read time stamps")
             try:
                 with h5pyfile(self._results_file, "r") as f:
                     self._times_stamps = set(f["ep"]["V"].keys())
             except KeyError:
                 pass
+        logger.debug("Done in datacollector init")
 
         self._functions: Dict[str, Dict[str, dolfin.Function]] = {
             "ep": {},
@@ -238,6 +254,9 @@ class DataCollector:
             "ep": {},
             "mechanics": {},
         }
+        # Let us synchronize so that we done have any processors
+        # that starts storing data before all processors get here
+        # dolfin.MPI.barrier(self.comm)
 
     @property
     def valid_reductions(self) -> List[str]:
@@ -293,27 +312,37 @@ class DataCollector:
         self._times_stamps.add(t_str)
 
         # First do the full values
+        logger.debug(
+            f"Store in file : {self.results_file}, exists: {Path(self.results_file).exists()}",
+        )
+
         with dolfin.HDF5File(self.comm, self.results_file, "a") as h5file:
             for group, names in self.names.items():
                 logger.debug(
-                    f"Save full states in HDF5File {self.results_file} for group {group}",
+                    f"1. Save full states in HDF5File {self.results_file} for group {group}",
                 )
                 for name in names:
-                    logger.debug(f"Save {name}")
+                    logger.debug(
+                        f"1. Save {name}: reduction {self._reductions[group][name]}",
+                    )
                     if self._reductions[group][name] == "full":
                         f = self._functions[group][name]
                         h5file.write(f, f"{group}/{name}/{t_str}")
 
         # Next do the other reductions
-        with h5pyfile(self.results_file, "a") as h5file:
+        with h5pyfile(self.results_file, "a", comm=self.comm) as h5file:
             for group, names in self.names.items():
                 logger.debug(
-                    f"Save reduced states in HDF5File {self.results_file} for group {group}",
+                    f"2. Save reduced states in HDF5File {self.results_file} for group {group}",
                 )
                 for name in names:
-                    logger.debug(f"Save {name}")
+                    logger.debug(
+                        f"2. Save {name}, reduction: {self._reductions[group][name]}",
+                    )
                     if self._reductions[group][name] == "full":
                         continue
+
+                    logger.debug("Here")
 
                     f = self._functions[group][name]
                     value = self._value_extractor.eval(
@@ -323,6 +352,7 @@ class DataCollector:
                     if f"{group}/{name}" not in h5file:
                         h5file.create_group(f"{group}/{name}")
                     h5file[f"{group}/{name}"].create_dataset(t_str, data=value)
+        logger.debug("Done storing")
 
     def save_residual(self, residual, index):
         logger.debug("Save residual")
@@ -358,72 +388,10 @@ class DataLoader:
             raise FileNotFoundError(f"File {h5name} does not exist")
 
         self.geo = load_geometry(self._h5name)
-        self._h5pyfile = h5pyfile(self._h5name, "r").__enter__()
-
-        self.version_major = extract_number_from_h5py(
-            self._h5pyfile.get("version_major"),
-        )
-        self.version_minor = extract_number_from_h5py(
-            self._h5pyfile.get("version_minor"),
-        )
-        self.version_micro = extract_number_from_h5py(
-            self._h5pyfile.get("version_micro"),
-        )
-
-        # Find the remaining functions
-        self.names = {
-            group: [name for name in self._h5pyfile.get(group, {}).keys()]
-            for group in ["ep", "mechanics"]
-        }
-        if not empty_ok and len(self.names["ep"]) + len(self.names["mechanics"]) == 0:
-            raise ValueError("No functions found in results file")
-
-        # Get time stamps
-        all_time_stamps = {
-            "{group}:{name}": sorted(
-                list(self._h5pyfile[group][name].keys()),
-                key=lambda x: float(x),
-            )
-            for group, names in self.names.items()
-            for name in names
-        }
-
-        # An verify that they are all the same
-        self.time_stamps = (
-            None
-            if not all_time_stamps
-            else all_time_stamps[next(iter(all_time_stamps.keys()))]
-        )
-        for name in all_time_stamps.keys():
-            assert self.time_stamps == all_time_stamps[name], name
-
-        if not empty_ok and (self.time_stamps is None or len(self.time_stamps) == 0):
-            raise ValueError("No time stamps found")
-
-        # Get the signatures - FIXME: Add a check that the signature exist.
-        self._signatures: Dict[str, Dict[str, Optional[str]]] = {}
-        for group, names in self.names.items():
-            self._signatures[group] = {}
-            for name in names:
-                try:
-                    self._signatures[group][name] = (
-                        self._h5pyfile[group][name][self.time_stamps[0]]  # type: ignore
-                        .attrs["signature"]
-                        .decode()
-                    )
-                except KeyError:
-                    self._signatures[group][name] = None
-
-        if "residual" in self._h5pyfile:
-            self._residual = [
-                self._h5pyfile["residual"][k][...]
-                for k in self._h5pyfile["residual"].keys()
-            ]
-        else:
-            self._residual = []
+        self._gather_h5py_attributes(empty_ok=empty_ok)
 
         self._h5file = dolfin.HDF5File(
-            self.ep_mesh.mpi_comm(),
+            self.geo.comm(),
             self._h5name.as_posix(),
             "r",
         )
@@ -436,6 +404,114 @@ class DataLoader:
             close_h5pyfile,
             self._h5pyfile,
         )
+
+    def _bcast_attributes(self) -> None:
+        comm = self.geo.comm()
+        if dolfin.MPI.size(comm) == 1:
+            # There is nothing to do
+            return
+
+        dolfin.MPI.barrier(comm)
+        self.version_major: Optional[int] = comm.bcast(self.version_major, root=0)
+        self.version_minor: Optional[int] = comm.bcast(self.version_minor, root=0)
+        self.version_micro: Optional[int] = comm.bcast(self.version_micro, root=0)
+        self.names: Dict[str, List[str]] = comm.bcast(self.names, root=0)
+        self.time_stamps: Optional[np.ndarray] = comm.bcast(self.time_stamps, root=0)
+        self._signatures: Dict[str, Dict[str, Optional[str]]] = comm.bcast(
+            self._signatures,
+            root=0,
+        )
+        self._residual: List[float] = comm.bcast(self._residual, root=0)
+        dolfin.MPI.barrier(comm)
+
+    def _gather_h5py_attributes(self, empty_ok=False):
+        if dolfin.MPI.rank(self.geo.comm()) == 0:
+            self._h5pyfile = h5pyfile(
+                self._h5name,
+                "r",
+                comm=self.geo.comm(),
+                force_serial=True,
+            ).__enter__()
+
+            self.version_major = extract_number_from_h5py(
+                self._h5pyfile.get("version_major"),
+            )
+            self.version_minor = extract_number_from_h5py(
+                self._h5pyfile.get("version_minor"),
+            )
+            self.version_micro = extract_number_from_h5py(
+                self._h5pyfile.get("version_micro"),
+            )
+
+            # Find the remaining functions
+            self.names = {
+                group: [name for name in self._h5pyfile.get(group, {}).keys()]
+                for group in ["ep", "mechanics"]
+            }
+
+            if (
+                not empty_ok
+                and len(self.names["ep"]) + len(self.names["mechanics"]) == 0
+            ):
+                raise ValueError("No functions found in results file")
+
+            # Get time stamps
+            all_time_stamps = {
+                "{group}:{name}": sorted(
+                    list(self._h5pyfile[group][name].keys()),
+                    key=lambda x: float(x),
+                )
+                for group, names in self.names.items()
+                for name in names
+            }
+
+            # An verify that they are all the same
+            self.time_stamps = (
+                None
+                if not all_time_stamps
+                else all_time_stamps[next(iter(all_time_stamps.keys()))]
+            )
+            for name in all_time_stamps.keys():
+                assert self.time_stamps == all_time_stamps[name], name
+
+            if not empty_ok and (
+                self.time_stamps is None or len(self.time_stamps) == 0
+            ):
+                raise ValueError("No time stamps found")
+
+            # Get the signatures -
+            self._signatures = {}
+            for group, names in self.names.items():
+                self._signatures[group] = {}
+                for name in names:
+                    try:
+                        self._signatures[group][name] = (
+                            self._h5pyfile[group][name][self.time_stamps[0]]  # type: ignore
+                            .attrs["signature"]
+                            .decode()
+                        )
+                    except KeyError:
+                        self._signatures[group][name] = None
+
+            if "residual" in self._h5pyfile:
+                self._residual = [
+                    self._h5pyfile["residual"][k][...]
+                    for k in self._h5pyfile["residual"].keys()
+                ]
+            else:
+                self._residual = []
+        else:
+            # Get these from broadcasting
+            self.version_major = None
+            self.version_minor = None
+            self.version_micro = None
+            self.names = {}
+            self.time_stamps = None
+            self._signatures = {}
+            self._residual = []
+
+        dolfin.MPI.barrier(self.geo.comm())
+        self._bcast_attributes()
 
     def __enter__(self):
         return self
@@ -477,19 +553,16 @@ class DataLoader:
 
     def _create_functions(self):
         self._function_spaces = {}
+        logger.debug(f"Create functions from signatures: {self._signatures}")
 
-        for group, signature_dict in self._signatures.items():
+        for group, signature_dict in sorted(self._signatures.items()):
             mesh = self.ep_mesh if group == "ep" else self.mech_mesh
 
-            self._function_spaces.update(
-                {
-                    group: {
-                        signature: dolfin.FunctionSpace(mesh, eval(signature))
-                        for signature in set(signature_dict.values())
-                        if signature is not None
-                    },
-                },
-            )
+            fs_group = {}
+            for signature in sorted(set(signature_dict.values())):
+                logger.debug(signature)
+                fs_group[signature] = dolfin.FunctionSpace(mesh, eval(signature))
+            self._function_spaces[group] = fs_group
 
         self._functions = {
             group: {
@@ -584,7 +657,14 @@ class DataLoader:
         try:
             func = self._functions[group_str][name]
         except KeyError:
-            return self._h5pyfile[group_str][name][t][...].item()  # type: ignore
+            comm = self.geo.comm()
+
+            value = None
+            if dolfin.MPI.rank(comm) == 0:
+                value = self._h5pyfile[group_str][name][t][...].item()  # type: ignore
+            value = comm.bcast(value, root=0)
+
+            return value
         else:
             self._h5file.read(func, f"{group_str}/{name}/{t}/")
             return func

@@ -6,9 +6,13 @@
 
 import simcardems
 from pathlib import Path
-import ufl
 import dolfin
 import matplotlib.pyplot as plt
+
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
 
 
 # Next thing we do is to define the expression for the intermediate that we want to keep track of. In out case we have simple looked at the source code of the cell model and extracted the relevant equations into a function. We have named this function `INaL` since it will give us an expression for the INaL current. This function takes two arguments; the state vector from the EP solver and the parameters for the ODE model.

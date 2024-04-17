@@ -1,6 +1,6 @@
 [![CI](https://github.com/ComputationalPhysiology/simcardems/actions/workflows/main.yml/badge.svg)](https://github.com/ComputationalPhysiology/simcardems/actions/workflows/main.yml)
 [![PyPI version](https://badge.fury.io/py/simcardems.svg)](https://badge.fury.io/py/simcardems)
-[![codecov](https://codecov.io/gh/ComputationalPhysiology/simcardems/branch/main/graph/badge.svg?token=V5DOQ1PUVF)](https://codecov.io/gh/ComputationalPhysiology/simcardems)
+[![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/finsberg/a7290de789564f03eb6b1ee122fce423/raw/simcardems-coverage.json)](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/finsberg/a7290de789564f03eb6b1ee122fce423/raw/simcardems-coverage.json)
 [![github pages](https://github.com/ComputationalPhysiology/simcardems/actions/workflows/github-pages.yml/badge.svg)](https://github.com/ComputationalPhysiology/simcardems/actions/workflows/github-pages.yml)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/ComputationalPhysiology/simcardems/main.svg)](https://results.pre-commit.ci/latest/github/ComputationalPhysiology/simcardems/main)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)

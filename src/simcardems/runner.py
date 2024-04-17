@@ -2,6 +2,7 @@ import json
 import typing
 from pathlib import Path
 
+import dolfin
 from tqdm import tqdm
 
 from . import save_load_functions as io
@@ -221,7 +222,7 @@ def create_progressbar(
 ):
     if time_stepper is None:
         raise ValueError("Please provide a time stepper")
-    if show_progress_bar:
+    if dolfin.MPI.size(dolfin.MPI.comm_world) == 1 and show_progress_bar:
         # Show progressbar
         pbar = tqdm(time_stepper, total=time_stepper.total_steps)
     else:

@@ -40,7 +40,7 @@ jobs:
           python3 -m pip install -e "."
 
       - name: Run benchmark with dx = ${{ matrix.dx }} and dt = ${{ matrix.dt }}
-        run: python3 -m simcardems.benchmark convergence_test --dt=${{ matrix.dt }} --dx=${{ matrix.dx }} --sha=${{ github.sha }}
+        run: python3 -m simcardems.benchmark run convergence_test --dt=${{ matrix.dt }} --dx=${{ matrix.dx }} --sha=${{ github.sha }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2

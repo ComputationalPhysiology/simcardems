@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from collections import defaultdict
 from pathlib import Path
 from typing import Dict
 from typing import Iterable
@@ -15,7 +16,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tqdm
 
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
+
 from . import utils
+from .datacollector import DataCollector
 from .datacollector import DataGroups
 from .datacollector import DataLoader
 
@@ -277,6 +284,43 @@ def make_xdmffiles(results_file, names=None):
                 logger.info(f"Could not save {name}")
 
 
+def ecg_recovery(
+    *,
+    v: dolfin.Function,
+    sigma_b: Union[dolfin.Constant, float],
+    mesh: dolfin.Mesh,
+    dx: Optional[dolfin.Measure] = None,
+    point: Optional[np.ndarray] = None,
+    r: Optional[dolfin.Function] = None,
+) -> float:
+    if dx is None:
+        dx = dolfin.dx(domain=mesh)
+    if r is None:
+        r = dolfin.SpatialCoordinate(mesh) - dolfin.Constant(point)
+    r3 = ufl.sqrt((r**2)) ** 3
+    return (1 / (4 * ufl.pi * sigma_b)) * dolfin.assemble(
+        (ufl.inner(ufl.grad(v), r) / r3) * dx,
+    )
+
+
+def ecg(
+    voltage: Iterable[dolfin.Function],
+    sigma_b: float,
+    point1: tuple[float, float, float],
+    point2: tuple[float, float, float],
+    mesh: Optional[dolfin.Mesh] = None,
+) -> list[float]:
+    values = []
+    for v in voltage:
+        if mesh is None:
+            mesh = v.function_space().mesh()
+        phi1 = ecg_recovery(v=v, sigma_b=sigma_b, point=point1, mesh=mesh)
+        phi2 = ecg_recovery(v=v, sigma_b=sigma_b, point=point2, mesh=mesh)
+        values.append(phi1 - phi2)
+
+    return values
+
+
 def plot_population(results, outdir, num_models, reset_time=True):
     plt.rcParams["svg.fonttype"] = "none"
     plt.rc("axes", labelsize=13)
@@ -356,48 +400,68 @@ def extract_last_beat(y, time, pacing, return_interval=False):
     return lastbeat.y, lastbeat.t
 
 
-def extract_biomarkers(V, Ta, time, Ca, lmbda, inv_lmbda, u):
+def extract_biomarkers(
+    *,
+    V: np.ndarray,
+    time: np.ndarray,
+    Ca: np.ndarray,
+    Ta: Optional[np.ndarray] = None,
+    lmbda: Optional[np.ndarray] = None,
+    inv_lmbda: Optional[np.ndarray] = None,
+    u: Optional[np.ndarray] = None,
+) -> Dict[str, float]:
     d = {}
-    d["maxTa"] = np.max(Ta)
-    d["ampTa"] = np.max(Ta) - np.min(Ta)
-    d["APD40"] = find_duration(V, time, 40)
-    d["APD50"] = find_duration(V, time, 50)
-    d["APD90"] = find_duration(V, time, 90)
-    d["triangulation"] = d["APD90"] - d["APD40"]
+
+    V_beat = apf.Beat(y=V, t=time)
+    Ca_beat = apf.Beat(y=Ca, t=time)
+
+    d["APD40"] = V_beat.apd(40)
+    d["APD50"] = V_beat.apd(50)
+    d["APD90"] = V_beat.apd(90)
+    d["triangulation"] = V_beat.triangulation(high=90, low=40)
     d["Vpeak"] = np.max(V)
     d["Vmin"] = np.min(V)
-    d["dvdt"] = (V[1] - V[0]) / 2.0
+    d["dvdt_max"] = V_beat.maximum_upstroke_velocity()
     d["maxCa"] = np.max(Ca)
     d["ampCa"] = np.max(Ca) - np.min(Ca)
-    d["CaTD50"] = find_duration(Ca, time, 50)
-    d["CaTD80"] = find_duration(Ca, time, 80)
-    d["CaTD90"] = find_duration(Ca, time, 90)
-    d["ttp_Ta"] = find_ttp(Ta, time)
-    d["rt50_Ta"] = find_decaytime(Ta, time, 50)
-    d["rt95_Ta"] = find_decaytime(Ta, time, 5)
-    d["maxlmbda"] = np.max(lmbda)
-    d["minlmbda"] = np.min(lmbda)
-    d["ttplmbda"] = find_ttp(inv_lmbda, time)
-    d["lmbdaD50"] = find_duration(inv_lmbda, time, 50)
-    d["lmbdaD80"] = find_duration(inv_lmbda, time, 80)
-    d["lmbdaD90"] = find_duration(inv_lmbda, time, 90)
-    d["rt50_lmbda"] = find_decaytime(inv_lmbda, time, 50)
-    d["rt95_lmbda"] = find_decaytime(inv_lmbda, time, 5)
+    d["CaTD50"] = Ca_beat.apd(50)
+    d["CaTD80"] = Ca_beat.apd(80)
 
-    u_norm = np.linalg.norm(u, axis=1)
-    ux, uy, uz = u.T
-    for name, arr in zip(["norm", "x", "y", "z"], [u_norm, ux, uy, uz]):
-        d[f"max_displacement_{name}"] = np.abs(np.max(arr))
-        d[f"rel_max_displacement_{name}"] = np.abs(
-            np.min(arr) - np.max(arr),
-        )
-        d[f"max_displacement_perc_{name}"] = d[f"max_displacement_{name}"] * 100 / 20.0
-        d[f"rel_max_displacement_perc_{name}"] = (
-            d[f"rel_max_displacement_{name}"] * 100 / (20.0 - np.abs(np.max(arr)))
-        )
-        d[f"time_to_max_displacement_{name}"] = (
-            time[np.where(arr == np.min(arr))[0][0]] % 1000
-        )
+    if Ta is not None:
+        Ta_beat = apf.Beat(Ta, t=time)
+        d["maxTa"] = np.max(Ta_beat.y)
+        d["ampTa"] = np.max(Ta_beat.y) - np.min(Ta_beat.y)
+        d["ttp_Ta"] = Ta_beat.ttp()
+        d["rt50_Ta"] = Ta_beat.tau(50)
+        d["rt95_Ta"] = Ta_beat.tau(5)
+    if lmbda is not None:
+        d["maxlmbda"] = np.max(lmbda)
+        d["minlmbda"] = np.min(lmbda)
+
+    if inv_lmbda is not None:
+        inv_lmbda_beat = apf.Beat(y=inv_lmbda, t=time)
+        d["ttplmbda"] = inv_lmbda_beat.ttp()
+        d["lmbdaD50"] = inv_lmbda_beat.apd(50)
+        d["lmbdaD80"] = inv_lmbda_beat.apd(80)
+        d["lmbdaD90"] = inv_lmbda_beat.apd(90)
+        d["rt50_lmbda"] = inv_lmbda_beat.tau(50)
+        d["rt95_lmbda"] = inv_lmbda_beat.tau(5)
+
+    if u is not None:
+        u_norm = np.linalg.norm(u, axis=1)
+        ux, uy, uz = u.T
+        for name, arr in zip(["norm", "x", "y", "z"], [u_norm, ux, uy, uz]):
+            d[f"max_displacement_{name}"] = np.max(arr)
+            d[f"min_displacement_{name}"] = np.min(arr)
+            d[f"time_to_max_displacement_{name}"] = apf.features.time_to_peak(
+                y=arr,
+                x=time,
+            )
+            d[f"time_to_min_displacement_{name}"] = apf.features.time_to_peak(
+                y=-arr,
+                x=time,
+            )
+
     return d
 
 
@@ -555,3 +619,99 @@ def activation_map(
         activation_map.vector()[np.where(dofs)[0]] = float(t)
 
     return activation_map
+
+
+def extract_sub_results(
+    results_file: utils.PathLike,
+    output_file: utils.PathLike,
+    t_start: float = 0.0,
+    t_end: Optional[float] = None,
+    names: Optional[Dict[str, List[str]]] = None,
+) -> DataCollector:
+    """Extract sub results from another results file.
+    This can be useful if you have stored a lot of data in one file
+    and you want to create a smaller file containing only a subset
+    of the data (e.g only the last beat)
+
+    Parameters
+    ----------
+    results_file : utils.PathLike
+        The input result file
+    output_file : utils.PathLike
+        Path to file where you want to store the sub results
+    t_start : float, optional
+        Time point indicating when the sub results should start, by default 0.0
+    t_end : float | None, optional
+        Time point indicating when the sub results should end, by default None
+        in which case it will choose the last time point
+    names : Optional[Dict[str, List[str]]], optional
+        A dictionary of names for each group indicating which
+        functions to extract for the sub results. If not provided (default)
+        then all functions will be extracted.
+
+    Returns
+    -------
+    datacollector.DataCollector
+        A data collector containing the sub results
+
+    Raises
+    ------
+    FileNotFoundError
+        If the input file does not exist
+    KeyError
+        If some of the names provided does not exists
+        in the input file
+    """
+    results_file = Path(results_file)
+    if not results_file.is_file():
+        raise FileNotFoundError(f"File {results_file} does not exist")
+
+    loader = DataLoader(results_file)
+    assert loader.time_stamps is not None
+    if names is None:
+        # Extract everything
+        names = loader.names
+
+    t_start_idx = next(
+        (i for i, t in enumerate(map(float, loader.time_stamps)) if t > t_start - 1e-12)
+    )
+    if t_end is None:
+        t_end_idx = len(loader.time_stamps) - 1
+    else:
+        try:
+            t_end_idx = next(
+                i
+                for i, t in enumerate(map(float, loader.time_stamps))
+                if t > t_end + 1e-12
+            )
+        except StopIteration:
+            t_end_idx = len(loader.time_stamps) - 1
+
+    out = Path(output_file)
+    collector = DataCollector(
+        outdir=out.parent,
+        outfilename=out.name,
+        geo=loader.geo,
+    )
+
+    functions: Dict[str, Dict[str, dolfin.Function]] = defaultdict(dict)
+    for group_name, group in names.items():
+        for func_name in group:
+            try:
+                functions[group_name][func_name] = loader._functions[group_name][
+                    func_name
+                ]
+            except KeyError as e:
+                raise KeyError(
+                    f"Invalid group {group_name} and function {func_name}",
+                ) from e
+            collector.register(group_name, func_name, functions[group_name][func_name])
+
+    for ti in loader.time_stamps[t_start_idx:t_end_idx]:
+        for group_name, group in names.items():
+            for func_name in group:
+                functions[group_name][func_name].assign(
+                    loader.get(DataGroups[group_name], func_name, ti),
+                )
+        collector.store(float(ti))
+    return collector

@@ -7,14 +7,14 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/scientificcomputing/fenics-gmsh:2023-02-20
+      image: ghcr.io/scientificcomputing/fenics-gmsh:2023-08-16
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Cache
         id: cache-primes
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.cache/instant
@@ -34,12 +34,32 @@ jobs:
         run: |
           python3 -m pytest
 
-      - name: Coverage report
-        uses: codecov/codecov-action@v3
-        if: github.ref == 'refs/heads/main'
+      - name: Extract Coverage
+        run: |
+          python3 -m coverage report | sed 's/^/    /' >> $GITHUB_STEP_SUMMARY
+          python3 -m coverage json
+          export TOTAL=$(python3 -c "import json;print(json.load(open('coverage.json'))['totals']['percent_covered_display'])")
+          echo "total=$TOTAL" >> $GITHUB_ENV
+
+      - name: Upload HTML report.
+        uses: actions/upload-artifact@v3
         with:
-          fail_ci_if_error: true
-          files: ./coverage.xml
+          name: html-report
+          path: htmlcov
+
+      - name: Create coverage Badge
+        if: github.ref == 'refs/heads/main'
+        uses: schneegans/dynamic-badges-action@v1.6.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: a7290de789564f03eb6b1ee122fce423
+          filename: simcardems-coverage.json
+          label: Coverage
+          message: ${{ env.total }}%
+          minColorRange: 50
+          maxColorRange: 90
+          valColorRange: ${{ env.total }}
+
 
       - name: Install pypa/build
         run: >-

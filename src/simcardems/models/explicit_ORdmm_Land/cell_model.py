@@ -6,12 +6,16 @@ from collections import OrderedDict
 from typing import Dict
 
 import dolfin
-import ufl
-from cbcbeat.cellmodels import CardiacCellModel
 from dolfin import as_vector
 from dolfin import Constant
 
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
+
 from ... import utils
+from ..cell_model import BaseCellModel
 from .em_model import EMCoupling
 
 logger = utils.getLogger(__name__)
@@ -25,7 +29,7 @@ def Min(a, b):
     return (a + b - abs(a - b)) / Constant(2.0)
 
 
-class ORdmmLandExplicit(CardiacCellModel):
+class ORdmmLandExplicit(BaseCellModel):
     def __init__(
         self,
         coupling: EMCoupling,
@@ -48,7 +52,26 @@ class ORdmmLandExplicit(CardiacCellModel):
         self.dLambda = coupling.dLambda_ep
 
     @staticmethod
-    def default_parameters(disease_state: str = "healthy") -> Dict[str, float]:
+    def update_disease_parameters(
+        params: Dict[str, float],
+        disease_state: str = "healthy",
+    ) -> None:
+        if disease_state.lower() == "hf":
+            logger.info("Update scaling parameters for heart failure model")
+            params["HF_scaling_CaMKa"] = 1.50
+            params["HF_scaling_Jrel_inf"] = pow(0.8, 8.0)
+            params["HF_scaling_Jleak"] = 1.3
+            params["HF_scaling_Jup"] = 0.45
+            params["HF_scaling_GNaL"] = 1.3
+            params["HF_scaling_GK1"] = 0.68
+            params["HF_scaling_thL"] = 1.8
+            params["HF_scaling_Gto"] = 0.4
+            params["HF_scaling_Gncx"] = 1.6
+            params["HF_scaling_Pnak"] = 0.7
+            params["HF_scaling_cat50_ref"] = 0.6
+
+    @staticmethod
+    def default_parameters() -> Dict[str, float]:
         """Set-up and return default parameters.
 
         Parameters
@@ -234,20 +257,6 @@ class ORdmmLandExplicit(CardiacCellModel):
                 ("HF_scaling_cat50_ref", 1.0),
             ],
         )
-
-        if disease_state.lower() == "hf":
-            logger.info("Update scaling parameters for heart failure model")
-            params["HF_scaling_CaMKa"] = 1.50
-            params["HF_scaling_Jrel_inf"] = pow(0.8, 8.0)
-            params["HF_scaling_Jleak"] = 1.3
-            params["HF_scaling_Jup"] = 0.45
-            params["HF_scaling_GNaL"] = 1.3
-            params["HF_scaling_GK1"] = 0.68
-            params["HF_scaling_thL"] = 1.8
-            params["HF_scaling_Gto"] = 0.4
-            params["HF_scaling_Gncx"] = 1.6
-            params["HF_scaling_Pnak"] = 0.7
-            params["HF_scaling_cat50_ref"] = 0.6
 
         return params
 

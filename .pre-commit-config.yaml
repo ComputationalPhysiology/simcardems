@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v4.5.0
     hooks:
       - id: check-yaml
       - id: end-of-file-fixer
@@ -9,14 +9,14 @@ repos:
       - id: check-docstring-first
       - id: debug-statements
 
-  - repo: https://github.com/asottile/reorder_python_imports
-    rev: v3.9.0
+  - repo: https://github.com/asottile/reorder-python-imports
+    rev: v3.12.0
     hooks:
       - id: reorder-python-imports
         exclude: ^demos/
 
   - repo: https://github.com/psf/black
-    rev: 23.3.0
+    rev: 23.12.1
     hooks:
       - id: black
 
@@ -26,23 +26,23 @@ repos:
       - id: flake8
 
   - repo: https://github.com/asottile/add-trailing-comma
-    rev: v2.4.0
+    rev: v3.1.0
     hooks:
       - id: add-trailing-comma
 
   - repo: https://github.com/asottile/setup-cfg-fmt
-    rev: v2.2.0
+    rev: v2.5.0
     hooks:
       - id: setup-cfg-fmt
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.2.0
+    rev: v1.8.0
     hooks:
       - id: mypy
         additional_dependencies: ['types-requests']
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v6.31.0
+    rev: v8.3.0
     hooks:
       - id: cspell
         files: src/|docs/source/(.+).md|docs/source/(.+).rst|tests|README.md

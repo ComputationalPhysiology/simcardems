@@ -24,10 +24,12 @@ axlast
 axpy
 Axrf
 Axrs
+aypx
 Bcai
 Bcajsr
 bCaMK
 Bcass
+bcast
 Beta0
 Beta1
 bnd_rigid
@@ -91,6 +93,7 @@ dnass
 dnca
 docname
 docnames
+documentclass
 dofs
 dolfin
 dtype
@@ -142,6 +145,7 @@ GNa
 Gncx
 gotran
 GpCa
+graphicx
 Gsac
 Gsac_k
 Gsac_ns
@@ -177,6 +181,7 @@ icntl
 iF
 iFp
 Ilsbeth
+includegraphics
 infp
 iS
 Isac
@@ -278,6 +283,7 @@ modelparams
 modifyitems
 monodomain
 mpio
+mult
 multigrid
 multiselect
 myocytes
@@ -293,6 +299,7 @@ Neumann
 Nicolay
 Niederer
 nonconvergence
+noninteractive
 ntm
 ntrpn
 numpyfy
@@ -310,6 +317,7 @@ Panfilov
 pathophysiology
 pbar
 PCab
+pdflatex
 perc
 permodel
 petsc
@@ -413,6 +421,7 @@ tauj
 taujp
 taum
 testgroup
+texlive
 tfcaf
 tfcafp
 tfcas
@@ -444,9 +453,11 @@ uflacs
 undiseased
 updegrove
 usecols
+usepackage
 v
 Varr
 vcell
+Vecs
 vffrt
 vfrt
 vjsr

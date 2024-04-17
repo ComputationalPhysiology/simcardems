@@ -47,6 +47,29 @@ class EMCoupling(BaseEMCoupling):
         self.Zetas_ep = dolfin.Function(self.V_ep, name="Zetas_ep")
         self.Zetaw_ep = dolfin.Function(self.V_ep, name="Zetaw_ep")
 
+        self.transfer_matrix = dolfin.PETScDMCollection.create_transfer_matrix(
+            self.V_mech,
+            self.V_ep,
+        ).mat()
+
+    def interpolate(
+        self,
+        f_mech: dolfin.Function,
+        f_ep: dolfin.Function,
+    ) -> dolfin.Function:
+        """Interpolates function from mechanics to ep mesh"""
+
+        x = dolfin.as_backend_type(f_mech.vector()).vec()
+        a, temp = self.transfer_matrix.getVecs()
+        self.transfer_matrix.mult(x, temp)
+        f_ep.vector().vec().aypx(0.0, temp)
+        f_ep.vector().apply("")
+
+        # Remember to free memory allocated by petsc: https://gitlab.com/petsc/petsc/-/issues/1309
+        x.destroy()
+        a.destroy()
+        temp.destroy()
+
     @property
     def coupling_type(self):
         return "fully_coupled_Tor_Land"
@@ -196,9 +219,9 @@ class EMCoupling(BaseEMCoupling):
 
     def mechanics_to_coupling(self):
         logger.debug("Interpolate EP")
-        self.lmbda_ep.interpolate(self.lmbda_mech)
-        self.Zetas_ep.interpolate(self.Zetas_mech)
-        self.Zetaw_ep.interpolate(self.Zetaw_mech)
+        self.interpolate(self.lmbda_mech, self.lmbda_ep)
+        self.interpolate(self.Zetas_mech, self.Zetas_ep)
+        self.interpolate(self.Zetaw_mech, self.Zetaw_ep)
         logger.debug("Done interpolating EP")
 
     def coupling_to_ep(self):
@@ -267,6 +290,7 @@ class EMCoupling(BaseEMCoupling):
             self.cell_params(),
             path,
             "ep/cell_params",
+            comm=self.geometry.comm(),
         )
 
     @classmethod

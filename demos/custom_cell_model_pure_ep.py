@@ -20,10 +20,14 @@ import simcardems
 import simcardems.save_load_functions as io
 from pathlib import Path
 from collections import OrderedDict
-import ufl
 import dolfin
 import cbcbeat
 import matplotlib.pyplot as plt
+
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
 
 
 # `simcardems` provide an interface for this class which can be found in the [`em_model` module](https://github.com/ComputationalPhysiology/simcardems/blob/main/src/simcardems/models/em_model.py). This class comes with some methods already implemented, but it is also possible to provide custom implementations of these methods. Note that all of the methods provided in this base class are used in some way when running a simulation
@@ -95,7 +99,10 @@ class EMCoupling(simcardems.models.em_model.BaseEMCoupling):
 
     @classmethod
     def from_state(
-        cls, path: typing.Union[str, Path], *args, **kwargs
+        cls,
+        path: typing.Union[str, Path],
+        *args,
+        **kwargs,
     ) -> simcardems.models.em_model.BaseEMCoupling:
         print(f"Load state from path {path}")
         path = Path(path)

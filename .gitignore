@@ -1,4 +1,4 @@
-demos/results/
+demos/result*
 *.pvd
 *.vtu
 *.DS_Store

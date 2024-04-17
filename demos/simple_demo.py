@@ -8,6 +8,7 @@
 from pathlib import Path
 import simcardems
 
+
 # First we specifcy the path to the output directory where we want to store the results
 here = Path(__file__).absolute().parent
 outdir = here / "results_simple_demo"
@@ -24,13 +25,15 @@ config = simcardems.Config(
     outdir=outdir,
     geometry_path=geometry_path,
     geometry_schema_path=geometry_schema_path,
+    loglevel=10,
     coupling_type="fully_coupled_ORdmm_Land",
-    T=1000,
+    T=20,
 )
 
 # To see all different configuration options you can visit https://computationalphysiology.github.io/simcardems/api.html#module-simcardems.config
 
 # Next we create a runner for running the simulation, and we also specify how often we want to save the results
+
 runner = simcardems.Runner(config)
 runner.solve(T=config.T, save_freq=config.save_freq, show_progress_bar=True)
 
@@ -60,7 +63,7 @@ simcardems.postprocess.plot_state_traces(outdir.joinpath("results.h5"), "center"
 # We can also save the output to xdmf-files that can be viewed in Paraview
 #
 
-simcardems.postprocess.make_xdmffiles(outdir.joinpath("results.h5"))
+# simcardems.postprocess.make_xdmffiles(outdir.joinpath("results.h5"))
 
 # The `xdmf` files are can be opened in [Paraview](https://www.paraview.org/download/) to visualize the different variables such as in {numref}`Figure {number} <simple-demo-paraview>`.
 #

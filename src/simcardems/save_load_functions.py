@@ -31,14 +31,17 @@ def vs_functions_to_dict(vs, state_names):
 
 
 @contextlib.contextmanager
-def h5pyfile(h5name, filemode="r"):
+def h5pyfile(h5name, filemode="r", force_serial: bool = False, comm=None):
     import h5py
     from mpi4py import MPI
 
-    if h5py.h5.get_config().mpi and dolfin.MPI.size(dolfin.MPI.comm_world) > 1:
+    if comm is None:
+        comm = dolfin.MPI.comm_world
+
+    if h5py.h5.get_config().mpi and dolfin.MPI.size(comm) > 1 and not force_serial:
         h5file = h5py.File(h5name, filemode, driver="mpio", comm=MPI.COMM_WORLD)
     else:
-        if dolfin.MPI.size(dolfin.MPI.comm_world) > 1:
+        if dolfin.MPI.size(comm) > 1 and not force_serial:
             warnings.warn("h5py is not installed with MPI support")
         h5file = h5py.File(h5name, filemode)
     yield h5file
@@ -46,22 +49,27 @@ def h5pyfile(h5name, filemode="r"):
     h5file.close()
 
 
-def dict_to_h5(data, h5name, h5group, use_attrs: bool = True):
-    with h5pyfile(h5name, "a") as h5file:
-        if h5group == "":
-            group = h5file
-        else:
-            group = h5file.create_group(h5group)
-        for k, v in data.items():
-            if use_attrs:
-                group.attrs[k] = v
+def dict_to_h5(data, h5name, h5group, use_attrs: bool = True, comm=None):
+    if comm is None:
+        comm = dolfin.MPI.comm_world
+    if comm.rank == 0:
+        with h5pyfile(h5name, "a", force_serial=True) as h5file:
+            if h5group == "":
+                group = h5file
             else:
-                try:
-                    group.create_dataset(k, data=v)
-                except OSError:
-                    logger.warning(
-                        f"Unable to save key {k} with data {v} in {h5name}/{h5group}",
-                    )
+                group = h5file.create_group(h5group)
+            for k, v in data.items():
+                if use_attrs:
+                    group.attrs[k] = v
+                else:
+                    try:
+                        group.create_dataset(k, data=v)
+                    except OSError:
+                        logger.warning(
+                            f"Unable to save key {k} with data {v} in {h5name}/{h5group}",
+                        )
+    # Synchronize
+    dolfin.MPI.barrier(comm)
 
 
 def decode(x):
@@ -154,17 +162,17 @@ def save_state(
     state_params: Optional[Dict[str, float]] = None,
 ):
     path = Path(path)
-    utils.remove_file(path)
+    utils.remove_file(path, comm=geo.comm())
 
     logger.info(f"Save state to {path}")
     geo.dump(path)
     logger.debug("Save using dolfin.HDF5File")
 
     logger.debug("Save using h5py")
-    dict_to_h5(serialize_dict(config.as_dict()), path, "config")
+    dict_to_h5(serialize_dict(config.as_dict()), path, "config", comm=geo.comm())
     if state_params is None:
         state_params = {}
-    dict_to_h5(serialize_dict(state_params), path, "state_params")
+    dict_to_h5(serialize_dict(state_params), path, "state_params", comm=geo.comm())
 
 
 def load_state(

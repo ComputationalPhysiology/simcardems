@@ -2,7 +2,6 @@ from pathlib import Path
 from unittest import mock
 
 import dolfin
-import h5py
 import pytest
 import simcardems
 
@@ -28,7 +27,7 @@ def test_DataCollector_not_reset_state_when_file_exists(tmp_path, geo):
 def test_DataCollector_create_file_with_geo(tmp_path, geo):
     collector = simcardems.DataCollector(tmp_path, geo=geo)
     assert Path(collector.results_file).is_file()
-    with h5py.File(collector.results_file, "r") as h5file:
+    with simcardems.save_load_functions.h5pyfile(collector.results_file, "r") as h5file:
         assert "geometry" in h5file
 
 

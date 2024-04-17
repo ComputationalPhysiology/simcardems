@@ -1,3 +1,4 @@
+from . import cell_model
 from . import em_model
 from . import explicit_ORdmm_Land
 from . import fully_coupled_ORdmm_Land
@@ -27,6 +28,7 @@ __all__ = [
     "fully_coupled_ORdmm_Land",
     "fully_coupled_Tor_Land",
     "em_model",
+    "cell_model",
     "pureEP_ORdmm_Land",
     "loggers",
 ]

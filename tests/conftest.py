@@ -13,7 +13,7 @@ empty_mark = Mark("", [], {})
 
 
 def by_slow_marker(item):
-    return item.get_closest_marker("slow", default=empty_mark)
+    return item.get_closest_marker("slow", default=empty_mark).name != "slow"
 
 
 def pytest_collection_modifyitems(items):
@@ -33,7 +33,7 @@ def geo():
     )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture  # (scope="session")
 def mesh(geo):
     return geo.mesh
 
@@ -72,7 +72,8 @@ def ep_solver(request, coupling):
     }
 
     with mock.patch(
-        "simcardems.setup_models.cbcbeat.splittingsolver.CardiacODESolver", **config
+        "simcardems.setup_models.cbcbeat.splittingsolver.CardiacODESolver",
+        **config,
     ) as m:
         instance = m.return_value
         instance.solution_fields.return_value = (vs_, vs)
