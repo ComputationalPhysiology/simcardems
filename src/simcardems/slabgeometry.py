@@ -17,7 +17,7 @@ def create_boxmesh(lx, ly, lz, dx=0.5, refinements=0):
     # Create computational domain [0, lx] x [0, ly] x [0, lz]
     # with resolution prescribed by benchmark or more refinements
 
-    N = lambda v: int(np.rint(v))
+    N = lambda v: int(np.rint(v))  # noqa: E731
     mesh = dolfin.BoxMesh(
         dolfin.MPI.comm_world,
         dolfin.Point(0.0, 0.0, 0.0),
@@ -73,11 +73,7 @@ class SlabGeometry(BaseGeometry):
 
     def _default_mesh(self) -> dolfin.Mesh:
         return create_boxmesh(
-            **{
-                k: v
-                for k, v in self.parameters.items()
-                if k in ["lx", "ly", "lz", "dx"]
-            },
+            **{k: v for k, v in self.parameters.items() if k in ["lx", "ly", "lz", "dx"]},
         )
 
     @staticmethod
@@ -104,7 +100,7 @@ class SlabGeometry(BaseGeometry):
             f"ly={self.parameters['ly']}, "
             f"lz={self.parameters['lz']}, "
             f"dx={self.parameters['dx']}, "
-            f"num_refinements={self.parameters['num_refinements']})"
+            f"num_refinements={self.parameters['num_refinements']}"
         )
 
 

@@ -29,9 +29,7 @@ class StimulusDomain(NamedTuple):
 def load_geometry(
     mesh_path: utils.PathLike,
     schema_path: Optional[utils.PathLike] = None,
-    stimulus_domain: Optional[
-        Union[StimulusDomain, Callable[[dolfin.Mesh], StimulusDomain]]
-    ] = None,
+    stimulus_domain: Optional[Union[StimulusDomain, Callable[[dolfin.Mesh], StimulusDomain]]] = None,
 ) -> "BaseGeometry":
     from .slabgeometry import SlabGeometry
     from .lvgeometry import LeftVentricularGeometry
@@ -87,9 +85,7 @@ class BaseGeometry(abc.ABC):
     def __init__(
         self,
         parameters: Optional[Dict[str, Any]] = None,
-        stimulus_domain: Optional[
-            Union[StimulusDomain, Callable[[dolfin.Mesh], StimulusDomain]]
-        ] = None,
+        stimulus_domain: Optional[Union[StimulusDomain, Callable[[dolfin.Mesh], StimulusDomain]]] = None,
         mechanics_mesh: Optional[dolfin.Mesh] = None,
         ep_mesh: Optional[dolfin.Mesh] = None,
         microstructure: Optional[pulse.Microstructure] = None,
@@ -126,9 +122,7 @@ class BaseGeometry(abc.ABC):
 
     def _handle_stimulus_domain(
         self,
-        stimulus_domain: Optional[
-            Union[StimulusDomain, Callable[[dolfin.Mesh], StimulusDomain]]
-        ],
+        stimulus_domain: Optional[Union[StimulusDomain, Callable[[dolfin.Mesh], StimulusDomain]]],
     ) -> StimulusDomain:
         if stimulus_domain is None:
             return type(self).default_stimulus_domain(self.ep_mesh)
@@ -147,13 +141,11 @@ class BaseGeometry(abc.ABC):
 
     @staticmethod
     @abc.abstractmethod
-    def default_markers() -> Dict[str, Tuple[int, int]]:
-        ...
+    def default_markers() -> Dict[str, Tuple[int, int]]: ...
 
     @staticmethod
     @abc.abstractmethod
-    def default_parameters() -> Dict[str, Any]:
-        ...
+    def default_parameters() -> Dict[str, Any]: ...
 
     @staticmethod
     def default_stimulus_domain(mesh: dolfin.Mesh) -> StimulusDomain:
@@ -231,16 +223,13 @@ class BaseGeometry(abc.ABC):
         self,
         mesh: dolfin.Mesh,
         ffun: dolfin.MeshFunction,
-    ) -> pulse.Microstructure:
-        ...
+    ) -> pulse.Microstructure: ...
 
     @abc.abstractmethod
-    def _default_ffun(self, mesh: dolfin.Mesh) -> dolfin.MeshFunction:
-        ...
+    def _default_ffun(self, mesh: dolfin.Mesh) -> dolfin.MeshFunction: ...
 
     @abc.abstractmethod
-    def _default_mesh(self) -> dolfin.Mesh:
-        ...
+    def _default_mesh(self) -> dolfin.Mesh: ...
 
     @property
     def facet_normal(self) -> dolfin.FacetNormal:

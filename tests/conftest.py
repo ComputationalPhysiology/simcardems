@@ -51,9 +51,7 @@ def cell_params():
 @pytest.fixture(
     params=[
         "",
-        _here.parent.joinpath("demos")
-        .joinpath("initial_conditions")
-        .joinpath("init_5000beats.json"),
+        _here.parent.joinpath("demos").joinpath("initial_conditions").joinpath("init_5000beats.json"),
     ],
 )
 def ep_solver(request, coupling):

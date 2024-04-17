@@ -65,8 +65,7 @@ def extract_traces(
         return {}
 
     values = {
-        group: {name: np.zeros(loader.size) for name in names if name != "u"}
-        for group, names in loader.names.items()
+        group: {name: np.zeros(loader.size) for name in names if name != "u"} for group, names in loader.names.items()
     }
 
     if "u" in loader.names.get("mechanics", {}):
@@ -672,18 +671,12 @@ def extract_sub_results(
         # Extract everything
         names = loader.names
 
-    t_start_idx = next(
-        (i for i, t in enumerate(map(float, loader.time_stamps)) if t > t_start - 1e-12)
-    )
+    t_start_idx = next((i for i, t in enumerate(map(float, loader.time_stamps)) if t > t_start - 1e-12))
     if t_end is None:
         t_end_idx = len(loader.time_stamps) - 1
     else:
         try:
-            t_end_idx = next(
-                i
-                for i, t in enumerate(map(float, loader.time_stamps))
-                if t > t_end + 1e-12
-            )
+            t_end_idx = next(i for i, t in enumerate(map(float, loader.time_stamps)) if t > t_end + 1e-12)
         except StopIteration:
             t_end_idx = len(loader.time_stamps) - 1
 
@@ -698,9 +691,7 @@ def extract_sub_results(
     for group_name, group in names.items():
         for func_name in group:
             try:
-                functions[group_name][func_name] = loader._functions[group_name][
-                    func_name
-                ]
+                functions[group_name][func_name] = loader._functions[group_name][func_name]
             except KeyError as e:
                 raise KeyError(
                     f"Invalid group {group_name} and function {func_name}",

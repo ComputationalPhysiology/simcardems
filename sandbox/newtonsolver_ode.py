@@ -60,10 +60,7 @@ bcs = [dolfin.DirichletBC(V, g, "near(x[0], 1.0) and on_boundary")]
 u = dolfin.Function(V)
 v = dolfin.TestFunction(V)
 f = dolfin.Expression("x[0]*sin(x[1])", degree=2)
-F = (
-    dolfin.inner((1 + u**2) * dolfin.grad(u), dolfin.grad(v)) * dolfin.dx
-    - f * v * dolfin.dx
-)
+F = dolfin.inner((1 + u**2) * dolfin.grad(u), dolfin.grad(v)) * dolfin.dx - f * v * dolfin.dx
 J = dolfin.derivative(F, u)
 
 problem = Problem(J, F, bcs)

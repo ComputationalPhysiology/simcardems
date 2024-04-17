@@ -41,11 +41,11 @@ def strain_energy(F, p, f0, Ta):
     I1 = Jm23 * dolfin.tr(C)
     I4f = Jm23 * dolfin.inner(C * f0, f0)
 
-    psi_passive = a / (2.0 * b) * (dolfin.exp(b * (I1 - 3)) - 1.0) + a_f / (
-        2.0 * b_f
-    ) * (dolfin.exp(b_f * subplus(I4f - 1) ** 2) - 1.0)
+    psi_passive = a / (2.0 * b) * (dolfin.exp(b * (I1 - 3)) - 1.0) + a_f / (2.0 * b_f) * (
+        dolfin.exp(b_f * subplus(I4f - 1) ** 2) - 1.0
+    )
     psi_incompressibilty = p * (J - 1)
-    psi_active = dolfin.Constant(0.5) * Ta * ((I4f - 1))
+    psi_active = dolfin.Constant(0.5) * Ta * (I4f - 1)
     return psi_passive + psi_incompressibilty + psi_active
 
 
@@ -176,4 +176,4 @@ lmbda_quad_local = local_project(
     V_cg1,
 )
 # Method for saving quadrature functions to xdmf
-dolfin.File("lmbda_cg1_local_project.pvd") << lmbda_quad_local,
+(dolfin.File("lmbda_cg1_local_project.pvd") << lmbda_quad_local,)

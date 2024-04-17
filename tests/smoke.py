@@ -1,4 +1,5 @@
 """Same as simple demo, but only 20 ms"""
+
 from pathlib import Path
 
 import simcardems

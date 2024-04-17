@@ -192,10 +192,7 @@ def create_table_dx(feature_keys, features, fixed_dt, dxs):
         body += (
             f" {underscore_to_space(feature)} & "
             + " & ".join(
-                [
-                    underscore_to_space(to_string(features[(dx, fixed_dt)][feature]))
-                    for dx in dxs
-                ],
+                [underscore_to_space(to_string(features[(dx, fixed_dt)][feature])) for dx in dxs],
             )
             + "\\\\ \n"
         )
@@ -224,10 +221,7 @@ def create_table_dt(feature_keys, features, fixed_dx, dts):
         body += (
             f" {underscore_to_space(feature)} & "
             + " & ".join(
-                [
-                    underscore_to_space(to_string(features[(fixed_dx, dt)][feature]))
-                    for dt in dts
-                ],
+                [underscore_to_space(to_string(features[(fixed_dx, dt)][feature])) for dt in dts],
             )
             + "\\\\ \n"
         )
@@ -280,8 +274,7 @@ def generate_report(outdir):
     feature_keys = [
         k
         for k in features[tuple(features.keys())[0]].keys()
-        if k
-        not in ["dt", "dx", "sha", "timestamp", "simcardems_version", "coupling_type"]
+        if k not in ["dt", "dx", "sha", "timestamp", "simcardems_version", "coupling_type"]
     ]
 
     timestamp = features[tuple(features.keys())[0]]["timestamp"]

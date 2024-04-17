@@ -27,7 +27,9 @@ def run_benchmark():
 
     S1_marker = 1
     L = 1.5
-    S1_subdomain_str = f"x[0] <= {L} + DOLFIN_EPS && x[1] <= {L} + DOLFIN_EPS && x[2] <= {L} + DOLFIN_EPS"
+    S1_subdomain_str = (
+        f"x[0] <= {L} + DOLFIN_EPS && x[1] <= {L} + DOLFIN_EPS && x[2] <= {L} + DOLFIN_EPS"
+    )
     S1_subdomain = dolfin.CompiledSubDomain(S1_subdomain_str)
     S1_markers = dolfin.MeshFunction(
         "size_t",

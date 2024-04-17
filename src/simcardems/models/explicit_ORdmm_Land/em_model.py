@@ -255,9 +255,7 @@ class EMCoupling(em_model.BaseEMCoupling):
         self.mech_solver = solver
         self.Ta_mech = self.mech_solver.material.activation
 
-        self._u_subspace_index = (
-            1 if type(solver).__name__ == "RigidMotionProblem" else 0
-        )
+        self._u_subspace_index = 1 if type(solver).__name__ == "RigidMotionProblem" else 0
         self.u_mech, self.u_mech_assigner = utils.setup_assigner(
             solver.state,
             self._u_subspace_index,

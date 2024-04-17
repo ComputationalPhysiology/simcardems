@@ -240,8 +240,7 @@ class Fitzhughnagumo(cbcbeat.cellmodels.CardiacCellModel):
 
         F_expressions = [
             # Derivative for state s
-            (-c_3 * s + v - v_rest)
-            * b,
+            (-c_3 * s + v - v_rest) * b,
         ]
 
         return F_expressions[0]

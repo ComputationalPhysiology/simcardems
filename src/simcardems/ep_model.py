@@ -263,12 +263,7 @@ def setup_splitting_solver_parameters(
 
 
 def file_exist(filename: Optional[str], suffix: str) -> bool:
-    return (
-        filename is not None
-        and filename != ""
-        and Path(filename).is_file()
-        and Path(filename).suffix == suffix
-    )
+    return filename is not None and filename != "" and Path(filename).is_file() and Path(filename).suffix == suffix
 
 
 def load_json(filename: str):
