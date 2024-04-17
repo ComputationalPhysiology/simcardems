@@ -1,13 +1,12 @@
 
-
 <!DOCTYPE html>
 
 
-<html lang="en" data-content_root="" >
+<html lang="en" data-content_root="./" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Graphical user interface &#8212; simcardems</title>
   
@@ -29,48 +28,44 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
-    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=384b581d" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
-    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/clipboard.min.js"></script>
-    <script src="_static/copybutton.js"></script>
-    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="_static/togglebutton.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/togglebutton.js?v=4a39c7ea"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <script src="_static/design-tabs.js"></script>
-    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
-const thebe_selector = ".thebe,.cell"
-const thebe_selector_input = "pre"
-const thebe_selector_output = ".output, .cell_output"
-</script>
-    <script async="async" src="_static/sphinx-thebe.js"></script>
+    <script src="_static/design-tabs.js?v=36754332"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'gui';</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Benchmark" href="benchmark.html" />
     <link rel="prev" title="Run using Docker" href="docker.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Jan 21, 2024"/>
+    <meta name="docbuild:last-update" content="Apr 17, 2024"/>
   </head>
   
   
@@ -162,7 +157,18 @@ const thebe_selector_output = ".output, .cell_output"
   
   
 </a></div>
-        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">Installation</span></p>
 <ul class="nav bd-sidenav">
@@ -375,18 +381,18 @@ document.write(`
                 <article class="bd-article">
                   
   <section class="tex2jax_ignore mathjax_ignore" id="graphical-user-interface">
-<h1>Graphical user interface<a class="headerlink" href="#graphical-user-interface" title="Permalink to this heading">#</a></h1>
+<h1>Graphical user interface<a class="headerlink" href="#graphical-user-interface" title="Link to this heading">#</a></h1>
 <p>We also developed a lightweight graphical user interface for <code class="docutils literal notranslate"><span class="pre">simcardems</span></code> based on <a class="reference external" href="https://streamlit.io">streamlit</a> and <a class="reference external" href="https://pypi.org/project/fenics-plotly/"><code class="docutils literal notranslate"><span class="pre">fenics_plotly</span></code></a>.</p>
 <section id="running-gui-in-docker">
-<h2>Running GUI in Docker<a class="headerlink" href="#running-gui-in-docker" title="Permalink to this heading">#</a></h2>
+<h2>Running GUI in Docker<a class="headerlink" href="#running-gui-in-docker" title="Link to this heading">#</a></h2>
 <p>To run the GUI inside the docker container you need to forward the port where the GUI is running from the Docker container to your computer. The GUI is running by default on port 8501, and you can forward this port by running the container as follows</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">run</span> <span class="o">--</span><span class="n">rm</span> <span class="o">-</span><span class="n">p</span> <span class="mi">8501</span><span class="p">:</span><span class="mi">8501</span> <span class="o">-</span><span class="n">it</span> <span class="n">ghcr</span><span class="o">.</span><span class="n">io</span><span class="o">/</span><span class="n">computationalphysiology</span><span class="o">/</span><span class="n">simcardems</span><span class="p">:</span>
 </pre></div>
 </div>
-<p>Please also consult <a class="reference internal" href="docker.html"><span class="doc std std-doc">Run docker</span></a> for more options on how to use Docker.</p>
+<p>Please also consult <a class="reference internal" href="docker.html"><span class="std std-doc">Run docker</span></a> for more options on how to use Docker.</p>
 </section>
 <section id="running-the-gui-outside-docker">
-<h2>Running the gui outside Docker<a class="headerlink" href="#running-the-gui-outside-docker" title="Permalink to this heading">#</a></h2>
+<h2>Running the gui outside Docker<a class="headerlink" href="#running-the-gui-outside-docker" title="Link to this heading">#</a></h2>
 <p>In order to run the gui you need to first install <code class="docutils literal notranslate"><span class="pre">streamlit</span></code> and <code class="docutils literal notranslate"><span class="pre">fenics_plotly</span></code>, which can be done by either installing these packages separately, i.e</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">streamlit</span> <span class="n">fenics_plotly</span>
 </pre></div>
@@ -397,7 +403,7 @@ document.write(`
 </div>
 </section>
 <section id="starting-the-gui">
-<h2>Starting the gui<a class="headerlink" href="#starting-the-gui" title="Permalink to this heading">#</a></h2>
+<h2>Starting the gui<a class="headerlink" href="#starting-the-gui" title="Link to this heading">#</a></h2>
 <p>You can run the gui from the command line by executing the following command</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">simcardems</span> <span class="n">gui</span>
 </pre></div>
@@ -405,18 +411,18 @@ document.write(`
 <p>This will open up a browser with an about page, and you can click on the <code class="docutils literal notranslate"><span class="pre">Simulation</span></code> radio button to get options about running a simulation. If no browser opens automatically, you can try to manually open the browser and go to the url <a class="reference external" href="http://localhost:8501">http://localhost:8501</a></p>
 </section>
 <section id="running-a-simulation">
-<h2>Running a simulation<a class="headerlink" href="#running-a-simulation" title="Permalink to this heading">#</a></h2>
+<h2>Running a simulation<a class="headerlink" href="#running-a-simulation" title="Link to this heading">#</a></h2>
 <figure class="align-default" id="gui1">
 <img alt="_images/gui1.png" src="_images/gui1.png" />
 <figcaption>
-<p><span class="caption-number">Fig. 16 </span><span class="caption-text">Options for running a simulation</span><a class="headerlink" href="#gui1" title="Permalink to this image">#</a></p>
+<p><span class="caption-number">Fig. 16 </span><span class="caption-text">Options for running a simulation</span><a class="headerlink" href="#gui1" title="Link to this image">#</a></p>
 </figcaption>
 </figure>
 <p>If you select some options it will setup the models, and you can plot the mechanics mesh and the ep mesh inside the gui.</p>
 <figure class="align-default" id="gui2">
 <img alt="_images/gui2.png" src="_images/gui2.png" />
 <figcaption>
-<p><span class="caption-number">Fig. 17 </span><span class="caption-text">Visualize the mesh and run the simulation.</span><a class="headerlink" href="#gui2" title="Permalink to this image">#</a></p>
+<p><span class="caption-number">Fig. 17 </span><span class="caption-text">Visualize the mesh and run the simulation.</span><a class="headerlink" href="#gui2" title="Link to this image">#</a></p>
 </figcaption>
 </figure>
 <p>To run the simulation, you need to first create an output directory, which will be located in your home directory under a folder called <code class="docutils literal notranslate"><span class="pre">simcardems</span></code>, i.e <code class="docutils literal notranslate"><span class="pre">~/simcardems</span></code>. Each individual result will be stored in a separate subfolder which will be <code class="docutils literal notranslate"><span class="pre">results_&lt;id&gt;</span></code> where <code class="docutils literal notranslate"><span class="pre">id</span></code> is some hash of the input parameters. You can also change this to something different.</p>
@@ -426,12 +432,12 @@ document.write(`
 </div>
 </section>
 <section id="postprocessing-the-results">
-<h2>Postprocessing the results<a class="headerlink" href="#postprocessing-the-results" title="Permalink to this heading">#</a></h2>
+<h2>Postprocessing the results<a class="headerlink" href="#postprocessing-the-results" title="Link to this heading">#</a></h2>
 <p>To look at the results you can click the <code class="docutils literal notranslate"><span class="pre">Postprocess</span></code> tab. Here you can select the folder you want to postprocess. By default it will list all the subfolder in the <code class="docutils literal notranslate"><span class="pre">simcardems</span></code> folder in your home directory.</p>
 <figure class="align-default" id="gui3">
 <img alt="_images/gui3.png" src="_images/gui3.png" />
 <figcaption>
-<p><span class="caption-number">Fig. 18 </span><span class="caption-text">Postprocess the results.</span><a class="headerlink" href="#gui3" title="Permalink to this image">#</a></p>
+<p><span class="caption-number">Fig. 18 </span><span class="caption-text">Postprocess the results.</span><a class="headerlink" href="#gui3" title="Link to this image">#</a></p>
 </figcaption>
 </figure>
 </section>
@@ -539,7 +545,7 @@ By Simula Research Laboratory
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Jan 21, 2024.
+  Last updated on Apr 17, 2024.
   <br/>
 </p>
   </div>

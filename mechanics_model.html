@@ -1,13 +1,12 @@
 
-
 <!DOCTYPE html>
 
 
-<html lang="en" data-content_root="" >
+<html lang="en" data-content_root="./" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Tissue level mechanics model &#8212; simcardems</title>
   
@@ -29,50 +28,46 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
-    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=384b581d" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
-    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/clipboard.min.js"></script>
-    <script src="_static/copybutton.js"></script>
-    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="_static/togglebutton.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/togglebutton.js?v=4a39c7ea"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <script src="_static/design-tabs.js"></script>
-    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
-const thebe_selector = ".thebe,.cell"
-const thebe_selector_input = "pre"
-const thebe_selector_output = ".output, .cell_output"
-</script>
-    <script async="async" src="_static/sphinx-thebe.js"></script>
+    <script src="_static/design-tabs.js?v=36754332"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
     <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'mechanics_model';</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Tissue level electrophysiology model" href="electrophysiology_model.html" />
     <link rel="prev" title="Install with pip" href="install_pip.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Jan 21, 2024"/>
+    <meta name="docbuild:last-update" content="Apr 17, 2024"/>
   </head>
   
   
@@ -164,7 +159,18 @@ const thebe_selector_output = ".output, .cell_output"
   
   
 </a></div>
-        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">Installation</span></p>
 <ul class="nav bd-sidenav">
@@ -377,7 +383,7 @@ document.write(`
                 <article class="bd-article">
                   
   <section class="tex2jax_ignore mathjax_ignore" id="tissue-level-mechanics-model">
-<span id="section-mechanics"></span><h1>Tissue level mechanics model<a class="headerlink" href="#tissue-level-mechanics-model" title="Permalink to this heading">#</a></h1>
+<span id="section-mechanics"></span><h1>Tissue level mechanics model<a class="headerlink" href="#tissue-level-mechanics-model" title="Link to this heading">#</a></h1>
 <p>The equations of motion at the tissue level can be derived from the conservations laws of linear and angular momentum. The reader is referred to <span id="id1">[<a class="reference internal" href="#id7" title="A Gerhard Holzapfel. Nonlinear solid mechanics II. John Wiley &amp; Sons, Inc., 2000.">Hol00</a>]</span> for more details.</p>
 <p>We represent the tissue as a non-linear, incompressible hyperelastic material that satisfies the equilibrium equation</p>
 <div class="math notranslate nohighlight">
@@ -387,10 +393,10 @@ document.write(`
 \[\mathbf{P} = \frac{\partial \Psi}{\partial \mathbf{F}}\]</div>
 <p>where <span class="math notranslate nohighlight">\(\Psi\)</span> is the strain energy density function and <span class="math notranslate nohighlight">\(\mathbf{F}\)</span> is the deformation gradient.</p>
 <section id="passive-mechanics">
-<h2>Passive mechanics<a class="headerlink" href="#passive-mechanics" title="Permalink to this heading">#</a></h2>
+<h2>Passive mechanics<a class="headerlink" href="#passive-mechanics" title="Link to this heading">#</a></h2>
 <p>We use the model from <span id="id2">[<a class="reference internal" href="#id8" title="Gerhard A Holzapfel and Ray W Ogden. Constitutive modelling of passive myocardium: a structurally based framework for material characterization. Philosophical Transactions of the Royal Society A: Mathematical, Physical and Engineering Sciences, 367(1902):3445–3475, 2009.">HO09</a>]</span> which is given by</p>
 <div class="math notranslate nohighlight" id="equation-holzapfel-full">
-<span class="eqno">(1)<a class="headerlink" href="#equation-holzapfel-full" title="Permalink to this equation">#</a></span>\[\begin{split}\begin{align}
+<span class="eqno">(1)<a class="headerlink" href="#equation-holzapfel-full" title="Link to this equation">#</a></span>\[\begin{split}\begin{align}
   \begin{split}
   \Psi(I_1, I_{4_{f}},  I_{4_{s}},  I_{8_{fs}}) =&amp; \frac{a}{2 b} \left( e^{ b (I_1 - 3)}  -1 \right)\\
   +&amp; \frac{a_f}{2 b_f} \left( e^{ b_f (I_{4_{f}} - 1)_+^2} -1 \right) \\
@@ -402,10 +408,10 @@ document.write(`
 <p>For more info about this model the reader is referred to the original paper. Note that the choice of material model here represents what is called constitutive relations. Constitutive relations is what makes the mechanics model specific to the heart tissue material.</p>
 <p>One important quantity that will be relevant for the electromechanical coupling is the <em>stretch</em>. While it is common to speak about stretch along a specific direction, we will always refer to stretch as the stretch along the fiber direction <span class="math notranslate nohighlight">\(f\)</span>,</p>
 <div class="math notranslate nohighlight" id="equation-stretch">
-<span class="eqno">(2)<a class="headerlink" href="#equation-stretch" title="Permalink to this equation">#</a></span>\[\lambda = |\mathbf{F}f| = \sqrt{(\mathbf{F}f)^T (\mathbf{F}f)}\]</div>
+<span class="eqno">(2)<a class="headerlink" href="#equation-stretch" title="Link to this equation">#</a></span>\[\lambda = |\mathbf{F}f| = \sqrt{(\mathbf{F}f)^T (\mathbf{F}f)}\]</div>
 </section>
 <section id="active-mechanics">
-<h2>Active mechanics<a class="headerlink" href="#active-mechanics" title="Permalink to this heading">#</a></h2>
+<h2>Active mechanics<a class="headerlink" href="#active-mechanics" title="Link to this heading">#</a></h2>
 <p>We know that the heart tissue is able to contract by itself without any external loads. To model the activate contraction of the cardiomyocites we use the active stress approach where the
 active contribution naturally decomposes the total stress into a sum
 of passive and active stresses <span id="id3">[<a class="reference internal" href="#id9" title="Martyn P Nash and Alexander V Panfilov. Electromechanical model of excitable tissue to study reentrant cardiac arrhythmias. Progress in biophysics and molecular biology, 85(2-3):501–522, 2004.">NP04</a>]</span>,</p>
@@ -413,20 +419,21 @@ of passive and active stresses <span id="id3">[<a class="reference internal" hre
 \[\mathbf{P} = \mathbf{P}_p + \mathbf{P}_a =  \frac{\partial \Psi_p}{\partial \mathbf{F}} +  \frac{\partial \Psi_a}{\partial \mathbf{F}}\]</div>
 <p>Here <span class="math notranslate nohighlight">\(\Psi_p\)</span> is the strain energy density function defined in <a class="reference internal" href="#equation-holzapfel-full">(1)</a> and</p>
 <div class="math notranslate nohighlight" id="equation-active-stress-strain-energy">
-<span class="eqno">(3)<a class="headerlink" href="#equation-active-stress-strain-energy" title="Permalink to this equation">#</a></span>\[\Psi_a = \frac{T_a}{2J} ( I_{4_f} - 1)\]</div>
+<span class="eqno">(3)<a class="headerlink" href="#equation-active-stress-strain-energy" title="Link to this equation">#</a></span>\[\Psi_a = \frac{T_a}{2J} ( I_{4_f} - 1)\]</div>
 <p>where <span class="math notranslate nohighlight">\(J = \mathrm{det} \; \mathbf{F}\)</span> and <span class="math notranslate nohighlight">\(T_a\)</span> is the active tension coming from the cellular mechanics model.</p>
 </section>
 <section id="discretization">
-<h2>Discretization<a class="headerlink" href="#discretization" title="Permalink to this heading">#</a></h2>
+<h2>Discretization<a class="headerlink" href="#discretization" title="Link to this heading">#</a></h2>
 <p>Incompressibility is enforced by employing a Lagrange multiplier method where one solves for both the displacement <span class="math notranslate nohighlight">\(\mathbf{u}\)</span> and the Lagrange multiplier <span class="math notranslate nohighlight">\(p\)</span>. The equations are solved using the finite element method discretized using Taylor-hood finite elements with <span class="math notranslate nohighlight">\(\mathbb{P}_2\)</span> elements for <span class="math notranslate nohighlight">\(\mathbf{p}\)</span> and <span class="math notranslate nohighlight">\(\mathbb{P}_1\)</span> elements for <span class="math notranslate nohighlight">\(p\)</span>.</p>
 </section>
 <section id="software">
-<h2>Software<a class="headerlink" href="#software" title="Permalink to this heading">#</a></h2>
+<h2>Software<a class="headerlink" href="#software" title="Link to this heading">#</a></h2>
 <p>We use a cardiac mechanics solver called <a class="reference external" href="https://computationalphysiology.github.io/pulse"><code class="docutils literal notranslate"><span class="pre">pulse</span></code></a> to declare and solve the mechanics models.</p>
 </section>
 <section id="references">
-<h2>References<a class="headerlink" href="#references" title="Permalink to this heading">#</a></h2>
+<h2>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h2>
 <div class="docutils container" id="id4">
+<div role="list" class="citation-list">
 <div class="citation" id="id7" role="doc-biblioentry">
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">Hol00</a><span class="fn-bracket">]</span></span>
 <p>A Gerhard Holzapfel. <em>Nonlinear solid mechanics II</em>. John Wiley &amp; Sons, Inc., 2000.</p>
@@ -546,7 +553,7 @@ By Simula Research Laboratory
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Jan 21, 2024.
+  Last updated on Apr 17, 2024.
   <br/>
 </p>
   </div>
