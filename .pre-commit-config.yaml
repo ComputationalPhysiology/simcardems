@@ -9,21 +9,15 @@ repos:
       - id: check-docstring-first
       - id: debug-statements
 
-  - repo: https://github.com/asottile/reorder-python-imports
-    rev: v3.10.0
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: 'v0.3.5'
     hooks:
-      - id: reorder-python-imports
-        exclude: ^demos/
-
-  - repo: https://github.com/psf/black
-    rev: 23.3.0
-    hooks:
-      - id: black
-
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.0.0
-    hooks:
-      - id: flake8
+       # Run the linter.
+      - id: ruff
+        args: [ --fix ]
+      # Run the formatter.
+      - id: ruff-format
 
   - repo: https://github.com/asottile/add-trailing-comma
     rev: v3.0.0
