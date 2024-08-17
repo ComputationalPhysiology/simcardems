@@ -26,7 +26,7 @@ dependencies = [
     "fenics-pulse",
     "h5py",
     "matplotlib",
-    "numpy",
+    "numpy<=1.21.5",
     "scipy",
     "tqdm",
     "typing-extensions",
