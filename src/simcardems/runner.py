@@ -206,7 +206,7 @@ class Runner:
             # Save state every 10 beats if simulation is longer than 40 sec
             if default_save_condition(i, T, self._dt):
                 self.coupling.save_state(
-                    path=self.outdir.joinpath(f"state_{int(i*self._dt/1000)}beat.h5"),
+                    path=self.outdir.joinpath(f"state_{int(i * self._dt / 1000)}beat.h5"),
                     config=self._config,
                 )
 

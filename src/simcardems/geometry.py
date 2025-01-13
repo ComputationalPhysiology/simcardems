@@ -73,7 +73,7 @@ def refine_mesh(
 ) -> dolfin.Mesh:
     dolfin.parameters["refinement_algorithm"] = "plaza_with_parent_facets"
     for i in range(num_refinements):
-        logger.info(f"Performing refinement {i+1}")
+        logger.info(f"Performing refinement {i + 1}")
         mesh = dolfin.refine(mesh, redistribute=redistribute)
 
     return mesh
