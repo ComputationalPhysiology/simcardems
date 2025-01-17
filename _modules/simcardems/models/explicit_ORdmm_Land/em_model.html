@@ -29,7 +29,7 @@
   <link href="../../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
@@ -66,7 +66,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
-    <meta name="docbuild:last-update" content="Dec 26, 2024"/>
+    <meta name="docbuild:last-update" content="Jan 17, 2025"/>
   </head>
   
   
@@ -307,44 +307,44 @@
                 <article class="bd-article">
                   
   <h1>Source code for simcardems.models.explicit_ORdmm_Land.em_model</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span>
 
-<span class="kn">import</span> <span class="nn">cbcbeat</span>
-<span class="kn">import</span> <span class="nn">dolfin</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cbcbeat</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dolfin</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <span class="k">try</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">ufl_legacy</span> <span class="k">as</span> <span class="nn">ufl</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">ufl_legacy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ufl</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">ufl</span>
-<span class="kn">from</span> <span class="nn">dolfin</span> <span class="kn">import</span> <span class="n">FiniteElement</span>  <span class="c1"># noqa: F401</span>
-<span class="kn">from</span> <span class="nn">dolfin</span> <span class="kn">import</span> <span class="n">MixedElement</span>  <span class="c1"># noqa: F401</span>
-<span class="kn">from</span> <span class="nn">dolfin</span> <span class="kn">import</span> <span class="n">tetrahedron</span>  <span class="c1"># noqa: F401</span>
-<span class="kn">from</span> <span class="nn">dolfin</span> <span class="kn">import</span> <span class="n">VectorElement</span>  <span class="c1"># noqa: F401</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">ufl</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dolfin</span><span class="w"> </span><span class="kn">import</span> <span class="n">FiniteElement</span>  <span class="c1"># noqa: F401</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dolfin</span><span class="w"> </span><span class="kn">import</span> <span class="n">MixedElement</span>  <span class="c1"># noqa: F401</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dolfin</span><span class="w"> </span><span class="kn">import</span> <span class="n">tetrahedron</span>  <span class="c1"># noqa: F401</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dolfin</span><span class="w"> </span><span class="kn">import</span> <span class="n">VectorElement</span>  <span class="c1"># noqa: F401</span>
 
-<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">em_model</span>
-<span class="kn">from</span> <span class="nn">...</span> <span class="kn">import</span> <span class="n">geometry</span> <span class="k">as</span> <span class="n">_geometry</span>
-<span class="kn">from</span> <span class="nn">...</span> <span class="kn">import</span> <span class="n">save_load_functions</span> <span class="k">as</span> <span class="n">io</span>
-<span class="kn">from</span> <span class="nn">...</span> <span class="kn">import</span> <span class="n">utils</span>
-<span class="kn">from</span> <span class="nn">...config</span> <span class="kn">import</span> <span class="n">Config</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..</span><span class="w"> </span><span class="kn">import</span> <span class="n">em_model</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">...</span><span class="w"> </span><span class="kn">import</span> <span class="n">geometry</span> <span class="k">as</span> <span class="n">_geometry</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">...</span><span class="w"> </span><span class="kn">import</span> <span class="n">save_load_functions</span> <span class="k">as</span> <span class="n">io</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">...</span><span class="w"> </span><span class="kn">import</span> <span class="n">utils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">...config</span><span class="w"> </span><span class="kn">import</span> <span class="n">Config</span>
 
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">...</span> <span class="kn">import</span> <span class="n">datacollector</span>
-    <span class="kn">from</span> <span class="nn">...</span> <span class="kn">import</span> <span class="n">mechanics_model</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">...</span><span class="w"> </span><span class="kn">import</span> <span class="n">datacollector</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">...</span><span class="w"> </span><span class="kn">import</span> <span class="n">mechanics_model</span>
 
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">Ta</span><span class="p">(</span><span class="n">XS</span><span class="p">,</span> <span class="n">XW</span><span class="p">,</span> <span class="n">Zetas</span><span class="p">,</span> <span class="n">Zetaw</span><span class="p">,</span> <span class="n">lmbda</span><span class="p">,</span> <span class="n">Tref</span><span class="p">,</span> <span class="n">rs</span><span class="p">,</span> <span class="n">Beta0</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">Ta</span><span class="p">(</span><span class="n">XS</span><span class="p">,</span> <span class="n">XW</span><span class="p">,</span> <span class="n">Zetas</span><span class="p">,</span> <span class="n">Zetaw</span><span class="p">,</span> <span class="n">lmbda</span><span class="p">,</span> <span class="n">Tref</span><span class="p">,</span> <span class="n">rs</span><span class="p">,</span> <span class="n">Beta0</span><span class="p">):</span>
     <span class="n">_min</span> <span class="o">=</span> <span class="n">ufl</span><span class="o">.</span><span class="n">min_value</span>
     <span class="n">_max</span> <span class="o">=</span> <span class="n">ufl</span><span class="o">.</span><span class="n">max_value</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lmbda</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
@@ -359,8 +359,8 @@
 
 <div class="viewcode-block" id="EMCoupling">
 <a class="viewcode-back" href="../../../../api.html#simcardems.models.explicit_ORdmm_Land.EMCoupling">[docs]</a>
-<span class="k">class</span> <span class="nc">EMCoupling</span><span class="p">(</span><span class="n">em_model</span><span class="o">.</span><span class="n">BaseEMCoupling</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">EMCoupling</span><span class="p">(</span><span class="n">em_model</span><span class="o">.</span><span class="n">BaseEMCoupling</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">geometry</span><span class="p">:</span> <span class="n">_geometry</span><span class="o">.</span><span class="n">BaseGeometry</span><span class="p">,</span>
         <span class="n">lmbda</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -402,7 +402,7 @@
 
 <div class="viewcode-block" id="EMCoupling.interpolate">
 <a class="viewcode-back" href="../../../../api.html#simcardems.models.explicit_ORdmm_Land.EMCoupling.interpolate">[docs]</a>
-    <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">interpolate</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">f_mech</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">,</span>
         <span class="n">f_ep</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">,</span>
@@ -421,7 +421,7 @@
         <span class="n">temp</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span></div>
 
 
-    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">__o</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">__o</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">__o</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
             <span class="k">return</span> <span class="bp">NotImplemented</span>
 
@@ -454,21 +454,21 @@
         <span class="k">return</span> <span class="kc">True</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">coupling_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">coupling_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="s2">&quot;explicit_ORdmm_Land&quot;</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">assigners</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">datacollector</span><span class="o">.</span><span class="n">Assigners</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">assigners</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">datacollector</span><span class="o">.</span><span class="n">Assigners</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_assigners</span>
 
     <span class="nd">@assigners</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">assigners</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">assigners</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">assigners</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">assigners</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_assigners</span> <span class="o">=</span> <span class="n">assigners</span>
 
 <div class="viewcode-block" id="EMCoupling.setup_assigners">
 <a class="viewcode-back" href="../../../../api.html#simcardems.models.explicit_ORdmm_Land.EMCoupling.setup_assigners">[docs]</a>
-    <span class="k">def</span> <span class="nf">setup_assigners</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">...datacollector</span> <span class="kn">import</span> <span class="n">Assigners</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setup_assigners</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">...datacollector</span><span class="w"> </span><span class="kn">import</span> <span class="n">Assigners</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">assigners</span> <span class="o">=</span> <span class="n">Assigners</span><span class="p">(</span><span class="n">vs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">vs</span><span class="p">,</span> <span class="n">mech_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mech_state</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">index</span> <span class="ow">in</span> <span class="p">[</span>
@@ -505,40 +505,40 @@
 
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">mech_mesh</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mech_mesh</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">mechanics_mesh</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">ep_mesh</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ep_mesh</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">ep_mesh</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">mech_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mech_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mech_solver</span><span class="o">.</span><span class="n">state</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">vs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">vs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ep_solver</span><span class="o">.</span><span class="n">solution_fields</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">dLambda_ep</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dLambda_ep</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_dLambda</span><span class="o">.</span><span class="n">vector</span><span class="p">()[:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lmbda_ep</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">lmbda_ep_prev</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dLambda</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">lmbda_mech</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">lmbda_mech</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">F</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">u_mech</span><span class="p">)</span> <span class="o">+</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Identity</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
         <span class="n">f</span> <span class="o">=</span> <span class="n">F</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">f0</span>
         <span class="k">return</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">f</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">lmbda_mech_func</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">lmbda_mech_func</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_projector_V_mech</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lmbda_mech_func</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lmbda_mech</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lmbda_mech_func</span>
 
 <div class="viewcode-block" id="EMCoupling.update_prev_mechanics">
 <a class="viewcode-back" href="../../../../api.html#simcardems.models.explicit_ORdmm_Land.EMCoupling.update_prev_mechanics">[docs]</a>
-    <span class="k">def</span> <span class="nf">update_prev_mechanics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_prev_mechanics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">update_prev_mechanics</span><span class="p">()</span>
         <span class="c1"># Update previous lmbda</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lmbda_ep_prev</span><span class="o">.</span><span class="n">vector</span><span class="p">()[:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lmbda_ep</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span></div>
@@ -546,7 +546,7 @@
 
 <div class="viewcode-block" id="EMCoupling.update_prev_ep">
 <a class="viewcode-back" href="../../../../api.html#simcardems.models.explicit_ORdmm_Land.EMCoupling.update_prev_ep">[docs]</a>
-    <span class="k">def</span> <span class="nf">update_prev_ep</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_prev_ep</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ep_solver</span><span class="o">.</span><span class="n">vs_</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ep_solver</span><span class="o">.</span><span class="n">vs</span><span class="p">)</span></div>
 
 
@@ -557,7 +557,7 @@
 
 <div class="viewcode-block" id="EMCoupling.register_ep_model">
 <a class="viewcode-back" href="../../../../api.html#simcardems.models.explicit_ORdmm_Land.EMCoupling.register_ep_model">[docs]</a>
-    <span class="k">def</span> <span class="nf">register_ep_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">solver</span><span class="p">:</span> <span class="n">cbcbeat</span><span class="o">.</span><span class="n">SplittingSolver</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">register_ep_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">solver</span><span class="p">:</span> <span class="n">cbcbeat</span><span class="o">.</span><span class="n">SplittingSolver</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Registering EP model&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ep_solver</span> <span class="o">=</span> <span class="n">solver</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">XS_ep</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">XS_ep_assigner</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">setup_assigner</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vs</span><span class="p">,</span> <span class="mi">40</span><span class="p">)</span>
@@ -578,7 +578,7 @@
 
 <div class="viewcode-block" id="EMCoupling.register_mech_model">
 <a class="viewcode-back" href="../../../../api.html#simcardems.models.explicit_ORdmm_Land.EMCoupling.register_mech_model">[docs]</a>
-    <span class="k">def</span> <span class="nf">register_mech_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">solver</span><span class="p">:</span> <span class="n">mechanics_model</span><span class="o">.</span><span class="n">MechanicsProblem</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">register_mech_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">solver</span><span class="p">:</span> <span class="n">mechanics_model</span><span class="o">.</span><span class="n">MechanicsProblem</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Registering mech model&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mech_solver</span> <span class="o">=</span> <span class="n">solver</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Ta_mech</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mech_solver</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">activation</span>
@@ -596,7 +596,7 @@
 
 <div class="viewcode-block" id="EMCoupling.register_datacollector">
 <a class="viewcode-back" href="../../../../api.html#simcardems.models.explicit_ORdmm_Land.EMCoupling.register_datacollector">[docs]</a>
-    <span class="k">def</span> <span class="nf">register_datacollector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collector</span><span class="p">:</span> <span class="n">datacollector</span><span class="o">.</span><span class="n">DataCollector</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">register_datacollector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collector</span><span class="p">:</span> <span class="n">datacollector</span><span class="o">.</span><span class="n">DataCollector</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">register_datacollector</span><span class="p">(</span><span class="n">collector</span><span class="o">=</span><span class="n">collector</span><span class="p">)</span>
 
         <span class="n">collector</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s2">&quot;ep&quot;</span><span class="p">,</span> <span class="s2">&quot;lambda&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lmbda_ep</span><span class="p">)</span>
@@ -607,7 +607,7 @@
 
 <div class="viewcode-block" id="EMCoupling.ep_to_coupling">
 <a class="viewcode-back" href="../../../../api.html#simcardems.models.explicit_ORdmm_Land.EMCoupling.ep_to_coupling">[docs]</a>
-    <span class="k">def</span> <span class="nf">ep_to_coupling</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ep_to_coupling</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Transfer variables from EP to coupling&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">XS_ep_assigner</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">XS_ep</span><span class="p">,</span> <span class="n">utils</span><span class="o">.</span><span class="n">sub_function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vs</span><span class="p">,</span> <span class="mi">40</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">XW_ep_assigner</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">XW_ep</span><span class="p">,</span> <span class="n">utils</span><span class="o">.</span><span class="n">sub_function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vs</span><span class="p">,</span> <span class="mi">41</span><span class="p">))</span>
@@ -619,7 +619,7 @@
 
 <div class="viewcode-block" id="EMCoupling.coupling_to_mechanics">
 <a class="viewcode-back" href="../../../../api.html#simcardems.models.explicit_ORdmm_Land.EMCoupling.coupling_to_mechanics">[docs]</a>
-    <span class="k">def</span> <span class="nf">coupling_to_mechanics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">coupling_to_mechanics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Transfer variables from coupling to mechanics&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">XS_mech</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">XS_ep</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">XW_mech</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">XW_ep</span><span class="p">)</span>
@@ -643,7 +643,7 @@
 
 <div class="viewcode-block" id="EMCoupling.mechanics_to_coupling">
 <a class="viewcode-back" href="../../../../api.html#simcardems.models.explicit_ORdmm_Land.EMCoupling.mechanics_to_coupling">[docs]</a>
-    <span class="k">def</span> <span class="nf">mechanics_to_coupling</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mechanics_to_coupling</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Transfer variables from mechanics to coupling&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">u_mech_assigner</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">u_mech</span><span class="p">,</span>
@@ -656,26 +656,26 @@
 
 <div class="viewcode-block" id="EMCoupling.coupling_to_ep">
 <a class="viewcode-back" href="../../../../api.html#simcardems.models.explicit_ORdmm_Land.EMCoupling.coupling_to_ep">[docs]</a>
-    <span class="k">def</span> <span class="nf">coupling_to_ep</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">coupling_to_ep</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Update EP&quot;</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Done updating EP&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="EMCoupling.solve_mechanics">
 <a class="viewcode-back" href="../../../../api.html#simcardems.models.explicit_ORdmm_Land.EMCoupling.solve_mechanics">[docs]</a>
-    <span class="k">def</span> <span class="nf">solve_mechanics</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">solve_mechanics</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mech_solver</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="EMCoupling.solve_ep">
 <a class="viewcode-back" href="../../../../api.html#simcardems.models.explicit_ORdmm_Land.EMCoupling.solve_ep">[docs]</a>
-    <span class="k">def</span> <span class="nf">solve_ep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interval</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">solve_ep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interval</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ep_solver</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">interval</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="EMCoupling.print_mechanics_info">
 <a class="viewcode-back" href="../../../../api.html#simcardems.models.explicit_ORdmm_Land.EMCoupling.print_mechanics_info">[docs]</a>
-    <span class="k">def</span> <span class="nf">print_mechanics_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">print_mechanics_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">total_dofs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mech_state</span><span class="o">.</span><span class="n">function_space</span><span class="p">()</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span>
         <span class="n">utils</span><span class="o">.</span><span class="n">print_mesh_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mech_mesh</span><span class="p">,</span> <span class="n">total_dofs</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Mechanics model&quot;</span><span class="p">)</span></div>
@@ -683,7 +683,7 @@
 
 <div class="viewcode-block" id="EMCoupling.print_ep_info">
 <a class="viewcode-back" href="../../../../api.html#simcardems.models.explicit_ORdmm_Land.EMCoupling.print_ep_info">[docs]</a>
-    <span class="k">def</span> <span class="nf">print_ep_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">print_ep_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Output some degrees of freedom</span>
         <span class="n">total_dofs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vs</span><span class="o">.</span><span class="n">function_space</span><span class="p">()</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;EP model&quot;</span><span class="p">)</span>
@@ -692,13 +692,13 @@
 
 <div class="viewcode-block" id="EMCoupling.cell_params">
 <a class="viewcode-back" href="../../../../api.html#simcardems.models.explicit_ORdmm_Land.EMCoupling.cell_params">[docs]</a>
-    <span class="k">def</span> <span class="nf">cell_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cell_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ep_solver</span><span class="o">.</span><span class="n">ode_solver</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">parameters</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="EMCoupling.save_state">
 <a class="viewcode-back" href="../../../../api.html#simcardems.models.explicit_ORdmm_Land.EMCoupling.save_state">[docs]</a>
-    <span class="k">def</span> <span class="nf">save_state</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save_state</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
         <span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Config</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -725,7 +725,7 @@
 <div class="viewcode-block" id="EMCoupling.from_state">
 <a class="viewcode-back" href="../../../../api.html#simcardems.models.explicit_ORdmm_Land.EMCoupling.from_state">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_state</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_state</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
         <span class="n">drug_factors_file</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
@@ -766,7 +766,7 @@
             <span class="n">h5file</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">mech_state</span><span class="p">,</span> <span class="s2">&quot;/mechanics/state&quot;</span><span class="p">)</span>
             <span class="n">h5file</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">lmbda</span><span class="p">,</span> <span class="s2">&quot;/em/lmbda_prev&quot;</span><span class="p">)</span>
 
-        <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">CellModel</span><span class="p">,</span> <span class="n">ActiveModel</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">CellModel</span><span class="p">,</span> <span class="n">ActiveModel</span>
 
         <span class="n">cell_inits</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">vs_functions_to_dict</span><span class="p">(</span>
             <span class="n">vs</span><span class="p">,</span>
@@ -835,7 +835,7 @@ By Simula Research Laboratory
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Dec 26, 2024.
+  Last updated on Jan 17, 2025.
   <br/>
 </p>
   </div>

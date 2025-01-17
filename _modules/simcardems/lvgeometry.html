@@ -29,7 +29,7 @@
   <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -66,7 +66,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
-    <meta name="docbuild:last-update" content="Dec 26, 2024"/>
+    <meta name="docbuild:last-update" content="Jan 17, 2025"/>
   </head>
   
   
@@ -307,23 +307,23 @@
                 <article class="bd-article">
                   
   <h1>Source code for simcardems.lvgeometry</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span>
 
-<span class="kn">import</span> <span class="nn">dolfin</span>
-<span class="kn">import</span> <span class="nn">pulse</span>
-<span class="kn">from</span> <span class="nn">cardiac_geometries.geometry</span> <span class="kn">import</span> <span class="n">MeshTypes</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dolfin</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pulse</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cardiac_geometries.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">MeshTypes</span>
 
-<span class="kn">from</span> <span class="nn">.geometry</span> <span class="kn">import</span> <span class="n">BaseGeometry</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseGeometry</span>
 
 
 <div class="viewcode-block" id="LeftVentricularGeometry">
 <a class="viewcode-back" href="../../api.html#simcardems.lvgeometry.LeftVentricularGeometry">[docs]</a>
-<span class="k">class</span> <span class="nc">LeftVentricularGeometry</span><span class="p">(</span><span class="n">BaseGeometry</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">LeftVentricularGeometry</span><span class="p">(</span><span class="n">BaseGeometry</span><span class="p">):</span>
 <div class="viewcode-block" id="LeftVentricularGeometry.default_markers">
 <a class="viewcode-back" href="../../api.html#simcardems.lvgeometry.LeftVentricularGeometry.default_markers">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">default_markers</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">default_markers</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;BASE&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
             <span class="s2">&quot;ENDO&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
@@ -331,12 +331,12 @@
         <span class="p">}</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_default_microstructure</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_default_microstructure</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">mesh</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">,</span>
         <span class="n">ffun</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Microstructure</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">cardiac_geometries</span> <span class="kn">import</span> <span class="n">lv_ellipsoid_fibers</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">cardiac_geometries</span><span class="w"> </span><span class="kn">import</span> <span class="n">lv_ellipsoid_fibers</span>
 
         <span class="k">return</span> <span class="n">lv_ellipsoid_fibers</span><span class="o">.</span><span class="n">create_microstructure</span><span class="p">(</span>
             <span class="n">function_space</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;fiber_space&quot;</span><span class="p">],</span>
@@ -351,16 +351,16 @@
             <span class="n">alpha_epi</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;fibers_angle_epi&quot;</span><span class="p">],</span>
         <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_default_ffun</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mesh</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_default_ffun</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mesh</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
-    <span class="k">def</span> <span class="nf">_default_mesh</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_default_mesh</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Mesh</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
 <div class="viewcode-block" id="LeftVentricularGeometry.default_parameters">
 <a class="viewcode-back" href="../../api.html#simcardems.lvgeometry.LeftVentricularGeometry.default_parameters">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">default_parameters</span><span class="p">():</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">default_parameters</span><span class="p">():</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;num_refinements&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
             <span class="s2">&quot;fiber_space&quot;</span><span class="p">:</span> <span class="s2">&quot;Quadrature_3&quot;</span><span class="p">,</span>
@@ -381,11 +381,11 @@
 
 <div class="viewcode-block" id="LeftVentricularGeometry.validate">
 <a class="viewcode-back" href="../../api.html#simcardems.lvgeometry.LeftVentricularGeometry.validate">[docs]</a>
-    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">pass</span></div>
 
 
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(parameters=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="si">}</span><span class="s2">)&quot;</span></div>
 
 </pre></div>
@@ -435,7 +435,7 @@ By Simula Research Laboratory
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Dec 26, 2024.
+  Last updated on Jan 17, 2025.
   <br/>
 </p>
   </div>

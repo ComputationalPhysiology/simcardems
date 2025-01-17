@@ -30,7 +30,7 @@
   <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
@@ -71,7 +71,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
-    <meta name="docbuild:last-update" content="Dec 26, 2024"/>
+    <meta name="docbuild:last-update" content="Jan 17, 2025"/>
   </head>
   
   
@@ -382,20 +382,20 @@ For this demo we will copy the <a class="reference external" href="https://githu
 <section id="implementing-the-em-coupling">
 <h2>Implementing the EM coupling<a class="headerlink" href="#implementing-the-em-coupling" title="Link to this heading">#</a></h2>
 <p>We will start by implement the model for the EM coupling. First we will make the necessary imports.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">typing</span>
-<span class="kn">import</span> <span class="nn">simcardems</span>
-<span class="kn">import</span> <span class="nn">simcardems.save_load_functions</span> <span class="k">as</span> <span class="nn">io</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
-<span class="kn">import</span> <span class="nn">dolfin</span>
-<span class="kn">import</span> <span class="nn">cbcbeat</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">typing</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">simcardems</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">simcardems.save_load_functions</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">io</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dolfin</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cbcbeat</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 </pre></div>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">ufl_legacy</span> <span class="k">as</span> <span class="nn">ufl</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">ufl_legacy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ufl</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">ufl</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">ufl</span>
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">simcardems</span></code> provide an interface for this class which can be found in the <a class="reference external" href="https://github.com/ComputationalPhysiology/simcardems/blob/main/src/simcardems/models/em_model.py"><code class="docutils literal notranslate"><span class="pre">em_model</span></code> module</a>. This class comes with some methods already implemented, but it is also possible to provide custom implementations of these methods. Note that all of the methods provided in this base class are used in some way when running a simulation</p>
@@ -411,12 +411,12 @@ For this demo we will copy the <a class="reference external" href="https://githu
 <li><p><code class="docutils literal notranslate"><span class="pre">save_state</span></code> - this is the method that is called when the simulation is done and the state is saved. In our case we would like to save the state from</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">load_state</span></code> - this method goes together with the <code class="docutils literal notranslate"><span class="pre">save_state</span></code> method and is used when you want to load an existing state from a file.</p></li>
 </ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">EMCoupling</span><span class="p">(</span><span class="n">simcardems</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">em_model</span><span class="o">.</span><span class="n">BaseEMCoupling</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">register_ep_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">solver</span><span class="p">:</span> <span class="n">cbcbeat</span><span class="o">.</span><span class="n">SplittingSolver</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">EMCoupling</span><span class="p">(</span><span class="n">simcardems</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">em_model</span><span class="o">.</span><span class="n">BaseEMCoupling</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">register_ep_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">solver</span><span class="p">:</span> <span class="n">cbcbeat</span><span class="o">.</span><span class="n">SplittingSolver</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ep_solver</span> <span class="o">=</span> <span class="n">solver</span>
 
-    <span class="k">def</span> <span class="nf">setup_assigners</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">simcardems.datacollector</span> <span class="kn">import</span> <span class="n">Assigners</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setup_assigners</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">simcardems.datacollector</span><span class="w"> </span><span class="kn">import</span> <span class="n">Assigners</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_assigners</span> <span class="o">=</span> <span class="n">Assigners</span><span class="p">(</span><span class="n">vs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ep_solver</span><span class="o">.</span><span class="n">vs</span><span class="p">,</span> <span class="n">mech_state</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assigners</span><span class="o">.</span><span class="n">register_subfunction</span><span class="p">(</span>
@@ -425,25 +425,25 @@ For this demo we will copy the <a class="reference external" href="https://githu
             <span class="n">subspace_index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
         <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">solve_ep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interval</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">solve_ep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interval</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ep_solver</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">interval</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">print_ep_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">print_ep_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Output some degrees of freedom</span>
         <span class="n">total_dofs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ep_solver</span><span class="o">.</span><span class="n">vs</span><span class="o">.</span><span class="n">function_space</span><span class="p">()</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span>
         <span class="n">simcardems</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">print_mesh_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ep_mesh</span><span class="p">,</span> <span class="n">total_dofs</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">cell_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cell_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ep_solver</span><span class="o">.</span><span class="n">ode_solver</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">parameters</span><span class="p">()</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">ep_mesh</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ep_mesh</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">ep_mesh</span>
 
-    <span class="k">def</span> <span class="nf">update_prev_ep</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_prev_ep</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ep_solver</span><span class="o">.</span><span class="n">vs_</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ep_solver</span><span class="o">.</span><span class="n">vs</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">save_state</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save_state</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
         <span class="n">config</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">simcardems</span><span class="o">.</span><span class="n">Config</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -464,7 +464,7 @@ For this demo we will copy the <a class="reference external" href="https://githu
         <span class="p">)</span>
 
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_state</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_state</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
         <span class="o">*</span><span class="n">args</span><span class="p">,</span>
@@ -513,8 +513,8 @@ For this demo we will copy the <a class="reference external" href="https://githu
 <section id="implementing-the-cell-model">
 <h2>Implementing the Cell model<a class="headerlink" href="#implementing-the-cell-model" title="Link to this heading">#</a></h2>
 <p>The cell model used in this demo is the Fitzhugh Nagumo model and the code is more or less copied from the <a class="reference external" href="https://github.com/ComputationalPhysiology/cbcbeat/blob/master/cbcbeat/cellmodels/fitzhughnagumo.py"><code class="docutils literal notranslate"><span class="pre">cbcbeat</span></code> library</a>. The only major adjustment is that the cell model need to take in an additional argument <code class="docutils literal notranslate"><span class="pre">coupling</span></code> which is an instance of the <code class="docutils literal notranslate"><span class="pre">EMCoupling</span></code> class that we implemented above. In this case we are using this argument for anything, but in other cases you might want to pass additional function to the cell model, and you can do this using an instance of this <code class="docutils literal notranslate"><span class="pre">EMCoupling</span></code> class. You can check out the <a class="reference external" href="https://github.com/ComputationalPhysiology/simcardems/tree/main/src/simcardems/models">other models</a> in the repository for examples of this.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Fitzhughnagumo</span><span class="p">(</span><span class="n">cbcbeat</span><span class="o">.</span><span class="n">cellmodels</span><span class="o">.</span><span class="n">CardiacCellModel</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">Fitzhughnagumo</span><span class="p">(</span><span class="n">cbcbeat</span><span class="o">.</span><span class="n">cellmodels</span><span class="o">.</span><span class="n">CardiacCellModel</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">coupling</span><span class="p">:</span> <span class="n">EMCoupling</span><span class="p">,</span>
         <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -533,7 +533,7 @@ For this demo we will copy the <a class="reference external" href="https://githu
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">init_conditions</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">default_parameters</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">default_parameters</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="s2">&quot;Set-up and return default parameters.&quot;</span>
         <span class="n">params</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">(</span>
             <span class="p">[</span>
@@ -553,12 +553,12 @@ For this demo we will copy the <a class="reference external" href="https://githu
         <span class="k">return</span> <span class="n">params</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">default_initial_conditions</span><span class="p">():</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">default_initial_conditions</span><span class="p">():</span>
         <span class="s2">&quot;Set-up and return default initial conditions.&quot;</span>
         <span class="n">ic</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">([(</span><span class="s2">&quot;v&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mf">85.0</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;s&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)])</span>
         <span class="k">return</span> <span class="n">ic</span>
 
-    <span class="k">def</span> <span class="nf">I</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">I</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Transmembrane current</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -591,7 +591,7 @@ For this demo we will copy the <a class="reference external" href="https://githu
 
         <span class="k">return</span> <span class="n">current</span>
 
-    <span class="k">def</span> <span class="nf">F</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">F</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Right hand side for ODE system</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -610,7 +610,7 @@ For this demo we will copy the <a class="reference external" href="https://githu
 
         <span class="k">return</span> <span class="n">F_expressions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">num_states</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">num_states</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="mi">1</span>
 </pre></div>
 </div>
@@ -759,7 +759,7 @@ By Simula Research Laboratory
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Dec 26, 2024.
+  Last updated on Jan 17, 2025.
   <br/>
 </p>
   </div>

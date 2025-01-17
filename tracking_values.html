@@ -30,7 +30,7 @@
   <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
@@ -69,7 +69,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
-    <meta name="docbuild:last-update" content="Dec 26, 2024"/>
+    <meta name="docbuild:last-update" content="Jan 17, 2025"/>
   </head>
   
   
@@ -359,17 +359,17 @@
 <h1>Tracking Values<a class="headerlink" href="#tracking-values" title="Link to this heading">#</a></h1>
 <p>So far we have only seen how you can track states and intermediates at every node in the mesh. This will quickly use a lot of storage if you are running big simulations. However, for some state variables you might only be interested in tracking the value of some states at a particular node or just the average. For the slab geometry for instance we might want to only track certain variables at the center of the slab, as an average over the entire mesh, or you want to track the full states.</p>
 <p>First we will make the necessary imports.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">simcardems</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">simcardems</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 </pre></div>
 </div>
 <p>We will use the fully coupled model as the base model, but we will adjust which variables are collected and how they are collected.</p>
 <p>The way we specify how to collect a certain variable is through the <code class="docutils literal notranslate"><span class="pre">register_datacollector</span></code>, so in order to change the way we collect the data we need to override this method. By default, this method will take all the functions that are part of <code class="docutils literal notranslate"><span class="pre">self.assigners</span></code> and store the full function of each of them. By specifying the argument <code class="docutils literal notranslate"><span class="pre">reduction</span></code> we can change the way individual variables are stored. By default, the value of this argument is <code class="docutils literal notranslate"><span class="pre">&quot;full&quot;</span></code> which mean that the full function is stored. Another option that is always available is the value <code class="docutils literal notranslate"><span class="pre">&quot;average&quot;</span></code> which will store the average value (i.e integrated over the domain and divide by the volume of the domain).</p>
 <p>One thing to note is that in order to be able to create xdmf-files you need to store the <code class="docutils literal notranslate"><span class="pre">&quot;full&quot;</span></code> function.</p>
 <p>Different geometries might implement different types of reductions. For the the <code class="docutils literal notranslate"><span class="pre">SlabGeometry</span></code> we can also evaluate at some prescribed nodes, for example at the center, see <a class="reference external" href="https://computationalphysiology.github.io/simcardems/api.html#module-simcardems.value_extractor">https://computationalphysiology.github.io/simcardems/api.html#module-simcardems.value_extractor</a> for all options.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">EMCoupling</span><span class="p">(</span><span class="n">simcardems</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">fully_coupled_ORdmm_Land</span><span class="o">.</span><span class="n">EMCoupling</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">register_datacollector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collector</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">EMCoupling</span><span class="p">(</span><span class="n">simcardems</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">fully_coupled_ORdmm_Land</span><span class="o">.</span><span class="n">EMCoupling</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">register_datacollector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collector</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">group_name</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">assigners</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">for</span> <span class="n">func_name</span><span class="p">,</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">group</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="n">reduction</span> <span class="o">=</span> <span class="s2">&quot;full&quot;</span> <span class="k">if</span> <span class="n">func_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;V&quot;</span><span class="p">,</span> <span class="s2">&quot;u&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="s2">&quot;center&quot;</span>
@@ -551,7 +551,7 @@ By Simula Research Laboratory
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Dec 26, 2024.
+  Last updated on Jan 17, 2025.
   <br/>
 </p>
   </div>

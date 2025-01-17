@@ -29,7 +29,7 @@
   <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -66,7 +66,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
-    <meta name="docbuild:last-update" content="Dec 26, 2024"/>
+    <meta name="docbuild:last-update" content="Jan 17, 2025"/>
   </head>
   
   
@@ -307,27 +307,27 @@
                 <article class="bd-article">
                   
   <h1>Source code for simcardems.save_load_functions</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">contextlib</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Type</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">contextlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Type</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span>
 
-<span class="kn">import</span> <span class="nn">cbcbeat</span>
-<span class="kn">import</span> <span class="nn">dolfin</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">dolfin</span> <span class="kn">import</span> <span class="n">FiniteElement</span>  <span class="c1"># noqa: F401</span>
-<span class="kn">from</span> <span class="nn">dolfin</span> <span class="kn">import</span> <span class="n">MixedElement</span>  <span class="c1"># noqa: F401</span>
-<span class="kn">from</span> <span class="nn">dolfin</span> <span class="kn">import</span> <span class="n">tetrahedron</span>  <span class="c1"># noqa: F401</span>
-<span class="kn">from</span> <span class="nn">dolfin</span> <span class="kn">import</span> <span class="n">VectorElement</span>  <span class="c1"># noqa: F401</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cbcbeat</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dolfin</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dolfin</span><span class="w"> </span><span class="kn">import</span> <span class="n">FiniteElement</span>  <span class="c1"># noqa: F401</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dolfin</span><span class="w"> </span><span class="kn">import</span> <span class="n">MixedElement</span>  <span class="c1"># noqa: F401</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dolfin</span><span class="w"> </span><span class="kn">import</span> <span class="n">tetrahedron</span>  <span class="c1"># noqa: F401</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dolfin</span><span class="w"> </span><span class="kn">import</span> <span class="n">VectorElement</span>  <span class="c1"># noqa: F401</span>
 
-<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">geometry</span>
-<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">mechanics_model</span>
-<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">utils</span>
-<span class="kn">from</span> <span class="nn">.config</span> <span class="kn">import</span> <span class="n">Config</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">geometry</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">mechanics_model</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">utils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">Config</span>
 
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
@@ -335,7 +335,7 @@
 
 <div class="viewcode-block" id="vs_functions_to_dict">
 <a class="viewcode-back" href="../../api.html#simcardems.save_load_functions.vs_functions_to_dict">[docs]</a>
-<span class="k">def</span> <span class="nf">vs_functions_to_dict</span><span class="p">(</span><span class="n">vs</span><span class="p">,</span> <span class="n">state_names</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">vs_functions_to_dict</span><span class="p">(</span><span class="n">vs</span><span class="p">,</span> <span class="n">state_names</span><span class="p">):</span>
     <span class="k">return</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">utils</span><span class="o">.</span><span class="n">sub_function</span><span class="p">(</span><span class="n">vs</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span> <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">state_names</span><span class="p">)}</span></div>
 
 
@@ -343,9 +343,9 @@
 <div class="viewcode-block" id="h5pyfile">
 <a class="viewcode-back" href="../../api.html#simcardems.save_load_functions.h5pyfile">[docs]</a>
 <span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
-<span class="k">def</span> <span class="nf">h5pyfile</span><span class="p">(</span><span class="n">h5name</span><span class="p">,</span> <span class="n">filemode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">force_serial</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">comm</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="kn">import</span> <span class="nn">h5py</span>
-    <span class="kn">from</span> <span class="nn">mpi4py</span> <span class="kn">import</span> <span class="n">MPI</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">h5pyfile</span><span class="p">(</span><span class="n">h5name</span><span class="p">,</span> <span class="n">filemode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">force_serial</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">comm</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">h5py</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">mpi4py</span><span class="w"> </span><span class="kn">import</span> <span class="n">MPI</span>
 
     <span class="k">if</span> <span class="n">comm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">comm</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span>
@@ -364,7 +364,7 @@
 
 <div class="viewcode-block" id="dict_to_h5">
 <a class="viewcode-back" href="../../api.html#simcardems.save_load_functions.dict_to_h5">[docs]</a>
-<span class="k">def</span> <span class="nf">dict_to_h5</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">h5name</span><span class="p">,</span> <span class="n">h5group</span><span class="p">,</span> <span class="n">use_attrs</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">comm</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">dict_to_h5</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">h5name</span><span class="p">,</span> <span class="n">h5group</span><span class="p">,</span> <span class="n">use_attrs</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">comm</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">comm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">comm</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span>
     <span class="k">if</span> <span class="n">comm</span><span class="o">.</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -390,7 +390,7 @@
 
 <div class="viewcode-block" id="decode">
 <a class="viewcode-back" href="../../api.html#simcardems.save_load_functions.decode">[docs]</a>
-<span class="k">def</span> <span class="nf">decode</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">decode</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
@@ -401,8 +401,8 @@
 
 <div class="viewcode-block" id="h5_to_dict">
 <a class="viewcode-back" href="../../api.html#simcardems.save_load_functions.h5_to_dict">[docs]</a>
-<span class="k">def</span> <span class="nf">h5_to_dict</span><span class="p">(</span><span class="n">h5group</span><span class="p">,</span> <span class="n">use_attrs</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
-    <span class="kn">import</span> <span class="nn">h5py</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">h5_to_dict</span><span class="p">(</span><span class="n">h5group</span><span class="p">,</span> <span class="n">use_attrs</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">h5py</span>
 
     <span class="k">if</span> <span class="n">use_attrs</span><span class="p">:</span>
         <span class="n">d</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
@@ -433,7 +433,7 @@
 
 <div class="viewcode-block" id="check_file_exists">
 <a class="viewcode-back" href="../../api.html#simcardems.save_load_functions.check_file_exists">[docs]</a>
-<span class="k">def</span> <span class="nf">check_file_exists</span><span class="p">(</span><span class="n">h5_filename</span><span class="p">,</span> <span class="n">raise_on_false</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">check_file_exists</span><span class="p">(</span><span class="n">h5_filename</span><span class="p">,</span> <span class="n">raise_on_false</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">h5_filename</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
         <span class="k">if</span> <span class="n">raise_on_false</span><span class="p">:</span>
@@ -445,7 +445,7 @@
 
 <div class="viewcode-block" id="group_in_file">
 <a class="viewcode-back" href="../../api.html#simcardems.save_load_functions.group_in_file">[docs]</a>
-<span class="k">def</span> <span class="nf">group_in_file</span><span class="p">(</span><span class="n">h5_filename</span><span class="p">,</span> <span class="n">h5group</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">group_in_file</span><span class="p">(</span><span class="n">h5_filename</span><span class="p">,</span> <span class="n">h5group</span><span class="p">):</span>
     <span class="n">check_file_exists</span><span class="p">(</span><span class="n">h5_filename</span><span class="p">)</span>
     <span class="n">exists</span> <span class="o">=</span> <span class="kc">False</span>
 
@@ -459,7 +459,7 @@
 
 <div class="viewcode-block" id="mech_heart_to_bnd_cond">
 <a class="viewcode-back" href="../../api.html#simcardems.save_load_functions.mech_heart_to_bnd_cond">[docs]</a>
-<span class="k">def</span> <span class="nf">mech_heart_to_bnd_cond</span><span class="p">(</span><span class="n">mech_heart</span><span class="p">:</span> <span class="n">mechanics_model</span><span class="o">.</span><span class="n">MechanicsProblem</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">mech_heart_to_bnd_cond</span><span class="p">(</span><span class="n">mech_heart</span><span class="p">:</span> <span class="n">mechanics_model</span><span class="o">.</span><span class="n">MechanicsProblem</span><span class="p">):</span>
     <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">mech_heart</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;RigidMotionProblem&quot;</span><span class="p">:</span>
         <span class="k">return</span> <span class="s2">&quot;rigid&quot;</span>
     <span class="k">return</span> <span class="s2">&quot;dirichlet&quot;</span></div>
@@ -468,7 +468,7 @@
 
 <div class="viewcode-block" id="serialize_dict">
 <a class="viewcode-back" href="../../api.html#simcardems.save_load_functions.serialize_dict">[docs]</a>
-<span class="k">def</span> <span class="nf">serialize_dict</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">serialize_dict</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
     <span class="n">new_d</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">Path</span><span class="p">):</span>
@@ -491,7 +491,7 @@
 
 <div class="viewcode-block" id="save_state">
 <a class="viewcode-back" href="../../api.html#simcardems.save_load_functions.save_state">[docs]</a>
-<span class="k">def</span> <span class="nf">save_state</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">save_state</span><span class="p">(</span>
     <span class="n">path</span><span class="p">,</span>
     <span class="n">config</span><span class="p">:</span> <span class="n">Config</span><span class="p">,</span>
     <span class="n">geo</span><span class="p">:</span> <span class="n">geometry</span><span class="o">.</span><span class="n">BaseGeometry</span><span class="p">,</span>
@@ -514,7 +514,7 @@
 
 <div class="viewcode-block" id="load_state">
 <a class="viewcode-back" href="../../api.html#simcardems.save_load_functions.load_state">[docs]</a>
-<span class="k">def</span> <span class="nf">load_state</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_state</span><span class="p">(</span>
     <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
     <span class="n">drug_factors_file</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="n">popu_factors_file</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
@@ -531,13 +531,13 @@
         <span class="n">config</span> <span class="o">=</span> <span class="n">Config</span><span class="p">(</span><span class="o">**</span><span class="n">h5_to_dict</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">]))</span>
 
     <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">coupling_type</span> <span class="o">==</span> <span class="s2">&quot;explicit_ORdmm_Land&quot;</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">.models.explicit_ORdmm_Land</span> <span class="kn">import</span> <span class="n">EMCoupling</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.models.explicit_ORdmm_Land</span><span class="w"> </span><span class="kn">import</span> <span class="n">EMCoupling</span>
     <span class="k">elif</span> <span class="n">config</span><span class="o">.</span><span class="n">coupling_type</span> <span class="o">==</span> <span class="s2">&quot;fully_coupled_ORdmm_Land&quot;</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">.models.fully_coupled_ORdmm_Land</span> <span class="kn">import</span> <span class="n">EMCoupling</span>  <span class="c1"># type: ignore</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.models.fully_coupled_ORdmm_Land</span><span class="w"> </span><span class="kn">import</span> <span class="n">EMCoupling</span>  <span class="c1"># type: ignore</span>
     <span class="k">elif</span> <span class="n">config</span><span class="o">.</span><span class="n">coupling_type</span> <span class="o">==</span> <span class="s2">&quot;pureEP_ORdmm_Land&quot;</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">.models.pureEP_ORdmm_Land</span> <span class="kn">import</span> <span class="n">EMCoupling</span>  <span class="c1"># type: ignore</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.models.pureEP_ORdmm_Land</span><span class="w"> </span><span class="kn">import</span> <span class="n">EMCoupling</span>  <span class="c1"># type: ignore</span>
     <span class="k">elif</span> <span class="n">config</span><span class="o">.</span><span class="n">coupling_type</span> <span class="o">==</span> <span class="s2">&quot;fully_coupled_Tor_Land&quot;</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">.models.fully_coupled_Tor_Land</span> <span class="kn">import</span> <span class="n">EMCoupling</span>  <span class="c1"># type: ignore</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.models.fully_coupled_Tor_Land</span><span class="w"> </span><span class="kn">import</span> <span class="n">EMCoupling</span>  <span class="c1"># type: ignore</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid coupling type: </span><span class="si">{</span><span class="n">config</span><span class="o">.</span><span class="n">coupling_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
@@ -553,7 +553,7 @@
 
 <div class="viewcode-block" id="load_initial_conditions_from_h5">
 <a class="viewcode-back" href="../../api.html#simcardems.save_load_functions.load_initial_conditions_from_h5">[docs]</a>
-<span class="k">def</span> <span class="nf">load_initial_conditions_from_h5</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_initial_conditions_from_h5</span><span class="p">(</span>
     <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
     <span class="n">CellModel</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">cbcbeat</span><span class="o">.</span><span class="n">CardiacCellModel</span><span class="p">],</span>
 <span class="p">):</span>
@@ -627,7 +627,7 @@ By Simula Research Laboratory
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Dec 26, 2024.
+  Last updated on Jan 17, 2025.
   <br/>
 </p>
   </div>

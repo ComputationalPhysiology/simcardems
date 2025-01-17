@@ -29,7 +29,7 @@
   <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -66,7 +66,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
-    <meta name="docbuild:last-update" content="Dec 26, 2024"/>
+    <meta name="docbuild:last-update" content="Jan 17, 2025"/>
   </head>
   
   
@@ -307,10 +307,10 @@
                 <article class="bd-article">
                   
   <h1>Source code for simcardems.newton_solver</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">dolfin</span>
-<span class="kn">import</span> <span class="nn">pulse</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">dolfin</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pulse</span>
 
-<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">utils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">utils</span>
 
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
@@ -318,8 +318,8 @@
 
 <div class="viewcode-block" id="MechanicsNewtonSolver">
 <a class="viewcode-back" href="../../api.html#simcardems.newton_solver.MechanicsNewtonSolver">[docs]</a>
-<span class="k">class</span> <span class="nc">MechanicsNewtonSolver</span><span class="p">(</span><span class="n">dolfin</span><span class="o">.</span><span class="n">NewtonSolver</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MechanicsNewtonSolver</span><span class="p">(</span><span class="n">dolfin</span><span class="o">.</span><span class="n">NewtonSolver</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">problem</span><span class="p">:</span> <span class="n">pulse</span><span class="o">.</span><span class="n">NonlinearProblem</span><span class="p">,</span>
         <span class="n">state</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">,</span>
@@ -341,7 +341,7 @@
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_handle_parameters</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_handle_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameters</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_handle_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameters</span><span class="p">):</span>
         <span class="c1"># Setting default parameters</span>
         <span class="n">params</span> <span class="o">=</span> <span class="n">MechanicsNewtonSolver_ODE</span><span class="o">.</span><span class="n">default_solver_parameters</span><span class="p">()</span>
         <span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
@@ -373,14 +373,14 @@
 
 <div class="viewcode-block" id="MechanicsNewtonSolver.register_datacollector">
 <a class="viewcode-back" href="../../api.html#simcardems.newton_solver.MechanicsNewtonSolver.register_datacollector">[docs]</a>
-    <span class="k">def</span> <span class="nf">register_datacollector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datacollector</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">register_datacollector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datacollector</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_datacollector</span> <span class="o">=</span> <span class="n">datacollector</span></div>
 
 
 <div class="viewcode-block" id="MechanicsNewtonSolver.default_solver_parameters">
 <a class="viewcode-back" href="../../api.html#simcardems.newton_solver.MechanicsNewtonSolver.default_solver_parameters">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">default_solver_parameters</span><span class="p">():</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">default_solver_parameters</span><span class="p">():</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;petsc&quot;</span><span class="p">:</span> <span class="p">{</span>
                 <span class="s2">&quot;ksp_type&quot;</span><span class="p">:</span> <span class="s2">&quot;preonly&quot;</span><span class="p">,</span>
@@ -412,7 +412,7 @@
 
 <div class="viewcode-block" id="MechanicsNewtonSolver.converged">
 <a class="viewcode-back" href="../../api.html#simcardems.newton_solver.MechanicsNewtonSolver.converged">[docs]</a>
-    <span class="k">def</span> <span class="nf">converged</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">converged</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_converged_called</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="n">res</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="s2">&quot;l2&quot;</span><span class="p">)</span>
@@ -430,7 +430,7 @@
 
 <div class="viewcode-block" id="MechanicsNewtonSolver.save_residuals">
 <a class="viewcode-back" href="../../api.html#simcardems.newton_solver.MechanicsNewtonSolver.save_residuals">[docs]</a>
-    <span class="k">def</span> <span class="nf">save_residuals</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save_residuals</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
             <span class="c1"># Only used in debug mode</span>
             <span class="k">return</span>
@@ -448,14 +448,14 @@
 
 <div class="viewcode-block" id="MechanicsNewtonSolver.solver_setup">
 <a class="viewcode-back" href="../../api.html#simcardems.newton_solver.MechanicsNewtonSolver.solver_setup">[docs]</a>
-    <span class="k">def</span> <span class="nf">solver_setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">solver_setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_solver_setup_called</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">solver_setup</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="MechanicsNewtonSolver.solve">
 <a class="viewcode-back" href="../../api.html#simcardems.newton_solver.MechanicsNewtonSolver.solve">[docs]</a>
-    <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Solving mechanics&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_solve_called</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="n">ret</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_problem</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">vector</span><span class="p">())</span>
@@ -469,7 +469,7 @@
     <span class="c1"># This is just to check if we are using the overloaded functions</span>
 <div class="viewcode-block" id="MechanicsNewtonSolver.check_overloads_called">
 <a class="viewcode-back" href="../../api.html#simcardems.newton_solver.MechanicsNewtonSolver.check_overloads_called">[docs]</a>
-    <span class="k">def</span> <span class="nf">check_overloads_called</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_overloads_called</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">assert</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_converged_called&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_solver_setup_called&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_update_solution_called&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
@@ -480,10 +480,10 @@
 
 <div class="viewcode-block" id="MechanicsNewtonSolver_ODE">
 <a class="viewcode-back" href="../../api.html#simcardems.newton_solver.MechanicsNewtonSolver_ODE">[docs]</a>
-<span class="k">class</span> <span class="nc">MechanicsNewtonSolver_ODE</span><span class="p">(</span><span class="n">MechanicsNewtonSolver</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MechanicsNewtonSolver_ODE</span><span class="p">(</span><span class="n">MechanicsNewtonSolver</span><span class="p">):</span>
 <div class="viewcode-block" id="MechanicsNewtonSolver_ODE.update_solution">
 <a class="viewcode-back" href="../../api.html#simcardems.newton_solver.MechanicsNewtonSolver_ODE.update_solution">[docs]</a>
-    <span class="k">def</span> <span class="nf">update_solution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">rp</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_solution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">rp</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_update_solution_called</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="c1"># Update x from the dx obtained from linear solver (Newton iteration) :</span>
@@ -547,7 +547,7 @@ By Simula Research Laboratory
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Dec 26, 2024.
+  Last updated on Jan 17, 2025.
   <br/>
 </p>
   </div>

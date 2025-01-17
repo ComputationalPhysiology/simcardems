@@ -29,7 +29,7 @@
   <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
@@ -66,7 +66,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
-    <meta name="docbuild:last-update" content="Dec 26, 2024"/>
+    <meta name="docbuild:last-update" content="Jan 17, 2025"/>
   </head>
   
   
@@ -307,13 +307,13 @@
                 <article class="bd-article">
                   
   <h1>Source code for simcardems.models.explicit_ORdmm_Land</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">dolfin</span>
-<span class="kn">import</span> <span class="nn">pulse</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">dolfin</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pulse</span>
 
-<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">cell_model</span>
-<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">em_model</span>
-<span class="kn">from</span> <span class="nn">.cell_model</span> <span class="kn">import</span> <span class="n">ORdmmLandExplicit</span> <span class="k">as</span> <span class="n">CellModel</span>
-<span class="kn">from</span> <span class="nn">.em_model</span> <span class="kn">import</span> <span class="n">EMCoupling</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">cell_model</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">em_model</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.cell_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">ORdmmLandExplicit</span> <span class="k">as</span> <span class="n">CellModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.em_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">EMCoupling</span>
 
 <span class="n">loggers</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">&quot;simcardems.explicit_ORdmm_Land.cell_model.logger&quot;</span><span class="p">,</span>
@@ -323,8 +323,8 @@
 
 <div class="viewcode-block" id="ActiveModel">
 <a class="viewcode-back" href="../../../api.html#simcardems.models.explicit_ORdmm_Land.ActiveModel">[docs]</a>
-<span class="k">class</span> <span class="nc">ActiveModel</span><span class="p">(</span><span class="n">pulse</span><span class="o">.</span><span class="n">ActiveModel</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coupling</span><span class="p">:</span> <span class="n">EMCoupling</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ActiveModel</span><span class="p">(</span><span class="n">pulse</span><span class="o">.</span><span class="n">ActiveModel</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coupling</span><span class="p">:</span> <span class="n">EMCoupling</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">V</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">FunctionSpace</span><span class="p">(</span><span class="n">coupling</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">mesh</span><span class="p">,</span> <span class="s2">&quot;CG&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
         <span class="n">Ta</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
@@ -392,7 +392,7 @@ By Simula Research Laboratory
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Dec 26, 2024.
+  Last updated on Jan 17, 2025.
   <br/>
 </p>
   </div>

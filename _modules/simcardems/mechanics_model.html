@@ -29,7 +29,7 @@
   <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -66,7 +66,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
-    <meta name="docbuild:last-update" content="Dec 26, 2024"/>
+    <meta name="docbuild:last-update" content="Jan 17, 2025"/>
   </head>
   
   
@@ -307,32 +307,32 @@
                 <article class="bd-article">
                   
   <h1>Source code for simcardems.mechanics_model</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">typing</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">typing</span>
 
-<span class="kn">import</span> <span class="nn">dolfin</span>
-<span class="kn">import</span> <span class="nn">pulse</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dolfin</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pulse</span>
 
-<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">boundary_conditions</span>
-<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">config</span>
-<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">geometry</span>
-<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">lvgeometry</span>
-<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">slabgeometry</span>
-<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">utils</span>
-<span class="kn">from</span> <span class="nn">.newton_solver</span> <span class="kn">import</span> <span class="n">MechanicsNewtonSolver</span>
-<span class="kn">from</span> <span class="nn">.newton_solver</span> <span class="kn">import</span> <span class="n">MechanicsNewtonSolver_ODE</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">boundary_conditions</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">geometry</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">lvgeometry</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">slabgeometry</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">utils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.newton_solver</span><span class="w"> </span><span class="kn">import</span> <span class="n">MechanicsNewtonSolver</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.newton_solver</span><span class="w"> </span><span class="kn">import</span> <span class="n">MechanicsNewtonSolver_ODE</span>
 
 <span class="k">if</span> <span class="n">typing</span><span class="o">.</span><span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="n">em_model</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">em_model</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="setup_solver">
 <a class="viewcode-back" href="../../api.html#simcardems.mechanics_model.setup_solver">[docs]</a>
-<span class="k">def</span> <span class="nf">setup_solver</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">setup_solver</span><span class="p">(</span>
     <span class="n">coupling</span><span class="p">:</span> <span class="n">em_model</span><span class="o">.</span><span class="n">BaseEMCoupling</span><span class="p">,</span>
     <span class="n">ActiveModel</span><span class="p">,</span>
     <span class="n">bnd_rigid</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">bnd_rigid</span><span class="p">,</span>
@@ -408,8 +408,8 @@
 
 <div class="viewcode-block" id="ContinuationBasedMechanicsProblem">
 <a class="viewcode-back" href="../../api.html#simcardems.mechanics_model.ContinuationBasedMechanicsProblem">[docs]</a>
-<span class="k">class</span> <span class="nc">ContinuationBasedMechanicsProblem</span><span class="p">(</span><span class="n">pulse</span><span class="o">.</span><span class="n">MechanicsProblem</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ContinuationBasedMechanicsProblem</span><span class="p">(</span><span class="n">pulse</span><span class="o">.</span><span class="n">MechanicsProblem</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_use_custom_newton_solver</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;use_custom_newton_solver&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">old_states</span> <span class="o">=</span> <span class="p">[]</span>
@@ -417,14 +417,14 @@
 
 <div class="viewcode-block" id="ContinuationBasedMechanicsProblem.solve">
 <a class="viewcode-back" href="../../api.html#simcardems.mechanics_model.ContinuationBasedMechanicsProblem.solve">[docs]</a>
-    <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_init_forms</span><span class="p">()</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="ContinuationBasedMechanicsProblem.solve_for_control">
 <a class="viewcode-back" href="../../api.html#simcardems.mechanics_model.ContinuationBasedMechanicsProblem.solve_for_control">[docs]</a>
-    <span class="k">def</span> <span class="nf">solve_for_control</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">control</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">solve_for_control</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">control</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Solve with a continuation step for</span>
 <span class="sd">        better initial guess for the Newton solver</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -461,8 +461,8 @@
 
 <div class="viewcode-block" id="MechanicsProblem">
 <a class="viewcode-back" href="../../api.html#simcardems.mechanics_model.MechanicsProblem">[docs]</a>
-<span class="k">class</span> <span class="nc">MechanicsProblem</span><span class="p">(</span><span class="n">ContinuationBasedMechanicsProblem</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">_init_spaces</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MechanicsProblem</span><span class="p">(</span><span class="n">ContinuationBasedMechanicsProblem</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_init_spaces</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">mesh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">mesh</span>
 
         <span class="n">P1</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">FiniteElement</span><span class="p">(</span><span class="s2">&quot;Lagrange&quot;</span><span class="p">,</span> <span class="n">mesh</span><span class="o">.</span><span class="n">ufl_cell</span><span class="p">(),</span> <span class="mi">1</span><span class="p">)</span>
@@ -475,14 +475,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_init_functions</span><span class="p">()</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">u_subspace_index</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">u_subspace_index</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="k">return</span> <span class="mi">0</span>
 
-    <span class="k">def</span> <span class="nf">_init_functions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_init_functions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state_space</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;state&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">state_test</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">TestFunction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state_space</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_init_forms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init_solver</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_init_forms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init_solver</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
         <span class="n">u</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>
         <span class="n">v</span><span class="p">,</span> <span class="n">q</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state_test</span><span class="p">)</span>
 
@@ -514,7 +514,7 @@
         <span class="k">if</span> <span class="n">init_solver</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_init_solver</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">_init_solver</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_init_solver</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_problem</span> <span class="o">=</span> <span class="n">pulse</span><span class="o">.</span><span class="n">NonlinearProblem</span><span class="p">(</span>
             <span class="n">J</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_jacobian</span><span class="p">,</span>
             <span class="n">F</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_virtual_work</span><span class="p">,</span>
@@ -535,7 +535,7 @@
 
 <div class="viewcode-block" id="MechanicsProblem.solve">
 <a class="viewcode-back" href="../../api.html#simcardems.mechanics_model.MechanicsProblem.solve">[docs]</a>
-    <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_init_forms</span><span class="p">(</span><span class="n">init_solver</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">newton_iteration</span><span class="p">,</span> <span class="n">newton_converged</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
         <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="p">,</span> <span class="s2">&quot;check_overloads_called&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -546,8 +546,8 @@
 
 <div class="viewcode-block" id="RigidMotionProblem">
 <a class="viewcode-back" href="../../api.html#simcardems.mechanics_model.RigidMotionProblem">[docs]</a>
-<span class="k">class</span> <span class="nc">RigidMotionProblem</span><span class="p">(</span><span class="n">MechanicsProblem</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">_init_spaces</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">RigidMotionProblem</span><span class="p">(</span><span class="n">MechanicsProblem</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_init_spaces</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">mesh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">mesh</span>
 
         <span class="n">P1</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">FiniteElement</span><span class="p">(</span><span class="s2">&quot;Lagrange&quot;</span><span class="p">,</span> <span class="n">mesh</span><span class="o">.</span><span class="n">ufl_cell</span><span class="p">(),</span> <span class="mi">1</span><span class="p">)</span>
@@ -562,14 +562,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_init_functions</span><span class="p">()</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">u_subspace_index</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">u_subspace_index</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="k">return</span> <span class="mi">1</span>
 
-    <span class="k">def</span> <span class="nf">_handle_bcs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bcs</span><span class="p">,</span> <span class="n">bcs_parameters</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_handle_bcs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bcs</span><span class="p">,</span> <span class="n">bcs_parameters</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bcs</span> <span class="o">=</span> <span class="n">pulse</span><span class="o">.</span><span class="n">BoundaryConditions</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_dirichlet_bc</span> <span class="o">=</span> <span class="p">[]</span>
 
-    <span class="k">def</span> <span class="nf">_init_forms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init_solver</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_init_forms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init_solver</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
         <span class="c1"># Displacement and hydrostatic_pressure; 3rd space for rigid motion component</span>
         <span class="n">p</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">r</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>
         <span class="n">q</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state_test</span><span class="p">)</span>
@@ -613,7 +613,7 @@
 
 <div class="viewcode-block" id="RigidMotionProblem.rigid_motion_term">
 <a class="viewcode-back" href="../../api.html#simcardems.mechanics_model.RigidMotionProblem.rigid_motion_term">[docs]</a>
-    <span class="k">def</span> <span class="nf">rigid_motion_term</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rigid_motion_term</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span>
         <span class="n">position</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">SpatialCoordinate</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
         <span class="n">RM</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span>
@@ -631,7 +631,7 @@
 
 <div class="viewcode-block" id="resolve_boundary_conditions">
 <a class="viewcode-back" href="../../api.html#simcardems.mechanics_model.resolve_boundary_conditions">[docs]</a>
-<span class="k">def</span> <span class="nf">resolve_boundary_conditions</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">resolve_boundary_conditions</span><span class="p">(</span>
     <span class="n">geo</span><span class="p">:</span> <span class="n">geometry</span><span class="o">.</span><span class="n">BaseGeometry</span><span class="p">,</span>
     <span class="n">pre_stretch</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">traction</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -660,7 +660,7 @@
 
 <div class="viewcode-block" id="create_problem">
 <a class="viewcode-back" href="../../api.html#simcardems.mechanics_model.create_problem">[docs]</a>
-<span class="k">def</span> <span class="nf">create_problem</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_problem</span><span class="p">(</span>
     <span class="n">material</span><span class="p">:</span> <span class="n">pulse</span><span class="o">.</span><span class="n">Material</span><span class="p">,</span>
     <span class="n">geo</span><span class="p">:</span> <span class="n">geometry</span><span class="o">.</span><span class="n">BaseGeometry</span><span class="p">,</span>
     <span class="n">bnd_rigid</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">bnd_rigid</span><span class="p">,</span>
@@ -749,7 +749,7 @@ By Simula Research Laboratory
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Dec 26, 2024.
+  Last updated on Jan 17, 2025.
   <br/>
 </p>
   </div>

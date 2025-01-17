@@ -29,7 +29,7 @@
   <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -66,7 +66,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
-    <meta name="docbuild:last-update" content="Dec 26, 2024"/>
+    <meta name="docbuild:last-update" content="Jan 17, 2025"/>
   </head>
   
   
@@ -307,27 +307,27 @@
                 <article class="bd-article">
                   
   <h1>Source code for simcardems.utils</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">typing</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">typing</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
-<span class="kn">import</span> <span class="nn">dolfin</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dolfin</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <span class="k">try</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">ufl_legacy</span> <span class="k">as</span> <span class="nn">ufl</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">ufl_legacy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ufl</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">ufl</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">ufl</span>
 
 <span class="n">PathLike</span> <span class="o">=</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="MPIFilt">
 <a class="viewcode-back" href="../../api.html#simcardems.utils.MPIFilt">[docs]</a>
-<span class="k">class</span> <span class="nc">MPIFilt</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">Filter</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MPIFilt</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">Filter</span><span class="p">):</span>
 <div class="viewcode-block" id="MPIFilt.filter">
 <a class="viewcode-back" href="../../api.html#simcardems.utils.MPIFilt.filter">[docs]</a>
-    <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">dolfin</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span> <span class="mi">1</span>
         <span class="k">else</span><span class="p">:</span>
@@ -341,8 +341,8 @@
 
 <div class="viewcode-block" id="getLogger">
 <a class="viewcode-back" href="../../api.html#simcardems.utils.getLogger">[docs]</a>
-<span class="k">def</span> <span class="nf">getLogger</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
-    <span class="kn">import</span> <span class="nn">daiquiri</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">getLogger</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">daiquiri</span>
 
     <span class="n">logger</span> <span class="o">=</span> <span class="n">daiquiri</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 
@@ -356,8 +356,8 @@
 
 <div class="viewcode-block" id="Projector">
 <a class="viewcode-back" href="../../api.html#simcardems.utils.Projector">[docs]</a>
-<span class="k">class</span> <span class="nc">Projector</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Projector</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">V</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">FunctionSpace</span><span class="p">,</span>
         <span class="n">solver_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;lu&quot;</span><span class="p">,</span>
@@ -400,7 +400,7 @@
 
 <div class="viewcode-block" id="Projector.project">
 <a class="viewcode-back" href="../../api.html#simcardems.utils.Projector.project">[docs]</a>
-    <span class="k">def</span> <span class="nf">project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">,</span> <span class="n">f</span><span class="p">:</span> <span class="n">ufl</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">expr</span><span class="o">.</span><span class="n">Expr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">,</span> <span class="n">f</span><span class="p">:</span> <span class="n">ufl</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">expr</span><span class="o">.</span><span class="n">Expr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Project `f` into `u`.</span>
 
@@ -412,14 +412,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">vector</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_b</span><span class="o">.</span><span class="n">vector</span><span class="p">())</span></div>
 
 
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">,</span> <span class="n">f</span><span class="p">:</span> <span class="n">ufl</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">expr</span><span class="o">.</span><span class="n">Expr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">,</span> <span class="n">f</span><span class="p">:</span> <span class="n">ufl</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">expr</span><span class="o">.</span><span class="n">Expr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">u</span><span class="o">=</span><span class="n">u</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="n">f</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="enum2str">
 <a class="viewcode-back" href="../../api.html#simcardems.utils.enum2str">[docs]</a>
-<span class="k">def</span> <span class="nf">enum2str</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">EnumCls</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">enum2str</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">EnumCls</span><span class="p">):</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">x</span>
     <span class="k">assert</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">EnumCls</span>
@@ -429,7 +429,7 @@
 
 <div class="viewcode-block" id="float_to_constant">
 <a class="viewcode-back" href="../../api.html#simcardems.utils.float_to_constant">[docs]</a>
-<span class="k">def</span> <span class="nf">float_to_constant</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">float_to_constant</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Constant</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert float to a dolfin constant.</span>
 <span class="sd">    If value is already a constant, do nothing.</span>
 
@@ -451,7 +451,7 @@
 
 <div class="viewcode-block" id="local_project">
 <a class="viewcode-back" href="../../api.html#simcardems.utils.local_project">[docs]</a>
-<span class="k">def</span> <span class="nf">local_project</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">u</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">local_project</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">u</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;quadrature_degree&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;quadrature_scheme&quot;</span><span class="p">:</span> <span class="s2">&quot;default&quot;</span><span class="p">}</span>
     <span class="n">dxm</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">dx</span><span class="p">(</span><span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">)</span>
     <span class="n">dv</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">TrialFunction</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
@@ -472,7 +472,7 @@
 
 <div class="viewcode-block" id="compute_norm">
 <a class="viewcode-back" href="../../api.html#simcardems.utils.compute_norm">[docs]</a>
-<span class="k">def</span> <span class="nf">compute_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x_prev</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x_prev</span><span class="p">):</span>
     <span class="n">x_norm</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="s2">&quot;l2&quot;</span><span class="p">)</span>
     <span class="n">e</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span> <span class="o">-</span> <span class="n">x_prev</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span>
     <span class="n">norm</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="s2">&quot;l2&quot;</span><span class="p">)</span>
@@ -484,7 +484,7 @@
 
 <div class="viewcode-block" id="remove_file">
 <a class="viewcode-back" href="../../api.html#simcardems.utils.remove_file">[docs]</a>
-<span class="k">def</span> <span class="nf">remove_file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">comm</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">remove_file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">comm</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">comm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">comm</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
@@ -497,7 +497,7 @@
 
 <div class="viewcode-block" id="setup_assigner">
 <a class="viewcode-back" href="../../api.html#simcardems.utils.setup_assigner">[docs]</a>
-<span class="k">def</span> <span class="nf">setup_assigner</span><span class="p">(</span><span class="n">vs</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">setup_assigner</span><span class="p">(</span><span class="n">vs</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
     <span class="c1"># Set-up separate potential function for post processing</span>
     <span class="n">VS0</span> <span class="o">=</span> <span class="n">vs</span><span class="o">.</span><span class="n">function_space</span><span class="p">()</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
     <span class="n">V</span> <span class="o">=</span> <span class="n">VS0</span><span class="o">.</span><span class="n">collapse</span><span class="p">()</span>
@@ -522,7 +522,7 @@
 <span class="c1"># even less safety checks</span>
 <div class="viewcode-block" id="sub_function">
 <a class="viewcode-back" href="../../api.html#simcardems.utils.sub_function">[docs]</a>
-<span class="k">def</span> <span class="nf">sub_function</span><span class="p">(</span><span class="n">vs</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">sub_function</span><span class="p">(</span><span class="n">vs</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
     <span class="n">sub_vs</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">dolfin</span><span class="o">.</span><span class="n">cpp</span><span class="o">.</span><span class="n">function</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">vs</span><span class="o">.</span><span class="n">_cpp_object</span><span class="p">,</span> <span class="n">index</span><span class="p">))</span>
     <span class="n">ufl</span><span class="o">.</span><span class="n">Coefficient</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
         <span class="n">sub_vs</span><span class="p">,</span>
@@ -535,7 +535,7 @@
 
 <div class="viewcode-block" id="print_mesh_info">
 <a class="viewcode-back" href="../../api.html#simcardems.utils.print_mesh_info">[docs]</a>
-<span class="k">def</span> <span class="nf">print_mesh_info</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">total_dofs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">print_mesh_info</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">total_dofs</span><span class="p">):</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mesh elements: </span><span class="si">{</span><span class="n">mesh</span><span class="o">.</span><span class="n">num_entities</span><span class="p">(</span><span class="n">mesh</span><span class="o">.</span><span class="n">topology</span><span class="p">()</span><span class="o">.</span><span class="n">dim</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mesh vertices: </span><span class="si">{</span><span class="n">mesh</span><span class="o">.</span><span class="n">num_entities</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total degrees of freedom: </span><span class="si">{</span><span class="n">total_dofs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
@@ -587,7 +587,7 @@ By Simula Research Laboratory
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Dec 26, 2024.
+  Last updated on Jan 17, 2025.
   <br/>
 </p>
   </div>

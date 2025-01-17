@@ -30,7 +30,7 @@
   <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
@@ -71,7 +71,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
-    <meta name="docbuild:last-update" content="Dec 26, 2024"/>
+    <meta name="docbuild:last-update" content="Jan 17, 2025"/>
   </head>
   
   
@@ -377,11 +377,11 @@
 <p>In other words, we pre-stretch the slap with a 10% stretch in the beginning, and when <span class="math notranslate nohighlight">\(t \geq T^*\)</span> we change this value to be some value that depends on the length of the slab.</p>
 <p>First we make the necessary imports</p>
 <!-- #endregion -->
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">import</span> <span class="nn">dolfin</span>
-<span class="kn">import</span> <span class="nn">pulse</span>
-<span class="kn">import</span> <span class="nn">simcardems</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dolfin</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pulse</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">simcardems</span>
 </pre></div>
 </div>
 <p>And we also turn off logging from pulse in order to not flow the output</p>
@@ -391,8 +391,8 @@
 <p>Next we create a new <code class="docutils literal notranslate"><span class="pre">Runner</span></code> by subclassing the <code class="docutils literal notranslate"><span class="pre">simcardems.Runner</span></code> class.
 We also make this runner take in an argument <code class="docutils literal notranslate"><span class="pre">T_release</span></code> that will be the the time when we trigger the rapid length reduction. We also store the pre-stretch variable which is the variable we will change when applying the rapid length reduction.
 Also, we can only do this on a slab type geometry so we add an extra test for that.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ReleaseRunner</span><span class="p">(</span><span class="n">simcardems</span><span class="o">.</span><span class="n">Runner</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">T_release</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">ReleaseRunner</span><span class="p">(</span><span class="n">simcardems</span><span class="o">.</span><span class="n">Runner</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">T_release</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_T_release</span> <span class="o">=</span> <span class="n">T_release</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pre_stretch</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">pre_stretch</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_stretch</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
@@ -403,7 +403,7 @@ Also, we can only do this on a slab type geometry so we add an extra test for th
         <span class="bp">self</span><span class="o">.</span><span class="n">Lx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;lx&quot;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_print_message</span> <span class="o">=</span> <span class="kc">True</span>
 
-    <span class="k">def</span> <span class="nf">_post_mechanics_solve</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_post_mechanics_solve</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># Convert internal time for nanoseconds to milliseconds</span>
         <span class="c1"># And apply release when time is greater then T release</span>
         <span class="k">if</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">TimeStepper</span><span class="o">.</span><span class="n">ns2ms</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_T_release</span><span class="p">:</span>
@@ -421,7 +421,7 @@ Also, we can only do this on a slab type geometry so we add an extra test for th
 </div>
 <p>The rapid length reduction is implemented as a part of the <code class="docutils literal notranslate"><span class="pre">_post_mechanics_solve</span></code> method which is an internal method of the <code class="docutils literal notranslate"><span class="pre">Runner</span></code> class that is called after the mechanics system is solved. Note that we also call the <code class="docutils literal notranslate"><span class="pre">_post_mechanics_solve</span></code> method of the parent class at the end (through <code class="docutils literal notranslate"><span class="pre">super</span></code>).
 Now we can set up the main function</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">Config</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">simcardems</span><span class="o">.</span><span class="n">Config</span><span class="p">):</span>
     <span class="c1"># Apply release half way through</span>
     <span class="n">T_release</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">T</span> <span class="o">//</span> <span class="mi">2</span>
     <span class="n">runner</span> <span class="o">=</span> <span class="n">ReleaseRunner</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span> <span class="n">T_release</span><span class="o">=</span><span class="n">T_release</span><span class="p">)</span>
@@ -429,7 +429,7 @@ Now we can set up the main function</p>
 </pre></div>
 </div>
 <p>and a function for plotting the traces</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">postprocess</span><span class="p">(</span><span class="n">outdir</span><span class="p">:</span> <span class="n">Path</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">postprocess</span><span class="p">(</span><span class="n">outdir</span><span class="p">:</span> <span class="n">Path</span><span class="p">):</span>
     <span class="n">simcardems</span><span class="o">.</span><span class="n">postprocess</span><span class="o">.</span><span class="n">plot_state_traces</span><span class="p">(</span><span class="n">outdir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;results.h5&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
@@ -550,7 +550,7 @@ By Simula Research Laboratory
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Dec 26, 2024.
+  Last updated on Jan 17, 2025.
   <br/>
 </p>
   </div>

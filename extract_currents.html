@@ -30,7 +30,7 @@
   <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
@@ -69,7 +69,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
-    <meta name="docbuild:last-update" content="Dec 26, 2024"/>
+    <meta name="docbuild:last-update" content="Jan 17, 2025"/>
   </head>
   
   
@@ -359,20 +359,20 @@
 <h1>Extracting currents<a class="headerlink" href="#extracting-currents" title="Link to this heading">#</a></h1>
 <p>Sometimes you would like to extract certain intermediate values, that are not state variables from your simulation. One example are the currents in the underlying cellmodel. In this demo we will demonstrate how to extract on particular current (the NaL) current using the built-in fully coupled model.</p>
 <p>First we will make the necessary imports.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">simcardems</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">import</span> <span class="nn">dolfin</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">simcardems</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dolfin</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 </pre></div>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">ufl_legacy</span> <span class="k">as</span> <span class="nn">ufl</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">ufl_legacy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ufl</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">ufl</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">ufl</span>
 </pre></div>
 </div>
 <p>Next thing we do is to define the expression for the intermediate that we want to keep track of. In out case we have simple looked at the source code of the cell model and extracted the relevant equations into a function. We have named this function <code class="docutils literal notranslate"><span class="pre">INaL</span></code> since it will give us an expression for the INaL current. This function takes two arguments; the state vector from the EP solver and the parameters for the ODE model.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">INaL</span><span class="p">(</span><span class="n">vs</span><span class="p">,</span> <span class="n">parameters</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">INaL</span><span class="p">(</span><span class="n">vs</span><span class="p">,</span> <span class="n">parameters</span><span class="p">):</span>
     <span class="p">(</span>
         <span class="n">v</span><span class="p">,</span>
         <span class="n">CaMKt</span><span class="p">,</span>
@@ -457,8 +457,8 @@
 </pre></div>
 </div>
 <p>Now we need to opt in to the coupling object to make sure that we register<code class="docutils literal notranslate"><span class="pre">INaL</span></code> to the Datacollector. To do so we will use the existing <code class="docutils literal notranslate"><span class="pre">EMCoupling</span></code> class, but override a few mew methods. We must also remember to call on the super class so that the original methods are invoked.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">EMCoupling</span><span class="p">(</span><span class="n">simcardems</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">fully_coupled_ORdmm_Land</span><span class="o">.</span><span class="n">EMCoupling</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">EMCoupling</span><span class="p">(</span><span class="n">simcardems</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">fully_coupled_ORdmm_Land</span><span class="o">.</span><span class="n">EMCoupling</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">geometry</span><span class="p">,</span>
         <span class="o">**</span><span class="n">state_params</span><span class="p">,</span>
@@ -466,11 +466,11 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">geometry</span><span class="o">=</span><span class="n">geometry</span><span class="p">,</span> <span class="o">**</span><span class="n">state_params</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">INaL</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">V_ep</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;INaL&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">register_datacollector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collector</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">register_datacollector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collector</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">register_datacollector</span><span class="p">(</span><span class="n">collector</span><span class="o">=</span><span class="n">collector</span><span class="p">)</span>
         <span class="n">collector</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s2">&quot;ep&quot;</span><span class="p">,</span> <span class="s2">&quot;INaL&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">INaL</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">ep_to_coupling</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ep_to_coupling</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">ep_to_coupling</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">INaL</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span>
             <span class="n">dolfin</span><span class="o">.</span><span class="n">project</span><span class="p">(</span>
@@ -619,7 +619,7 @@ By Simula Research Laboratory
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Dec 26, 2024.
+  Last updated on Jan 17, 2025.
   <br/>
 </p>
   </div>

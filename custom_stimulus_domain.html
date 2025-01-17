@@ -30,7 +30,7 @@
   <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
@@ -71,7 +71,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
-    <meta name="docbuild:last-update" content="Dec 26, 2024"/>
+    <meta name="docbuild:last-update" content="Jan 17, 2025"/>
   </head>
   
   
@@ -361,11 +361,11 @@
 <h1>Custom stimulus domain<a class="headerlink" href="#custom-stimulus-domain" title="Link to this heading">#</a></h1>
 <p>In this example we will show how to apply the stimulus to a custom domain. By default the stimulus is applied to the entire EP mesh, but it might be of interest to stimulate only a small region in order to generate a traveling wave and to study features such as conduction velocity.</p>
 <p>First me make the necessary imports</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">import</span> <span class="nn">dolfin</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">simcardems</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dolfin</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">simcardems</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 </pre></div>
 </div>
 <p>And we specify the path to the output directory where we want to store the results</p>
@@ -375,7 +375,7 @@
 </div>
 <p>There are two way to specify the stimulus domain. One way is to define function which takes as input the EP mesh and outputs an instance of <code class="docutils literal notranslate"><span class="pre">simcardems.geometry.StimulusDomain</span></code>. This object is basically just a tuple containing the domain (i.e a dolfin.MeshFunction with markers for the domain), and a marker (i.e an integer) representing the value for where the stimulus should be applied.</p>
 <p>In this case, we are using a slab geometry of dimensions <span class="math notranslate nohighlight">\([0, 5] \times [0, 2] \times [0, 1] \subset \mathbb{R}^3\)</span>, and we will mark the regions were <span class="math notranslate nohighlight">\(x &lt; 1.0\)</span> as the stimulus domain</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">stimulus_domain</span><span class="p">(</span><span class="n">mesh</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">stimulus_domain</span><span class="p">(</span><span class="n">mesh</span><span class="p">):</span>
     <span class="n">marker</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="n">subdomain</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">CompiledSubDomain</span><span class="p">(</span><span class="s2">&quot;x[0] &lt; 1.0&quot;</span><span class="p">)</span>
     <span class="n">domain</span> <span class="o">=</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">(</span><span class="s2">&quot;size_t&quot;</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">mesh</span><span class="o">.</span><span class="n">topology</span><span class="p">()</span><span class="o">.</span><span class="n">dim</span><span class="p">())</span>
@@ -464,7 +464,7 @@
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">time_stamps</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">time_stamps</span> <span class="ow">or</span> <span class="p">[]</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">voltage_traces</span><span class="p">():</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">voltage_traces</span><span class="p">():</span>
     <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">time_stamps</span><span class="p">:</span>
         <span class="k">yield</span> <span class="n">loader</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ep&quot;</span><span class="p">,</span> <span class="s2">&quot;V&quot;</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
 </pre></div>
@@ -591,7 +591,7 @@ By Simula Research Laboratory
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Dec 26, 2024.
+  Last updated on Jan 17, 2025.
   <br/>
 </p>
   </div>
