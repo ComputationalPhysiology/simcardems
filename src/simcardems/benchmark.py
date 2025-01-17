@@ -36,11 +36,11 @@ def to_string(x):
 
 
 def trace_path(outdir: str, dx: float, dt: float) -> Path:
-    return Path(outdir) / f"results_dx{int(100*dx)}_dt{int(1000*dt)}.npy"
+    return Path(outdir) / f"results_dx{int(100 * dx)}_dt{int(1000 * dt)}.npy"
 
 
 def feature_path(outdir: str, dx: float, dt: float) -> Path:
-    return Path(outdir) / f"results_dx{int(100*dx)}_dt{int(1000*dt)}.json"
+    return Path(outdir) / f"results_dx{int(100 * dx)}_dt{int(1000 * dt)}.json"
 
 
 def find_dx_dt(

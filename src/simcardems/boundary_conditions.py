@@ -136,7 +136,7 @@ def create_lv_boundary_conditions(
     spring: typing.Union[dolfin.Constant, float] = None,
 ):
     logger.debug(
-        "Calling create_lv_boundary_conditions with geo: " f"{geo!r}, traction: {traction!r} and spring: {spring!r}",
+        f"Calling create_lv_boundary_conditions with geo: {geo!r}, traction: {traction!r} and spring: {spring!r}",
     )
 
     def dirichlet_bc(W):
