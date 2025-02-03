@@ -43,7 +43,7 @@ jobs:
         run: python3 -m simcardems.benchmark run convergence_test --dt=${{ matrix.dt }} --dx=${{ matrix.dx }} --sha=${{ github.sha }}
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: "results-${{ matrix.dx }}-${{ matrix.dt }}"
           path: convergence_test/results_dx*.json
