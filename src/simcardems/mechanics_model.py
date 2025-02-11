@@ -155,6 +155,10 @@ class MechanicsProblem(ContinuationBasedMechanicsProblem):
         self._init_functions()
 
     @property
+    def strong_coupling(self):
+        return hasattr(self.material.active, "Ta")
+
+    @property
     def u_subspace_index(self) -> int:
         return 0
 
@@ -181,11 +185,12 @@ class MechanicsProblem(ContinuationBasedMechanicsProblem):
             self.state_test,
         )
 
-        f0 = self.material.active.f0
-        f = self._F * f0
-        lmbda = dolfin.sqrt(f**2)
-        Pa = self.material.active.Ta(lmbda) * dolfin.outer(f, f0)
-        self._virtual_work += dolfin.inner(Pa, dolfin.grad(v)) * dx
+        if self.strong_coupling:
+            f0 = self.material.active.f0
+            f = self._F * f0
+            lmbda = dolfin.sqrt(f**2)
+            Pa = self.material.active.Ta(lmbda) * dolfin.outer(f, f0)
+            self._virtual_work += dolfin.inner(Pa, dolfin.grad(v)) * dx
 
         external_work = self._external_work(u, v)
         if external_work is not None:
@@ -224,22 +229,23 @@ class MechanicsProblem(ContinuationBasedMechanicsProblem):
         newton_iteration, newton_converged = self.solver.solve()
         getattr(self.solver, "check_overloads_called", None)
 
-        u, p = self.state.split(deepcopy=True)
+        if self.strong_coupling:
+            u, p = self.state.split(deepcopy=True)
 
-        F = dolfin.grad(u) + dolfin.Identity(3)
-        f = F * self.material.active.f0
-        lmbda = dolfin.sqrt(f**2)
+            F = dolfin.grad(u) + dolfin.Identity(3)
+            f = F * self.material.active.f0
+            lmbda = dolfin.sqrt(f**2)
 
-        self.material.active._projector.project(self.material.active.lmbda, lmbda)
-        if self.material.active.dt > 0:
-            self.material.active._projector.project(
-                self.material.active._dLambda,
-                (lmbda - self.material.active.lmbda_prev) / self.material.active.dt,
-            )
+            self.material.active._projector.project(self.material.active.lmbda, lmbda)
+            if self.material.active.dt > 0:
+                self.material.active._projector.project(
+                    self.material.active._dLambda,
+                    (lmbda - self.material.active.lmbda_prev) / self.material.active.dt,
+                )
 
-        self.material.active._projector.project(self.material.active.Ta_current, self.material.active.Ta(lmbda))
-        self.material.active.update_current(lmbda=lmbda)
-        self.material.active.update_prev()
+            self.material.active._projector.project(self.material.active.Ta_current, self.material.active.Ta(lmbda))
+            self.material.active.update_current(lmbda=lmbda)
+            self.material.active.update_prev()
 
         return newton_iteration, newton_converged
 
