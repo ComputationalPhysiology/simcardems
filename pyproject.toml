@@ -63,7 +63,7 @@ docs = [
     "jupyter-book",
     "jupytext",
     "pandas",
-    "plotly",
+    "plotly<6.0",
     "requests",
     "sphinxcontrib-bibtex",
 ]
