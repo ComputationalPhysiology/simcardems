@@ -19,7 +19,7 @@ def test_run(coupling_type, tmp_path, geo):
     geo.dump(fname=geometry_path, schema_path=geometry_schema_path)
     geo_args = [geometry_path.as_posix(), "-s", geometry_schema_path.as_posix()]
 
-    runner = CliRunner()
+    runner = CliRunner(mix_stderr=False)
     outdir = tmp_path / "results"
 
     T = 1.0
@@ -33,7 +33,6 @@ def test_run(coupling_type, tmp_path, geo):
     ]
 
     result = runner.invoke(run, arguments)
-
     assert result.exit_code == 0
     assert outdir.exists()
     assert outdir.joinpath("results.h5").is_file()
