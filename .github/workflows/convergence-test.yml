@@ -6,6 +6,7 @@
 name: Run convergence test
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - "!*"
