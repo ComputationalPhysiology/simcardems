@@ -47,20 +47,6 @@ jobs:
           name: html-report
           path: htmlcov
 
-      - name: Create coverage Badge
-        if: github.ref == 'refs/heads/main'
-        uses: schneegans/dynamic-badges-action@v1.6.0
-        with:
-          auth: ${{ secrets.GIST_SECRET }}
-          gistID: a7290de789564f03eb6b1ee122fce423
-          filename: simcardems-coverage.json
-          label: Coverage
-          message: ${{ env.total }}%
-          minColorRange: 50
-          maxColorRange: 90
-          valColorRange: ${{ env.total }}
-
-
       - name: Install pypa/build
         run: >-
           python3 -m
