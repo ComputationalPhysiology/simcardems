@@ -75,7 +75,7 @@ def refine_mesh(
 ) -> dolfin.Mesh:
     dolfin.parameters["refinement_algorithm"] = "plaza_with_parent_facets"
     for i in range(num_refinements):
-        logger.info(f"Performing refinement {i+1}")
+        logger.info(f"Performing refinement {i + 1}")
         mesh = dolfin.refine(mesh, redistribute=redistribute)
 
     return mesh
@@ -159,8 +159,8 @@ class BaseGeometry(abc.ABC):
     def default_stimulus_domain(mesh: dolfin.Mesh) -> StimulusDomain:
         # Default is to stimulate the entire tissue
         marker = 1
-        #domain = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim())
-        #domain.set_all(marker)
+        # domain = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim())
+        # domain.set_all(marker)
         subdomain = dolfin.CompiledSubDomain("x[0] < 1.0")
         domain = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim())
         domain.set_all(0)
