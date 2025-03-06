@@ -1,0 +1,36 @@
+name: Build documentation
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_call:
+  workflow_dispatch:
+
+env:
+  DEB_PYTHON_INSTALL_LAYOUT: deb_system
+  DISPLAY: ":99.0"
+
+jobs:
+
+  build:
+    runs-on: ubuntu-22.04
+    container: ghcr.io/scientificcomputing/fenics-gmsh:2023-02-20
+    env:
+      PUBLISH_DIR: ./docs/_build/html
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install ".[docs, gui]"
+
+      - name: Build docs
+        run: make docs
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ env.PUBLISH_DIR }}

@@ -10,11 +10,11 @@ jobs:
       image: ghcr.io/scientificcomputing/fenics-gmsh:2023-02-20
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Cache
         id: cache-primes
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: |
             ~/.cache/instant
@@ -34,12 +34,18 @@ jobs:
         run: |
           python3 -m pytest
 
-      - name: Coverage report
-        uses: codecov/codecov-action@v3
-        if: github.ref == 'refs/heads/main'
+      - name: Extract Coverage
+        run: |
+          python3 -m coverage report | sed 's/^/    /' >> $GITHUB_STEP_SUMMARY
+          python3 -m coverage json
+          export TOTAL=$(python3 -c "import json;print(json.load(open('coverage.json'))['totals']['percent_covered_display'])")
+          echo "total=$TOTAL" >> $GITHUB_ENV
+
+      - name: Upload HTML report.
+        uses: actions/upload-artifact@v4
         with:
-          fail_ci_if_error: true
-          files: ./coverage.xml
+          name: html-report
+          path: htmlcov
 
       - name: Install pypa/build
         run: >-

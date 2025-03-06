@@ -25,11 +25,6 @@ repos:
     hooks:
       - id: flake8
 
-  - repo: https://github.com/asottile/add-trailing-comma
-    rev: v2.4.0
-    hooks:
-      - id: add-trailing-comma
-
   - repo: https://github.com/asottile/setup-cfg-fmt
     rev: v2.2.0
     hooks:

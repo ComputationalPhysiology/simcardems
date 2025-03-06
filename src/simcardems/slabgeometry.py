@@ -98,13 +98,15 @@ class SlabGeometry(BaseGeometry):
         pass
 
     def __repr__(self) -> str:
+        name = self.__class__.__name__
         return (
-            f"{self.__class__.__name__}("
+            f"{name}("
             f"lx={self.parameters['lx']}, "
             f"ly={self.parameters['ly']}, "
             f"lz={self.parameters['lz']}, "
             f"dx={self.parameters['dx']}, "
-            f"num_refinements={self.parameters['num_refinements']})"
+            f"num_refinements={self.parameters['num_refinements']}"
+            ")"
         )
 
 
