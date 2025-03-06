@@ -1,0 +1,71 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: Run convergence test
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "!*"
+    tags:
+      - "v*"
+
+
+jobs:
+  job_1:
+    name: run convergence tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dx: [0.1, 0.2, 0.4]
+        dt: [0.05]
+        include:
+          - dt: 0.025
+            dx: 0.2
+          - dt: 0.1
+            dx: 0.2
+
+
+    container:
+      image: ghcr.io/scientificcomputing/fenics-gmsh:2023-02-20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install -e "."
+
+      - name: Run benchmark with dx = ${{ matrix.dx }} and dt = ${{ matrix.dt }}
+        run: python3 -m simcardems.benchmark run convergence_test --dt=${{ matrix.dt }} --dx=${{ matrix.dx }} --sha=${{ github.sha }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: "results-${{ matrix.dx }}-${{ matrix.dt }}"
+          path: convergence_test/results_dx*.json
+
+  job_2:
+    name: Download repost and upload to gist
+    needs: job_1
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: convergence_test
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: python3 -m pip install requests
+
+      - name: Print files
+        run: python3 scripts/upload-data.py convergence_test --token=${{ secrets.CONV_TOKEN }}
