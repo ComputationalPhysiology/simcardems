@@ -11,7 +11,7 @@ repos:
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: 'v0.11.8'
+    rev: 'v0.12.3'
     hooks:
        # Run the linter.
       - id: ruff
@@ -20,7 +20,7 @@ repos:
       - id: ruff-format
 
   - repo: https://github.com/asottile/add-trailing-comma
-    rev: v3.1.0
+    rev: v3.2.0
     hooks:
       - id: add-trailing-comma
 
@@ -30,13 +30,13 @@ repos:
       - id: setup-cfg-fmt
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.15.0
+    rev: v1.16.1
     hooks:
       - id: mypy
         additional_dependencies: ['types-requests']
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v8.19.1
+    rev: v9.1.0
     hooks:
       - id: cspell
         files: src/|docs/source/(.+).md|docs/source/(.+).rst|tests|README.md
