@@ -60,7 +60,7 @@ dev = [
     "wheel",
 ]
 docs = [
-    "jupyter-book",
+    "jupyter-book<2.0",
     "jupytext",
     "pandas",
     "plotly<6.0",
