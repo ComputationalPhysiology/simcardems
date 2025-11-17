@@ -11,7 +11,7 @@ repos:
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: 'v0.14.4'
+    rev: 'v0.14.5'
     hooks:
        # Run the linter.
       - id: ruff
@@ -36,12 +36,12 @@ repos:
         additional_dependencies: ['types-requests']
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v9.3.0
+    rev: v9.3.3
     hooks:
       - id: cspell
         files: src/|docs/source/(.+).md|docs/source/(.+).rst|tests|README.md
 
   - repo: https://github.com/kynan/nbstripout
-    rev: 0.8.1
+    rev: 0.8.2
     hooks:
       - id: nbstripout
