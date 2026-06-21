@@ -54,6 +54,7 @@ class Config:
         "explicit_ORdmm_Land",
         "pureEP_ORdmm_Land",
     ] = "fully_coupled_ORdmm_Land"
+    material_parameter_a: float = 2.28
 
     def as_dict(self):
         return {k: v for k, v in self.__dict__.items()}
