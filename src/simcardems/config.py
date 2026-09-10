@@ -44,7 +44,12 @@ class Config:
     ep_ode_scheme: str = "GRL1"
     ep_preconditioner: str = "sor"
     ep_theta: float = 0.5
+    ep_conductivity_longitudinal_scale: float = 1.0
+    ep_conductivity_transverse_scale: float = 1.0
+    stimulus_amplitude_scale: float = 1.0
+    stimulus_duration: float = 2.0
     linear_mechanics_solver: str = "mumps"
+    passive_stiffness_scale: float = 1.0
     mechanics_use_continuation: bool = False
     mechanics_use_custom_newton_solver: bool = False
     PCL: float = 1000

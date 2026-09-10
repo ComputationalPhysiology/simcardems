@@ -56,6 +56,10 @@ def setup_EM_model(
         dt=config.dt,
         PCL=config.PCL,
         cellmodel=cellmodel,
+        conductivity_longitudinal_scale=config.ep_conductivity_longitudinal_scale,
+        conductivity_transverse_scale=config.ep_conductivity_transverse_scale,
+        stimulus_amplitude_scale=config.stimulus_amplitude_scale,
+        stimulus_duration=config.stimulus_duration,
     )
     coupling.register_ep_model(solver)
 
@@ -70,6 +74,7 @@ def setup_EM_model(
         use_custom_newton_solver=config.mechanics_use_custom_newton_solver,
         debug_mode=config.debug_mode,
         ActiveModel=cls_ActiveModel,
+        passive_stiffness_scale=config.passive_stiffness_scale,
     )
     if mech_state_init is not None:
         mech_heart.state.assign(mech_state_init)

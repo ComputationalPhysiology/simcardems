@@ -66,6 +66,10 @@ def setup_solver(
     theta=Config.ep_theta,
     preconditioner=Config.ep_preconditioner,
     PCL=Config.PCL,
+    conductivity_longitudinal_scale=Config.ep_conductivity_longitudinal_scale,
+    conductivity_transverse_scale=Config.ep_conductivity_transverse_scale,
+    stimulus_amplitude_scale=Config.stimulus_amplitude_scale,
+    stimulus_duration=Config.stimulus_duration,
 ) -> cbcbeat.SplittingSolver:
     # Set-up cardiac model
     ps = setup_splitting_solver_parameters(
@@ -80,6 +84,10 @@ def setup_solver(
         PCL=PCL,
         microstructure=coupling.geometry.microstructure_ep,
         stimulus_domain=coupling.geometry.stimulus_domain,
+        conductivity_longitudinal_scale=conductivity_longitudinal_scale,
+        conductivity_transverse_scale=conductivity_transverse_scale,
+        stimulus_amplitude_scale=stimulus_amplitude_scale,
+        duration=stimulus_duration,
     )
     solver = cbcbeat.SplittingSolver(ep_heart, params=ps)
     # Extract the solution fields and set the initial conditions
@@ -105,6 +113,8 @@ def define_conductivity_tensor(
     microstructure: pulse.Microstructure,
     chi: float = 140.0,
     C_m: float = 0.01,
+    longitudinal_scale: float = 1.0,
+    transverse_scale: float = 1.0,
 ):
     fiber = microstructure.f0
     sheet = microstructure.s0
@@ -126,8 +136,8 @@ def define_conductivity_tensor(
     def harmonic_mean(a, b):
         return a * b / (a + b)
 
-    sigma_l = harmonic_mean(conductivities["sigma_il"], conductivities["sigma_el"])
-    sigma_t = harmonic_mean(conductivities["sigma_it"], conductivities["sigma_et"])
+    sigma_l = harmonic_mean(conductivities["sigma_il"], conductivities["sigma_el"]) * longitudinal_scale
+    sigma_t = harmonic_mean(conductivities["sigma_it"], conductivities["sigma_et"]) * transverse_scale
 
     # Scale conductivities by 1/(C_m * chi)
     s_l = sigma_l / (C_m * chi)  # mm^2 / ms
@@ -150,6 +160,9 @@ def setup_model(
     C_m: float = 0.01,
     duration: float = 2.0,
     A: float = 50_000.0,
+    conductivity_longitudinal_scale: float = 1.0,
+    conductivity_transverse_scale: float = 1.0,
+    stimulus_amplitude_scale: float = 1.0,
 ) -> cbcbeat.CardiacModel:
     """Set-up cardiac model based on benchmark parameters
 
@@ -182,13 +195,19 @@ def setup_model(
     time = dolfin.Constant(0.0)
 
     # Define conductivity tensor
-    M = define_conductivity_tensor(chi=chi, C_m=C_m, microstructure=microstructure)
+    M = define_conductivity_tensor(
+        chi=chi,
+        C_m=C_m,
+        microstructure=microstructure,
+        longitudinal_scale=conductivity_longitudinal_scale,
+        transverse_scale=conductivity_transverse_scale,
+    )
 
     # Define stimulation (NB: region of interest carried by the mesh
     # and assumptions in cbcbeat)
     cm2mm = 10.0
     factor = 1.0 / (chi * C_m)  # NB: cbcbeat convention
-    amplitude = factor * A * (1.0 / cm2mm) ** 3  # mV/ms
+    amplitude = factor * A * stimulus_amplitude_scale * (1.0 / cm2mm) ** 3  # mV/ms
 
     s = "((std::fmod(time,PCL) >= start) & (std::fmod(time,PCL) <= duration + start)) ? amplitude : 0.0"
 

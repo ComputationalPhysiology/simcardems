@@ -34,6 +34,7 @@ def setup_solver(
     linear_solver="mumps",
     use_custom_newton_solver: bool = config.Config.mechanics_use_custom_newton_solver,
     state_prev=None,
+    passive_stiffness_scale: float = config.Config.passive_stiffness_scale,
 ):
     """Setup mechanics model with dirichlet boundary conditions or rigid motion."""
 
@@ -43,13 +44,13 @@ def setup_solver(
 
     # Use parameters from Biaxial test in Holzapfel 2019 (Table 1).
     material_parameters = dict(
-        a=2.28,
-        a_f=1.686,
+        a=2.28 * passive_stiffness_scale,
+        a_f=1.686 * passive_stiffness_scale,
         b=9.726,
         b_f=15.779,
-        a_s=0.0,
+        a_s=0.0 * passive_stiffness_scale,
         b_s=0.0,
-        a_fs=0.0,
+        a_fs=0.0 * passive_stiffness_scale,
         b_fs=0.0,
     )
 
@@ -61,7 +62,7 @@ def setup_solver(
 
     if set_material == "Guccione":
         material_parameters = pulse.Guccione.default_parameters()
-        material_parameters["CC"] = 2.0
+        material_parameters["CC"] = 2.0 * passive_stiffness_scale
         material_parameters["bf"] = 8.0
         material_parameters["bfs"] = 4.0
         material_parameters["bt"] = 2.0
