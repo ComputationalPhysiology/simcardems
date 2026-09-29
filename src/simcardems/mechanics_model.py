@@ -34,6 +34,7 @@ def setup_solver(
     linear_solver="mumps",
     use_custom_newton_solver: bool = config.Config.mechanics_use_custom_newton_solver,
     state_prev=None,
+    material_parameter_a: float = 2.28,
 ):
     """Setup mechanics model with dirichlet boundary conditions or rigid motion."""
 
@@ -43,7 +44,7 @@ def setup_solver(
 
     # Use parameters from Biaxial test in Holzapfel 2019 (Table 1).
     material_parameters = dict(
-        a=2.28,
+        a=material_parameter_a,
         a_f=1.686,
         b=9.726,
         b_f=15.779,
