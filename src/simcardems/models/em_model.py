@@ -70,6 +70,7 @@ def setup_EM_model(
         use_custom_newton_solver=config.mechanics_use_custom_newton_solver,
         debug_mode=config.debug_mode,
         ActiveModel=cls_ActiveModel,
+        material_parameter_a=config.material_parameter_a,
     )
     if mech_state_init is not None:
         mech_heart.state.assign(mech_state_init)
